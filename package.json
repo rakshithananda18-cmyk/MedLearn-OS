@@ -1,0 +1,68 @@
+{
+  "name": "medlearn-os",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "start": "node scripts/start.mjs",
+    "dev": "pnpm --filter @medlearn/web dev",
+    "build": "pnpm --filter @medlearn/web build",
+    "lint": "eslint . --max-warnings=0 && node scripts/check-emoji.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "vitest run --project unit --project component",
+    "test:watch": "vitest --project unit --project component",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --project integration",
+    "test:db": "supabase test db",
+    "test:e2e": "playwright test",
+    "test:all": "pnpm test && pnpm test:db && pnpm test:integration && pnpm test:e2e",
+    "db:start": "supabase start --exclude storage-api,imgproxy,studio,postgres-meta,mailpit",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:types": "node scripts/db-types.mjs",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,mjs,js}": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
+  },
+  "packageManager": "pnpm@12.6.0",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@eslint/js": "^9.39.5",
+    "@medlearn/config": "workspace:*",
+    "@medlearn/test-utils": "workspace:*",
+    "@playwright/test": "^1.63.0",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^24.13.6",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^5.0.1",
+    "axe-core": "^4.13.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.6",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "globals": "^17.12.0",
+    "husky": "^9.1.7",
+    "jsdom": "^30.1.1",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.9",
+    "supabase": "^2.117.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@medlearn/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./emoji": "./emoji.mjs",
+    "./eslint": "./eslint/index.mjs",
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/library.json": "./tsconfig/library.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json"
+  }
+}

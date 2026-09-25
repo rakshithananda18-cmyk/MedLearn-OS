@@ -1,0 +1,13 @@
+{
+  "extends": "@medlearn/config/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src",
+    ".next/types/**/*.ts",
+    "../../packages/test-utils/src/jest-dom.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

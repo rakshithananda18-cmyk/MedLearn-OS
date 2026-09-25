@@ -1,0 +1,26 @@
+{
+  "name": "@medlearn/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  },
+  "dependencies": {
+    "@medlearn/core": "workspace:*",
+    "@medlearn/db": "workspace:*",
+    "@medlearn/logger": "workspace:*",
+    "@medlearn/schemas": "workspace:*",
+    "@medlearn/ui": "workspace:*",
+    "next": "^16.3.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  }
+}

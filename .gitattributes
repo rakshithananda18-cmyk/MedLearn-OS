@@ -1,0 +1,6 @@
+# Keep LF line endings in the repository and in working copies, even when Git's core.autocrlf
+# is on: Prettier checks for LF and the husky hook scripts run under sh.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF line endings or cmd.exe can misread labels and gotos.
+*.bat text eol=crlf
