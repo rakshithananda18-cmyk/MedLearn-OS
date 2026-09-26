@@ -1,4 +1,10 @@
+'use client';
+
 import { useId } from 'react';
+
+import { Button } from './Button';
+import { Icon } from './Icon';
+import { CircleAlert, RefreshCw } from './icons';
 
 export interface ErrorStateProps {
   title: string;
@@ -20,18 +26,27 @@ export function ErrorState({
   const titleId = useId();
 
   return (
-    <section role="alert" aria-labelledby={titleId}>
-      <h2 id={titleId}>{title}</h2>
-      <p>{description}</p>
+    <section
+      role="alert"
+      aria-labelledby={titleId}
+      className="flex flex-col items-center gap-3 px-4 py-8 text-center"
+    >
+      <span className="flex size-12 items-center justify-center rounded-full bg-danger-subtle text-danger">
+        <Icon icon={CircleAlert} size="lg" />
+      </span>
+      <h2 id={titleId} className="text-xl font-semibold text-ink">
+        {title}
+      </h2>
+      <p className="max-w-prose text-base text-fg-muted">{description}</p>
       {reference ? (
-        <p>
-          Reference: <code>{reference}</code>
+        <p className="text-sm text-fg-muted">
+          Reference: <code className="font-mono text-fg">{reference}</code>
         </p>
       ) : null}
       {onRetry ? (
-        <button type="button" onClick={onRetry}>
+        <Button variant="secondary" iconStart={RefreshCw} onClick={onRetry}>
           {retryLabel}
-        </button>
+        </Button>
       ) : null}
     </section>
   );

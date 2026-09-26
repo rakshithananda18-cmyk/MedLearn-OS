@@ -1,0 +1,184 @@
+/*
+ * MedLearn OS design tokens: the single source of colour, type, spacing, radius, shadow,
+ * breakpoint and motion values. Tailwind's default scales are reset, so only these tokens
+ * produce utility classes (for example `p-5` or `text-red-500` generate nothing).
+ */
+
+@theme {
+  --color-*: initial;
+  --spacing: initial;
+  --spacing-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-*: initial;
+  --font-*: initial;
+  --breakpoint-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --blur-*: initial;
+
+  /* Spacing: 4px base; no other values. */
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  /* Typography: Noto Sans (Devanagari added with the Hindi toggle). Body 16px / 1.5. */
+  --font-sans: var(--font-noto-sans), system-ui, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+
+  /* Radius: inputs, cards, sheets, pills. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Elevation: flat (no shadow), raised, overlay. */
+  --shadow-raised: 0 1px 2px rgb(16 24 32 / 0.06), 0 1px 3px rgb(16 24 32 / 0.1);
+  --shadow-overlay: 0 8px 24px rgb(16 24 32 / 0.18), 0 2px 6px rgb(16 24 32 / 0.08);
+
+  /* Breakpoints: 360 base (mobile first), 768 tablet, 1024 desktop. */
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+
+  /* Motion: 150ms small changes, 250ms screen changes, one easing. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --animate-spin: spin 0.8s linear infinite;
+  --animate-pulse: pulse 1.6s var(--ease-standard) infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /*
+   * Anatomical palette: reserved for diagrams only, identical in both themes (diagrams sit on
+   * a light panel). Interface states never reuse these hues; always pair with a label.
+   */
+  --color-anat-artery: #c62828;
+  --color-anat-vein: #1e5aa8;
+  --color-anat-nerve: #e0b400;
+  --color-anat-lymph: #2e8b57;
+  --color-anat-muscle: #a0463c;
+  --color-anat-bone: #e8dcc4;
+}
+
+/* Interface colours: semantic names only; values switch with the theme. */
+@theme inline {
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-canvas: var(--ml-canvas);
+  --color-surface: var(--ml-surface);
+  --color-surface-muted: var(--ml-surface-muted);
+  --color-fg: var(--ml-fg);
+  --color-fg-muted: var(--ml-fg-muted);
+  --color-ink: var(--ml-ink);
+  --color-border: var(--ml-border);
+  --color-border-strong: var(--ml-border-strong);
+  --color-primary: var(--ml-primary);
+  --color-primary-hover: var(--ml-primary-hover);
+  --color-primary-subtle: var(--ml-primary-subtle);
+  --color-primary-strong: var(--ml-primary-strong);
+  --color-on-primary: var(--ml-on-primary);
+  --color-success: var(--ml-success);
+  --color-success-subtle: var(--ml-success-subtle);
+  --color-warning: var(--ml-warning);
+  --color-warning-subtle: var(--ml-warning-subtle);
+  --color-danger: var(--ml-danger);
+  --color-danger-hover: var(--ml-danger-hover);
+  --color-danger-subtle: var(--ml-danger-subtle);
+  --color-on-danger: var(--ml-on-danger);
+  --color-focus: var(--ml-focus);
+  --color-scrim: var(--ml-scrim);
+}
+
+/* Light theme (default). Every text/background pair meets WCAG 2.2 AA. */
+:root {
+  color-scheme: light;
+  --ml-canvas: #f6f8f9;
+  --ml-surface: #ffffff;
+  --ml-surface-muted: #eef2f4;
+  --ml-fg: #1e2732;
+  --ml-fg-muted: #5b6673;
+  --ml-ink: #17324d;
+  --ml-border: #d7dee5;
+  --ml-border-strong: #7a8794;
+  --ml-primary: #0e7c86;
+  --ml-primary-hover: #0a6770;
+  --ml-primary-subtle: #e3f4f5;
+  --ml-primary-strong: #0a5a61;
+  --ml-on-primary: #ffffff;
+  --ml-success: #1b7a36;
+  --ml-success-subtle: #e6f4ea;
+  --ml-warning: #8a5100;
+  --ml-warning-subtle: #fff4e0;
+  --ml-danger: #b42318;
+  --ml-danger-hover: #93190f;
+  --ml-danger-subtle: #fdecea;
+  --ml-on-danger: #ffffff;
+  --ml-focus: #0e7c86;
+  --ml-scrim: rgb(15 23 32 / 0.5);
+}
+
+/* Dark theme: set on <html> by the theme script (explicit choice or system preference). */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ml-canvas: #0f1720;
+  --ml-surface: #16202b;
+  --ml-surface-muted: #1e2a36;
+  --ml-fg: #e6edf3;
+  --ml-fg-muted: #9aa8b5;
+  --ml-ink: #f0f5f9;
+  --ml-border: #2c3a47;
+  --ml-border-strong: #6b7a88;
+  --ml-primary: #3fb8c2;
+  --ml-primary-hover: #62c9d1;
+  --ml-primary-subtle: #12343a;
+  --ml-primary-strong: #8adbe1;
+  --ml-on-primary: #0b1a1f;
+  --ml-success: #5ccb85;
+  --ml-success-subtle: #133222;
+  --ml-warning: #f0b44c;
+  --ml-warning-subtle: #3a2a0d;
+  --ml-danger: #f28b82;
+  --ml-danger-hover: #f6aaa3;
+  --ml-danger-subtle: #3b1714;
+  --ml-on-danger: #1f0b09;
+  --ml-focus: #62c9d1;
+  --ml-scrim: rgb(0 0 0 / 0.6);
+}
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

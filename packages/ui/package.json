@@ -3,16 +3,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/styles/tokens.css",
+    "./icons": "./src/icons.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
-    "react": "^19.3.0"
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3"
   },
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^1.48.0",
+    "radix-ui": "^1.6.7"
   }
 }

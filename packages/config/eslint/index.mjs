@@ -4,6 +4,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 import { noEmoji } from './no-emoji.mjs';
+import { noRawDesignValues } from './no-raw-design-values.mjs';
 
 export const ignores = {
   ignores: [
@@ -22,7 +23,7 @@ export const ignores = {
 export const base = tseslint.config(ignores, js.configs.recommended, tseslint.configs.strict, {
   languageOptions: { globals: { ...globals.node } },
   plugins: {
-    medlearn: { rules: { 'no-emoji': noEmoji } },
+    medlearn: { rules: { 'no-emoji': noEmoji, 'no-raw-design-values': noRawDesignValues } },
     'simple-import-sort': simpleImportSort,
   },
   rules: {
@@ -36,6 +37,38 @@ export const base = tseslint.config(ignores, js.configs.recommended, tseslint.co
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
 });
+
+/**
+ * Design-system rules for UI code: values come from tokens, icons come from the curated set.
+ * `files` are the app and UI component sources; tests may use example values.
+ */
+export function designSystem(files) {
+  return [
+    {
+      files,
+      ignores: ['**/*.test.*'],
+      rules: {
+        'medlearn/no-raw-design-values': 'error',
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              {
+                name: 'lucide-react',
+                message: "Import icons from '@medlearn/ui/icons' and render them with <Icon>.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      // The icon set and the Icon wrapper are the only places that touch lucide-react.
+      files: ['packages/ui/src/icons.ts', 'packages/ui/src/Icon.tsx'],
+      rules: { 'no-restricted-imports': 'off' },
+    },
+  ];
+}
 
 /** Command-line scripts may print to the terminal. */
 export const scripts = {

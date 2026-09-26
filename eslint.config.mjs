@@ -1,4 +1,4 @@
-import { base, scripts } from '@medlearn/config/eslint';
+import { base, designSystem, scripts } from '@medlearn/config/eslint';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 
 const REACT_FILES = ['apps/web/**/*.{ts,tsx}', 'packages/ui/**/*.{ts,tsx}'];
@@ -15,4 +15,4 @@ const next = nextVitals.map((config) =>
       },
 );
 
-export default [...base, ...next, scripts];
+export default [...base, ...next, ...designSystem(REACT_FILES), scripts];
