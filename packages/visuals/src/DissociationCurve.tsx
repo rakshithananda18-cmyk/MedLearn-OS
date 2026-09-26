@@ -1,5 +1,5 @@
-'use client';
-
+// No 'use client': without onChange this renders on the server as a static figure (the landing
+// page preview) with nothing to hydrate. Interactive uses live inside client components.
 import { useId } from 'react';
 
 import {

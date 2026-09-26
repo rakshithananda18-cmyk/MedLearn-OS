@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- MedLearn OS mark: a nerve branching from one root, in a gold ring on the Calm Sky. -->
+  <!-- Everything sits inside the central 80% so launchers can mask it to any shape. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfe2ee"/>
+      <stop offset="0.42" stop-color="#edf3f5"/>
+      <stop offset="1" stop-color="#f7eadb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <circle cx="256" cy="256" r="150" fill="#ffffff" fill-opacity="0.55" stroke="#b8923a" stroke-width="10"/>
+  <g fill="none" stroke="#7a5a14" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 352 V262 M256 262 L196 198 M256 262 V180 M256 262 L316 198"/>
+    <circle cx="186" cy="187" r="15"/>
+    <circle cx="256" cy="164" r="15"/>
+    <circle cx="326" cy="187" r="15"/>
+  </g>
+</svg>

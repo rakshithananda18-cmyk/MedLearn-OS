@@ -1,8 +1,10 @@
-import { Topic } from '@medlearn/schemas';
+import type { Topic } from '@medlearn/schemas';
 
 // Sample content for the prototype. `reviewed: false` keeps the "not medically reviewed" label
 // on every screen until a medical reviewer approves it.
-export const oxygenCurve = Topic.parse({
+// Checked against the Topic schema by topics.test.ts rather than at runtime, so the schema
+// library stays out of the phone's download.
+export const oxygenCurve: Topic = {
   slug: 'oxygen-haemoglobin-curve',
   subjectSlug: 'physiology',
   title: 'Oxygen–haemoglobin curve',
@@ -35,34 +37,40 @@ export const oxygenCurve = Topic.parse({
       id: 'sigmoid',
       title: 'An S-shaped curve',
       body: 'Each haemoglobin carries four oxygen molecules, and every one that binds makes the next bind more easily. So saturation climbs steeply between about 20 and 60 mmHg and flattens near the top.',
+      focus: [],
     },
     {
       id: 'p50',
       title: 'P50, the half-way mark',
       body: 'P50 is the oxygen pressure at which haemoglobin is half saturated: about 27 mmHg in adults. A higher P50 means the curve has shifted to the right.',
+      focus: [],
     },
     {
       id: 'acid-co2',
       title: 'Acid and CO₂ shift it right',
       body: 'Working tissues make CO₂ and acid, which lower haemoglobin’s grip on oxygen (the Bohr effect). Oxygen is released exactly where it is needed.',
+      focus: [],
       conditions: { pco2: 55, ph: 7.25 },
     },
     {
       id: 'heat-bpg',
       title: 'Heat and 2,3-BPG do the same',
       body: 'A warm muscle and more 2,3-BPG, for example after days at high altitude, also shift the curve right. Remember CADET, face right: CO₂, Acid, 2,3-DPG, Exercise, Temperature.',
+      focus: [],
       conditions: { temperature: 40, bpg: 7 },
     },
     {
       id: 'left-shift',
       title: 'A left shift holds on',
       body: 'Alkalosis, cold and low 2,3-BPG, as in stored blood, shift the curve left: haemoglobin picks oxygen up easily but gives less of it to the tissues.',
+      focus: [],
       conditions: { ph: 7.55, temperature: 35, bpg: 2 },
     },
     {
       id: 'explore',
       title: 'Try it yourself',
       body: 'Pick a situation or move the sliders. Watch the P50 marker, and how much oxygen is released between the lungs and the tissues.',
+      focus: [],
     },
   ],
   questions: [
@@ -141,4 +149,4 @@ export const oxygenCurve = Topic.parse({
       back: 'Alkalosis, hypothermia and low 2,3-BPG (stored blood); also fetal haemoglobin and carbon monoxide.',
     },
   ],
-});
+};

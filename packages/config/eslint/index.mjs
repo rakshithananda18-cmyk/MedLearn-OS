@@ -70,6 +70,12 @@ export function designSystem(files) {
   ];
 }
 
+/** A service worker runs in its own global scope, with self and caches. */
+export const serviceWorker = {
+  files: ['**/public/sw.js'],
+  languageOptions: { globals: { ...globals.serviceworker } },
+};
+
 /** Command-line scripts may print to the terminal. */
 export const scripts = {
   files: ['scripts/**/*.mjs'],

@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from 'next';
 import { Instrument_Serif, Noto_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { ServiceWorker } from '@/features/offline/Offline';
 import { ProgressSync } from '@/features/sync/ProgressSync';
 
 const notoSans = Noto_Sans({ subsets: ['latin'], variable: '--font-noto-sans', display: 'swap' });
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <ProgressSync />
+        <ServiceWorker />
         {children}
       </body>
     </html>
