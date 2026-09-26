@@ -28,6 +28,8 @@ test.describe('landing and subjects', () => {
   });
 
   test('has no serious accessibility violations', async ({ page }) => {
+    // Three full accessibility scans.
+    test.slow();
     for (const path of ['/', '/subjects', '/welcome']) {
       await page.goto(path);
       await expectAccessible(page);

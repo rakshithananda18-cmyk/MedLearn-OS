@@ -28,10 +28,10 @@ jobs:
       - run: pnpm test
 
   backend:
-    name: Database, integration and end-to-end tests
+    name: Database and integration tests
     runs-on: ubuntu-latest
     # Fail fast instead of GitHub's 6-hour default if anything hangs.
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -43,13 +43,36 @@ jobs:
       - run: pnpm bootstrap
       - run: pnpm test:db
       - run: pnpm test:coverage
-      - run: pnpm test:e2e
-      # Reuses the production build from the end-to-end step; runs Lighthouse in the runner's Chrome.
-      - run: pnpm test:budgets
+
+  # One machine per screen size, side by side, so the slowest job sets the wait rather than the sum.
+  # Each sets up its own database, which costs more CI minutes than one long job.
+  e2e:
+    name: End-to-end tests (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [phone, tablet, desktop]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm bootstrap
+      - run: pnpm build
+      - run: pnpm exec playwright test --project=${{ matrix.project }}
+      # The budgets use Lighthouse's phone profile, so they ride on the phone job and its build.
+      - name: Performance budgets
+        if: ${{ matrix.project == 'phone' }}
+        run: pnpm test:budgets
       - uses: actions/upload-artifact@v4
         # Also after a timeout or cancellation, so the report explains what happened.
         if: ${{ !success() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7

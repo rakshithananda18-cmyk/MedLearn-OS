@@ -41,7 +41,7 @@ test('an adult saves progress to an account, signs out, and gets it back by sign
 
   // Sign out: this phone forgets the progress.
   await page.getByRole('button', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/$/, { timeout: AUTH_WAIT });
   await page.goto('/today');
   await expect(page.getByRole('link', { name: /Learn: Brachial plexus/ })).toBeVisible();
 
