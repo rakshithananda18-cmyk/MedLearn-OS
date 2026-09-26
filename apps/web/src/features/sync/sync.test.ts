@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { completeLesson, readProgress, resetProgress } from '@/features/progress/store';
 
-import { newerCopy, restoreProgress, startProgressSync } from './sync';
+import { adoptAccountProgress, newerCopy, restoreProgress, startProgressSync } from './sync';
 
 const copy = (updatedAt: string | null): LearnerProgress => ({ ...EMPTY_PROGRESS, updatedAt });
 
@@ -72,5 +72,15 @@ describe('startProgressSync', () => {
     );
     await restoreProgress();
     expect(readProgress().completedLessons).toEqual([]);
+  });
+
+  it('joins this phone with the account after signing in, as an adult profile', async () => {
+    completeLesson('oxygen-haemoglobin-curve');
+    await adoptAccountProgress();
+    expect(readProgress().completedLessons.sort()).toEqual([
+      'brachial-plexus',
+      'oxygen-haemoglobin-curve',
+    ]);
+    expect(readProgress().profile?.adult).toBe(true);
   });
 });

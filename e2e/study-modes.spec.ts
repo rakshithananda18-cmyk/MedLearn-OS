@@ -48,6 +48,8 @@ test('a student back after missed days gets a capped catch-up plan', async ({ pa
 });
 
 test('the diagram trainer builds the brachial plexus layer by layer', async ({ page }) => {
+  // 22 label taps across five layers plus accessibility scans: a long journey.
+  test.slow();
   await seedProgress(page, {
     profile: { year: 1, examDate: localDate(10), dailyMinutes: 20, adult: true },
     completedLessons: ['brachial-plexus'],
