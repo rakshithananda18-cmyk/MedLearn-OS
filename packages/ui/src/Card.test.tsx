@@ -9,6 +9,11 @@ describe('Card', () => {
     expect(screen.getByText('Today')).toHaveClass('bg-surface', 'shadow-raised');
   });
 
+  it('floats as glass over the sky backdrop', () => {
+    render(<Card tone="glass">Plan</Card>);
+    expect(screen.getByText('Plan')).toHaveClass('bg-glass', 'shadow-glass', 'rounded-xl');
+  });
+
   it('can be a semantic element', () => {
     render(
       <Card as="article" aria-label="Topic">

@@ -9,11 +9,31 @@ async function seriousViolations(page: Page) {
     .map((v) => `${v.id}: ${v.help} (${v.nodes.length} nodes: ${v.nodes[0]?.target.join(' ')})`);
 }
 
+test.describe('light is the primary theme', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('a new visitor sees light even on a dark device, until choosing System', async ({
+    page,
+  }) => {
+    await page.goto('/design');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await page.getByRole('radio', { name: 'System' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
+});
+
 for (const colorScheme of ['light', 'dark'] as const) {
   test.describe(`design gallery, ${colorScheme} theme`, () => {
     test.use({ colorScheme });
+    // Dark is opt-in: here the student chose "System" on a dark device.
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(
+        (choice) => localStorage.setItem('ml-theme', choice),
+        colorScheme === 'dark' ? 'system' : 'light',
+      );
+    });
 
-    test('follows the system theme and passes accessibility checks, including contrast', async ({
+    test('applies the theme and passes accessibility checks, including contrast', async ({
       page,
     }) => {
       await page.goto('/design');

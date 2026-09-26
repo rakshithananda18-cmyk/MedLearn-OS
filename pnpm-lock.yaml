@@ -262,6 +262,9 @@ importers:
       '@medlearn/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@medlearn/visuals':
+        specifier: workspace:*
+        version: link:../../packages/visuals
       next:
         specifier: ^16.3.6
         version: 16.3.6(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.63.0)(@types/node@24.13.6)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -295,6 +298,9 @@ importers:
       '@medlearn/schemas':
         specifier: workspace:*
         version: link:../schemas
+      ts-fsrs:
+        specifier: ^5.4.2
+        version: 5.4.2
 
   packages/db:
     dependencies:
@@ -356,6 +362,19 @@ importers:
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
+
+  packages/visuals:
+    dependencies:
+      '@medlearn/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+    devDependencies:
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
 
 packages:
 
@@ -3968,6 +3987,10 @@ packages:
     engines: {node: '>=18.12'}
     peerDependencies:
       typescript: '>=4.8.4'
+
+  ts-fsrs@5.4.2:
+    resolution: {integrity: sha512-z4qop4pzTcyTzuJ566d9EaX/4bZZzhYfeaPImfVr+xcYT65c5oBgFDijUhCE/D+C78eaolHIhKRZ04/RwF+v2g==}
+    engines: {node: '>=20.0.0'}
 
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
@@ -7985,6 +8008,8 @@ snapshots:
   ts-api-utils@2.5.0(typescript@6.0.3):
     dependencies:
       typescript: 6.0.3
+
+  ts-fsrs@5.4.2: {}
 
   tsconfig-paths@3.15.0:
     dependencies:

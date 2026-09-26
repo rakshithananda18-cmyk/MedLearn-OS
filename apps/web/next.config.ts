@@ -10,6 +10,7 @@ const config: NextConfig = {
     '@medlearn/logger',
     '@medlearn/schemas',
     '@medlearn/ui',
+    '@medlearn/visuals',
   ],
   serverExternalPackages: ['pino', 'pino-pretty'],
 };

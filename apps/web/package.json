@@ -20,6 +20,7 @@
     "@medlearn/logger": "workspace:*",
     "@medlearn/schemas": "workspace:*",
     "@medlearn/ui": "workspace:*",
+    "@medlearn/visuals": "workspace:*",
     "next": "^16.3.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

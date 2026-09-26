@@ -3,6 +3,7 @@
 
 /* Shared components live outside this app; scan them for class names too. */
 @source '../../../../packages/ui/src';
+@source '../../../../packages/visuals/src';
 
 @layer base {
   html {
@@ -39,5 +40,56 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/*
+ * Route transitions (React ViewTransition): the old screen fades out quickly and the new one
+ * rises in gently. The navigation and the sky stay still, and clicks pass through meanwhile.
+ */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(.screen-exit) {
+  animation: 150ms var(--ease-standard) both screen-fade reverse;
+}
+
+::view-transition-new(.screen-enter) {
+  animation: 400ms var(--ease-arrive) 100ms both screen-rise;
+}
+
+::view-transition-group(app-nav) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(app-nav) {
+  display: none;
+}
+
+::view-transition-new(app-nav) {
+  animation: none;
+}
+
+@keyframes screen-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
 }

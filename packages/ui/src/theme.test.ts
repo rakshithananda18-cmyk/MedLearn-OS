@@ -37,7 +37,13 @@ describe('themeScript', () => {
 
   afterEach(() => localStorage.clear());
 
-  it('follows the system setting when no choice is stored', () => {
+  it('starts in light when no choice is stored, even if the system is dark', () => {
+    runScript(true);
+    expect(document.documentElement.dataset.theme).toBe('light');
+  });
+
+  it('follows the system setting once "System" is chosen', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'system');
     runScript(true);
     expect(document.documentElement.dataset.theme).toBe('dark');
     runScript(false);

@@ -1,7 +1,11 @@
 import { base, designSystem, scripts } from '@medlearn/config/eslint';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 
-const REACT_FILES = ['apps/web/**/*.{ts,tsx}', 'packages/ui/**/*.{ts,tsx}'];
+const REACT_FILES = [
+  'apps/web/**/*.{ts,tsx}',
+  'packages/ui/**/*.{ts,tsx}',
+  'packages/visuals/**/*.{ts,tsx}',
+];
 
 // Next's rules (React, hooks, jsx-a11y, Next) apply to React code only.
 // Ignore-only entries are global and stay untouched.

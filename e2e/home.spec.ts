@@ -1,11 +1,20 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-test.describe('home page', () => {
-  test('shows the subjects from the database', async ({ page }) => {
+test.describe('landing and subjects', () => {
+  test('the landing page starts new students on the setup questions', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'MedLearn OS' })).toBeVisible();
-    await expect(page.getByRole('list', { name: 'Subjects' }).getByRole('listitem')).toHaveText([
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Learn medicine, visually' }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Start in 3 steps' }).click();
+    await expect(page).toHaveURL(/\/welcome$/);
+  });
+
+  test('subjects come from the database', async ({ page }) => {
+    await page.goto('/subjects');
+    const subjects = page.getByRole('list', { name: 'Subjects' });
+    await expect(subjects.getByRole('heading', { level: 2 })).toHaveText([
       'Anatomy',
       'Physiology',
       'Biochemistry',
@@ -18,10 +27,12 @@ test.describe('home page', () => {
   });
 
   test('has no serious accessibility violations', async ({ page }) => {
-    await page.goto('/');
-    const { violations } = await new AxeBuilder({ page }).analyze();
-    const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-    expect(blocking.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+    for (const path of ['/', '/subjects', '/welcome']) {
+      await page.goto(path);
+      const { violations } = await new AxeBuilder({ page }).analyze();
+      const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+      expect(blocking.map((v) => `${path} ${v.id}: ${v.help}`)).toEqual([]);
+    }
   });
 });
 

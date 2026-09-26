@@ -58,7 +58,7 @@ export default defineConfig({
       ],
       thresholds: {
         'packages/core/src/**': { lines: 90 },
-        'packages/{schemas,logger,db,ui}/src/**': { lines: 80 },
+        'packages/{schemas,logger,db,ui,visuals}/src/**': { lines: 80 },
         'apps/web/src/**': { lines: 70 },
       },
     },

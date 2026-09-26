@@ -2,6 +2,10 @@
 // Starts Docker Desktop (if needed), the local database and the web app, then opens the
 // browser. Ctrl+C (or the app exiting) stops the web app, and the database too if this
 // script started it. Database data is kept between runs.
+//
+// `pnpm start --prod` (or `startapp.bat --prod`, or double-click usability.bat) builds and serves
+// the production app instead, reachable from phones on the same Wi-Fi for usability sessions.
+// The dev server only serves this computer.
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -10,6 +14,7 @@ import {
   fail,
   isWindows,
   killTree,
+  lanAddresses,
   openBrowser,
   requireNode,
   run,
@@ -24,6 +29,7 @@ const APP_URL = `http://localhost:${PORT}`;
 const WEB_DIR = 'apps/web';
 // `pnpm start --no-open` skips the browser (useful for scripted checks).
 const OPEN_BROWSER = !process.argv.includes('--no-open');
+const PRODUCTION = process.argv.includes('--prod');
 
 requireNode(24);
 if (!existsSync(`${WEB_DIR}/.env.local`)) {
@@ -40,12 +46,18 @@ if (databaseWasRunning) {
   run('pnpm', ['db:start']);
 }
 
-step(`Starting the web app on ${APP_URL}`);
+if (PRODUCTION) {
+  step('Building the production app (about a minute)');
+  run('pnpm', ['build']);
+}
+
+step(`Starting the ${PRODUCTION ? 'production' : 'development'} web app on ${APP_URL}`);
 // Next is started with Node directly (not through a shell) so Ctrl+C and cleanup are reliable.
 const nextBin = createRequire(`${process.cwd()}/${WEB_DIR}/package.json`).resolve(
   'next/dist/bin/next',
 );
-const web = spawn(process.execPath, [nextBin, 'dev', '--port', String(PORT)], {
+const mode = PRODUCTION ? 'start' : 'dev';
+const web = spawn(process.execPath, [nextBin, mode, '--port', String(PORT)], {
   cwd: WEB_DIR,
   stdio: 'inherit',
   detached: !isWindows,
@@ -90,4 +102,15 @@ if (!responding) {
   }
   if (OPEN_BROWSER) openBrowser(APP_URL);
   console.log(`\nMedLearn OS is running at ${APP_URL}. Press Ctrl+C to stop everything.\n`);
+  if (PRODUCTION) {
+    console.log(
+      'On a phone on the same Wi-Fi, open one of these (allow Node through the firewall):',
+    );
+    for (const address of lanAddresses()) {
+      console.log(
+        `  App: http://${address}:${PORT}   Facilitator: http://${address}:${PORT}/facilitator`,
+      );
+    }
+    console.log('');
+  }
 }

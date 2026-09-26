@@ -17,6 +17,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'phone', use: { ...devices['Pixel 7'] } },
+    // iPad size and touch, in Chromium (the only browser CI installs).
+    { name: 'tablet', use: { ...devices['iPad (gen 7)'], defaultBrowserType: 'chromium' } },
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
   ],
   // Tests run against a production build (`pnpm test:e2e` builds first), as students will use it.
