@@ -14,7 +14,7 @@ const KNOWN: Record<string, () => AppError> = {
 };
 
 /** Maps a Supabase auth error to the message a student sees, keeping the original as the cause. */
-export function toAuthError(error: { code?: string | undefined; message: string }): AppError {
+export function toAuthError(error: { code?: string; message: string }): AppError {
   const known = error.code ? KNOWN[error.code] : undefined;
   if (!known) return new AppError('INTERNAL', 'Account request failed', { cause: error });
   const appError = known();
