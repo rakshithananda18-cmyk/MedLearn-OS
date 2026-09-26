@@ -19,11 +19,15 @@ export default defineConfig({
     { name: 'phone', use: { ...devices['Pixel 7'] } },
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
   ],
-  // Tests run against a production build, as students will use it.
+  // Tests run against a production build (`pnpm test:e2e` builds first), as students will use it.
+  // Next is started directly with Node, not through pnpm: pnpm puts its children in their own
+  // process group on Linux, so Playwright could not stop the server and CI hung after the tests.
   webServer: {
-    command: `pnpm --filter @medlearn/web build && pnpm --filter @medlearn/web start --port ${PORT}`,
+    command: `node node_modules/next/dist/bin/next start --port ${PORT}`,
+    cwd: 'apps/web',
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: !process.env.CI,
-    timeout: 240_000,
+    timeout: 60_000,
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
   },
 });
