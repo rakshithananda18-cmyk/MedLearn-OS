@@ -7,7 +7,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  // Hard stop for the whole run, so a hang fails in minutes instead of hours.
+  globalTimeout: process.env.CI ? 10 * 60_000 : 0,
+  // `list` prints each test as it runs, so CI logs show where anything stops.
+  reporter: process.env.CI ? [['list'], ['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
