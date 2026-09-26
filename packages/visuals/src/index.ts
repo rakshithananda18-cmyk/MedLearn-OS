@@ -19,6 +19,7 @@ export {
   VENOUS_PO2,
 } from './oxygen';
 export { PathTracer, type PathTracerProps } from './PathTracer';
+// The 3D viewer itself is a separate entry ('@medlearn/visuals/viewer3d') so three.js loads only on 3D screens.
 export {
   blanks,
   type DrillState,
@@ -31,3 +32,4 @@ export {
   selectBlank,
   startDrill,
 } from './trainer';
+export { MODEL_ORIGIN, supports3D, toScene } from './viewer3d/scene';

@@ -35,6 +35,7 @@ export {
   Mountain,
   PenLine,
   RefreshCw,
+  Rotate3d,
   RotateCcw,
   Search,
   SlidersHorizontal,

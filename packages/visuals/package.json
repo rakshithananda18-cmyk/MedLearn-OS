@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./viewer3d": "./src/viewer3d/Viewer3D.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -12,10 +13,14 @@
     "react": "^19.0.0"
   },
   "dependencies": {
-    "@medlearn/schemas": "workspace:*"
+    "@medlearn/schemas": "workspace:*",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
+    "@types/three": "^0.186.0",
     "react": "^19.0.0"
   }
 }

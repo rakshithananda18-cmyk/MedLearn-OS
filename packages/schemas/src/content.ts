@@ -51,12 +51,54 @@ export const CurveConditions = z
   .partial();
 export type CurveConditions = z.infer<typeof CurveConditions>;
 
+/** A point in a 3D model's own frame (BodyParts3D: millimetres, Z up). */
+export const Point3 = z.tuple([z.number(), z.number(), z.number()]);
+export type Point3 = z.infer<typeof Point3>;
+
+/** A named mesh inside the model file (bones and vessels). */
+export const ModelPart = z.object({
+  id: Id,
+  name: z.string().min(1),
+  kind: z.enum(['bone', 'artery']),
+});
+export type ModelPart = z.infer<typeof ModelPart>;
+
+/** A nerve drawn as tubes through these points; the id is a node of the topic's 2D diagram. */
+export const ModelNerve = z.object({
+  id: Id,
+  paths: z.array(z.array(Point3).min(2)).min(1),
+});
+export type ModelNerve = z.infer<typeof ModelNerve>;
+
+/** A guided camera position, with what to look at there. */
+export const CameraStop = z.object({
+  id: Id,
+  title: z.string().min(1),
+  description: z.string().min(1),
+  target: Point3,
+  position: Point3,
+});
+export type CameraStop = z.infer<typeof CameraStop>;
+
+export const Model3D = z.object({
+  /** Model file under /public, compressed glTF. */
+  src: z.string().startsWith('/models/'),
+  /** Visible credit for the model file and our schematic additions. */
+  credit: z.string().min(1),
+  parts: z.array(ModelPart).min(1),
+  nerves: z.array(ModelNerve),
+  stops: z.array(CameraStop).min(1),
+});
+export type Model3D = z.infer<typeof Model3D>;
+
 /** A pathway diagram with clinical lesions and an optional exam diagram drill. */
 export const PathVisual = z.object({
   kind: z.literal('path'),
   diagram: PathDiagram,
   lesions: z.array(Lesion),
   drill: z.array(DrillStep).default([]),
+  /** Optional 3D view of the same structures. */
+  model3d: Model3D.optional(),
 });
 export type PathVisual = z.infer<typeof PathVisual>;
 
@@ -131,6 +173,7 @@ export const Topic = z
             ...visual.diagram.edges.flatMap((edge) => [edge.from, edge.to]),
             ...visual.lesions.flatMap((lesion) => lesion.nodeIds),
             ...visual.drill.flatMap((step) => step.nodeIds),
+            ...(visual.model3d?.nerves.map((nerve) => nerve.id) ?? []),
           ]
         : []),
     ];

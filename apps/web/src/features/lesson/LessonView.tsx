@@ -1,7 +1,7 @@
 'use client';
 
 import type { LessonStep, PathVisual, Topic } from '@medlearn/schemas';
-import { ActionBar, Button, cx, Heading, StepDots, Text } from '@medlearn/ui';
+import { ActionBar, Button, Heading, StepDots, Text, ToggleChip } from '@medlearn/ui';
 import { ArrowRight, ChevronLeft, CircleCheck } from '@medlearn/ui/icons';
 import {
   type BloodConditions,
@@ -52,23 +52,17 @@ function PathLesson({ topic, visual, step, explore }: VisualProps & { visual: Pa
           </Text>
           <div role="group" aria-label="Show a lesion" className="flex flex-wrap gap-2">
             {visual.lesions.map((item) => (
-              <button
+              <ToggleChip
                 key={item.id}
-                type="button"
-                aria-pressed={lesionId === item.id}
+                tone="danger"
+                pressed={lesionId === item.id}
                 onClick={() => {
                   setLesionId(lesionId === item.id ? null : item.id);
                   setSelected(null);
                 }}
-                className={cx(
-                  'min-h-12 rounded-full border px-4 text-sm font-medium transition-colors duration-150',
-                  lesionId === item.id
-                    ? 'border-danger bg-danger-subtle text-danger'
-                    : 'border-border-strong bg-surface text-fg hover:bg-surface-muted',
-                )}
               >
                 {item.label}
-              </button>
+              </ToggleChip>
             ))}
           </div>
           {lesion ? <Text size="sm">{lesion.explanation}</Text> : null}

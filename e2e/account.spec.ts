@@ -2,8 +2,9 @@ import { expect, test } from '@playwright/test';
 
 import { expectAccessible, seedProgress } from './support';
 
-// Each account step makes several round trips to the auth service; allow for a busy test server.
-const AUTH_WAIT = 15_000;
+// Each account step makes several round trips to the auth service, whose password hashing is slow
+// on purpose; with many parallel tests on one laptop a step can take several seconds.
+const AUTH_WAIT = 30_000;
 
 test('an adult saves progress to an account, signs out, and gets it back by signing in', async ({
   page,
