@@ -3,10 +3,10 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(11);
 
--- Two learners.
-insert into auth.users (id) values
-  ('00000000-0000-0000-0000-00000000000a'),
-  ('00000000-0000-0000-0000-00000000000b');
+-- Two learners, named once (psql variables; pg_prove runs this file through psql).
+\set learner_a '00000000-0000-0000-0000-00000000000a'
+\set learner_b '00000000-0000-0000-0000-00000000000b'
+insert into auth.users (id) values (:'learner_a'), (:'learner_b');
 
 select is(
   (select relrowsecurity from pg_class where oid = 'public.learner_progress'::regclass),
@@ -21,7 +21,7 @@ select is(
 
 -- Learner A saves progress.
 set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}', true);
+select set_config('request.jwt.claims', json_build_object('sub', :'learner_a', 'role', 'authenticated')::text, true);
 
 select lives_ok(
   $$ insert into public.learner_progress (progress, updated_at) values ('{"completedLessons":[]}', now()) $$,
@@ -41,7 +41,7 @@ select results_eq(
 );
 
 -- Learner B cannot see or change it.
-select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000b","role":"authenticated"}', true);
+select set_config('request.jwt.claims', json_build_object('sub', :'learner_b', 'role', 'authenticated')::text, true);
 
 select is_empty(
   'select user_id from public.learner_progress',
