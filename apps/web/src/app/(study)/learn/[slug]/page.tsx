@@ -1,5 +1,5 @@
 import { Display, Eyebrow, Text } from '@medlearn/ui';
-import { BookOpen, ClipboardCheck, PenLine, RotateCcw } from '@medlearn/ui/icons';
+import { BookOpen, ClipboardCheck, PenLine, Rotate3d, RotateCcw } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -45,6 +45,16 @@ export default async function TopicPage({ params }: Props) {
       title: 'Revise recall cards',
       meta: `${topic.cards.length} cards, spaced over the coming weeks`,
     },
+    ...(topic.visual.kind === 'path' && topic.visual.model3d
+      ? [
+          {
+            href: `/learn/${topic.slug}/3d`,
+            icon: Rotate3d,
+            title: 'Explore in 3D',
+            meta: 'Trace each nerve around the shoulder bones and arteries',
+          },
+        ]
+      : []),
     ...(hasDrill(topic)
       ? [
           {

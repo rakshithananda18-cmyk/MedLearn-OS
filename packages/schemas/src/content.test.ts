@@ -66,6 +66,50 @@ describe('Topic', () => {
     expect(Topic.safeParse(broken).success).toBe(false);
   });
 
+  it('checks that 3D nerves are nodes of the 2D diagram', () => {
+    const model3d = {
+      src: '/models/sample.glb',
+      credit: 'Sample',
+      parts: [{ id: 'humerus', name: 'Humerus', kind: 'bone' }],
+      nerves: [
+        {
+          id: 'a',
+          paths: [
+            [
+              [0, 0, 0],
+              [1, 1, 1],
+            ],
+          ],
+        },
+      ],
+      stops: [
+        { id: 'all', title: 'All', description: 'x', target: [0, 0, 0], position: [1, 1, 1] },
+      ],
+    };
+    expect(Topic.safeParse({ ...base, visual: { ...base.visual, model3d } }).success).toBe(true);
+    const ghost = {
+      ...model3d,
+      nerves: [
+        {
+          id: 'ghost',
+          paths: [
+            [
+              [0, 0, 0],
+              [1, 1, 1],
+            ],
+          ],
+        },
+      ],
+    };
+    expect(Topic.safeParse({ ...base, visual: { ...base.visual, model3d: ghost } }).success).toBe(
+      false,
+    );
+    const external = { ...model3d, src: 'https://example.com/model.glb' };
+    expect(
+      Topic.safeParse({ ...base, visual: { ...base.visual, model3d: external } }).success,
+    ).toBe(false);
+  });
+
   it('accepts a curve topic whose steps set blood conditions', () => {
     const curve = {
       ...base,

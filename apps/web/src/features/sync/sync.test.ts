@@ -24,6 +24,7 @@ describe('newerCopy', () => {
 describe('startProgressSync', () => {
   const serverCopy = {
     ...EMPTY_PROGRESS,
+    profile: { year: 1 as const, examDate: null, dailyMinutes: 20, adult: true },
     completedLessons: ['brachial-plexus'],
     updatedAt: '2030-01-01T00:00:00.000Z',
   };

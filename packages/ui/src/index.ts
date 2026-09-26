@@ -49,6 +49,7 @@ export {
   themeScript,
 } from './theme';
 export { ThemeToggle } from './ThemeToggle';
+export { ToggleChip, type ToggleChipProps } from './ToggleChip';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export {
   Display,

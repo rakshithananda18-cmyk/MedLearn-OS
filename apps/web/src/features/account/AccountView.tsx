@@ -5,7 +5,6 @@ import {
   Button,
   buttonClasses,
   Card,
-  cx,
   Display,
   Eyebrow,
   Medallion,
@@ -13,6 +12,7 @@ import {
   Text,
   TextField,
   ThemeToggle,
+  ToggleChip,
 } from '@medlearn/ui';
 import { User } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -113,20 +113,9 @@ function ModeSwitch({ mode, onChange }: Readonly<{ mode: Mode; onChange: (mode: 
     <fieldset className="flex gap-2">
       <legend className="sr-only">Account</legend>
       {(['create', 'sign-in'] as const).map((value) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={mode === value}
-          onClick={() => onChange(value)}
-          className={cx(
-            'min-h-12 rounded-full border px-4 text-sm transition-colors duration-150',
-            mode === value
-              ? 'border-gold bg-glass font-semibold text-ink'
-              : 'border-border-strong bg-surface font-medium text-fg hover:bg-surface-muted',
-          )}
-        >
+        <ToggleChip key={value} pressed={mode === value} onClick={() => onChange(value)}>
           {value === 'create' ? 'New account' : 'Existing account'}
-        </button>
+        </ToggleChip>
       ))}
     </fieldset>
   );

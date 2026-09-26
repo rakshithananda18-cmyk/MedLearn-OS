@@ -1,5 +1,7 @@
 import { Topic } from '@medlearn/schemas';
 
+import { brachialPlexus3d } from './brachial-plexus-3d';
+
 // Sample content for the prototype. `reviewed: false` keeps the "not medically reviewed" label
 // on every screen until a medical reviewer approves it.
 export const brachialPlexus = Topic.parse({
@@ -21,6 +23,12 @@ export const brachialPlexus = Topic.parse({
       detail: '13.4 The Peripheral Nervous System',
       url: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/13-4-the-peripheral-nervous-system',
       licence: 'CC BY-NC-SA 4.0; cited, not copied',
+    },
+    {
+      title: 'BodyParts3D (DBCLS)',
+      detail: 'Bones and arteries in the 3D view; nerve paths there are a MedLearn schematic',
+      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
+      licence: 'CC BY 4.0 on the licence page (files marked CC BY-SA 2.1 JP)',
     },
   ],
   keyFacts: [
@@ -145,6 +153,7 @@ export const brachialPlexus = Topic.parse({
         nodeIds: ['musculocutaneous', 'axillary', 'radial', 'median', 'ulnar'],
       },
     ],
+    model3d: brachialPlexus3d,
   },
   lesson: [
     {

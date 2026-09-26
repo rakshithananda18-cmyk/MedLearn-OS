@@ -5,6 +5,8 @@ const DAY_MS = 86_400_000;
 
 /** Fails on serious or critical accessibility violations on the current page. */
 export async function expectAccessible(page: Page) {
+  // After a client-side navigation Next fills in the title a moment later; scan the finished page.
+  await expect(page).toHaveTitle(/\S/);
   const { violations } = await new AxeBuilder({ page }).analyze();
   const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   expect(blocking.map((v) => `${page.url()} ${v.id}: ${v.help}`)).toEqual([]);

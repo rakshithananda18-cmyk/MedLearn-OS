@@ -103,7 +103,9 @@ export function startProgressSync(): () => void {
   fetch('/api/session', { method: 'POST' }).then(pull).catch(report);
 
   const unsubscribe = subscribeToProgress(() => {
-    if (readProgress().updatedAt === lastSynced) return;
+    const progress = readProgress();
+    // After sign-out the phone is cleared; that empty copy is never sent anywhere.
+    if (progress.profile?.adult !== true || progress.updatedAt === lastSynced) return;
     clearTimeout(timer);
     timer = setTimeout(() => push().catch(report), SAVE_DELAY_MS);
   });

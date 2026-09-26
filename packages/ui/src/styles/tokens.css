@@ -148,11 +148,14 @@
       opacity: 0.5;
     }
   }
+}
 
-  /*
-   * Anatomical palette: reserved for diagrams only, identical in both themes (diagrams sit on
-   * a light panel). Interface states never reuse these hues; always pair with a label.
-   */
+/*
+ * Anatomical palette: reserved for diagrams only, identical in both themes (diagrams sit on
+ * a light panel). Interface states never reuse these hues; always pair with a label.
+ * Static, so the variables are always emitted: the 3D viewer reads them for its materials.
+ */
+@theme static {
   --color-anat-artery: #c62828;
   --color-anat-vein: #1e5aa8;
   --color-anat-nerve: #e0b400;
