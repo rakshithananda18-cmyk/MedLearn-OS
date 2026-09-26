@@ -1,0 +1,5 @@
+{
+  "extends": "@medlearn/config/tsconfig/library.json",
+  "compilerOptions": { "jsx": "react-jsx" },
+  "include": ["src", "../test-utils/src/jest-dom.d.ts"]
+}

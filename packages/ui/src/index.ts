@@ -22,6 +22,8 @@ export {
   ProgressRing,
   type ProgressRingProps,
 } from './Progress';
+export { QuestionCard, type QuestionCardProps } from './QuestionCard';
+export { RecallCard, type RecallCardProps, type RecallRating } from './RecallCard';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { Spinner, type SpinnerProps } from './Spinner';
 export { Stack, type StackProps } from './Stack';

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@medlearn/schemas": "workspace:*"
+    "@medlearn/schemas": "workspace:*",
+    "ts-fsrs": "^5.4.2"
   }
 }

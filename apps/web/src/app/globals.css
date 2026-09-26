@@ -3,6 +3,7 @@
 
 /* Shared components live outside this app; scan them for class names too. */
 @source '../../../../packages/ui/src';
+@source '../../../../packages/visuals/src';
 
 @layer base {
   html {

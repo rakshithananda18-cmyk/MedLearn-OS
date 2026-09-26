@@ -1,27 +1,22 @@
-import { Card, Heading, Stack, Text } from '@medlearn/ui';
-import { connection } from 'next/server';
+import { buttonClasses, Heading, Stack, Text } from '@medlearn/ui';
+import Link from 'next/link';
 
-import { getSubjectsRepository } from '@/server/db';
-
-export default async function HomePage() {
-  await connection();
-  const subjects = await getSubjectsRepository().list();
-
+/** Landing page. The study screens live under /today. */
+export default function HomePage() {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-6 px-4 py-8">
       <Stack gap={2}>
         <Heading level={1}>MedLearn OS</Heading>
-        <Text tone="muted">Foundation build. Subjects loaded from the database:</Text>
+        <Text tone="muted">
+          The daily learning system for MBBS students: what to study today, visual lessons, practice
+          and spaced recall.
+        </Text>
       </Stack>
-      <Card>
-        <Stack as="ul" gap={3} aria-label="Subjects">
-          {subjects.map((subject) => (
-            <li key={subject.id} className="text-base font-medium text-fg">
-              {subject.name}
-            </li>
-          ))}
-        </Stack>
-      </Card>
+      <div>
+        <Link href="/today" className={buttonClasses()}>
+          Open today&apos;s plan
+        </Link>
+      </div>
     </main>
   );
 }
