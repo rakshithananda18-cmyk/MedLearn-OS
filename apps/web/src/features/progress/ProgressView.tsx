@@ -16,6 +16,7 @@ import { BookOpen, ChevronRight, RotateCcw, Target } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
 import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
+import { AccountCard } from '@/features/account/AccountCard';
 import { useProgress } from '@/features/progress/store';
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
@@ -54,6 +55,8 @@ export function ProgressView() {
           <Pill icon={RotateCcw}>{plural(due, 'review')} due</Pill>
         </div>
       </div>
+
+      <AccountCard />
 
       {weak.length > 0 ? (
         <Card tone="glass" as="section" aria-labelledby="weak-spots" className="flex gap-4">

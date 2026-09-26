@@ -1,6 +1,7 @@
 import { Card, Display, Eyebrow, Pill, SkyBackdrop, Text, ThemeToggle } from '@medlearn/ui';
 import { Clock, PenLine, RotateCcw } from '@medlearn/ui/icons';
 import { DissociationCurve } from '@medlearn/visuals';
+import Link from 'next/link';
 
 import { StartLink } from '@/features/onboarding/StartLink';
 
@@ -46,12 +47,18 @@ export default function HomePage() {
             />
           </div>
         </div>
-        {/* ponytail: the only theme switch until the "Me" settings screen arrives in M4. */}
+        {/* Theme and sign-in also live on the Account screen. */}
         <footer className="flex flex-wrap items-center gap-3">
           <Text size="sm" tone="muted">
             Theme
           </Text>
           <ThemeToggle />
+          <Link
+            href="/account"
+            className="ml-auto text-sm font-semibold text-primary-strong underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
         </footer>
       </main>
     </>

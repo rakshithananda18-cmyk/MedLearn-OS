@@ -1,5 +1,6 @@
 export { AppError, isAppError, toAppError } from './errors';
 export { type TopicMastery, topicMastery } from './mastery';
+export { mergeProgress } from './merge';
 export { isDue, type ReviewRating, type ReviewState, scheduleReview } from './review';
 export {
   buildTodayPlan,

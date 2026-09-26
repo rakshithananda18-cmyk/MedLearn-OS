@@ -1,4 +1,9 @@
-import type { LearnerProgress } from '@medlearn/core';
+import {
+  DEFAULT_DAILY_MINUTES,
+  type LearnerProgress,
+  mergeProgress,
+  type StudyProfile,
+} from '@medlearn/core';
 import { LearnerProgressInput } from '@medlearn/schemas';
 
 import { readProgress, replaceProgress, subscribeToProgress } from '@/features/progress/store';
@@ -27,6 +32,26 @@ async function loadServerCopy(): Promise<LearnerProgress | null> {
   const body = (await response.json()) as { data: { progress: unknown } | null };
   const parsed = body.data ? LearnerProgressInput.safeParse(body.data.progress) : undefined;
   return parsed?.success ? (parsed.data as LearnerProgress) : null;
+}
+
+const ADULT_PROFILE: StudyProfile = {
+  year: 1,
+  examDate: null,
+  dailyMinutes: DEFAULT_DAILY_MINUTES,
+  adult: true,
+};
+
+/**
+ * After signing in or creating an account: joins this phone's progress with the account's so
+ * nothing learned on either side is lost. Only adults hold accounts, so the profile says so.
+ */
+export async function adoptAccountProgress(now = new Date()): Promise<void> {
+  const server = await loadServerCopy();
+  const local = readProgress();
+  const merged = server
+    ? mergeProgress(local, server, now)
+    : { ...local, updatedAt: now.toISOString() };
+  replaceProgress({ ...merged, profile: { ...(merged.profile ?? ADULT_PROFILE), adult: true } });
 }
 
 /**
