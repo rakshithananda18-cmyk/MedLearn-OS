@@ -164,7 +164,7 @@ export function TodayView() {
                 Make this plan yours
               </h2>
               <Text size="sm" tone="muted">
-                Tell us your year, your next exam and your daily time. Three quick steps.
+                Tell us your age, year, next exam and daily time. Four quick questions.
               </Text>
               <div>
                 <Link

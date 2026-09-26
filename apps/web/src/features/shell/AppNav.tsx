@@ -1,16 +1,17 @@
 'use client';
 
 import { cx, Icon, type IconGlyph } from '@medlearn/ui';
-import { BookOpen, ClipboardCheck, House, RotateCcw } from '@medlearn/ui/icons';
+import { BookOpen, ClipboardCheck, House, RotateCcw, Target } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// ponytail: four destinations for now; "Me" (profile) arrives with accounts in M4.
+// ponytail: five destinations; "Me" (profile and settings) arrives with phone sign-in in M4b.
 const ITEMS: Array<{ href: string; label: string; icon: IconGlyph }> = [
   { href: '/today', label: 'Today', icon: House },
   { href: '/subjects', label: 'Subjects', icon: BookOpen },
   { href: '/practice', label: 'Practice', icon: ClipboardCheck },
   { href: '/revise', label: 'Revise', icon: RotateCcw },
+  { href: '/progress', label: 'Progress', icon: Target },
 ];
 
 /** Bottom tab bar on phones (thumb reach); a side rail from tablet width. */

@@ -29,7 +29,7 @@ export const SCENARIOS: Scenario[] = [
     task: 'Task 5',
     build: (now) => ({
       ...EMPTY_PROGRESS,
-      profile: { year: 1, examDate: null, dailyMinutes: 20 },
+      profile: { year: 1, examDate: null, dailyMinutes: 20, adult: true },
       completedLessons: FIRST_LESSON_DONE,
       lastActiveAt: new Date(now.getTime() - 5 * DAY_MS).toISOString(),
     }),
@@ -45,6 +45,7 @@ export const SCENARIOS: Scenario[] = [
         year: 1,
         examDate: dayKey(new Date(now.getTime() + 12 * DAY_MS)),
         dailyMinutes: 20,
+        adult: true,
       },
       completedLessons: FIRST_LESSON_DONE,
       lastActiveAt: now.toISOString(),

@@ -34,6 +34,7 @@ export { Spinner, type SpinnerProps } from './Spinner';
 export { Stack, type StackProps } from './Stack';
 export { StepDots, type StepDotsProps } from './StepDots';
 export { Switch, type SwitchProps } from './Switch';
+export { TextArea, type TextAreaProps } from './TextArea';
 export { TextField, type TextFieldProps } from './TextField';
 export {
   applyThemePreference,

@@ -9,10 +9,11 @@ import {
   NORMAL_BLOOD,
   PathTracer,
 } from '@medlearn/visuals';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { completeLesson } from '@/features/progress/store';
+
+import { LessonWrapUp } from './LessonWrapUp';
 
 interface VisualProps {
   topic: Topic;
@@ -91,16 +92,18 @@ function CurveLesson({ step, explore }: VisualProps) {
 
 /** A visual lesson: short steps over one interactive visual, ending with free exploration. */
 export function LessonView({ topic }: { topic: Topic }) {
-  const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
+  const [finished, setFinished] = useState(false);
   const step = topic.lesson[stepIndex] ?? topic.lesson[0];
   if (!step) return null;
+  if (finished) return <LessonWrapUp topic={topic} />;
   const isLast = stepIndex === topic.lesson.length - 1;
   const { visual } = topic;
 
+  // Finishing unlocks the topic's recall cards and practice, then shows the wrap-up.
   const finish = () => {
     completeLesson(topic.slug);
-    router.push('/today');
+    setFinished(true);
   };
 
   return (

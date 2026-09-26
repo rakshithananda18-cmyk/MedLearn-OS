@@ -1,14 +1,11 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-async function expectAccessible(page: Page) {
-  const { violations } = await new AxeBuilder({ page }).analyze();
-  const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-  expect(blocking.map((v) => `${page.url()} ${v.id}: ${v.help}`)).toEqual([]);
-}
+import { expectAccessible } from './support';
 
 // The core learning loop a first-time student walks through, on phone, tablet and desktop.
 test('Today → lesson → practice → revise, then the next topic', async ({ page }) => {
+  // The whole first-day journey with five accessibility scans; longer than a single-screen test.
+  test.slow();
   // Today: a new student is offered the first lesson.
   await page.goto('/today');
   await expect(
@@ -41,14 +38,22 @@ test('Today → lesson → practice → revise, then the next topic', async ({ p
 
   await page.getByRole('button', { name: 'Finish lesson' }).click();
 
+  // Wrap-up: key facts, then two check questions.
+  await expect(page.getByRole('heading', { level: 2, name: 'Lesson complete' })).toBeVisible();
+  await page.getByRole('button', { name: 'Medial cord', exact: true }).click();
+  await page.getByRole('button', { name: 'C5 and C6', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Correct' })).toHaveCount(2);
+  await expectAccessible(page);
+  await page.getByRole('button', { name: 'Continue to Today' }).click();
+
   // Today now has reviews and practice for the finished topic.
   await expect(page).toHaveURL(/\/today$/);
   await expect(page.getByRole('link', { name: /Review 4 cards/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Practice: Brachial plexus/ })).toBeVisible();
 
-  // Practice: answer every question correctly.
+  // Practice: the two questions not already answered in the wrap-up.
   await page.getByRole('link', { name: /Practice: Brachial plexus/ }).click();
-  const answers = ['Medial cord', 'C5 and C6', 'Posterior cord', 'Median nerve'];
+  const answers = ['Posterior cord', 'Median nerve'];
   for (const [index, answer] of answers.entries()) {
     await page.getByRole('button', { name: answer, exact: true }).click();
     await expect(page.getByRole('status').filter({ hasText: 'Correct' })).toBeVisible();

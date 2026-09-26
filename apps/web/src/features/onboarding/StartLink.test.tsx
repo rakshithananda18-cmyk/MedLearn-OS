@@ -10,11 +10,11 @@ afterEach(() => act(() => resetProgress()));
 describe('StartLink', () => {
   it('sends new students to the setup questions and returning ones to Today', () => {
     render(<StartLink />);
-    expect(screen.getByRole('link', { name: 'Start in 3 steps' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Start in 4 steps' })).toHaveAttribute(
       'href',
       '/welcome',
     );
-    act(() => saveProfile({ year: 1, examDate: null, dailyMinutes: 20 }));
+    act(() => saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true }));
     expect(screen.getByRole('link', { name: 'Open today’s plan' })).toHaveAttribute(
       'href',
       '/today',

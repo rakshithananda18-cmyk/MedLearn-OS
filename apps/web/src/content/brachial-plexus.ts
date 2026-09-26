@@ -9,6 +9,26 @@ export const brachialPlexus = Topic.parse({
   summary: 'How five nerve roots regroup into the nerves of the upper limb.',
   estimatedMinutes: 15,
   reviewed: false,
+  version: '0.1.0',
+  sources: [
+    {
+      title: 'Written by the MedLearn OS content team',
+      detail: 'Sample content for the prototype; awaiting medical review',
+      licence: 'All rights reserved',
+    },
+    {
+      title: 'OpenStax Anatomy and Physiology 2e',
+      detail: '13.4 The Peripheral Nervous System',
+      url: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/13-4-the-peripheral-nervous-system',
+      licence: 'CC BY-NC-SA 4.0; cited, not copied',
+    },
+  ],
+  keyFacts: [
+    'Roots C5 to T1 form trunks, divisions, cords and branches, in that order.',
+    'Upper trunk: C5 and C6. Middle trunk: C7. Lower trunk: C8 and T1.',
+    'The cords are named by their position around the axillary artery: lateral, posterior, medial.',
+    'Erb’s palsy (C5, C6) gives the waiter’s tip arm; Klumpke’s palsy (C8, T1) gives a claw hand.',
+  ],
   visual: {
     kind: 'path',
     diagram: {

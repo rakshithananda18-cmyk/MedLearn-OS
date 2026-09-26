@@ -19,6 +19,15 @@ import { type ReactNode, useState } from 'react';
 
 import { saveProfile } from '@/features/progress/store';
 
+const AGES: ChoiceOption<'adult' | 'minor'>[] = [
+  {
+    value: 'adult',
+    label: '18 or older',
+    description: 'Your progress is also saved to the server',
+  },
+  { value: 'minor', label: 'Under 18', description: 'Your progress stays on this phone for now' },
+];
+
 const YEARS: ChoiceOption<`${MbbsYear}`>[] = [
   { value: '1', label: 'First year', description: 'Anatomy, Physiology, Biochemistry' },
   { value: '2', label: 'Second year', description: 'Pathology, Pharmacology, Microbiology' },
@@ -39,6 +48,14 @@ interface Step {
 }
 
 const STEPS: Step[] = [
+  {
+    title: (
+      <>
+        How <em>old</em> are you?
+      </>
+    ),
+    help: 'Students under 18 need a parent’s agreement before anything about their learning leaves the phone.',
+  },
   {
     title: (
       <>
@@ -69,6 +86,7 @@ const STEPS: Step[] = [
 export function OnboardingView() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [age, setAge] = useState<'adult' | 'minor' | null>(null);
   const [year, setYear] = useState<`${MbbsYear}` | null>(null);
   const [examDate, setExamDate] = useState('');
   const [minutes, setMinutes] = useState<string | null>(String(DEFAULT_DAILY_MINUTES));
@@ -79,11 +97,13 @@ export function OnboardingView() {
       year: Number(year ?? '1') as MbbsYear,
       examDate: exam,
       dailyMinutes: Number(minutes ?? DEFAULT_DAILY_MINUTES),
+      adult: age === 'adult',
     });
     router.push('/today');
   };
 
-  const canContinue = step === 0 ? year !== null : step === 1 ? examDate !== '' : minutes !== null;
+  const answered = [age !== null, year !== null, examDate !== '', minutes !== null];
+  const canContinue = answered[step] ?? false;
   const isLast = step === STEPS.length - 1;
   const current = STEPS[step] ?? STEPS[0];
 
@@ -114,6 +134,9 @@ export function OnboardingView() {
 
       <div className="flex-1">
         {step === 0 ? (
+          <ChoiceGroup legend="Age" name="age" options={AGES} value={age} onChange={setAge} />
+        ) : null}
+        {step === 1 ? (
           <ChoiceGroup
             legend="Year of MBBS"
             name="year"
@@ -122,7 +145,7 @@ export function OnboardingView() {
             onChange={setYear}
           />
         ) : null}
-        {step === 1 ? (
+        {step === 2 ? (
           <div className="flex flex-col gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass">
             <TextField
               label="Exam date"
@@ -137,7 +160,7 @@ export function OnboardingView() {
                 size="sm"
                 onClick={() => {
                   setExamDate('');
-                  setStep(2);
+                  setStep(3);
                 }}
               >
                 Not sure yet
@@ -145,7 +168,7 @@ export function OnboardingView() {
             </div>
           </div>
         ) : null}
-        {step === 2 ? (
+        {step === 3 ? (
           <ChoiceGroup
             legend="Daily study time"
             name="minutes"
@@ -154,7 +177,7 @@ export function OnboardingView() {
             onChange={setMinutes}
           />
         ) : null}
-        {year !== null && year !== '1' && step === 0 ? (
+        {year !== null && year !== '1' && step === 1 ? (
           <Text size="sm" tone="muted" className="pt-4">
             This prototype has first-year topics only; your plan will use them for now.
           </Text>

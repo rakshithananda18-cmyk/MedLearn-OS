@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
-import { SampleContentBanner } from '@/features/content/SampleContentBanner';
+import { ContentTrust } from '@/features/content/ContentTrust';
 import { LinkCard } from '@/features/shell/LinkCard';
 import { Screen } from '@/features/shell/Screen';
 
@@ -59,7 +59,7 @@ export default async function TopicPage({ params }: Props) {
 
   return (
     <Screen>
-      <SampleContentBanner reviewed={topic.reviewed} />
+      <ContentTrust topic={topic} />
       <div className="flex flex-col gap-3">
         <Eyebrow>
           {topic.subjectSlug} · {topic.estimatedMinutes} min

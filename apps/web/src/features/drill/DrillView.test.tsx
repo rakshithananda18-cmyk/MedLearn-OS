@@ -63,5 +63,6 @@ describe('DrillView', () => {
       'brachial-plexus',
     ]);
     expect(push).toHaveBeenCalledWith('/today');
-  });
+    // 22 label taps; coverage instrumentation makes this slower than the 5 s default.
+  }, 15_000);
 });
