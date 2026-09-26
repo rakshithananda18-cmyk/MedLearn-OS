@@ -13,7 +13,7 @@ const CHECK_QUESTIONS = 2;
  * The end of a lesson: the facts to remember, then two check questions. Missed ones come back
  * as recall cards, so the student leaves knowing what stuck.
  */
-export function LessonWrapUp({ topic }: { topic: Topic }) {
+export function LessonWrapUp({ topic }: Readonly<{ topic: Topic }>) {
   const router = useRouter();
   const checks = topic.questions.slice(0, CHECK_QUESTIONS);
 

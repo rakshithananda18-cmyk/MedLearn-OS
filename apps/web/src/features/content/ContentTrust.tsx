@@ -11,7 +11,7 @@ import { SampleContentBanner } from './SampleContentBanner';
  * Trust around every piece of content: the review label, and one tap to the source drawer
  * (sources, review status, version) with "report an issue".
  */
-export function ContentTrust({ topic }: { topic: Topic }) {
+export function ContentTrust({ topic }: Readonly<{ topic: Topic }>) {
   return (
     <div className="flex flex-col gap-2">
       <SampleContentBanner reviewed={topic.reviewed} />

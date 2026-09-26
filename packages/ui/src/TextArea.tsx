@@ -7,11 +7,18 @@ import { cx } from './cx';
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
   /** Guidance shown under the label and read out with the field. */
-  hint?: string | undefined;
+  hint?: string;
 }
 
 /** Multi-line text input with a visible label, styled like TextField. */
-export function TextArea({ label, hint, id, className, rows = 3, ...rest }: TextAreaProps) {
+export function TextArea({
+  label,
+  hint,
+  id,
+  className,
+  rows = 3,
+  ...rest
+}: Readonly<TextAreaProps>) {
   const autoId = useId();
   const inputId = id ?? autoId;
   const hintId = `${inputId}-hint`;
