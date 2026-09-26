@@ -3,18 +3,27 @@
 //  - JavaScript per route: the scripts each page's HTML loads, gzipped. Chunks fetched later (the
 //    3D viewer, the schema library, links prefetched in the background) are not first load.
 //  - Largest Contentful Paint, layout shift and total blocking time: Lighthouse on its phone
-//    profile with real throttling (slow 4G, a 4x slower CPU), median of three runs. Blocking time
+//    profile with real throttling (slow 4G and a slowed CPU), median of three runs. Blocking time
 //    stands in for Interaction to Next Paint, which needs a real tap.
+//  - The CPU slowdown is calibrated to the machine running the check, so a slow CI runner and a
+//    fast laptop both emulate the same phone (a fixed 4x made blocking time double on slow runners).
 import { spawn } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 
 import { chromium } from '@playwright/test';
 import lighthouse from 'lighthouse';
+import { throttling } from 'lighthouse/core/config/constants.js';
 
 const PORT = 3300;
 const DEBUG_PORT = 9223;
 const ORIGIN = `http://localhost:${PORT}`;
 const RUNS = 3;
+
+// Lighthouse's default 4x CPU slowdown is meant for a fast desktop. We treat a benchmark index of
+// 1800 (this project's development laptop when idle) as that desktop and scale from there.
+// ponytail: calibration knob, fixed by hand; revisit once the app is measured on a real phone.
+const REFERENCE_BENCHMARK_INDEX = 1800;
+const REFERENCE_SLOWDOWN = throttling.mobileSlow4G.cpuSlowdownMultiplier;
 
 const SCRIPT_BUDGET_KB = 200;
 const ROUTES = [
@@ -106,6 +115,22 @@ try {
     );
   }
 
+  // One run to measure how fast this machine is; its results are thrown away.
+  const probe = await lighthouse(`${ORIGIN}/`, {
+    port: DEBUG_PORT,
+    logLevel: 'error',
+    onlyCategories: ['performance'],
+  });
+  const benchmarkIndex = probe.lhr.environment.benchmarkIndex;
+  const slowdown = Math.min(
+    8,
+    Math.max(
+      1,
+      Math.round((REFERENCE_SLOWDOWN * benchmarkIndex * 10) / REFERENCE_BENCHMARK_INDEX) / 10,
+    ),
+  );
+  console.log(`CPU slowdown ${slowdown}x (benchmark index ${Math.round(benchmarkIndex)})`);
+
   for (const route of LIGHTHOUSE_ROUTES) {
     const runs = [];
     for (let run = 0; run < RUNS; run++) {
@@ -114,6 +139,7 @@ try {
         logLevel: 'error',
         onlyCategories: ['performance'],
         throttlingMethod: 'devtools',
+        throttling: { ...throttling.mobileSlow4G, cpuSlowdownMultiplier: slowdown },
       });
       runs.push(result.lhr);
     }
