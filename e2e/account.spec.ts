@@ -1,3 +1,4 @@
+import { emailedCode } from '@medlearn/test-utils/mail';
 import { expect, test } from '@playwright/test';
 
 import { expectAccessible, seedProgress } from './support';
@@ -29,7 +30,13 @@ test('an adult saves progress to an account, signs out, and gets it back by sign
   await expectAccessible(page);
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(password);
+  const sent = new Date();
   await page.getByRole('button', { name: 'Create account' }).click();
+
+  // Confirm the email with the code from the local test mailbox.
+  const code = await emailedCode(email, sent, AUTH_WAIT);
+  await page.getByLabel(/^Code from the email/).fill(code);
+  await page.getByRole('button', { name: 'Confirm email' }).click();
   await expect(page.getByText(`Signed in as ${email}`)).toBeVisible({ timeout: AUTH_WAIT });
 
   // Sign out: this phone forgets the progress.

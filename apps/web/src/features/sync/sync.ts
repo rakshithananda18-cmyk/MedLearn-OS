@@ -66,7 +66,8 @@ export async function restoreProgress(): Promise<void> {
 /**
  * Keeps this device and the server in step for an adult learner: starts an anonymous session,
  * takes the newer copy, then saves every change a second after it happens. The phone stays the
- * source of truth offline; a failed save is retried with the next change. Returns a stop function.
+ * source of truth offline; a failed save is retried with the next change or when the phone is back
+ * online. Returns a stop function.
  */
 export function startProgressSync(): () => void {
   let lastSynced: string | null = null;
@@ -100,18 +101,28 @@ export function startProgressSync(): () => void {
       message: error instanceof Error ? error.message : String(error),
     });
 
+  // After sign-out the phone is cleared; that empty copy is never sent anywhere.
+  const unsaved = () => {
+    const progress = readProgress();
+    return progress.profile?.adult === true && progress.updatedAt !== lastSynced;
+  };
+
   fetch('/api/session', { method: 'POST' }).then(pull).catch(report);
 
   const unsubscribe = subscribeToProgress(() => {
-    const progress = readProgress();
-    // After sign-out the phone is cleared; that empty copy is never sent anywhere.
-    if (progress.profile?.adult !== true || progress.updatedAt === lastSynced) return;
+    if (!unsaved()) return;
     clearTimeout(timer);
     timer = setTimeout(() => push().catch(report), SAVE_DELAY_MS);
   });
 
+  const onOnline = () => {
+    if (unsaved()) push().catch(report);
+  };
+  globalThis.addEventListener('online', onOnline);
+
   return () => {
     clearTimeout(timer);
     unsubscribe();
+    globalThis.removeEventListener('online', onOnline);
   };
 }

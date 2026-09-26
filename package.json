@@ -21,7 +21,7 @@
     "test:db": "supabase test db",
     "test:e2e": "pnpm build && playwright test",
     "test:all": "pnpm test && pnpm test:db && pnpm test:integration && pnpm test:e2e",
-    "db:start": "supabase start --exclude storage-api,imgproxy,studio,postgres-meta,mailpit",
+    "db:start": "supabase start --exclude storage-api,imgproxy,studio,postgres-meta",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "node scripts/db-types.mjs",

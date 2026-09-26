@@ -35,12 +35,16 @@ afterEach(() => {
 });
 
 describe('AccountView', () => {
-  it('lets an adult create an account, then shows it', async () => {
+  it('lets an adult create an account with the emailed code, then shows it', async () => {
     act(adult);
     const fetchMock = server({
       '/api/account': [{ body: { data: { email: null, anonymous: true } } }, { body: signedIn }],
       '/api/account/sign-up': [
-        { status: 201, body: { data: { email: 'asha@example.com', confirmEmail: false } } },
+        { status: 201, body: { data: { email: 'asha@example.com', confirmEmail: true } } },
+      ],
+      '/api/account/confirm': [
+        { status: 400, body: { error: { message: 'That code is wrong or has expired.' } } },
+        { body: { data: { email: 'asha@example.com' } } },
       ],
       '/api/progress': [{ body: { data: null } }],
     });
@@ -54,6 +58,16 @@ describe('AccountView', () => {
     await userEvent.type(screen.getByLabelText(/^Password/), 'correct-horse-9');
     await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
+    expect(await screen.findByText(/We sent a 6-digit code to/)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.type(screen.getByLabelText(/^Code from the email/), '000000');
+    const confirm = screen.getByRole('button', { name: 'Confirm email' });
+    await userEvent.click(confirm);
+    expect(await screen.findByText('That code is wrong or has expired.')).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByLabelText(/^Code from the email/));
+    await userEvent.type(screen.getByLabelText(/^Code from the email/), '042917');
+    await userEvent.click(confirm);
     expect(await screen.findByText('Signed in as asha@example.com')).toBeInTheDocument();
     const signUp = fetchMock.mock.calls.find(
       ([path]) => path === '/api/account/sign-up',
@@ -84,6 +98,37 @@ describe('AccountView', () => {
     await userEvent.click(submit);
     await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/today'));
     expect(readProgress().profile?.adult).toBe(true);
+  });
+
+  it('resets a forgotten password with an emailed code and opens Today', async () => {
+    const fetchMock = server({
+      '/api/account': [{ body: { data: null } }],
+      '/api/account/reset': [{ status: 204 }],
+      '/api/account/new-password': [{ body: { data: { email: 'asha@example.com' } } }],
+      '/api/progress': [{ body: { data: null } }],
+    });
+    const { container } = render(<AccountView />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Existing account' }));
+    await userEvent.type(screen.getByLabelText(/^Email/), 'asha@example.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Forgot your password?' }));
+
+    // The email typed so far carries over.
+    expect(screen.getByLabelText(/^Email/)).toHaveValue('asha@example.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByText(/a 6-digit code is on its way/)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+
+    await userEvent.type(screen.getByLabelText(/^Code from the email/), '042917');
+    await userEvent.type(screen.getByLabelText(/^New password/), 'new-horse-99');
+    await userEvent.click(screen.getByRole('button', { name: 'Set new password' }));
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/today'));
+    const call = fetchMock.mock.calls.find(([path]) => path === '/api/account/new-password') as
+      [string, RequestInit] | undefined;
+    expect(JSON.parse(String(call?.[1].body))).toEqual({
+      email: 'asha@example.com',
+      code: '042917',
+      password: 'new-horse-99',
+    });
   });
 
   it('asks students under 18 to wait for parental consent', async () => {
