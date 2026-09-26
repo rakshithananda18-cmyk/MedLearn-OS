@@ -4,6 +4,7 @@ import type { PathDiagram } from '@medlearn/schemas';
 import { type KeyboardEvent, useId } from 'react';
 
 import { affectedBy, edgeInSet, pathThrough } from './graph';
+import { HIT_HEIGHT, LINE_HEIGHT, pillSize } from './pill';
 
 export interface PathTracerProps {
   diagram: PathDiagram;
@@ -16,21 +17,6 @@ export interface PathTracerProps {
   onSelect?: (id: string | null) => void;
   /** Lesioned nodes; they and everything downstream are marked as affected. */
   lesion?: string[];
-}
-
-const LINE_HEIGHT = 14;
-const CHAR_WIDTH = 6.5;
-const PADDING = 12;
-const HIT_HEIGHT = 44;
-
-function pillSize(label: string) {
-  const lines = label.split('\n');
-  const longest = Math.max(...lines.map((line) => line.length));
-  return {
-    lines,
-    width: Math.max(28, longest * CHAR_WIDTH + PADDING),
-    height: lines.length * LINE_HEIGHT + 10,
-  };
 }
 
 /**

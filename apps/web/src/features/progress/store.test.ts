@@ -2,7 +2,16 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { completeLesson, rateCard, recordAnswer, resetProgress, useProgress } from './store';
+import {
+  acceptCatchUp,
+  completeDrill,
+  completeLesson,
+  rateCard,
+  recordAnswer,
+  resetProgress,
+  saveProfile,
+  useProgress,
+} from './store';
 
 afterEach(() => {
   act(() => resetProgress());
@@ -49,5 +58,27 @@ describe('progress store', () => {
     localStorage.setItem('ml-progress-v1', '{not json');
     const { result } = renderHook(() => useProgress());
     expect(result.current.completedLessons).toEqual([]);
+  });
+
+  it('saves the onboarding profile and the catch-up acceptance', () => {
+    const { result } = renderHook(() => useProgress());
+    act(() => {
+      saveProfile({ year: 1, examDate: '2026-12-01', dailyMinutes: 30 });
+      acceptCatchUp(new Date(2026, 8, 26, 10));
+    });
+    expect(result.current.profile).toEqual({ year: 1, examDate: '2026-12-01', dailyMinutes: 30 });
+    expect(result.current.catchUpAcceptedOn).toBe('2026-09-26');
+    expect(result.current.lastActiveAt).toBeNull();
+  });
+
+  it('records when the student last studied, including wrong answers and drills', () => {
+    const { result } = renderHook(() => useProgress());
+    act(() => recordAnswer('q1', false));
+    expect(result.current.lastActiveAt).not.toBeNull();
+    act(() => {
+      completeDrill('brachial-plexus');
+      completeDrill('brachial-plexus');
+    });
+    expect(result.current.completedDrills).toEqual(['brachial-plexus']);
   });
 });

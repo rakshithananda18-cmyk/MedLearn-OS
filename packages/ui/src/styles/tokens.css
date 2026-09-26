@@ -30,10 +30,16 @@
   --spacing-8: 2rem;
   --spacing-12: 3rem;
   --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
 
   /* Typography: Noto Sans (Devanagari added with the Hindi toggle). Body 16px / 1.5. */
   --font-sans: var(--font-noto-sans), system-ui, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  /* Display serif for page titles and hero lines only (30px and up); italic marks the key word. */
+  --font-display: var(--font-instrument-serif), 'Iowan Old Style', Georgia, serif;
+  --tracking-eyebrow: 0.14em;
+  --tracking-display: -0.01em;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -52,25 +58,84 @@
   --text-2xl--line-height: 2rem;
   --text-3xl: 1.875rem;
   --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 2.75rem;
+  --text-5xl: 3.25rem;
+  --text-5xl--line-height: 3.5rem;
 
   /* Radius: inputs, cards, sheets, pills. */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
   /* Elevation: flat (no shadow), raised, overlay. */
   --shadow-raised: 0 1px 2px rgb(16 24 32 / 0.06), 0 1px 3px rgb(16 24 32 / 0.1);
   --shadow-overlay: 0 8px 24px rgb(16 24 32 / 0.18), 0 2px 6px rgb(16 24 32 / 0.08);
+  /* Calm Sky: glass cards float softly; the action bar floats above the tab bar. */
+  --shadow-glass: 0 12px 40px rgb(23 50 77 / 0.1), 0 1px 2px rgb(23 50 77 / 0.06);
+  --shadow-float: 0 12px 32px rgb(15 23 32 / 0.22), 0 2px 6px rgb(15 23 32 / 0.1);
+  --blur-md: 12px;
 
-  /* Breakpoints: 360 base (mobile first), 768 tablet, 1024 desktop. */
-  --breakpoint-md: 48rem;
-  --breakpoint-lg: 64rem;
+  /*
+   * Breakpoints (window size classes): 360 base phone, 600 tablet portrait or phone sideways,
+   * 840 tablet landscape or laptop (two panes), 1200 wide desktop.
+   */
+  --breakpoint-md: 37.5rem;
+  --breakpoint-lg: 52.5rem;
+  --breakpoint-xl: 75rem;
 
-  /* Motion: 150ms small changes, 250ms screen changes, one easing. */
+  /* Motion: 150ms small changes, 250ms screen changes, 400ms arrivals. Transform and opacity only. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
   --animate-spin: spin 0.8s linear infinite;
   --animate-pulse: pulse 1.6s var(--ease-standard) infinite;
+  --animate-rise: rise 0.4s var(--ease-arrive) both;
+  --animate-shake: shake 0.3s var(--ease-standard);
+  --animate-glow: glow 0.6s var(--ease-arrive);
+  --animate-draw: draw 0.6s var(--ease-arrive) both;
+  --animate-float: float 7s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes shake {
+    25% {
+      transform: translateX(-4px);
+    }
+    75% {
+      transform: translateX(4px);
+    }
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 0 0 var(--ml-gold);
+    }
+    to {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes float {
+    50% {
+      transform: translateY(-6px);
+    }
+  }
 
   @keyframes spin {
     to {
@@ -123,6 +188,10 @@
   --color-on-danger: var(--ml-on-danger);
   --color-focus: var(--ml-focus);
   --color-scrim: var(--ml-scrim);
+  --color-gold: var(--ml-gold);
+  --color-gold-ink: var(--ml-gold-ink);
+  --color-glass: var(--ml-glass);
+  --color-glass-border: var(--ml-glass-border);
 }
 
 /* Light theme (default). Every text/background pair meets WCAG 2.2 AA. */
@@ -151,6 +220,18 @@
   --ml-on-danger: #ffffff;
   --ml-focus: #0e7c86;
   --ml-scrim: rgb(15 23 32 / 0.5);
+  /* Calm Sky: display text, thin rings and the sky backdrop. Gold ink on the sky is about 5:1. */
+  --ml-gold: #b8923a;
+  --ml-gold-ink: #7a5a14;
+  --ml-gold-ink-light: #a47c2c;
+  --ml-glass: rgb(255 255 255 / 0.74);
+  --ml-glass-border: rgb(255 255 255 / 0.9);
+  --ml-sky-top: #cfe2ee;
+  --ml-sky-mid: #edf3f5;
+  --ml-sky-warm: #f7eadb;
+  --ml-cloud: rgb(255 255 255 / 0.8);
+  --ml-cloud-warm: rgb(255 238 219 / 0.9);
+  --ml-cloud-shade: rgb(170 196 214 / 0.45);
 }
 
 /* Dark theme: set on <html> by the theme script (explicit choice or system preference). */
@@ -179,6 +260,90 @@
   --ml-on-danger: #1f0b09;
   --ml-focus: #62c9d1;
   --ml-scrim: rgb(0 0 0 / 0.6);
+  --ml-gold: #c9a55a;
+  --ml-gold-ink: #e6c77e;
+  --ml-gold-ink-light: #f3dfae;
+  --ml-glass: rgb(20 31 45 / 0.74);
+  --ml-glass-border: rgb(255 255 255 / 0.08);
+  --ml-sky-top: #0a1420;
+  --ml-sky-mid: #101d2e;
+  --ml-sky-warm: #1f2336;
+  --ml-cloud: rgb(150 176 210 / 0.1);
+  --ml-cloud-warm: rgb(214 160 120 / 0.12);
+  --ml-cloud-shade: rgb(8 14 22 / 0.5);
 }
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * The sky behind every study screen: blue at the top fading to warm cream (night sky in the
+ * dark theme). Pure gradients, so it costs no image download.
+ */
+@utility bg-sky {
+  --cloud-w: clamp(220px, 34vw, 540px);
+  --cloud-h: clamp(80px, 10vw, 170px);
+  background-color: var(--ml-sky-mid);
+  background-image:
+    /* Upper-right cloud bank: two bright puffs over a shaded base. */
+    radial-gradient(var(--cloud-w) var(--cloud-h) at 94% 33%, var(--ml-cloud) 0%, transparent 70%),
+    radial-gradient(
+      calc(var(--cloud-w) * 0.7) var(--cloud-h) at 80% 36%,
+      var(--ml-cloud) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      var(--cloud-w) calc(var(--cloud-h) * 0.6) at 88% 40%,
+      var(--ml-cloud-shade) 0%,
+      transparent 70%
+    ),
+    /* Lower-left cloud bank. */
+      radial-gradient(var(--cloud-w) var(--cloud-h) at 4% 62%, var(--ml-cloud) 0%, transparent 70%),
+    radial-gradient(
+      calc(var(--cloud-w) * 0.75) calc(var(--cloud-h) * 1.1) at 20% 59%,
+      var(--ml-cloud) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      calc(var(--cloud-w) * 1.1) calc(var(--cloud-h) * 0.6) at 12% 67%,
+      var(--ml-cloud-shade) 0%,
+      transparent 70%
+    ),
+    /* Warm haze along the horizon. */
+      radial-gradient(70% 22% at 12% 102%, var(--ml-cloud) 0%, transparent 70%),
+    radial-gradient(70% 22% at 88% 102%, var(--ml-cloud) 0%, transparent 70%),
+    radial-gradient(90% 34% at 50% 108%, var(--ml-cloud-warm) 0%, transparent 72%),
+    linear-gradient(180deg, var(--ml-sky-top) 0%, var(--ml-sky-mid) 42%, var(--ml-sky-warm) 100%);
+}
+
+/* Metallic gold display text. `color` stays solid so contrast checks and forced colours work. */
+@utility text-gold {
+  color: var(--ml-gold-ink);
+
+  @supports (background-clip: text) {
+    background-image: linear-gradient(
+      180deg,
+      var(--ml-gold-ink-light) 0%,
+      var(--ml-gold-ink) 55%,
+      var(--ml-gold-ink) 100%
+    );
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Room for the phone tab bar and the home indicator. */
+@utility pb-tabbar {
+  padding-bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom));
+}
+
+@utility bottom-tabbar {
+  bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom) + var(--spacing-3));
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility bottom-safe {
+  bottom: calc(env(safe-area-inset-bottom) + var(--spacing-3));
+}

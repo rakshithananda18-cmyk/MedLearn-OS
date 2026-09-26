@@ -1,3 +1,4 @@
+export { ActionBar, type ActionBarProps } from './ActionBar';
 export { Badge, type BadgeProps, type BadgeTone } from './Badge';
 export { Banner, type BannerProps, type BannerTone } from './Banner';
 export {
@@ -10,12 +11,15 @@ export {
 } from './Button';
 export { Card, type CardProps } from './Card';
 export { Checkbox, type CheckboxProps } from './Checkbox';
+export { ChoiceGroup, type ChoiceGroupProps, type ChoiceOption } from './ChoiceGroup';
 export { cx } from './cx';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';
 export { Icon, type IconGlyph, type IconProps, type IconSize } from './Icon';
 export { IconButton, type IconButtonProps, type IconButtonVariant } from './IconButton';
+export { Medallion, type MedallionProps } from './Medallion';
 export { BottomSheet, Dialog, ModalClose, type ModalProps } from './Modal';
+export { Pill, type PillProps } from './Pill';
 export {
   ProgressBar,
   type ProgressBarProps,
@@ -25,8 +29,10 @@ export {
 export { QuestionCard, type QuestionCardProps } from './QuestionCard';
 export { RecallCard, type RecallCardProps, type RecallRating } from './RecallCard';
 export { Skeleton, type SkeletonProps } from './Skeleton';
+export { SkyBackdrop } from './SkyBackdrop';
 export { Spinner, type SpinnerProps } from './Spinner';
 export { Stack, type StackProps } from './Stack';
+export { StepDots, type StepDotsProps } from './StepDots';
 export { Switch, type SwitchProps } from './Switch';
 export { TextField, type TextFieldProps } from './TextField';
 export {
@@ -42,4 +48,12 @@ export {
 } from './theme';
 export { ThemeToggle } from './ThemeToggle';
 export { Tooltip, type TooltipProps } from './Tooltip';
-export { Heading, type HeadingProps, Text, type TextProps } from './Typography';
+export {
+  Display,
+  type DisplayProps,
+  Eyebrow,
+  Heading,
+  type HeadingProps,
+  Text,
+  type TextProps,
+} from './Typography';

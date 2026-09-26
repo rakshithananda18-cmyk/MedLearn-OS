@@ -41,6 +41,15 @@ describe('design tokens', () => {
     'md:flex',
     'lg:grid',
     'dark:bg-surface',
+    'xl:grid',
+    'bg-sky',
+    'bg-glass',
+    'text-gold',
+    'font-display',
+    'rounded-xl',
+    'shadow-glass',
+    'animate-rise',
+    'pb-tabbar',
   ])('provides %s', (className) => {
     expect(generates(className)).toBe(true);
   });
@@ -52,10 +61,10 @@ describe('design tokens', () => {
     ['text-red-500', "Tailwind's default palette"],
     ['bg-white', "Tailwind's default palette"],
     ['text-black', "Tailwind's default palette"],
-    ['rounded-xl', 'radius outside the four tokens'],
+    ['rounded-2xl', 'radius outside the five tokens'],
     ['shadow-lg', 'shadow outside the elevation tokens'],
-    ['text-4xl', 'type size outside the scale'],
-    ['sm:flex', 'breakpoint outside 768 / 1024'],
+    ['text-6xl', 'type size outside the scale'],
+    ['sm:flex', 'breakpoint outside 600 / 840 / 1200'],
     ['ease-in', 'easing other than the standard curve'],
   ])('does not provide %s (%s)', (className) => {
     expect(generates(className)).toBe(false);

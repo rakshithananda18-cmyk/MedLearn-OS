@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
+import { oxygenCurve } from '@/content/oxygen-curve';
 import { resetProgress } from '@/features/progress/store';
 
 import { LessonView } from './LessonView';
@@ -58,5 +59,23 @@ describe('LessonView', () => {
     expect(JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}').completedLessons).toEqual([
       'brachial-plexus',
     ]);
+  });
+
+  it('teaches the oxygen curve step by step, then hands over the sliders', async () => {
+    render(<LessonView topic={oxygenCurve} />);
+    expect(screen.getByText(/P50 26\.8 mmHg, the normal curve/)).toBeInTheDocument();
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(
+      screen.getByRole('heading', { name: 'Acid and CO₂ shift it right' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/shifted right/)).toBeInTheDocument();
+    for (let step = 3; step < oxygenCurve.lesson.length; step += 1) {
+      await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    }
+    expect(screen.getAllByRole('slider')).toHaveLength(4);
+    await userEvent.click(screen.getByRole('button', { name: 'Stored blood' }));
+    expect(screen.getByText(/shifted left/)).toBeInTheDocument();
   });
 });

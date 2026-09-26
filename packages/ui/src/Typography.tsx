@@ -18,6 +18,43 @@ export function Heading({ level, className, ...rest }: HeadingProps) {
   return <Tag className={cx(HEADING[level], className)} {...rest} />;
 }
 
+const DISPLAY_SIZE = {
+  lg: 'text-3xl md:text-4xl',
+  xl: 'text-4xl md:text-5xl',
+} as const;
+
+export interface DisplayProps extends HTMLAttributes<HTMLHeadingElement> {
+  as?: 'h1' | 'h2' | 'p';
+  size?: keyof typeof DISPLAY_SIZE;
+}
+
+/**
+ * The serif hero line in gold, for page titles only. Wrap the one word that carries the meaning
+ * in <em> so it is set in italic: <Display>Small steps, <em>every day</em></Display>.
+ */
+export function Display({ as: Tag = 'h1', size = 'xl', className, ...rest }: DisplayProps) {
+  return (
+    <Tag
+      className={cx(
+        'text-gold font-display font-normal tracking-display text-balance',
+        DISPLAY_SIZE[size],
+        className,
+      )}
+      {...rest}
+    />
+  );
+}
+
+/** A small, widely spaced uppercase label above a display line, such as today's date. */
+export function Eyebrow({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={cx('text-xs font-semibold uppercase tracking-eyebrow text-gold-ink', className)}
+      {...rest}
+    />
+  );
+}
+
 const TEXT_SIZE = { base: 'text-base', sm: 'text-sm', xs: 'text-xs' } as const;
 const TEXT_TONE = {
   default: 'text-fg',

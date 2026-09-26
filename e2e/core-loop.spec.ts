@@ -7,11 +7,13 @@ async function expectAccessible(page: Page) {
   expect(blocking.map((v) => `${page.url()} ${v.id}: ${v.help}`)).toEqual([]);
 }
 
-// The core learning loop a first-time student walks through, on phone and desktop.
-test('Today → lesson → practice → revise, then an empty plan', async ({ page }) => {
+// The core learning loop a first-time student walks through, on phone, tablet and desktop.
+test('Today → lesson → practice → revise, then the next topic', async ({ page }) => {
   // Today: a new student is offered the first lesson.
   await page.goto('/today');
-  await expect(page.getByRole('heading', { level: 1, name: 'Today' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Small steps, every day' }),
+  ).toBeVisible();
   await expectAccessible(page);
   await page.getByRole('link', { name: /Learn: Brachial plexus/ }).click();
 
@@ -67,9 +69,11 @@ test('Today → lesson → practice → revise, then an empty plan', async ({ pa
   }
   await expect(page.getByText('No reviews due')).toBeVisible();
 
-  // Everything is done for today, and it survives a reload.
+  // Today moves on to the next topic, and progress survives a reload.
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
-  await expect(page.getByText('All done for today')).toBeVisible();
+  const next = page.getByRole('link', { name: /Learn: Oxygen–haemoglobin curve/ });
+  await expect(next).toBeVisible();
   await page.reload();
-  await expect(page.getByText('All done for today')).toBeVisible();
+  await expect(next).toBeVisible();
+  await expect(page.getByRole('link', { name: /Review/ })).toHaveCount(0);
 });

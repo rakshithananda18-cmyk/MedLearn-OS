@@ -2,11 +2,13 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.describe('landing and subjects', () => {
-  test("the landing page leads to today's plan", async ({ page }) => {
+  test('the landing page starts new students on the setup questions', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'MedLearn OS' })).toBeVisible();
-    await page.getByRole('link', { name: "Open today's plan" }).click();
-    await expect(page).toHaveURL(/\/today$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Learn medicine, visually' }),
+    ).toBeVisible();
+    await page.getByRole('link', { name: 'Start in 3 steps' }).click();
+    await expect(page).toHaveURL(/\/welcome$/);
   });
 
   test('subjects come from the database', async ({ page }) => {
@@ -25,7 +27,7 @@ test.describe('landing and subjects', () => {
   });
 
   test('has no serious accessibility violations', async ({ page }) => {
-    for (const path of ['/', '/subjects']) {
+    for (const path of ['/', '/subjects', '/welcome']) {
       await page.goto(path);
       const { violations } = await new AxeBuilder({ page }).analyze();
       const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');

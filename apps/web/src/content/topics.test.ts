@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getTopic, PLANNABLE_TOPICS, TOPICS } from './topics';
+import { DRILL_MINUTES, getTopic, hasDrill, PLANNABLE_TOPICS, TOPICS } from './topics';
 
 describe('bundled content', () => {
   it('loads the sample topic, marked as not medically reviewed', () => {
@@ -22,5 +22,10 @@ describe('bundled content', () => {
     const [plannable] = PLANNABLE_TOPICS;
     expect(plannable?.questionIds).toHaveLength(topic?.questions.length ?? -1);
     expect(plannable?.cardIds).toHaveLength(topic?.cards.length ?? -1);
+  });
+
+  it('offers the exam diagram drill only for topics with a diagram to build', () => {
+    expect(TOPICS.map(hasDrill)).toEqual([true, false]);
+    expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual([DRILL_MINUTES, null]);
   });
 });

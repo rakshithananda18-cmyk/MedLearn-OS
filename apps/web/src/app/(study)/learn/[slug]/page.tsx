@@ -1,11 +1,12 @@
-import { Badge, buttonClasses, Card, Heading, Stack, Text } from '@medlearn/ui';
-import { Clock } from '@medlearn/ui/icons';
+import { Display, Eyebrow, Text } from '@medlearn/ui';
+import { BookOpen, ClipboardCheck, PenLine, RotateCcw } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getTopic, TOPICS } from '@/content/topics';
+import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
 import { SampleContentBanner } from '@/features/content/SampleContentBanner';
+import { LinkCard } from '@/features/shell/LinkCard';
+import { Screen } from '@/features/shell/Screen';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -20,43 +21,59 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: topic ? `${topic.title} | MedLearn OS` : 'Topic | MedLearn OS' };
 }
 
-/** Topic hub: one entry point to learn, practise and revise a topic. */
+/** Topic hub: one entry point to every mode of a topic (learn, practise, revise, exam). */
 export default async function TopicPage({ params }: Props) {
   const topic = getTopic((await params).slug);
   if (!topic) notFound();
 
+  const modes = [
+    {
+      href: `/learn/${topic.slug}/lesson`,
+      icon: BookOpen,
+      title: 'Start lesson',
+      meta: `Visual lesson · ${topic.lesson.length} steps · ${topic.estimatedMinutes} min`,
+    },
+    {
+      href: '/practice',
+      icon: ClipboardCheck,
+      title: 'Practice questions',
+      meta: `${topic.questions.length} questions, unlocked by the lesson`,
+    },
+    {
+      href: '/revise',
+      icon: RotateCcw,
+      title: 'Revise recall cards',
+      meta: `${topic.cards.length} cards, spaced over the coming weeks`,
+    },
+    ...(hasDrill(topic)
+      ? [
+          {
+            href: `/learn/${topic.slug}/draw`,
+            icon: PenLine,
+            title: 'Draw the exam diagram',
+            meta: `Build it layer by layer · ${DRILL_MINUTES} min`,
+          },
+        ]
+      : []),
+  ];
+
   return (
-    <>
+    <Screen>
       <SampleContentBanner reviewed={topic.reviewed} />
-      <Stack gap={2}>
-        <Heading level={1}>{topic.title}</Heading>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>
+          {topic.subjectSlug} · {topic.estimatedMinutes} min
+        </Eyebrow>
+        <Display>{topic.title}</Display>
         <Text tone="muted">{topic.summary}</Text>
-        <div>
-          <Badge tone="primary" icon={Clock}>
-            {topic.estimatedMinutes} min
-          </Badge>
-        </div>
-      </Stack>
-      <Card>
-        <Stack gap={3}>
-          <Link href={`/learn/${topic.slug}/lesson`} className={buttonClasses({ fullWidth: true })}>
-            Start lesson
-          </Link>
-          <Link
-            href="/practice"
-            className={buttonClasses({ variant: 'secondary', fullWidth: true })}
-          >
-            Practice questions
-          </Link>
-          <Link href="/revise" className={buttonClasses({ variant: 'secondary', fullWidth: true })}>
-            Revise recall cards
-          </Link>
-        </Stack>
-      </Card>
-      <Text size="sm" tone="muted">
-        {topic.lesson.length} lesson steps · {topic.questions.length} questions ·{' '}
-        {topic.cards.length} recall cards
-      </Text>
-    </>
+      </div>
+      <ul aria-label="Ways to study this topic" className="grid gap-3 md:grid-cols-2">
+        {modes.map((mode, index) => (
+          <li key={mode.href}>
+            <LinkCard {...mode} style={{ animationDelay: `${index * 60}ms` }} />
+          </li>
+        ))}
+      </ul>
+    </Screen>
   );
 }

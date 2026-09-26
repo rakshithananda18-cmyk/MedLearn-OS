@@ -1,7 +1,16 @@
 'use client';
 
 import { openQuestionIds } from '@medlearn/core';
-import { Button, buttonClasses, EmptyState, Heading, QuestionCard, Text } from '@medlearn/ui';
+import {
+  Button,
+  buttonClasses,
+  Card,
+  Display,
+  EmptyState,
+  Eyebrow,
+  QuestionCard,
+  Text,
+} from '@medlearn/ui';
 import { ArrowRight, CircleCheck, ClipboardCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -28,24 +37,29 @@ export function PracticeView() {
 
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <Heading level={1}>Practice</Heading>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>Practice</Eyebrow>
+        <Display size="lg">
+          Test <em>yourself</em>
+        </Display>
         <Text tone="muted">Questions from the lessons you have finished.</Text>
       </div>
       {showing ? (
         <>
           <SampleContentBanner reviewed={showing.topic.reviewed} />
-          <QuestionCard
-            key={showing.question.id}
-            prompt={showing.question.prompt}
-            options={showing.question.options}
-            answerId={showing.question.answerId}
-            explanation={showing.question.explanation}
-            onAnswered={(correct) => {
-              setCurrent(showing.question.id);
-              recordAnswer(showing.question.id, correct);
-            }}
-          />
+          <Card tone="glass">
+            <QuestionCard
+              key={showing.question.id}
+              prompt={showing.question.prompt}
+              options={showing.question.options}
+              answerId={showing.question.answerId}
+              explanation={showing.question.explanation}
+              onAnswered={(correct) => {
+                setCurrent(showing.question.id);
+                recordAnswer(showing.question.id, correct);
+              }}
+            />
+          </Card>
           {current ? (
             <Button
               iconEnd={ArrowRight}
@@ -59,20 +73,22 @@ export function PracticeView() {
           ) : null}
         </>
       ) : (
-        <EmptyState
-          icon={finishedAnyLesson ? CircleCheck : ClipboardCheck}
-          title={finishedAnyLesson ? 'All questions done' : 'Nothing to practise yet'}
-          description={
-            finishedAnyLesson
-              ? 'Questions you got wrong will come back in your next session.'
-              : 'Finish a lesson first; its questions will appear here.'
-          }
-          action={
-            <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
-              Back to Today
-            </Link>
-          }
-        />
+        <Card tone="glass">
+          <EmptyState
+            icon={finishedAnyLesson ? CircleCheck : ClipboardCheck}
+            title={finishedAnyLesson ? 'All questions done' : 'Nothing to practise yet'}
+            description={
+              finishedAnyLesson
+                ? 'Questions you got wrong will come back in your next session.'
+                : 'Finish a lesson first; its questions will appear here.'
+            }
+            action={
+              <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
+                Back to Today
+              </Link>
+            }
+          />
+        </Card>
       )}
     </>
   );

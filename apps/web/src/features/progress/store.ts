@@ -1,8 +1,10 @@
 import {
+  dayKey,
   EMPTY_PROGRESS,
   type LearnerProgress,
   type ReviewRating,
   scheduleReview,
+  type StudyProfile,
 } from '@medlearn/core';
 import { useSyncExternalStore } from 'react';
 
@@ -60,22 +62,40 @@ export function useProgress(): LearnerProgress {
   return useSyncExternalStore(subscribe, read, serverSnapshot);
 }
 
+const addOnce = (list: string[], item: string) => (list.includes(item) ? list : [...list, item]);
+
+/** Every study action also records when the student was last active (for the catch-up plan). */
+function recordActivity(change: Partial<LearnerProgress>, now = new Date()): void {
+  write({ ...read(), ...change, lastActiveAt: now.toISOString() });
+}
+
+export function saveProfile(profile: StudyProfile): void {
+  write({ ...read(), profile });
+}
+
 export function completeLesson(topicSlug: string): void {
-  const progress = read();
-  if (progress.completedLessons.includes(topicSlug)) return;
-  write({ ...progress, completedLessons: [...progress.completedLessons, topicSlug] });
+  recordActivity({ completedLessons: addOnce(read().completedLessons, topicSlug) });
+}
+
+export function completeDrill(topicSlug: string): void {
+  recordActivity({ completedDrills: addOnce(read().completedDrills, topicSlug) });
 }
 
 export function recordAnswer(questionId: string, correct: boolean): void {
-  const progress = read();
-  if (!correct || progress.correctAnswers.includes(questionId)) return;
-  write({ ...progress, correctAnswers: [...progress.correctAnswers, questionId] });
+  const { correctAnswers } = read();
+  recordActivity({
+    correctAnswers: correct ? addOnce(correctAnswers, questionId) : correctAnswers,
+  });
 }
 
 export function rateCard(cardId: string, rating: ReviewRating, now = new Date()): void {
-  const progress = read();
-  const next = scheduleReview(progress.reviews[cardId], rating, now);
-  write({ ...progress, reviews: { ...progress.reviews, [cardId]: next } });
+  const { reviews } = read();
+  const next = scheduleReview(reviews[cardId], rating, now);
+  recordActivity({ reviews: { ...reviews, [cardId]: next } }, now);
+}
+
+export function acceptCatchUp(now = new Date()): void {
+  write({ ...read(), catchUpAcceptedOn: dayKey(now) });
 }
 
 export function resetProgress(): void {

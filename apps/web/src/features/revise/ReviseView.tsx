@@ -1,7 +1,7 @@
 'use client';
 
 import { dueCardIds } from '@medlearn/core';
-import { buttonClasses, EmptyState, Heading, RecallCard, Text } from '@medlearn/ui';
+import { buttonClasses, Card, Display, EmptyState, Eyebrow, RecallCard, Text } from '@medlearn/ui';
 import { CircleCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
@@ -18,8 +18,11 @@ export function ReviseView() {
 
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <Heading level={1}>Revise</Heading>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>Revise</Eyebrow>
+        <Display size="lg">
+          Recall, <em>then check</em>
+        </Display>
         <Text tone="muted">
           {due.length > 0
             ? `${due.length} ${due.length === 1 ? 'card' : 'cards'} due. Answer in your head, then check.`
@@ -29,24 +32,28 @@ export function ReviseView() {
       {showing ? (
         <>
           <SampleContentBanner reviewed={showing.topic.reviewed} />
-          <RecallCard
-            key={showing.card.id}
-            front={showing.card.front}
-            back={showing.card.back}
-            onRate={(rating) => rateCard(showing.card.id, rating)}
-          />
+          <Card tone="glass">
+            <RecallCard
+              key={showing.card.id}
+              front={showing.card.front}
+              back={showing.card.back}
+              onRate={(rating) => rateCard(showing.card.id, rating)}
+            />
+          </Card>
         </>
       ) : (
-        <EmptyState
-          icon={CircleCheck}
-          title="No reviews due"
-          description="Finish lessons to unlock their recall cards."
-          action={
-            <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
-              Back to Today
-            </Link>
-          }
-        />
+        <Card tone="glass">
+          <EmptyState
+            icon={CircleCheck}
+            title="No reviews due"
+            description="Finish lessons to unlock their recall cards."
+            action={
+              <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
+                Back to Today
+              </Link>
+            }
+          />
+        </Card>
       )}
     </>
   );

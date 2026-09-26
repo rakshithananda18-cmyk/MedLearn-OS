@@ -57,7 +57,8 @@ export function QuestionCard({
                     !isWrongChoice &&
                     'border-border bg-surface text-fg-muted',
                   isAnswer && 'border-success bg-success-subtle text-success',
-                  isWrongChoice && 'border-danger bg-danger-subtle text-danger',
+                  isAnswer && correct && 'animate-glow',
+                  isWrongChoice && 'animate-shake border-danger bg-danger-subtle text-danger',
                 )}
               >
                 <span>{option.text}</span>
