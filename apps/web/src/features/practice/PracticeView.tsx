@@ -30,10 +30,10 @@ export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>)
   const [current, setCurrent] = useState<string | null>(null);
   const [done, setDone] = useState<string[]>([]);
 
-  const open = topics
+  const nextOpen = topics
     .flatMap((topic) => openQuestionIds(topic, progress))
-    .filter((id) => !done.includes(id));
-  const showingId = current ?? open[0];
+    .find((id) => !done.includes(id));
+  const showingId = current ?? nextOpen;
   const showing = questions.find(({ question }) => question.id === showingId);
   const finishedAnyLesson = progress.completedLessons.length > 0;
 
