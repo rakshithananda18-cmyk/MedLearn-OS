@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
 import { EMPTY_PROGRESS, type LearnerProgress } from '@medlearn/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { completeLesson, readProgress, resetProgress } from '@/features/progress/store';
 
 import { adoptAccountProgress, newerCopy, restoreProgress, startProgressSync } from './sync';
+
+// The app loads the schema library on demand; load it once up front so the waits below time the
+// screen, not the first import.
+beforeAll(() => import('@medlearn/schemas'));
 
 const copy = (updatedAt: string | null): LearnerProgress => ({ ...EMPTY_PROGRESS, updatedAt });
 

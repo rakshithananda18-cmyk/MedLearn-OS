@@ -1,12 +1,10 @@
 'use client';
 
-import { AccountStatus } from '@medlearn/schemas';
+import type { AccountStatus } from '@medlearn/schemas';
 import { useCallback, useEffect, useState } from 'react';
 
 export type AccountState =
   { status: 'loading' } | { status: 'ready'; account: AccountStatus | null; signedIn: boolean };
-
-const Body = AccountStatus.nullable().catch(null);
 
 /** Who is signed in on this phone; `refresh` asks again after signing in or out. */
 export function useAccount(): { state: AccountState; refresh: () => void } {
@@ -15,18 +13,23 @@ export function useAccount(): { state: AccountState; refresh: () => void } {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/account')
-      .then((response) => (response.ok ? response.json() : { data: null }))
-      .catch(() => ({ data: null }))
-      .then((body: { data: unknown }) => {
-        if (cancelled) return;
-        const account = Body.parse(body.data);
-        setState({
-          status: 'ready',
-          account,
-          signedIn: account !== null && !account.anonymous && account.email !== null,
-        });
+    Promise.all([
+      fetch('/api/account')
+        .then(async (response): Promise<{ data: unknown }> =>
+          response.ok ? response.json() : { data: null },
+        )
+        .catch(() => ({ data: null })),
+      // Loaded here rather than with the page, so the schema library is not in every download.
+      import('@medlearn/schemas'),
+    ]).then(([body, schemas]) => {
+      if (cancelled) return;
+      const account = schemas.AccountStatus.nullable().catch(null).parse(body.data);
+      setState({
+        status: 'ready',
+        account,
+        signedIn: account !== null && !account.anonymous && account.email !== null,
       });
+    });
     return () => {
       cancelled = true;
     };

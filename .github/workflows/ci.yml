@@ -9,15 +9,16 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Actions are pinned to full commit hashes so a moved tag cannot change what runs here.
 jobs:
   checks:
     name: Lint, types, unit and component tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -28,14 +29,14 @@ jobs:
       - run: pnpm test
 
   backend:
-    name: Database, integration and end-to-end tests
+    name: Database and integration tests
     runs-on: ubuntu-latest
     # Fail fast instead of GitHub's 6-hour default if anything hangs.
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -43,11 +44,36 @@ jobs:
       - run: pnpm bootstrap
       - run: pnpm test:db
       - run: pnpm test:coverage
-      - run: pnpm test:e2e
-      - uses: actions/upload-artifact@v4
+
+  # One machine per screen size, side by side, so the slowest job sets the wait rather than the sum.
+  # Each sets up its own database, which costs more CI minutes than one long job.
+  e2e:
+    name: End-to-end tests (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [phone, tablet, desktop]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm bootstrap
+      - run: pnpm build
+      - run: pnpm exec playwright test --project=${{ matrix.project }}
+      # The budgets use Lighthouse's phone profile, so they ride on the phone job and its build.
+      - name: Performance budgets
+        if: ${{ matrix.project == 'phone' }}
+        run: pnpm test:budgets
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         # Also after a timeout or cancellation, so the report explains what happened.
         if: ${{ !success() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7

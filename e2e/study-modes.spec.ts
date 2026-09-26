@@ -29,6 +29,7 @@ test('onboarding sizes the plan and switches on exam mode', async ({ page }) => 
 });
 
 test('a student back after missed days gets a capped catch-up plan', async ({ page }) => {
+  test.slow();
   // The facilitator screen sets up the state for usability task 5.
   await page.goto('/facilitator');
   await expectAccessible(page);

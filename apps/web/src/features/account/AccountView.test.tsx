@@ -1,7 +1,7 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { readProgress, resetProgress, saveProfile } from '@/features/progress/store';
 
@@ -27,6 +27,10 @@ function server(routes: Record<string, Reply[]>) {
 
 const adult = () => saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true });
 const signedIn = { data: { email: 'asha@example.com', anonymous: false } };
+
+// The app loads the schema library on demand; load it once up front so the waits below time the
+// screen, not the first import.
+beforeAll(() => import('@medlearn/schemas'));
 
 afterEach(() => {
   act(() => resetProgress());

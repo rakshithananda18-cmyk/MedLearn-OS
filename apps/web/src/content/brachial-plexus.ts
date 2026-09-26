@@ -1,10 +1,12 @@
-import { Topic } from '@medlearn/schemas';
+import type { Topic } from '@medlearn/schemas';
 
 import { brachialPlexus3d } from './brachial-plexus-3d';
 
 // Sample content for the prototype. `reviewed: false` keeps the "not medically reviewed" label
 // on every screen until a medical reviewer approves it.
-export const brachialPlexus = Topic.parse({
+// Checked against the Topic schema by topics.test.ts rather than at runtime, so the schema
+// library stays out of the phone's download.
+export const brachialPlexus: Topic = {
   slug: 'brachial-plexus',
   subjectSlug: 'anatomy',
   title: 'Brachial plexus',
@@ -261,4 +263,4 @@ export const brachialPlexus = Topic.parse({
       back: 'Claw hand, from weakness of the small muscles of the hand (C8–T1).',
     },
   ],
-});
+};

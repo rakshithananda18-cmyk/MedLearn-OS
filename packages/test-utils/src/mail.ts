@@ -11,10 +11,9 @@ interface MailList {
  */
 export async function emailedCode(to: string, since: Date, timeoutMs = 10_000): Promise<string> {
   const deadline = Date.now() + timeoutMs;
+  const query = encodeURIComponent(`to:"${to}"`);
   while (Date.now() < deadline) {
-    const search = await fetch(
-      `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`,
-    );
+    const search = await fetch(`${MAILPIT_URL}/api/v1/search?query=${query}`);
     const { messages } = (await search.json()) as MailList;
     const newest = messages.find(
       (message) => Date.parse(message.Created) >= since.getTime() - 1000,

@@ -17,7 +17,8 @@ test.describe('light is the primary theme', () => {
   }) => {
     await page.goto('/design');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await page.getByRole('radio', { name: 'System' }).click();
+    // Click the option as a person does: its label.
+    await page.getByRole('group', { name: 'Theme' }).getByText('System').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 });
@@ -53,7 +54,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
 test('the theme toggle switches and remembers the theme', async ({ page }) => {
   await page.goto('/design');
-  await page.getByRole('radio', { name: 'Dark' }).click();
+  // Click the option as a person does: its label.
+  await page.getByRole('group', { name: 'Theme' }).getByText('Dark').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
   await page.reload();

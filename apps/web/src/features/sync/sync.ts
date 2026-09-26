@@ -4,7 +4,6 @@ import {
   mergeProgress,
   type StudyProfile,
 } from '@medlearn/core';
-import { LearnerProgressInput } from '@medlearn/schemas';
 
 import { readProgress, replaceProgress, subscribeToProgress } from '@/features/progress/store';
 import { clientLogger } from '@/lib/client-logger';
@@ -30,8 +29,11 @@ async function loadServerCopy(): Promise<LearnerProgress | null> {
   if (response.status === 401) return null;
   if (!response.ok) throw new Error(`Loading progress failed with ${response.status}`);
   const body = (await response.json()) as { data: { progress: unknown } | null };
-  const parsed = body.data ? LearnerProgressInput.safeParse(body.data.progress) : undefined;
-  return parsed?.success ? (parsed.data as LearnerProgress) : null;
+  if (!body.data) return null;
+  // Loaded only when a server copy arrives, so the schema library is not in every page's download.
+  const { LearnerProgressInput } = await import('@medlearn/schemas');
+  const parsed = LearnerProgressInput.safeParse(body.data.progress);
+  return parsed.success ? (parsed.data as LearnerProgress) : null;
 }
 
 const ADULT_PROFILE: StudyProfile = {

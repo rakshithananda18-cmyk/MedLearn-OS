@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { expectAccessible } from './support';
 
 test.describe('landing and subjects', () => {
   test('the landing page starts new students on the setup questions', async ({ page }) => {
@@ -27,11 +28,11 @@ test.describe('landing and subjects', () => {
   });
 
   test('has no serious accessibility violations', async ({ page }) => {
+    // Three full accessibility scans.
+    test.slow();
     for (const path of ['/', '/subjects', '/welcome']) {
       await page.goto(path);
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-      expect(blocking.map((v) => `${path} ${v.id}: ${v.help}`)).toEqual([]);
+      await expectAccessible(page);
     }
   });
 });

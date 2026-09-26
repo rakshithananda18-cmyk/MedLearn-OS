@@ -1,4 +1,4 @@
-import { base, designSystem, scripts } from '@medlearn/config/eslint';
+import { base, designSystem, scripts, serviceWorker } from '@medlearn/config/eslint';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 
 const REACT_FILES = [
@@ -19,4 +19,12 @@ const next = nextVitals.map((config) =>
       },
 );
 
-export default [...base, ...next, ...designSystem(REACT_FILES), scripts];
+export default [
+  ...base,
+  ...next,
+  ...designSystem(REACT_FILES),
+  // The phone reads the manifest's colours directly; CSS tokens cannot reach it.
+  { files: ['apps/web/src/app/manifest.ts'], rules: { 'medlearn/no-raw-design-values': 'off' } },
+  scripts,
+  serviceWorker,
+];

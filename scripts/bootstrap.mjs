@@ -17,11 +17,18 @@ step('Checking prerequisites');
 requireNode(24);
 await ensureDocker();
 
-// `pnpm db:start` starts only the services the app uses so far (Postgres, REST API, gateway).
-// Auth stays on: `supabase status` only reports the API keys while it runs. Add others back
-// there when a milestone needs them (storage for media, studio for a database GUI).
+// `pnpm db:start` starts only the services the app uses so far (Postgres, auth, REST API, gateway
+// and the Mailpit test mailbox). Auth stays on: `supabase status` only reports the API keys while
+// it runs. Add others back there when a milestone needs them (storage for media, studio for a GUI).
 step('Starting the local Supabase stack (first run downloads images; this can take a while)');
-run('pnpm', ['db:start']);
+if (run('pnpm', ['db:start'], { allowFailure: true }) !== 0) {
+  // Postgres's port 54322 sits in Linux's range for outgoing connections, so on a CI runner a
+  // download can briefly hold it ("address already in use"). A clean stop and one more try gets
+  // through.
+  step('The database did not start; stopping it and trying once more');
+  run('pnpm', ['exec', 'supabase', 'stop'], { allowFailure: true });
+  run('pnpm', ['db:start']);
+}
 
 step('Writing environment files');
 const status = readSupabaseStatus();

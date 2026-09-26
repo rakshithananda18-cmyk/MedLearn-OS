@@ -1,14 +1,12 @@
 'use client';
 
-import { RadioGroup } from 'radix-ui';
-import { useSyncExternalStore } from 'react';
+import { useId, useSyncExternalStore } from 'react';
 
 import { Icon, type IconGlyph } from './Icon';
 import { Monitor, Moon, Sun } from './icons';
 import {
   applyThemePreference,
   DEFAULT_THEME_PREFERENCE,
-  isThemePreference,
   readThemePreference,
   subscribeToThemePreference,
   type ThemePreference,
@@ -23,8 +21,13 @@ const OPTIONS: Array<{ value: ThemePreference; label: string; icon: IconGlyph }>
 // The server cannot see the stored choice, so it renders the default; the client then syncs.
 const serverSnapshot = (): ThemePreference => DEFAULT_THEME_PREFERENCE;
 
-/** Light / Dark / System choice, stored on this device. */
+/**
+ * Light / Dark / System choice, stored on this device. Native radio buttons: arrow keys and screen
+ * readers work without script, and nothing has to run when the page loads (a scripted radio group
+ * cost a slow phone over 100 ms on the landing page).
+ */
 export function ThemeToggle() {
+  const name = useId();
   const preference = useSyncExternalStore(
     subscribeToThemePreference,
     readThemePreference,
@@ -32,25 +35,25 @@ export function ThemeToggle() {
   );
 
   return (
-    <RadioGroup.Root
-      aria-label="Theme"
-      value={preference}
-      onValueChange={(value) => {
-        if (isThemePreference(value)) applyThemePreference(value);
-      }}
-      orientation="horizontal"
-      className="inline-flex gap-1 rounded-md bg-surface-muted p-1"
-    >
+    <fieldset className="inline-flex gap-1 rounded-md bg-surface-muted p-1">
+      <legend className="sr-only">Theme</legend>
       {OPTIONS.map(({ value, label, icon }) => (
-        <RadioGroup.Item
+        <label
           key={value}
-          value={value}
-          className="inline-flex h-8 items-center gap-2 rounded-sm px-3 text-sm text-fg-muted transition-colors duration-150 aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-raised"
+          className="relative inline-flex h-8 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm text-fg-muted transition-colors duration-150 has-checked:bg-surface has-checked:text-fg has-checked:shadow-raised has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus"
         >
+          <input
+            type="radio"
+            name={name}
+            value={value}
+            checked={preference === value}
+            onChange={() => applyThemePreference(value)}
+            className="sr-only"
+          />
           <Icon icon={icon} size="sm" />
           {label}
-        </RadioGroup.Item>
+        </label>
       ))}
-    </RadioGroup.Root>
+    </fieldset>
   );
 }

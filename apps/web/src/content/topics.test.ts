@@ -1,8 +1,13 @@
+import { Topic } from '@medlearn/schemas';
 import { describe, expect, it } from 'vitest';
 
 import { DRILL_MINUTES, getTopic, hasDrill, PLANNABLE_TOPICS, TOPICS } from './topics';
 
 describe('bundled content', () => {
+  it('matches the Topic schema exactly, with no defaults left to fill in', () => {
+    for (const topic of TOPICS) expect(Topic.parse(topic)).toEqual(topic);
+  });
+
   it('loads the sample topic, marked as not medically reviewed', () => {
     const topic = getTopic('brachial-plexus');
     expect(topic?.reviewed).toBe(false);
