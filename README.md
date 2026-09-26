@@ -43,19 +43,20 @@ browser. Re-running it resets local data only.
 
 ## Commands
 
-| Command                        | What it does                                                      |
-| ------------------------------ | ----------------------------------------------------------------- |
-| `pnpm start`                   | Database, web app and browser; Ctrl+C stops everything it started |
-| `pnpm dev`                     | Web app only, on http://localhost:3000                            |
-| `pnpm test`                    | Unit and component tests                                          |
-| `pnpm test:integration`        | API and repository tests against the local database               |
-| `pnpm test:db`                 | pgTAP tests for tables, constraints and access rules              |
-| `pnpm test:e2e`                | Playwright tests on phone and desktop viewports                   |
-| `pnpm test:all`                | Everything above                                                  |
-| `pnpm test:coverage`           | All Vitest layers with coverage thresholds (needs DB)             |
-| `pnpm lint` / `pnpm typecheck` | ESLint (including the no-emoji rule) and TypeScript               |
-| `pnpm db:reset`                | Rebuild the local database from migrations and seed               |
-| `pnpm db:types`                | Regenerate `packages/db/src/database.types.ts`                    |
+| Command                        | What it does                                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `pnpm start`                   | Database, web app and browser; Ctrl+C stops everything it started                              |
+| `pnpm start --prod`            | Production build served to phones on the same Wi-Fi (usability sessions; also `usability.bat`) |
+| `pnpm dev`                     | Web app only, on http://localhost:3000                                                         |
+| `pnpm test`                    | Unit and component tests                                                                       |
+| `pnpm test:integration`        | API and repository tests against the local database                                            |
+| `pnpm test:db`                 | pgTAP tests for tables, constraints and access rules                                           |
+| `pnpm test:e2e`                | Playwright tests on phone, tablet and desktop viewports                                        |
+| `pnpm test:all`                | Everything above                                                                               |
+| `pnpm test:coverage`           | All Vitest layers with coverage thresholds (needs DB)                                          |
+| `pnpm lint` / `pnpm typecheck` | ESLint (including the no-emoji rule) and TypeScript                                            |
+| `pnpm db:reset`                | Rebuild the local database from migrations and seed                                            |
+| `pnpm db:types`                | Regenerate `packages/db/src/database.types.ts`                                                 |
 
 ## Structure
 

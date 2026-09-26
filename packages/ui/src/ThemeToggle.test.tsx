@@ -7,9 +7,9 @@ import { THEME_STORAGE_KEY } from './theme';
 import { ThemeToggle } from './ThemeToggle';
 
 describe('ThemeToggle', () => {
-  it('starts on System when nothing is stored', () => {
+  it('starts on Light, the primary theme, when nothing is stored', () => {
     render(<ThemeToggle />);
-    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked();
   });
 
   it('shows the stored choice', () => {

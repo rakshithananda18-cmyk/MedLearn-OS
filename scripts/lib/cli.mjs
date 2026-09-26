@@ -1,5 +1,6 @@
 // Small helpers shared by the developer scripts (bootstrap, start).
 import { spawn, spawnSync } from 'node:child_process';
+import { networkInterfaces } from 'node:os';
 
 export const isWindows = process.platform === 'win32';
 
@@ -88,4 +89,12 @@ export function openBrowser(url) {
       ? ['open', [url]]
       : ['xdg-open', [url]];
   spawn(command, args, { detached: true, stdio: 'ignore' }).unref();
+}
+
+/** This computer's addresses on the local network, for opening the app on a phone. */
+export function lanAddresses(interfaces = networkInterfaces()) {
+  return Object.values(interfaces)
+    .flat()
+    .filter((entry) => entry && entry.family === 'IPv4' && !entry.internal)
+    .map((entry) => entry.address);
 }

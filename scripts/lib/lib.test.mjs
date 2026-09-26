@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { toShellCommand, waitFor } from './cli.mjs';
+import { lanAddresses, toShellCommand, waitFor } from './cli.mjs';
 import { upsertEnvText } from './env-file.mjs';
 
 describe('toShellCommand', () => {
@@ -53,5 +53,19 @@ describe('waitFor', () => {
 
   it('resolves false after the timeout', async () => {
     await expect(waitFor(() => false, { timeoutMs: 20, intervalMs: 5 })).resolves.toBe(false);
+  });
+});
+
+describe('lanAddresses', () => {
+  it('lists external IPv4 addresses only', () => {
+    const interfaces = {
+      'Wi-Fi': [
+        { family: 'IPv4', internal: false, address: '192.168.0.15' },
+        { family: 'IPv6', internal: false, address: 'fe80::1' },
+      ],
+      Loopback: [{ family: 'IPv4', internal: true, address: '127.0.0.1' }],
+      Unused: undefined,
+    };
+    expect(lanAddresses(interfaces)).toEqual(['192.168.0.15']);
   });
 });

@@ -51,11 +51,11 @@ test('onboarding sizes the plan and switches on exam mode', async ({ page }) => 
 });
 
 test('a student back after missed days gets a capped catch-up plan', async ({ page }) => {
-  await seedProgress(page, {
-    profile: { year: 1, examDate: null, dailyMinutes: 20 },
-    completedLessons: ['brachial-plexus'],
-    lastActiveAt: new Date(Date.now() - 5 * DAY_MS).toISOString(),
-  });
+  // The facilitator screen sets up the state for usability task 5.
+  await page.goto('/facilitator');
+  await expectAccessible(page);
+  await page.getByRole('button', { name: 'Apply: Back after missed days' }).click();
+  await expect(page.getByRole('status')).toHaveText(/Back after missed days is set/);
   await page.goto('/today');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Welcome back, gently' })).toBeVisible();

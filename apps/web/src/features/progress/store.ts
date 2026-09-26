@@ -101,3 +101,8 @@ export function acceptCatchUp(now = new Date()): void {
 export function resetProgress(): void {
   write(EMPTY_PROGRESS);
 }
+
+/** Replaces everything on this device; used by the usability-test facilitator screen. */
+export function replaceProgress(progress: LearnerProgress): void {
+  write(progress);
+}

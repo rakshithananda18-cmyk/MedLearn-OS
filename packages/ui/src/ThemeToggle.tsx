@@ -7,6 +7,7 @@ import { Icon, type IconGlyph } from './Icon';
 import { Monitor, Moon, Sun } from './icons';
 import {
   applyThemePreference,
+  DEFAULT_THEME_PREFERENCE,
   isThemePreference,
   readThemePreference,
   subscribeToThemePreference,
@@ -19,8 +20,8 @@ const OPTIONS: Array<{ value: ThemePreference; label: string; icon: IconGlyph }>
   { value: 'system', label: 'System', icon: Monitor },
 ];
 
-// The server cannot see the stored choice, so it renders "system"; the client then syncs.
-const serverSnapshot = (): ThemePreference => 'system';
+// The server cannot see the stored choice, so it renders the default; the client then syncs.
+const serverSnapshot = (): ThemePreference => DEFAULT_THEME_PREFERENCE;
 
 /** Light / Dark / System choice, stored on this device. */
 export function ThemeToggle() {

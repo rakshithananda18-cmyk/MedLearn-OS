@@ -2,6 +2,8 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export type Theme = 'light' | 'dark';
 
 export const THEME_STORAGE_KEY = 'ml-theme';
+/** Light is the primary theme; dark applies only when the student chooses it (or "System"). */
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = 'light';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
 export function isThemePreference(value: unknown): value is ThemePreference {
@@ -16,9 +18,9 @@ export function resolveTheme(preference: ThemePreference, systemPrefersDark: boo
 export function readThemePreference(): ThemePreference {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return isThemePreference(stored) ? stored : 'system';
+    return isThemePreference(stored) ? stored : DEFAULT_THEME_PREFERENCE;
   } catch {
-    return 'system';
+    return DEFAULT_THEME_PREFERENCE;
   }
 }
 
@@ -48,16 +50,16 @@ export function applyThemePreference(preference: ThemePreference): Theme {
 }
 
 /**
- * Inline script for <head>: sets data-theme before first paint (no flash of the wrong theme)
- * and follows the system setting while the preference is "system".
+ * Inline script for <head>: sets data-theme before first paint (no flash of the wrong theme),
+ * starting in light and following the system setting only while the preference is "system".
  */
 export const themeScript = `(function () {
   var key = '${THEME_STORAGE_KEY}';
   var media = matchMedia('${DARK_QUERY}');
   function apply() {
-    var preference = 'system';
-    try { preference = localStorage.getItem(key) || 'system'; } catch (e) {}
-    var dark = preference === 'dark' || (preference !== 'light' && media.matches);
+    var preference = '${DEFAULT_THEME_PREFERENCE}';
+    try { preference = localStorage.getItem(key) || preference; } catch (e) {}
+    var dark = preference === 'dark' || (preference === 'system' && media.matches);
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   }
   apply();

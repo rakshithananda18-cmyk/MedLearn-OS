@@ -37,6 +37,7 @@ export { Switch, type SwitchProps } from './Switch';
 export { TextField, type TextFieldProps } from './TextField';
 export {
   applyThemePreference,
+  DEFAULT_THEME_PREFERENCE,
   isThemePreference,
   readThemePreference,
   resolveTheme,
