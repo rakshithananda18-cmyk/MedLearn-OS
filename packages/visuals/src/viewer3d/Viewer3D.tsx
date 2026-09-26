@@ -70,8 +70,8 @@ function Nerve({
   };
   return (
     <>
-      {geometries.map((geometry, index) => (
-        <mesh key={index} geometry={geometry} material={nerveMaterial} onClick={select} />
+      {geometries.map((geometry) => (
+        <mesh key={geometry.uuid} geometry={geometry} material={nerveMaterial} onClick={select} />
       ))}
     </>
   );

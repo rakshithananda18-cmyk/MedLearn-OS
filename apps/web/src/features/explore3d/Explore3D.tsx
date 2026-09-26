@@ -61,21 +61,19 @@ export function Explore3D({ title, model, diagram }: Readonly<Explore3DProps>) {
     model.parts.find((part) => part.id === id)?.name ??
     id;
   const isNerve = (id: string) => model.nerves.some((nerve) => nerve.id === id);
-  const highlight: ReadonlySet<string> = selected
-    ? isNerve(selected)
-      ? pathThrough(diagram.edges, selected)
-      : new Set([selected])
-    : new Set();
   const stop = model.stops.find((item) => item.id === stopId) ?? model.stops[0];
 
-  const description = selected
-    ? isNerve(selected)
-      ? `${nameOf(selected)}. Path: ${diagram.nodes
-          .filter((node) => highlight.has(node.id))
-          .map((node) => node.name)
-          .join(', ')}.`
-      : `${nameOf(selected)}.`
-    : (stop?.description ?? '');
+  let highlight: ReadonlySet<string> = new Set();
+  let description = stop?.description ?? '';
+  if (selected && isNerve(selected)) {
+    const path = pathThrough(diagram.edges, selected);
+    const names = diagram.nodes.filter((node) => path.has(node.id)).map((node) => node.name);
+    highlight = path;
+    description = `${nameOf(selected)}. Path: ${names.join(', ')}.`;
+  } else if (selected) {
+    highlight = new Set([selected]);
+    description = `${nameOf(selected)}.`;
+  }
 
   const toggle = (id: string) => setSelected(selected === id ? null : id);
 

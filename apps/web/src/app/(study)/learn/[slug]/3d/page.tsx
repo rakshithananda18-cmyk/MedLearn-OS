@@ -8,7 +8,7 @@ import { Explore3D } from '@/features/explore3d/Explore3D';
 import { Screen } from '@/features/shell/Screen';
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  readonly params: Promise<{ slug: string }>;
 }
 
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Explore3DPage({ params }: Props) {
   const topic = getTopic((await params).slug);
-  if (!topic || topic.visual.kind !== 'path' || !topic.visual.model3d) notFound();
+  if (topic?.visual.kind !== 'path' || !topic.visual.model3d) notFound();
 
   return (
     <Screen width="wide">
