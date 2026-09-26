@@ -1,45 +1,25 @@
 'use client';
 
-import { dueCardIds, mistakeCardId } from '@medlearn/core';
-import type { Topic } from '@medlearn/schemas';
+import { dueCardIds } from '@medlearn/core';
 import { buttonClasses, Card, Display, EmptyState, Eyebrow, RecallCard, Text } from '@medlearn/ui';
 import { CircleCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
-import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
+import type { DeckCard, TopicSummary } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { rateCard, useProgress } from '@/features/progress/store';
 
-interface DeckCard {
-  topic: Topic;
-  id: string;
-  front: string;
-  back: string;
-  fromMistake: boolean;
-}
-
-/** Every recall card: the topic's own cards plus one for each question the student missed. */
-function allCards(): DeckCard[] {
-  return TOPICS.flatMap((topic) => [
-    ...topic.cards.map((card) => ({ topic, ...card, fromMistake: false })),
-    ...topic.questions.map((question) => {
-      const answer = question.options.find((option) => option.id === question.answerId);
-      return {
-        topic,
-        id: mistakeCardId(question.id),
-        front: question.prompt,
-        back: `${answer?.text ?? ''}. ${question.explanation}`,
-        fromMistake: true,
-      };
-    }),
-  ]);
+interface ReviseViewProps {
+  topics: TopicSummary[];
+  /** Every recall card, including the ones missed questions become. */
+  cards: DeckCard[];
 }
 
 /** Spaced recall: due cards one at a time; each rating reschedules the card. */
-export function ReviseView() {
+export function ReviseView({ topics, cards }: Readonly<ReviseViewProps>) {
   const progress = useProgress();
-  const due = dueCardIds(PLANNABLE_TOPICS, progress, new Date());
-  const showing = allCards().find((card) => card.id === due[0]);
+  const due = dueCardIds(topics, progress, new Date());
+  const showing = cards.find((card) => card.id === due[0]);
 
   return (
     <>

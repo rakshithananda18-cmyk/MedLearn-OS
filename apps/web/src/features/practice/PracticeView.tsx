@@ -15,22 +15,24 @@ import { ArrowRight, CircleCheck, ClipboardCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
+import type { PracticeQuestion, TopicSummary } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { recordAnswer, useProgress } from '@/features/progress/store';
 
 /** One question at a time from finished lessons; answered ones stay on screen until "Next". */
-export function PracticeView() {
+interface PracticeViewProps {
+  topics: TopicSummary[];
+  questions: PracticeQuestion[];
+}
+
+export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>) {
   const progress = useProgress();
   const [current, setCurrent] = useState<string | null>(null);
   const [done, setDone] = useState<string[]>([]);
 
-  const questions = TOPICS.flatMap((topic) =>
-    topic.questions.map((question) => ({ topic, question })),
-  );
-  const open = PLANNABLE_TOPICS.flatMap((topic) => openQuestionIds(topic, progress)).filter(
-    (id) => !done.includes(id),
-  );
+  const open = topics
+    .flatMap((topic) => openQuestionIds(topic, progress))
+    .filter((id) => !done.includes(id));
   const showingId = current ?? open[0];
   const showing = questions.find(({ question }) => question.id === showingId);
   const finishedAnyLesson = progress.completedLessons.length > 0;
