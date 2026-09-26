@@ -11,6 +11,10 @@ const KNOWN: Record<string, () => AppError> = {
   email_address_invalid: () => new AppError('VALIDATION_FAILED', 'Check the email address.'),
   over_request_rate_limit: () =>
     new AppError('RATE_LIMITED', 'Too many attempts. Wait a minute and try again.'),
+  over_email_send_rate_limit: () =>
+    new AppError('RATE_LIMITED', 'Too many emails sent. Wait a minute and try again.'),
+  otp_expired: () =>
+    new AppError('VALIDATION_FAILED', 'That code is wrong or has expired. Ask for a new one.'),
 };
 
 /** Maps a Supabase auth error to the message a student sees, keeping the original as the cause. */

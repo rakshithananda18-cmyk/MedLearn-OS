@@ -1,5 +1,9 @@
+import { emailedCode } from '@medlearn/test-utils/mail';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { POST as confirm } from './account/confirm/route';
+import { POST as newPassword } from './account/new-password/route';
+import { POST as reset } from './account/reset/route';
 import { GET as account } from './account/route';
 import { POST as signIn } from './account/sign-in/route';
 import { POST as signOut } from './account/sign-out/route';
@@ -56,10 +60,23 @@ describe('email accounts', () => {
     );
     expect((await (await account(get())).json()).data).toEqual({ email: null, anonymous: true });
 
+    const sent = new Date();
     const created = await signUp(post({ email, password }));
     expect(created.status).toBe(201);
-    expect(await created.json()).toEqual({ data: { email, confirmEmail: false } });
+    expect(await created.json()).toEqual({ data: { email, confirmEmail: true } });
+    // Until the emailed code is entered the account is still anonymous.
+    expect((await (await account(get())).json()).data).toEqual({ email: null, anonymous: true });
+
+    const wrong = await confirm(post({ email, code: '000000' }));
+    expect(wrong.status).toBe(400);
+    expect((await wrong.json()).error.message).toMatch(/wrong or has expired/);
+
+    const code = await emailedCode(email, sent);
+    expect((await confirm(post({ email, code }))).status).toBe(200);
     expect((await (await account(get())).json()).data).toEqual({ email, anonymous: false });
+    expect((await (await getProgress(get())).json()).data.progress.completedLessons).toEqual([
+      'brachial-plexus',
+    ]);
 
     const again = await signUp(post({ email: `other${email}`, password }));
     expect(again.status).toBe(409);
@@ -82,5 +99,43 @@ describe('email accounts', () => {
     const duplicate = await signUp(post({ email, password }));
     expect(duplicate.status).toBe(409);
     expect((await signUp(post({ email: `x${email}`, password: 'short' }))).status).toBe(400);
+  });
+
+  it('resets a forgotten password with an emailed code', async () => {
+    expect((await reset(post({ email: `nobody${email}` }))).status).toBe(204);
+
+    const sent = new Date();
+    expect((await reset(post({ email }))).status).toBe(204);
+    const code = await emailedCode(email, sent);
+    const newOne = 'new-horse-99';
+
+    expect((await newPassword(post({ email, code: '000000', password: newOne }))).status).toBe(400);
+    expect((await newPassword(post({ email, code, password: newOne }))).status).toBe(200);
+    expect((await (await account(get())).json()).data).toEqual({ email, anonymous: false });
+
+    jar.clear();
+    expect((await signIn(post({ email, password }))).status).toBe(401);
+    expect((await signIn(post({ email, password: newOne }))).status).toBe(200);
+  });
+});
+
+describe('a new account made without an anonymous session', () => {
+  const email = `fresh${Date.now()}@example.com`;
+
+  beforeEach(() => jar.clear());
+
+  it('asks for the emailed code, also when signing in before confirming', async () => {
+    const sent = new Date();
+    const created = await signUp(post({ email, password }));
+    expect(await created.json()).toEqual({ data: { email, confirmEmail: true } });
+    expect(await (await account(get())).json()).toEqual({ data: null });
+
+    // Signing in before confirming asks for the code instead of failing.
+    const early = await signIn(post({ email, password }));
+    expect(await early.json()).toEqual({ data: { email, confirmEmail: true } });
+
+    const code = await emailedCode(email, sent);
+    expect((await confirm(post({ email, code }))).status).toBe(200);
+    expect((await (await account(get())).json()).data).toEqual({ email, anonymous: false });
   });
 });

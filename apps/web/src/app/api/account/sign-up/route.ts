@@ -19,15 +19,16 @@ export const POST = withRoute('POST /api/account/sign-up', async (request, { log
   }
 
   if (data.user) {
-    const { error } = await db.auth.updateUser({ email, password });
+    const { data: updated, error } = await db.auth.updateUser({ email, password });
     if (error) throw toAuthError(error);
     log.info('anonymous account upgraded to email');
-    return ok({ email, confirmEmail: false }, { status: 201 });
+    // With email confirmation on, the address counts only once the emailed code is entered.
+    return ok({ email, confirmEmail: updated.user.email !== email }, { status: 201 });
   }
 
   const { data: created, error } = await db.auth.signUp({ email, password });
   if (error) throw toAuthError(error);
   log.info('email account created');
-  // With email confirmation switched on (production), there is no session until the link is used.
+  // With email confirmation on, there is no session until the emailed code is entered.
   return ok({ email, confirmEmail: created.session === null }, { status: 201 });
 });

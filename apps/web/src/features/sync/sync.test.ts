@@ -61,6 +61,27 @@ describe('startProgressSync', () => {
     stop();
   });
 
+  it('sends what was learned offline once the phone is back online', async () => {
+    const stop = startProgressSync();
+    await vi.waitFor(() => expect(readProgress().completedLessons).toEqual(['brachial-plexus']));
+    fetchMock.mockClear();
+    const puts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    completeLesson('oxygen-haemoglobin-curve');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(puts()).toHaveLength(1);
+
+    globalThis.dispatchEvent(new Event('online'));
+    await vi.waitFor(() => expect(puts()).toHaveLength(2));
+    // Nothing new since that save: coming online again sends nothing.
+    await vi.advanceTimersByTimeAsync(0);
+    globalThis.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(puts()).toHaveLength(2);
+    stop();
+  });
+
   it('restores the server copy on a phone that lost its local progress', async () => {
     await restoreProgress();
     expect(readProgress().completedLessons).toEqual(['brachial-plexus']);
