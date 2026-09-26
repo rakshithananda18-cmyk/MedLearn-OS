@@ -1,0 +1,15 @@
+{
+  "name": "@medlearn/test-utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./dom": "./src/dom.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medlearn/schemas": "workspace:*"
+  }
+}

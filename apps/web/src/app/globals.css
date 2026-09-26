@@ -1,0 +1,20 @@
+/* Foundation styles only. Design tokens and components arrive with the design system (M1). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1e2732;
+  background: #ffffff;
+}
+
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}

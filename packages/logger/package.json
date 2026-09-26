@@ -1,0 +1,17 @@
+{
+  "name": "@medlearn/logger",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./browser": "./src/browser.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medlearn/schemas": "workspace:*",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3"
+  }
+}

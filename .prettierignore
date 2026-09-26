@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+coverage/
+playwright-report/
+test-results/
+.next/
+supabase/
+packages/db/src/database.types.ts
+docs/
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
