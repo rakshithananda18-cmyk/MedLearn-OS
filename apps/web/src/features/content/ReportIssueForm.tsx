@@ -20,7 +20,7 @@ export interface ReportIssueFormProps {
 type State = 'idle' | 'sending' | 'sent' | 'failed';
 
 /** Sends a content problem to the review team, with the topic and the version the student saw. */
-export function ReportIssueForm({ topicSlug, contentVersion }: ReportIssueFormProps) {
+export function ReportIssueForm({ topicSlug, contentVersion }: Readonly<ReportIssueFormProps>) {
   const [kind, setKind] = useState<ReportKind | null>(null);
   const [note, setNote] = useState('');
   const [state, setState] = useState<State>('idle');
