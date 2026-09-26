@@ -9,6 +9,9 @@ const base = {
   summary: 'x',
   estimatedMinutes: 5,
   reviewed: false,
+  version: '0.1.0',
+  sources: [{ title: 'Textbook', licence: 'All rights reserved' }],
+  keyFacts: ['One fact'],
   visual: {
     kind: 'path',
     diagram: {
@@ -72,6 +75,11 @@ describe('Topic', () => {
     expect(Topic.parse(curve).lesson[0]?.focus).toEqual([]);
     const outOfRange = { ...curve, lesson: [{ ...curve.lesson[0], conditions: { ph: 9 } }] };
     expect(Topic.safeParse(outOfRange).success).toBe(false);
+  });
+
+  it('needs a source and a semantic version', () => {
+    expect(Topic.safeParse({ ...base, sources: [] }).success).toBe(false);
+    expect(Topic.safeParse({ ...base, version: 'v1' }).success).toBe(false);
   });
 
   it('rejects a question whose answer is not one of its options', () => {

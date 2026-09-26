@@ -57,6 +57,7 @@ describe('TodayView', () => {
         year: 1,
         examDate: dayKey(new Date(Date.now() + 12 * DAY_MS)),
         dailyMinutes: 20,
+        adult: true,
       });
       completeLesson('brachial-plexus');
     });

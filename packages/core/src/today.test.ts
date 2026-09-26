@@ -44,6 +44,7 @@ const profile = (overrides: Partial<StudyProfile>): StudyProfile => ({
   year: 1,
   examDate: null,
   dailyMinutes: 20,
+  adult: true,
   ...overrides,
 });
 
@@ -184,6 +185,11 @@ describe('dueCardIds and openQuestionIds', () => {
   it('only unlock cards and questions after the lesson is finished', () => {
     expect(dueCardIds(topics, EMPTY_PROGRESS, NOW)).toEqual([]);
     expect(openQuestionIds(topics[0] as PlannableTopic, EMPTY_PROGRESS)).toEqual([]);
+  });
+
+  it('add a recall card for every missed question of a finished lesson', () => {
+    const progress = after({ completedLessons: ['plexus'], mistakes: ['q2', 'q3'] });
+    expect(dueCardIds(topics, progress, NOW)).toEqual(['c1', 'c2', 'mistake-q2']);
   });
 
   it('leave out questions already answered correctly', () => {

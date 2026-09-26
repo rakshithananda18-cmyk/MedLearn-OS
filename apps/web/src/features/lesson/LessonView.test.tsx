@@ -50,15 +50,28 @@ describe('LessonView', () => {
     expect(screen.getByText(/claw hand/)).toBeInTheDocument();
   });
 
-  it('records the lesson as finished and returns to Today', async () => {
+  it('ends with key facts and two check questions; misses become recall cards', async () => {
     const { container } = render(<LessonView topic={brachialPlexus} />);
     await goToLastStep();
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Finish lesson' }));
+
+    const stored = () => JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}');
+    expect(stored().completedLessons).toEqual(['brachial-plexus']);
+    expect(screen.getByRole('heading', { name: 'Lesson complete' })).toBeInTheDocument();
+    for (const fact of brachialPlexus.keyFacts) {
+      expect(screen.getByText(fact)).toBeInTheDocument();
+    }
+    expect(screen.getAllByRole('region')).toHaveLength(2);
+    await expectNoA11yViolations(container);
+
+    const [first] = brachialPlexus.questions;
+    const wrong = first?.options.find((option) => option.id !== first.answerId);
+    await userEvent.click(screen.getByRole('button', { name: wrong?.text ?? '' }));
+    expect(stored().mistakes).toEqual([first?.id]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Continue to Today' }));
     expect(push).toHaveBeenCalledWith('/today');
-    expect(JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}').completedLessons).toEqual([
-      'brachial-plexus',
-    ]);
   });
 
   it('teaches the oxygen curve step by step, then hands over the sliders', async () => {

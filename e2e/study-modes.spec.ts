@@ -1,37 +1,15 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-const DAY_MS = 86_400_000;
-
-async function expectAccessible(page: Page) {
-  const { violations } = await new AxeBuilder({ page }).analyze();
-  const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-  expect(blocking.map((v) => `${page.url()} ${v.id}: ${v.help}`)).toEqual([]);
-}
-
-/** Local calendar date (YYYY-MM-DD) a number of days from now. */
-function localDate(daysFromNow: number): string {
-  const date = new Date(Date.now() + daysFromNow * DAY_MS);
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${day}`;
-}
-
-/** Puts saved progress on the device, as if the student had used the app before. */
-async function seedProgress(page: Page, progress: object) {
-  await page.goto('/');
-  await page.evaluate(
-    (value) => localStorage.setItem('ml-progress-v1', JSON.stringify(value)),
-    progress,
-  );
-}
+import { expectAccessible, localDate, seedProgress } from './support';
 
 test('onboarding sizes the plan and switches on exam mode', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Start in 3 steps' }).click();
+  await page.getByRole('link', { name: 'Start in 4 steps' }).click();
 
-  await expect(page.getByRole('img', { name: 'Step 1 of 3' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Step 1 of 4' })).toBeVisible();
   await expectAccessible(page);
+  await page.getByText('18 or older', { exact: true }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByText('First year', { exact: true }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -71,7 +49,7 @@ test('a student back after missed days gets a capped catch-up plan', async ({ pa
 
 test('the diagram trainer builds the brachial plexus layer by layer', async ({ page }) => {
   await seedProgress(page, {
-    profile: { year: 1, examDate: localDate(10), dailyMinutes: 20 },
+    profile: { year: 1, examDate: localDate(10), dailyMinutes: 20, adult: true },
     completedLessons: ['brachial-plexus'],
     lastActiveAt: new Date().toISOString(),
   });

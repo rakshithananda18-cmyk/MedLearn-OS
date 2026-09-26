@@ -5,6 +5,8 @@ import type { Metadata, Viewport } from 'next';
 import { Instrument_Serif, Noto_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { ProgressSync } from '@/features/sync/ProgressSync';
+
 const notoSans = Noto_Sans({ subsets: ['latin'], variable: '--font-noto-sans', display: 'swap' });
 // Display serif for page titles only; latin subset keeps it small.
 const instrumentSerif = Instrument_Serif({
@@ -34,7 +36,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <ProgressSync />
+        {children}
+      </body>
     </html>
   );
 }

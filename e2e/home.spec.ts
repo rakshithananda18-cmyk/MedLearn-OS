@@ -7,7 +7,7 @@ test.describe('landing and subjects', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'Learn medicine, visually' }),
     ).toBeVisible();
-    await page.getByRole('link', { name: 'Start in 3 steps' }).click();
+    await page.getByRole('link', { name: 'Start in 4 steps' }).click();
     await expect(page).toHaveURL(/\/welcome$/);
   });
 

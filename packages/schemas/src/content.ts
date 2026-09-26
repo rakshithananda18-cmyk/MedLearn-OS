@@ -87,6 +87,16 @@ export const Question = z.object({
 });
 export type Question = z.infer<typeof Question>;
 
+/** Where a fact comes from; the source drawer lists these for every topic. */
+export const ContentSource = z.object({
+  title: z.string().min(1),
+  /** Chapter or section, when the source is long. */
+  detail: z.string().optional(),
+  url: z.url().optional(),
+  licence: z.string().min(1),
+});
+export type ContentSource = z.infer<typeof ContentSource>;
+
 export const RecallCardContent = z.object({ id: Id, front: z.string(), back: z.string() });
 export type RecallCardContent = z.infer<typeof RecallCardContent>;
 
@@ -99,6 +109,11 @@ export const Topic = z
     estimatedMinutes: z.number().int().positive(),
     /** False until a medical reviewer approves it; the app then labels it as sample content. */
     reviewed: z.boolean(),
+    /** Content version, reported with every issue so reviewers see what the student saw. */
+    version: z.string().regex(/^\d+\.\d+\.\d+$/),
+    sources: z.array(ContentSource).min(1),
+    /** The few facts to remember, shown when the lesson ends. */
+    keyFacts: z.array(z.string().min(1)).min(1),
     visual: Visual,
     lesson: z.array(LessonStep).min(1),
     questions: z.array(Question),

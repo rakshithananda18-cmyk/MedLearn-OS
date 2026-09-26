@@ -11,7 +11,7 @@ export function StartLink() {
   const { profile } = useProgress();
   return (
     <Link href={profile ? '/today' : '/welcome'} className={buttonClasses()}>
-      {profile ? 'Open today’s plan' : 'Start in 3 steps'}
+      {profile ? 'Open today’s plan' : 'Start in 4 steps'}
       <Icon icon={ArrowRight} />
     </Link>
   );

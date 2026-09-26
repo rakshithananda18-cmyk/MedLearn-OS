@@ -63,12 +63,25 @@ describe('progress store', () => {
   it('saves the onboarding profile and the catch-up acceptance', () => {
     const { result } = renderHook(() => useProgress());
     act(() => {
-      saveProfile({ year: 1, examDate: '2026-12-01', dailyMinutes: 30 });
+      saveProfile({ year: 1, examDate: '2026-12-01', dailyMinutes: 30, adult: true });
       acceptCatchUp(new Date(2026, 8, 26, 10));
     });
-    expect(result.current.profile).toEqual({ year: 1, examDate: '2026-12-01', dailyMinutes: 30 });
+    expect(result.current.profile).toEqual({
+      year: 1,
+      examDate: '2026-12-01',
+      dailyMinutes: 30,
+      adult: true,
+    });
     expect(result.current.catchUpAcceptedOn).toBe('2026-09-26');
     expect(result.current.lastActiveAt).toBeNull();
+  });
+
+  it('remembers wrong answers so they come back as recall cards, and stamps changes', () => {
+    const { result } = renderHook(() => useProgress());
+    act(() => recordAnswer('q1', false));
+    expect(result.current.mistakes).toEqual(['q1']);
+    expect(result.current.correctAnswers).toEqual([]);
+    expect(result.current.updatedAt).not.toBeNull();
   });
 
   it('records when the student last studied, including wrong answers and drills', () => {

@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
-import { SampleContentBanner } from '@/features/content/SampleContentBanner';
+import { ContentTrust } from '@/features/content/ContentTrust';
 import { recordAnswer, useProgress } from '@/features/progress/store';
 
 /** One question at a time from finished lessons; answered ones stay on screen until "Next". */
@@ -46,7 +46,7 @@ export function PracticeView() {
       </div>
       {showing ? (
         <>
-          <SampleContentBanner reviewed={showing.topic.reviewed} />
+          <ContentTrust topic={showing.topic} />
           <Card tone="glass">
             <QuestionCard
               key={showing.question.id}

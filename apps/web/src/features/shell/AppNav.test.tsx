@@ -13,6 +13,7 @@ describe('AppNav', () => {
     const { container } = render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Revise' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Progress' })).toHaveAttribute('href', '/progress');
     await expectNoA11yViolations(container);
   });
 

@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
-import { completeLesson, resetProgress } from '@/features/progress/store';
+import { completeLesson, rateCard, recordAnswer, resetProgress } from '@/features/progress/store';
+
+const rateCardEasy = (id: string) => rateCard(id, 'easy');
 
 import { ReviseView } from './ReviseView';
 
@@ -30,5 +32,23 @@ describe('ReviseView', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Easy: Instant' }));
     }
     expect(screen.getByText('No reviews due')).toBeInTheDocument();
+  });
+
+  it('brings a missed question back as a recall card with the answer', async () => {
+    act(() => {
+      completeLesson('brachial-plexus');
+      for (const card of brachialPlexus.cards) {
+        rateCardEasy(card.id);
+      }
+      recordAnswer('erb-roots', false);
+    });
+    render(<ReviseView />);
+    const question = brachialPlexus.questions.find((item) => item.id === 'erb-roots');
+    expect(screen.getByText('From a question you missed')).toBeInTheDocument();
+    expect(screen.getByText(question?.prompt ?? '')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Show answer' }));
+    expect(
+      screen.getByText(new RegExp(question?.explanation.slice(0, 20) ?? '')),
+    ).toBeInTheDocument();
   });
 });

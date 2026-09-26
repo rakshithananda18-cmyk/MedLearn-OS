@@ -8,6 +8,8 @@ export interface StudyProfile {
   /** Next university or internal exam as a local date (YYYY-MM-DD), when known. */
   examDate: string | null;
   dailyMinutes: number;
+  /** Confirmed 18 or older; under-18 progress stays on the phone until a parent agrees. */
+  adult: boolean;
 }
 
 /** What the learner has done so far (stored on the device in the prototype). */
@@ -16,11 +18,15 @@ export interface LearnerProgress {
   completedLessons: string[];
   completedDrills: string[];
   correctAnswers: string[];
+  /** Questions answered wrong at least once; each becomes a recall card. */
+  mistakes: string[];
   reviews: Record<string, ReviewState>;
   /** Last time the student studied anything (ISO time); drives the catch-up plan. */
   lastActiveAt: string | null;
   /** Local date (YYYY-MM-DD) on which the student accepted a catch-up plan. */
   catchUpAcceptedOn: string | null;
+  /** Last change (ISO time); the newer copy wins when the device and the server differ. */
+  updatedAt: string | null;
 }
 
 export const EMPTY_PROGRESS: LearnerProgress = {
@@ -28,9 +34,11 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   completedLessons: [],
   completedDrills: [],
   correctAnswers: [],
+  mistakes: [],
   reviews: {},
   lastActiveAt: null,
   catchUpAcceptedOn: null,
+  updatedAt: null,
 };
 
 /** The parts of a topic the planner needs. */
@@ -91,6 +99,17 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
 }
 
+/** The recall card made from a question the student got wrong. */
+export function mistakeCardId(questionId: string): string {
+  return `mistake-${questionId}`;
+}
+
+/** Every recall card of a topic: its own cards plus cards made from missed questions. */
+export function topicCardIds(topic: PlannableTopic, progress: LearnerProgress): string[] {
+  const missed = topic.questionIds.filter((id) => progress.mistakes.includes(id));
+  return [...topic.cardIds, ...missed.map(mistakeCardId)];
+}
+
 /** Recall cards from finished lessons that are due now. Cards unlock when their lesson is done. */
 export function dueCardIds(
   topics: PlannableTopic[],
@@ -99,7 +118,7 @@ export function dueCardIds(
 ): string[] {
   return topics
     .filter((topic) => progress.completedLessons.includes(topic.slug))
-    .flatMap((topic) => topic.cardIds)
+    .flatMap((topic) => topicCardIds(topic, progress))
     .filter((id) => isDue(progress.reviews[id], now));
 }
 

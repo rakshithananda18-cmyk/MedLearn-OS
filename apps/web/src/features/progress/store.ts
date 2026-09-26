@@ -64,13 +64,18 @@ export function useProgress(): LearnerProgress {
 
 const addOnce = (list: string[], item: string) => (list.includes(item) ? list : [...list, item]);
 
+/** A change made on this device; stamped so syncing keeps the newest copy. */
+function commit(change: Partial<LearnerProgress>, now = new Date()): void {
+  write({ ...read(), ...change, updatedAt: now.toISOString() });
+}
+
 /** Every study action also records when the student was last active (for the catch-up plan). */
 function recordActivity(change: Partial<LearnerProgress>, now = new Date()): void {
-  write({ ...read(), ...change, lastActiveAt: now.toISOString() });
+  commit({ ...change, lastActiveAt: now.toISOString() }, now);
 }
 
 export function saveProfile(profile: StudyProfile): void {
-  write({ ...read(), profile });
+  commit({ profile });
 }
 
 export function completeLesson(topicSlug: string): void {
@@ -81,11 +86,14 @@ export function completeDrill(topicSlug: string): void {
   recordActivity({ completedDrills: addOnce(read().completedDrills, topicSlug) });
 }
 
+/** A wrong answer is remembered: the question comes back as a recall card. */
 export function recordAnswer(questionId: string, correct: boolean): void {
-  const { correctAnswers } = read();
-  recordActivity({
-    correctAnswers: correct ? addOnce(correctAnswers, questionId) : correctAnswers,
-  });
+  const { correctAnswers, mistakes } = read();
+  recordActivity(
+    correct
+      ? { correctAnswers: addOnce(correctAnswers, questionId) }
+      : { mistakes: addOnce(mistakes, questionId) },
+  );
 }
 
 export function rateCard(cardId: string, rating: ReviewRating, now = new Date()): void {
@@ -95,14 +103,17 @@ export function rateCard(cardId: string, rating: ReviewRating, now = new Date())
 }
 
 export function acceptCatchUp(now = new Date()): void {
-  write({ ...read(), catchUpAcceptedOn: dayKey(now) });
+  commit({ catchUpAcceptedOn: dayKey(now) }, now);
 }
 
 export function resetProgress(): void {
   write(EMPTY_PROGRESS);
 }
 
-/** Replaces everything on this device; used by the usability-test facilitator screen. */
+/** Replaces everything on this device as it is (facilitator screen, copies from the server). */
 export function replaceProgress(progress: LearnerProgress): void {
   write(progress);
 }
+
+/** Current progress and change notifications, for syncing outside React. */
+export { read as readProgress, subscribe as subscribeToProgress };

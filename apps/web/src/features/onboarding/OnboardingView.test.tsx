@@ -16,44 +16,52 @@ afterEach(() => {
 });
 
 const savedProfile = () => JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}').profile;
+const next = () => userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
 describe('OnboardingView', () => {
-  it('asks year, exam date and daily minutes, then opens Today', async () => {
+  it('asks age, year, exam date and daily minutes, then opens Today', async () => {
     const { container } = render(<OnboardingView />);
-    expect(screen.getByRole('img', { name: 'Step 1 of 3' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Step 1 of 4' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
     await expectNoA11yViolations(container);
 
+    await userEvent.click(screen.getByRole('radio', { name: /18 or older/ }));
+    await next();
     await userEvent.click(screen.getByRole('radio', { name: /First year/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-
+    await next();
     fireEvent.change(screen.getByLabelText('Exam date'), { target: { value: '2026-12-01' } });
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-
+    await next();
     await userEvent.click(screen.getByRole('radio', { name: /30 minutes/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Create my plan' }));
 
-    expect(savedProfile()).toEqual({ year: 1, examDate: '2026-12-01', dailyMinutes: 30 });
+    expect(savedProfile()).toEqual({
+      year: 1,
+      examDate: '2026-12-01',
+      dailyMinutes: 30,
+      adult: true,
+    });
     expect(push).toHaveBeenCalledWith('/today');
   });
 
-  it('accepts "not sure yet" for the exam and can go back a step', async () => {
+  it('keeps an under-18 student on the phone, accepts "not sure yet" and can go back', async () => {
     render(<OnboardingView />);
+    await userEvent.click(screen.getByRole('radio', { name: /Under 18/ }));
+    await next();
     await userEvent.click(screen.getByRole('radio', { name: /Second year/ }));
     expect(screen.getByText(/first-year topics only/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await next();
     await userEvent.click(screen.getByRole('button', { name: 'Previous question' }));
     expect(screen.getByRole('radio', { name: /Second year/ })).toBeChecked();
-    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await next();
     await userEvent.click(screen.getByRole('button', { name: 'Not sure yet' }));
     await userEvent.click(screen.getByRole('button', { name: 'Create my plan' }));
-    expect(savedProfile()).toEqual({ year: 2, examDate: null, dailyMinutes: 20 });
+    expect(savedProfile()).toEqual({ year: 2, examDate: null, dailyMinutes: 20, adult: false });
   });
 
-  it('can be skipped with sensible defaults', async () => {
+  it('can be skipped with safe defaults: nothing leaves the phone', async () => {
     render(<OnboardingView />);
     await userEvent.click(screen.getByRole('button', { name: 'Skip' }));
-    expect(savedProfile()).toEqual({ year: 1, examDate: null, dailyMinutes: 20 });
+    expect(savedProfile()).toEqual({ year: 1, examDate: null, dailyMinutes: 20, adult: false });
     expect(push).toHaveBeenCalledWith('/today');
   });
 });

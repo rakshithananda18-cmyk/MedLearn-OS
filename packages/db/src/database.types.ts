@@ -36,6 +36,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_reports: {
+        Row: {
+          content_version: string
+          created_at: string
+          id: number
+          kind: string
+          note: string | null
+          reporter_id: string | null
+          topic_slug: string
+        }
+        Insert: {
+          content_version: string
+          created_at?: string
+          id?: never
+          kind: string
+          note?: string | null
+          reporter_id?: string | null
+          topic_slug: string
+        }
+        Update: {
+          content_version?: string
+          created_at?: string
+          id?: never
+          kind?: string
+          note?: string | null
+          reporter_id?: string | null
+          topic_slug?: string
+        }
+        Relationships: []
+      }
+      learner_progress: {
+        Row: {
+          progress: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          progress: Json
+          updated_at: string
+          user_id?: string
+        }
+        Update: {
+          progress?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           created_at: string

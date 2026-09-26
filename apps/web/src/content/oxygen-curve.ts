@@ -9,6 +9,26 @@ export const oxygenCurve = Topic.parse({
   summary: 'Why haemoglobin loads oxygen in the lungs and lets it go in the tissues.',
   estimatedMinutes: 12,
   reviewed: false,
+  version: '0.1.0',
+  sources: [
+    {
+      title: 'Written by the MedLearn OS content team',
+      detail: 'Sample content for the prototype; awaiting medical review',
+      licence: 'All rights reserved',
+    },
+    {
+      title: 'OpenStax Anatomy and Physiology 2e',
+      detail: '22.5 Transport of Gases',
+      url: 'https://openstax.org/books/anatomy-and-physiology-2e/pages/22-5-transport-of-gases',
+      licence: 'CC BY-NC-SA 4.0; cited, not copied',
+    },
+  ],
+  keyFacts: [
+    'Cooperative binding makes the curve S-shaped.',
+    'Normal P50 is about 27 mmHg; a higher P50 is a right shift.',
+    'Right shift (CADET): CO₂, acid, 2,3-BPG, exercise, temperature. Oxygen is released more easily.',
+    'Left shift: alkalosis, cold, low 2,3-BPG, fetal haemoglobin and carbon monoxide.',
+  ],
   visual: { kind: 'oxygen-curve' },
   lesson: [
     {

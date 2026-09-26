@@ -1,20 +1,45 @@
 'use client';
 
-import { dueCardIds } from '@medlearn/core';
+import { dueCardIds, mistakeCardId } from '@medlearn/core';
+import type { Topic } from '@medlearn/schemas';
 import { buttonClasses, Card, Display, EmptyState, Eyebrow, RecallCard, Text } from '@medlearn/ui';
 import { CircleCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
 import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
-import { SampleContentBanner } from '@/features/content/SampleContentBanner';
+import { ContentTrust } from '@/features/content/ContentTrust';
 import { rateCard, useProgress } from '@/features/progress/store';
+
+interface DeckCard {
+  topic: Topic;
+  id: string;
+  front: string;
+  back: string;
+  fromMistake: boolean;
+}
+
+/** Every recall card: the topic's own cards plus one for each question the student missed. */
+function allCards(): DeckCard[] {
+  return TOPICS.flatMap((topic) => [
+    ...topic.cards.map((card) => ({ topic, ...card, fromMistake: false })),
+    ...topic.questions.map((question) => {
+      const answer = question.options.find((option) => option.id === question.answerId);
+      return {
+        topic,
+        id: mistakeCardId(question.id),
+        front: question.prompt,
+        back: `${answer?.text ?? ''}. ${question.explanation}`,
+        fromMistake: true,
+      };
+    }),
+  ]);
+}
 
 /** Spaced recall: due cards one at a time; each rating reschedules the card. */
 export function ReviseView() {
   const progress = useProgress();
   const due = dueCardIds(PLANNABLE_TOPICS, progress, new Date());
-  const cards = TOPICS.flatMap((topic) => topic.cards.map((card) => ({ topic, card })));
-  const showing = cards.find(({ card }) => card.id === due[0]);
+  const showing = allCards().find((card) => card.id === due[0]);
 
   return (
     <>
@@ -31,13 +56,14 @@ export function ReviseView() {
       </div>
       {showing ? (
         <>
-          <SampleContentBanner reviewed={showing.topic.reviewed} />
-          <Card tone="glass">
+          <ContentTrust topic={showing.topic} />
+          <Card tone="glass" className="flex flex-col gap-3">
+            {showing.fromMistake ? <Eyebrow>From a question you missed</Eyebrow> : null}
             <RecallCard
-              key={showing.card.id}
-              front={showing.card.front}
-              back={showing.card.back}
-              onRate={(rating) => rateCard(showing.card.id, rating)}
+              key={showing.id}
+              front={showing.front}
+              back={showing.back}
+              onRate={(rating) => rateCard(showing.id, rating)}
             />
           </Card>
         </>
