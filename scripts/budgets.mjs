@@ -5,8 +5,8 @@
 //  - Largest Contentful Paint, layout shift and total blocking time: Lighthouse on its phone
 //    profile with real throttling (slow 4G and a slowed CPU), median of three runs. Blocking time
 //    stands in for Interaction to Next Paint, which needs a real tap.
-//  - The CPU slowdown is calibrated to the machine running the check, so a slow CI runner and a
-//    fast laptop both emulate the same phone (a fixed 4x made blocking time double on slow runners).
+//  - The CPU slowdown is calibrated for slow machines, so a slow CI runner still emulates the
+//    same phone as a fast one (a fixed 4x made blocking time double on a slow runner).
 import { spawn } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 
@@ -19,11 +19,13 @@ const DEBUG_PORT = 9223;
 const ORIGIN = `http://localhost:${PORT}`;
 const RUNS = 3;
 
-// Lighthouse's default 4x CPU slowdown is meant for a fast desktop. We treat a benchmark index of
-// 1800 (this project's development laptop when idle) as that desktop and scale from there.
-// ponytail: calibration knob, fixed by hand; revisit once the app is measured on a real phone.
-const REFERENCE_BENCHMARK_INDEX = 1800;
-const REFERENCE_SLOWDOWN = throttling.mobileSlow4G.cpuSlowdownMultiplier;
+// Lighthouse's standard 4x CPU slowdown assumes a host at least as fast as its regular target, a
+// benchmark index of about 2000 (it warns below 1000, "about 2x weaker"). A slower host gets a
+// proportionally smaller slowdown so it emulates the same phone; a faster one keeps 4x, as
+// Lighthouse advises (scaling fast hosts up overshot: 8x on an index of 3751).
+// ponytail: calibration knob; revisit once the app is measured on a real phone.
+const TARGET_BENCHMARK_INDEX = 2000;
+const STANDARD_SLOWDOWN = throttling.mobileSlow4G.cpuSlowdownMultiplier;
 
 const SCRIPT_BUDGET_KB = 200;
 const ROUTES = [
@@ -122,12 +124,9 @@ try {
     onlyCategories: ['performance'],
   });
   const benchmarkIndex = probe.lhr.environment.benchmarkIndex;
-  const slowdown = Math.min(
-    8,
-    Math.max(
-      1,
-      Math.round((REFERENCE_SLOWDOWN * benchmarkIndex * 10) / REFERENCE_BENCHMARK_INDEX) / 10,
-    ),
+  const slowdown = Math.max(
+    1,
+    Math.round(STANDARD_SLOWDOWN * Math.min(1, benchmarkIndex / TARGET_BENCHMARK_INDEX) * 10) / 10,
   );
   console.log(`CPU slowdown ${slowdown}x (benchmark index ${Math.round(benchmarkIndex)})`);
 
