@@ -39,6 +39,7 @@ const base = {
     },
   ],
   cards: [{ id: 'c', front: 'f', back: 'b' }],
+  readIn: [],
 };
 
 describe('Topic', () => {

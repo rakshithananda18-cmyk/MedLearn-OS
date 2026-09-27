@@ -24,6 +24,7 @@ import {
   Clock,
   GraduationCap,
   Hourglass,
+  Library,
   PenLine,
   RotateCcw,
   Sunrise,
@@ -230,6 +231,26 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
             />
           </Card>
         )}
+
+        {/* After the plan: the day's tasks come first. */}
+        {progress.profile && !progress.profile.books ? (
+          <Card tone="glass" as="section" aria-labelledby="books-title" className="flex gap-4">
+            <Medallion icon={Library} />
+            <div className="flex flex-1 flex-col gap-2">
+              <h2 id="books-title" className="font-semibold text-ink">
+                Which books do you follow?
+              </h2>
+              <Text size="sm" tone="muted">
+                Pick them once. Every topic then shows where to read it in your books.
+              </Text>
+              <div>
+                <Link href="/books" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
+                  Choose my books
+                </Link>
+              </div>
+            </div>
+          </Card>
+        ) : null}
       </div>
     </div>
   );

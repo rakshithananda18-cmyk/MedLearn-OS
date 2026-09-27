@@ -3,7 +3,9 @@ import { BookOpen, ClipboardCheck, PenLine, Rotate3d, RotateCcw } from '@medlear
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { getBook } from '@/content/books';
 import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
+import { WhereToRead } from '@/features/books/WhereToRead';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { TopicNotes } from '@/features/notes/TopicNotes';
 import { LinkCard } from '@/features/shell/LinkCard';
@@ -85,6 +87,12 @@ export default async function TopicPage({ params }: Props) {
           </li>
         ))}
       </ul>
+      <WhereToRead
+        readings={topic.readIn.flatMap((ref) => {
+          const book = getBook(ref.bookId);
+          return book ? [{ ...ref, shortTitle: book.shortTitle, title: book.title }] : [];
+        })}
+      />
       <TopicNotes topicSlug={topic.slug} />
     </Screen>
   );

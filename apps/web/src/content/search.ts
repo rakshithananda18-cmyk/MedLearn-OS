@@ -74,6 +74,6 @@ export function searchTopics(query: string, topics: Topic[] = TOPICS, limit = 30
       })),
   );
   return results
-    .sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
+    .toSorted((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
     .slice(0, limit);
 }

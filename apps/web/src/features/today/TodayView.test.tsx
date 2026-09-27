@@ -4,9 +4,9 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { PLANNABLE_TOPICS } from '@/content/topics';
-import { TOPICS } from '@/content/topics';
+import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
 import {
+  chooseBooks,
   completeDrill,
   completeLesson,
   rateCard,
@@ -26,6 +26,17 @@ function seed(state: object) {
 }
 
 describe('TodayView', () => {
+  it('asks a student with a plan which books they follow, until they choose', () => {
+    act(() => saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true }));
+    const { unmount } = render(<TodayView topics={PLANNABLE_TOPICS} />);
+    expect(screen.getByRole('link', { name: 'Choose my books' })).toHaveAttribute('href', '/books');
+    unmount();
+
+    act(() => chooseBooks(['guyton-hall']));
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
+    expect(screen.queryByRole('link', { name: 'Choose my books' })).not.toBeInTheDocument();
+  });
+
   it('offers a new student the first lesson and the three setup questions', async () => {
     const { container } = render(<TodayView topics={PLANNABLE_TOPICS} />);
     expect(screen.getByRole('link', { name: /Learn: Brachial plexus/ })).toHaveAttribute(

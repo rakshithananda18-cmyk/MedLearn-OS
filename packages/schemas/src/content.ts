@@ -142,6 +142,27 @@ export type ContentSource = z.infer<typeof ContentSource>;
 export const RecallCardContent = z.object({ id: Id, front: z.string(), back: z.string() });
 export type RecallCardContent = z.infer<typeof RecallCardContent>;
 
+/** A standard textbook students follow. Several cover each subject; each student picks theirs. */
+export const Book = z.object({
+  id: Id,
+  subjectSlug: Id,
+  title: z.string().min(1),
+  /** How students usually name it, such as “BD Chaurasia”. */
+  shortTitle: z.string().min(1),
+  authors: z.string().min(1),
+  /** Edition the chapter and page references follow, once the group confirms it. */
+  edition: z.string().min(1).optional(),
+});
+export type Book = z.infer<typeof Book>;
+
+/** Where one book covers a topic. */
+export const BookRef = z.object({
+  bookId: Id,
+  chapter: z.string().min(1),
+  pages: z.string().min(1).optional(),
+});
+export type BookRef = z.infer<typeof BookRef>;
+
 export const Topic = z
   .object({
     slug: Id,
@@ -160,6 +181,8 @@ export const Topic = z
     lesson: z.array(LessonStep).min(1),
     questions: z.array(Question),
     cards: z.array(RecallCardContent),
+    /** Where each standard book covers this topic, so students read it in their own book. */
+    readIn: z.array(BookRef),
   })
   .superRefine((topic, ctx) => {
     const { visual } = topic;

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { ActionBar } from './ActionBar';
-import { ChoiceGroup } from './ChoiceGroup';
+import { ChoiceGroup, MultiChoiceGroup } from './ChoiceGroup';
 import { Clock } from './icons';
 import { Medallion } from './Medallion';
 import { Pill } from './Pill';
@@ -84,6 +84,36 @@ describe('ChoiceGroup', () => {
     expect(screen.getByRole('radio', { name: /10 minutes/ })).toBeChecked();
     await userEvent.keyboard('{ArrowDown}');
     expect(screen.getByRole('radio', { name: /20 minutes/ })).toBeChecked();
+    await expectNoA11yViolations(container);
+  });
+});
+
+function Books() {
+  const [value, setValue] = useState<('guyton' | 'jain')[]>([]);
+  return (
+    <MultiChoiceGroup
+      legend="Physiology books"
+      name="books"
+      value={value}
+      onChange={setValue}
+      options={[
+        { value: 'guyton', label: 'Guyton and Hall' },
+        { value: 'jain', label: 'A K Jain' },
+      ]}
+    />
+  );
+}
+
+describe('MultiChoiceGroup', () => {
+  it('lets any number be picked and unpicked, as labelled checkboxes', async () => {
+    const { container } = render(<Books />);
+    expect(screen.getByRole('group', { name: 'Physiology books' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Guyton and Hall' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'A K Jain' }));
+    expect(screen.getByRole('checkbox', { name: 'Guyton and Hall' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'A K Jain' })).toBeChecked();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Guyton and Hall' }));
+    expect(screen.getByRole('checkbox', { name: 'Guyton and Hall' })).not.toBeChecked();
     await expectNoA11yViolations(container);
   });
 });

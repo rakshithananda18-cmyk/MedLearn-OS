@@ -28,6 +28,7 @@ export {
   Inbox,
   Info,
   Layers,
+  Library,
   LoaderCircle,
   Menu,
   Monitor,
