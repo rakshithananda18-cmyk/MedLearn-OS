@@ -14,7 +14,7 @@ const later = (a: string | null, b: string | null) => {
 /**
  * Combines this phone's progress with an account's saved progress when a student signs in, so
  * nothing learned on either side is lost: lists are joined, each card keeps its most recent
- * review, and the account's profile wins.
+ * review, each topic keeps its most recent note, and the account's profile wins.
  */
 export function mergeProgress(
   local: LearnerProgress,
@@ -26,6 +26,11 @@ export function mergeProgress(
     const mine = reviews[id];
     if (!mine || reviewedAt(review) > reviewedAt(mine)) reviews[id] = review;
   }
+  const notes = { ...local.notes };
+  for (const [slug, note] of Object.entries(account.notes)) {
+    const mine = notes[slug];
+    if (!mine || Date.parse(note.updatedAt) > Date.parse(mine.updatedAt)) notes[slug] = note;
+  }
   return {
     profile: account.profile ?? local.profile,
     completedLessons: union(account.completedLessons, local.completedLessons),
@@ -35,6 +40,7 @@ export function mergeProgress(
     reviews,
     lastActiveAt: later(account.lastActiveAt, local.lastActiveAt),
     catchUpAcceptedOn: account.catchUpAcceptedOn ?? local.catchUpAcceptedOn,
+    notes,
     updatedAt: now.toISOString(),
   };
 }

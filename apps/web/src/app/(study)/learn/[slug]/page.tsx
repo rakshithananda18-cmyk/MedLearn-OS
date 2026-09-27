@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
+import { TopicNotes } from '@/features/notes/TopicNotes';
 import { LinkCard } from '@/features/shell/LinkCard';
 import { Screen } from '@/features/shell/Screen';
 
@@ -84,6 +85,7 @@ export default async function TopicPage({ params }: Props) {
           </li>
         ))}
       </ul>
+      <TopicNotes topicSlug={topic.slug} />
     </Screen>
   );
 }

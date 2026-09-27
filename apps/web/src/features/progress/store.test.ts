@@ -9,6 +9,7 @@ import {
   rateCard,
   recordAnswer,
   resetProgress,
+  saveNote,
   saveProfile,
   useProgress,
 } from './store';
@@ -58,6 +59,17 @@ describe('progress store', () => {
     localStorage.setItem('ml-progress-v1', '{not json');
     const { result } = renderHook(() => useProgress());
     expect(result.current.completedLessons).toEqual([]);
+  });
+
+  it('saves a note per topic and stamps the change for syncing', () => {
+    const { result } = renderHook(() => useProgress());
+    const now = new Date('2026-09-27T08:00:00.000Z');
+    act(() => saveNote('brachial-plexus', 'Upper trunk: Erb', now));
+    expect(result.current.notes['brachial-plexus']).toEqual({
+      text: 'Upper trunk: Erb',
+      updatedAt: now.toISOString(),
+    });
+    expect(result.current.updatedAt).toBe(now.toISOString());
   });
 
   it('saves the onboarding profile and the catch-up acceptance', () => {

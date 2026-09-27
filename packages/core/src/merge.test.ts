@@ -46,6 +46,27 @@ describe('mergeProgress', () => {
     expect(merged.reviews).toEqual({ c1: newer, c2: newer, c3: older });
   });
 
+  it('keeps the most recent note on each topic, including a cleared one', () => {
+    const phone = progress({
+      notes: {
+        'brachial-plexus': { text: 'Upper trunk: Erb', updatedAt: LATE.toISOString() },
+        'oxygen-curve': { text: '', updatedAt: LATE.toISOString() },
+      },
+    });
+    const account = progress({
+      notes: {
+        'brachial-plexus': { text: 'old', updatedAt: EARLY.toISOString() },
+        'oxygen-curve': { text: 'P50 27', updatedAt: EARLY.toISOString() },
+        'cardiac-cycle': { text: 'from another phone', updatedAt: EARLY.toISOString() },
+      },
+    });
+    expect(mergeProgress(phone, account, NOW).notes).toEqual({
+      'brachial-plexus': { text: 'Upper trunk: Erb', updatedAt: LATE.toISOString() },
+      'oxygen-curve': { text: '', updatedAt: LATE.toISOString() },
+      'cardiac-cycle': { text: 'from another phone', updatedAt: EARLY.toISOString() },
+    });
+  });
+
   it('falls back to the phone profile when the account has none', () => {
     const phone = progress({ profile: { year: 2, examDate: null, dailyMinutes: 20, adult: true } });
     expect(mergeProgress(phone, EMPTY_PROGRESS, NOW).profile?.year).toBe(2);

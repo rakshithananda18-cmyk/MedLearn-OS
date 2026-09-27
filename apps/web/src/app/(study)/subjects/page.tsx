@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { connection } from 'next/server';
 
 import { TOPICS } from '@/content/topics';
+import { SearchForm } from '@/features/search/SearchForm';
 import { LinkCard } from '@/features/shell/LinkCard';
 import { Screen } from '@/features/shell/Screen';
 import { getSubjectsRepository } from '@/server/db';
@@ -22,6 +23,7 @@ export default async function SubjectsPage() {
           Your <em>subjects</em>
         </Display>
       </div>
+      <SearchForm />
       <ul aria-label="Subjects" className="flex flex-col gap-8">
         {subjects.map((subject) => {
           const topics = TOPICS.filter((topic) => topic.subjectSlug === subject.slug);

@@ -13,6 +13,13 @@ export interface StudyProfile {
 }
 
 /** What the learner has done so far (stored on the device in the prototype). */
+/** A student's own note on a topic. A cleared note stays, empty, so clearing it syncs too. */
+export interface TopicNote {
+  text: string;
+  /** When it last changed (ISO time); the newer note wins when phone and account differ. */
+  updatedAt: string;
+}
+
 export interface LearnerProgress {
   profile: StudyProfile | null;
   completedLessons: string[];
@@ -25,6 +32,8 @@ export interface LearnerProgress {
   lastActiveAt: string | null;
   /** Local date (YYYY-MM-DD) on which the student accepted a catch-up plan. */
   catchUpAcceptedOn: string | null;
+  /** Notes by topic slug. */
+  notes: Record<string, TopicNote>;
   /** Last change (ISO time); the newer copy wins when the device and the server differ. */
   updatedAt: string | null;
 }
@@ -38,6 +47,7 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   reviews: {},
   lastActiveAt: null,
   catchUpAcceptedOn: null,
+  notes: {},
   updatedAt: null,
 };
 
