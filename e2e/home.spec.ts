@@ -39,8 +39,12 @@ test.describe('landing and subjects', () => {
 
 test.describe('API', () => {
   test('health check reports ok', async ({ request }) => {
-    const response = await request.get('/api/health');
-    expect(response.status()).toBe(200);
-    expect(await response.json()).toEqual({ data: { status: 'ok' } });
+    // The check gives the database 2 s; on a busy machine one call can miss that, so ask again.
+    await expect
+      .poll(async () => {
+        const response = await request.get('/api/health');
+        return { status: response.status(), body: await response.json() };
+      })
+      .toEqual({ status: 200, body: { data: { status: 'ok' } } });
   });
 });

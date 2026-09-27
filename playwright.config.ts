@@ -7,6 +7,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
+  // A laptop runs the app, the database and six browsers at once, so a navigation can take longer
+  // than the default 5 s; CI runs one screen size per machine and keeps the default.
+  expect: { timeout: process.env.CI ? 5_000 : 10_000 },
   // Hard stop for the whole run, so a hang fails in minutes instead of hours.
   globalTimeout: process.env.CI ? 10 * 60_000 : 0,
   // `list` prints each test as it runs, so CI logs show where anything stops.

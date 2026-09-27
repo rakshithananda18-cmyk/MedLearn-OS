@@ -2,7 +2,7 @@ import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
 
@@ -43,6 +43,10 @@ async function renderExplore() {
   const { Explore3D } = await import('./Explore3D');
   return render(<Explore3D title="3D model" model={model3d} diagram={diagram} />);
 }
+
+// Each test imports the screen afresh (the device check is cached per page load). Loading it once
+// here first keeps that one-off cost out of the first test's time limit on a busy machine.
+beforeAll(() => import('./Explore3D'), 60_000);
 
 beforeEach(() => {
   capability.supported = true;
