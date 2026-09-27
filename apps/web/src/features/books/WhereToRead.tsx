@@ -11,7 +11,7 @@ export interface Reading {
   shortTitle: string;
   title: string;
   chapter: string;
-  pages?: string | undefined;
+  pages?: string;
 }
 
 /** Where each standard book covers this topic, the student's own books first. */

@@ -41,7 +41,7 @@ function ChoiceCard<T extends string>({
   option,
   checked,
   onChange,
-}: ChoiceCardProps<T>) {
+}: Readonly<ChoiceCardProps<T>>) {
   return (
     <label
       className={cx(
@@ -111,7 +111,7 @@ export function MultiChoiceGroup<T extends string>({
   options,
   value,
   onChange,
-}: MultiChoiceGroupProps<T>) {
+}: Readonly<MultiChoiceGroupProps<T>>) {
   return (
     <fieldset>
       <legend className="sr-only">{legend}</legend>
