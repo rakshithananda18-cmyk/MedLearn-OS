@@ -30,7 +30,7 @@ import {
 } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
-import { PLANNABLE_TOPICS } from '@/content/topics';
+import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
 import { LinkCard } from '@/features/shell/LinkCard';
 
@@ -127,10 +127,10 @@ function CatchUpCard({ plan, accepted }: { plan: TodayPlan; accepted: boolean })
 }
 
 /** The Today screen: the next few things to study, sized to the student's day. */
-export function TodayView() {
+export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
   const now = new Date();
-  const plan = buildTodayPlan(PLANNABLE_TOPICS, progress, now);
+  const plan = buildTodayPlan(topics, progress, now);
   const planned = plan.items.reduce((total, item) => total + item.minutes, 0);
   const first = plan.items[0];
   const date = new Intl.DateTimeFormat('en-IN', {

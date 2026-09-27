@@ -15,7 +15,7 @@ import {
 import { BookOpen, ChevronRight, RotateCcw, Target } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
-import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
+import type { TopicSummary } from '@/content/topics';
 import { AccountCard } from '@/features/account/AccountCard';
 import { useProgress } from '@/features/progress/store';
 
@@ -31,14 +31,14 @@ function describe(mastery: TopicMastery): string {
 }
 
 /** Mastery by topic, weak spots to fix and the review backlog. Calm numbers, no streaks. */
-export function ProgressView() {
+export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
   const now = new Date();
-  const mastery = PLANNABLE_TOPICS.map((topic) => topicMastery(topic, progress, now));
+  const mastery = topics.map((topic) => topicMastery(topic, progress, now));
   const lessonsDone = mastery.filter((item) => item.lessonDone).length;
   const due = mastery.reduce((total, item) => total + item.dueCards, 0);
   const weak = mastery.filter((item) => item.weakSpots > 0);
-  const subjects = [...new Set(TOPICS.map((topic) => topic.subjectSlug))];
+  const subjects = [...new Set(topics.map((topic) => topic.subjectSlug))];
 
   return (
     <>
@@ -96,25 +96,27 @@ export function ProgressView() {
             {subject}
           </h2>
           <ul className="flex flex-col gap-2">
-            {TOPICS.filter((topic) => topic.subjectSlug === subject).map((topic) => {
-              const item = mastery.find((entry) => entry.slug === topic.slug);
-              if (!item) return null;
-              return (
-                <li key={topic.slug}>
-                  <Link
-                    href={`/learn/${topic.slug}`}
-                    className="group flex items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
-                  >
-                    <ProgressRing value={item.percent} label={`${topic.title} mastery`} />
-                    <span className="flex flex-1 flex-col">
-                      <span className="font-semibold text-ink">{topic.title}</span>
-                      <span className="text-sm text-fg-muted">{describe(item)}</span>
-                    </span>
-                    <Icon icon={ChevronRight} className="text-fg-muted" />
-                  </Link>
-                </li>
-              );
-            })}
+            {topics
+              .filter((topic) => topic.subjectSlug === subject)
+              .map((topic) => {
+                const item = mastery.find((entry) => entry.slug === topic.slug);
+                if (!item) return null;
+                return (
+                  <li key={topic.slug}>
+                    <Link
+                      href={`/learn/${topic.slug}`}
+                      className="group flex items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
+                    >
+                      <ProgressRing value={item.percent} label={`${topic.title} mastery`} />
+                      <span className="flex flex-1 flex-col">
+                        <span className="font-semibold text-ink">{topic.title}</span>
+                        <span className="text-sm text-fg-muted">{describe(item)}</span>
+                      </span>
+                      <Icon icon={ChevronRight} className="text-fg-muted" />
+                    </Link>
+                  </li>
+                );
+              })}
           </ul>
         </section>
       ))}
