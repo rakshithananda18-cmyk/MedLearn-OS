@@ -42,8 +42,12 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
   const signOut = async () => {
     setBusy(true);
     await send('/api/account/sign-out');
-    // The progress belongs to the account; nothing of it stays on a shared phone.
+    // The progress belongs to the account; nothing of it stays on a shared phone, nor do the
+    // pages kept for offline use.
     resetProgress();
+    if ('caches' in globalThis) {
+      await Promise.all((await caches.keys()).map((key) => caches.delete(key)));
+    }
     router.push('/');
   };
 
@@ -113,14 +117,20 @@ function NotYet({ hasProfile }: Readonly<{ hasProfile: boolean }>) {
   );
 }
 
+interface AccountViewProps {
+  /** The app is private (an access list is set): only invited emails can sign up or sign in. */
+  inviteOnly?: boolean;
+}
+
 /**
  * Email and password accounts (Google and phone sign-in come later). Only adults create
  * accounts until parental consent exists; signing in keeps everything learned on either side.
  */
-export function AccountView() {
+export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) {
   const progress = useProgress();
   const { state, refresh } = useAccount();
-  const [mode, setMode] = useState<Mode>('create');
+  // Invited people mostly come back to sign in; the setup questions follow the first sign-in.
+  const [mode, setMode] = useState<Mode>(inviteOnly ? 'sign-in' : 'create');
   const [resetEmail, setResetEmail] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -157,7 +167,7 @@ export function AccountView() {
     />
   );
   if (mode === 'reset') form = <ResetPassword initialEmail={resetEmail} />;
-  else if (mode === 'create' && progress.profile?.adult !== true) {
+  else if (mode === 'create' && !inviteOnly && progress.profile?.adult !== true) {
     form = <NotYet hasProfile={progress.profile !== null} />;
   }
 
@@ -169,8 +179,9 @@ export function AccountView() {
           Keep your progress <em>safe</em>
         </Display>
         <Text tone="muted">
-          An account keeps your progress if you change or lose your phone. Google and phone sign-in
-          are coming later.
+          {inviteOnly
+            ? 'MedLearn OS is private for now. Sign in, or create your account with the email the team added.'
+            : 'An account keeps your progress if you change or lose your phone. Google and phone sign-in are coming later.'}
         </Text>
       </div>
       <ModeSwitch mode={mode} onChange={setMode} />

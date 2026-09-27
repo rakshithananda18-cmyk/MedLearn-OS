@@ -1,6 +1,7 @@
 import { AppError } from '@medlearn/core';
 import { AccountCredentials } from '@medlearn/schemas';
 
+import { getAccessList, isAllowed, NOT_INVITED } from '@/server/access';
 import { toAuthError } from '@/server/auth-errors';
 import { ok, parseJson, withRoute } from '@/server/route';
 import { getSessionDb } from '@/server/session';
@@ -11,6 +12,7 @@ import { getSessionDb } from '@/server/session';
  */
 export const POST = withRoute('POST /api/account/sign-up', async (request, { log }) => {
   const { email, password } = await parseJson(request, AccountCredentials);
+  if (!isAllowed(getAccessList(), email)) throw new AppError('FORBIDDEN', NOT_INVITED);
   const db = await getSessionDb();
   const { data } = await db.auth.getUser();
 

@@ -18,6 +18,9 @@ blob-report/
 .env.*
 !.env.example
 
+# textbook PDFs used to prepare private study content: copyrighted, never committed
+books/
+
 # supabase local state
 supabase/.branches/
 supabase/.temp/
