@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
+import { PLANNABLE_TOPICS, recallDeck } from '@/content/topics';
 import { completeLesson, rateCard, recordAnswer, resetProgress } from '@/features/progress/store';
 
 const rateCardEasy = (id: string) => rateCard(id, 'easy');
@@ -13,13 +14,13 @@ afterEach(() => act(() => resetProgress()));
 
 describe('ReviseView', () => {
   it('has nothing due before a lesson is finished', () => {
-    render(<ReviseView />);
+    render(<ReviseView topics={PLANNABLE_TOPICS} cards={recallDeck()} />);
     expect(screen.getByText('No reviews due')).toBeInTheDocument();
   });
 
   it('shows due cards one at a time and reschedules each rating', async () => {
     act(() => completeLesson('brachial-plexus'));
-    render(<ReviseView />);
+    render(<ReviseView topics={PLANNABLE_TOPICS} cards={recallDeck()} />);
     expect(
       screen.getByText(
         `${brachialPlexus.cards.length} cards due. Answer in your head, then check.`,
@@ -42,7 +43,7 @@ describe('ReviseView', () => {
       }
       recordAnswer('erb-roots', false);
     });
-    render(<ReviseView />);
+    render(<ReviseView topics={PLANNABLE_TOPICS} cards={recallDeck()} />);
     const question = brachialPlexus.questions.find((item) => item.id === 'erb-roots');
     expect(screen.getByText('From a question you missed')).toBeInTheDocument();
     expect(screen.getByText(question?.prompt ?? '')).toBeInTheDocument();

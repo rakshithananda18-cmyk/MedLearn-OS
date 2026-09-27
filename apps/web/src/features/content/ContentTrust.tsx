@@ -1,8 +1,9 @@
 'use client';
 
-import type { Topic } from '@medlearn/schemas';
 import { BottomSheet, Button, Icon, Text } from '@medlearn/ui';
 import { BookMarked, ExternalLink } from '@medlearn/ui/icons';
+
+import type { TopicTrust } from '@/content/topics';
 
 import { ReportIssueForm } from './ReportIssueForm';
 import { SampleContentBanner } from './SampleContentBanner';
@@ -11,7 +12,7 @@ import { SampleContentBanner } from './SampleContentBanner';
  * Trust around every piece of content: the review label, and one tap to the source drawer
  * (sources, review status, version) with "report an issue".
  */
-export function ContentTrust({ topic }: Readonly<{ topic: Topic }>) {
+export function ContentTrust({ topic }: Readonly<{ topic: TopicTrust }>) {
   return (
     <div className="flex flex-col gap-2">
       <SampleContentBanner reviewed={topic.reviewed} />

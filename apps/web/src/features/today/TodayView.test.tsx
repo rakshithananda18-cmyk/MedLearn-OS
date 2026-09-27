@@ -4,6 +4,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { PLANNABLE_TOPICS } from '@/content/topics';
 import { TOPICS } from '@/content/topics';
 import {
   completeDrill,
@@ -26,7 +27,7 @@ function seed(state: object) {
 
 describe('TodayView', () => {
   it('offers a new student the first lesson and the three setup questions', async () => {
-    const { container } = render(<TodayView />);
+    const { container } = render(<TodayView topics={PLANNABLE_TOPICS} />);
     expect(screen.getByRole('link', { name: /Learn: Brachial plexus/ })).toHaveAttribute(
       'href',
       '/learn/brachial-plexus',
@@ -43,7 +44,7 @@ describe('TodayView', () => {
   });
 
   it('adds reviews and practice once the lesson is done, within the daily minutes', () => {
-    render(<TodayView />);
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
     act(() => completeLesson('brachial-plexus'));
     expect(screen.getByRole('link', { name: /Review 4 cards/ })).toHaveAttribute('href', '/revise');
     expect(screen.getByRole('link', { name: /Practice: Brachial plexus/ })).toBeInTheDocument();
@@ -51,7 +52,7 @@ describe('TodayView', () => {
   });
 
   it('switches to exam mode with a countdown and the diagram drill first', () => {
-    render(<TodayView />);
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
     act(() => {
       saveProfile({
         year: 1,
@@ -71,14 +72,14 @@ describe('TodayView', () => {
       completedLessons: ['brachial-plexus'],
       lastActiveAt: new Date(Date.now() - 5 * DAY_MS).toISOString(),
     });
-    render(<TodayView />);
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
     expect(screen.getByRole('heading', { name: 'You were away for 4 days' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Accept plan' }));
     expect(screen.getByText('Plan accepted. Start with the first step below.')).toBeInTheDocument();
   });
 
   it('shows the all-done state when nothing is left', () => {
-    render(<TodayView />);
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
     act(() => {
       for (const topic of TOPICS) {
         completeLesson(topic.slug);
