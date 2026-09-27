@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { NOTE_MAX_LENGTH } from './limits';
+
 // Validates learner progress at the API boundary. The limits keep one learner's row small.
 const MAX_ITEMS = 5000;
 const ItemId = z.string().min(1).max(120);
@@ -40,6 +42,11 @@ export const LearnerProgressInput = z.object({
     .refine((reviews) => Object.keys(reviews).length <= MAX_ITEMS, 'Too many reviews'),
   lastActiveAt: IsoTime.nullable(),
   catchUpAcceptedOn: LocalDate.nullable(),
+  // Missing from progress saved before notes existed.
+  notes: z
+    .record(ItemId, z.object({ text: z.string().max(NOTE_MAX_LENGTH), updatedAt: IsoTime }))
+    .refine((notes) => Object.keys(notes).length <= MAX_ITEMS, 'Too many notes')
+    .default({}),
   updatedAt: IsoTime.nullable(),
 });
 export type LearnerProgressInput = z.infer<typeof LearnerProgressInput>;

@@ -32,6 +32,18 @@ describe('LearnerProgressInput', () => {
     expect(LearnerProgressInput.safeParse(progress).success).toBe(true);
   });
 
+  it('takes notes, and fills them in for progress saved before notes existed', () => {
+    const note = { text: 'C5 to T1', updatedAt: '2026-09-27T08:00:00.000Z' };
+    const withNote = LearnerProgressInput.parse({
+      ...progress,
+      notes: { 'brachial-plexus': note },
+    });
+    expect(withNote.notes['brachial-plexus']).toEqual(note);
+    expect(LearnerProgressInput.parse(progress).notes).toEqual({});
+    const tooLong = { 'brachial-plexus': { ...note, text: 'x'.repeat(5001) } };
+    expect(LearnerProgressInput.safeParse({ ...progress, notes: tooLong }).success).toBe(false);
+  });
+
   it('rejects malformed or oversized progress', () => {
     expect(LearnerProgressInput.safeParse({ ...progress, completedLessons: 'all' }).success).toBe(
       false,

@@ -102,6 +102,11 @@ export function rateCard(cardId: string, rating: ReviewRating, now = new Date())
   recordActivity({ reviews: { ...reviews, [cardId]: next } }, now);
 }
 
+/** Saves the student's note on a topic (an empty note clears it). */
+export function saveNote(topicSlug: string, text: string, now = new Date()): void {
+  commit({ notes: { ...read().notes, [topicSlug]: { text, updatedAt: now.toISOString() } } }, now);
+}
+
 export function acceptCatchUp(now = new Date()): void {
   commit({ catchUpAcceptedOn: dayKey(now) }, now);
 }

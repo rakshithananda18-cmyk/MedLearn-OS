@@ -24,6 +24,7 @@ const progress = (updatedAt: string): LearnerProgressInput => ({
   reviews: {},
   lastActiveAt: updatedAt,
   catchUpAcceptedOn: null,
+  notes: { 'brachial-plexus': { text: 'C5 to T1', updatedAt } },
   updatedAt,
 });
 
