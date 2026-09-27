@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   acceptCatchUp,
+  chooseBooks,
   completeDrill,
   completeLesson,
   rateCard,
@@ -59,6 +60,17 @@ describe('progress store', () => {
     localStorage.setItem('ml-progress-v1', '{not json');
     const { result } = renderHook(() => useProgress());
     expect(result.current.completedLessons).toEqual([]);
+  });
+
+  it('saves the books a student follows with their plan, and only once a plan exists', () => {
+    const { result } = renderHook(() => useProgress());
+    act(() => chooseBooks(['guyton-hall']));
+    expect(result.current.profile).toBeNull();
+
+    act(() => saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true }));
+    act(() => chooseBooks(['guyton-hall', 'bd-chaurasia']));
+    expect(result.current.profile?.books).toEqual(['guyton-hall', 'bd-chaurasia']);
+    expect(result.current.profile?.dailyMinutes).toBe(20);
   });
 
   it('saves a note per topic and stamps the change for syncing', () => {

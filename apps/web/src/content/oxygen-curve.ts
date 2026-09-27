@@ -149,4 +149,6 @@ export const oxygenCurve: Topic = {
       back: 'Alkalosis, hypothermia and low 2,3-BPG (stored blood); also fetal haemoglobin and carbon monoxide.',
     },
   ],
+  // Chapter and page references are added from the group's textbooks.
+  readIn: [],
 };

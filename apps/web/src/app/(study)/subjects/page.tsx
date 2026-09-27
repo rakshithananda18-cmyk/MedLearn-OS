@@ -1,6 +1,7 @@
 import { Card, Display, Eyebrow, Text } from '@medlearn/ui';
 import { BookOpen } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { connection } from 'next/server';
 
 import { TOPICS } from '@/content/topics';
@@ -24,6 +25,15 @@ export default async function SubjectsPage() {
         </Display>
       </div>
       <SearchForm />
+      <Text size="sm">
+        <Link
+          href="/books"
+          className="font-semibold text-primary-strong underline-offset-4 hover:underline"
+        >
+          Choose the books you follow
+        </Link>{' '}
+        and every topic points you to the right chapter.
+      </Text>
       <ul aria-label="Subjects" className="flex flex-col gap-8">
         {subjects.map((subject) => {
           const topics = TOPICS.filter((topic) => topic.subjectSlug === subject.slug);

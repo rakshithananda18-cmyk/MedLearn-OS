@@ -11,7 +11,13 @@ export {
 } from './Button';
 export { Card, type CardProps } from './Card';
 export { Checkbox, type CheckboxProps } from './Checkbox';
-export { ChoiceGroup, type ChoiceGroupProps, type ChoiceOption } from './ChoiceGroup';
+export {
+  ChoiceGroup,
+  type ChoiceGroupProps,
+  type ChoiceOption,
+  MultiChoiceGroup,
+  type MultiChoiceGroupProps,
+} from './ChoiceGroup';
 export { cx } from './cx';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';

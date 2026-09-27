@@ -10,9 +10,10 @@ export interface StudyProfile {
   dailyMinutes: number;
   /** Confirmed 18 or older; under-18 progress stays on the phone until a parent agrees. */
   adult: boolean;
+  /** The standard books this student follows (book ids); missing until they choose. */
+  books?: string[];
 }
 
-/** What the learner has done so far (stored on the device in the prototype). */
 /** A student's own note on a topic. A cleared note stays, empty, so clearing it syncs too. */
 export interface TopicNote {
   text: string;
@@ -20,6 +21,7 @@ export interface TopicNote {
   updatedAt: string;
 }
 
+/** What the learner has done so far (kept on the phone, and in the account for adults). */
 export interface LearnerProgress {
   profile: StudyProfile | null;
   completedLessons: string[];

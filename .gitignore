@@ -19,7 +19,9 @@ blob-report/
 !.env.example
 
 # textbook PDFs used to prepare private study content: copyrighted, never committed
-books/
+# (only the note explaining the folder is)
+books/*
+!books/README.md
 
 # supabase local state
 supabase/.branches/

@@ -29,6 +29,7 @@ export const StudyProfileInput = z.object({
   dailyMinutes: z.number().int().min(5).max(240),
   /** Confirmed 18 or older; only adults' progress leaves the phone before parental consent. */
   adult: z.boolean(),
+  books: z.array(ItemId).max(50).optional(),
 });
 
 export const LearnerProgressInput = z.object({

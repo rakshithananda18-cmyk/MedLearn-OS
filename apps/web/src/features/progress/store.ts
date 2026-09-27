@@ -102,6 +102,12 @@ export function rateCard(cardId: string, rating: ReviewRating, now = new Date())
   recordActivity({ reviews: { ...reviews, [cardId]: next } }, now);
 }
 
+/** The standard books this student follows; needs the study plan (profile) to exist. */
+export function chooseBooks(bookIds: string[]): void {
+  const { profile } = read();
+  if (profile) commit({ profile: { ...profile, books: bookIds } });
+}
+
 /** Saves the student's note on a topic (an empty note clears it). */
 export function saveNote(topicSlug: string, text: string, now = new Date()): void {
   commit({ notes: { ...read().notes, [topicSlug]: { text, updatedAt: now.toISOString() } } }, now);
