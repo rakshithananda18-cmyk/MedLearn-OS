@@ -46,14 +46,16 @@ const ADULT_PROFILE: StudyProfile = {
 /**
  * After signing in or creating an account: joins this phone's progress with the account's so
  * nothing learned on either side is lost. Only adults hold accounts, so the profile says so.
+ * Returns whether the student already had a study plan (answered the setup questions).
  */
-export async function adoptAccountProgress(now = new Date()): Promise<void> {
+export async function adoptAccountProgress(now = new Date()): Promise<boolean> {
   const server = await loadServerCopy();
   const local = readProgress();
   const merged = server
     ? mergeProgress(local, server, now)
     : { ...local, updatedAt: now.toISOString() };
   replaceProgress({ ...merged, profile: { ...(merged.profile ?? ADULT_PROFILE), adult: true } });
+  return merged.profile !== null;
 }
 
 /**

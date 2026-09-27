@@ -1,5 +1,7 @@
+import { AppError } from '@medlearn/core';
 import { AccountCredentials } from '@medlearn/schemas';
 
+import { getAccessList, isAllowed, NOT_INVITED } from '@/server/access';
 import { toAuthError } from '@/server/auth-errors';
 import { ok, parseJson, withRoute } from '@/server/route';
 import { getSessionDb } from '@/server/session';
@@ -7,6 +9,7 @@ import { getSessionDb } from '@/server/session';
 /** Signs in with email and password; the session is kept in cookies. The email is never logged. */
 export const POST = withRoute('POST /api/account/sign-in', async (request, { log }) => {
   const { email, password } = await parseJson(request, AccountCredentials);
+  if (!isAllowed(getAccessList(), email)) throw new AppError('FORBIDDEN', NOT_INVITED);
   const db = await getSessionDb();
   const { error } = await db.auth.signInWithPassword({ email, password });
   if (error?.code === 'email_not_confirmed') {

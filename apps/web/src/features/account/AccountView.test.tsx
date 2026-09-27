@@ -82,7 +82,7 @@ describe('AccountView', () => {
     });
   });
 
-  it('shows the server message when signing in fails, then signs in and opens Today', async () => {
+  it('shows the server message when signing in fails, then sends a student without a plan to the setup questions', async () => {
     server({
       '/api/account': [{ body: { data: null } }],
       '/api/account/sign-in': [
@@ -100,11 +100,13 @@ describe('AccountView', () => {
     expect(await screen.findByText('Email or password is wrong.')).toBeInTheDocument();
 
     await userEvent.click(submit);
-    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/today'));
+    // No study plan on this phone or in the account: the setup questions come first.
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/welcome'));
     expect(readProgress().profile?.adult).toBe(true);
   });
 
   it('resets a forgotten password with an emailed code and opens Today', async () => {
+    act(adult);
     const fetchMock = server({
       '/api/account': [{ body: { data: null } }],
       '/api/account/reset': [{ status: 204 }],
@@ -133,6 +135,18 @@ describe('AccountView', () => {
       code: '042917',
       password: 'new-horse-99',
     });
+  });
+
+  it('in a private app, opens on sign-in and lets an invited person create an account without a plan', async () => {
+    server({ '/api/account': [{ body: { data: null } }] });
+    const { container } = render(<AccountView inviteOnly />);
+    expect(await screen.findByText(/MedLearn OS is private for now/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(screen.getByRole('button', { name: 'New account' }));
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument();
+    expect(screen.queryByText(/Answer the setup questions first/)).not.toBeInTheDocument();
   });
 
   it('asks students under 18 to wait for parental consent', async () => {

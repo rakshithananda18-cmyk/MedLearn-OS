@@ -1,5 +1,5 @@
 import { emailedCode } from '@medlearn/test-utils/mail';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST as confirm } from './account/confirm/route';
 import { POST as newPassword } from './account/new-password/route';
@@ -116,6 +116,22 @@ describe('email accounts', () => {
     jar.clear();
     expect((await signIn(post({ email, password }))).status).toBe(401);
     expect((await signIn(post({ email, password: newOne }))).status).toBe(200);
+  });
+});
+
+describe('a private app (an access list is set)', () => {
+  beforeEach(() => {
+    jar.clear();
+    vi.stubEnv('ACCESS_EMAILS', 'invited@example.com');
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('refuses sign-up and sign-in for emails not on the list', async () => {
+    const stranger = { email: `stranger${Date.now()}@example.com`, password };
+    const signedUp = await signUp(post(stranger));
+    expect(signedUp.status).toBe(403);
+    expect((await signedUp.json()).error.message).toMatch(/private/);
+    expect((await signIn(post(stranger))).status).toBe(403);
   });
 });
 

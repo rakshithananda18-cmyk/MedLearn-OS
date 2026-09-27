@@ -129,8 +129,10 @@ export function AccountForm({ mode, onCreated, onForgot }: Readonly<AccountFormP
   const creating = mode === 'create';
 
   const finish = async () => {
-    await adoptAccountProgress();
-    if (creating) onCreated('Account created. Your progress is now saved to it.');
+    // Someone signing in for the first time has no study plan yet: the setup questions come first.
+    const hasPlan = await adoptAccountProgress();
+    if (!hasPlan) router.push('/welcome');
+    else if (creating) onCreated('Account created. Your progress is now saved to it.');
     else router.push('/today');
   };
 
@@ -203,8 +205,7 @@ export function ResetPassword({ initialEmail }: Readonly<{ initialEmail: string 
   const setNewPassword = async (event: FormEvent) => {
     event.preventDefault();
     if (!(await run('/api/account/new-password', { email, code, password }))) return;
-    await adoptAccountProgress();
-    router.push('/today');
+    router.push((await adoptAccountProgress()) ? '/today' : '/welcome');
   };
 
   if (!codeSent) {
