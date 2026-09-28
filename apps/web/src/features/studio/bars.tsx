@@ -54,42 +54,6 @@ export function ModeSwitch({
   );
 }
 
-/** The guided views as a numbered list: the one showing filled, the rest as rings. */
-export function GuidedViews({
-  stops,
-  index,
-  onIndex,
-}: Readonly<{ stops: CameraStop[]; index: number; onIndex: (index: number) => void }>) {
-  return (
-    <ol aria-label="Guided views" className="flex flex-col gap-1">
-      {stops.map((stop, position) => (
-        <li key={stop.id}>
-          <button
-            type="button"
-            aria-current={position === index ? 'step' : undefined}
-            onClick={() => onIndex(position)}
-            className="flex min-h-12 w-full items-center gap-3 rounded-md px-2 text-left text-sm transition-colors duration-150 hover:bg-surface-muted"
-          >
-            <span
-              className={cx(
-                'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                position === index
-                  ? 'bg-ink text-canvas'
-                  : 'border-2 border-border-strong text-fg-muted',
-              )}
-            >
-              {position + 1}
-            </span>
-            <span className={cx(position === index ? 'font-semibold text-ink' : 'text-fg-muted')}>
-              {stop.title}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 /** The guided views one at a time, with a line on what each shows. */
 export function TourBar({
   stops,

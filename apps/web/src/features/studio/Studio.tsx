@@ -7,17 +7,9 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
+import { StepList } from '@/features/shell/Flow';
 
-import {
-  DrawBar,
-  GuidedViews,
-  ModeSwitch,
-  PENS,
-  QuizBar,
-  QuizProgress,
-  QuizTarget,
-  TourBar,
-} from './bars';
+import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
   BodyBrowser,
@@ -239,8 +231,9 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
 
 function Guide({ studio }: Readonly<{ studio: StudioState }>) {
   return (
-    <GuidedViews
-      stops={studio.model.stops}
+    <StepList
+      label="Guided views"
+      steps={studio.model.stops}
       index={studio.session.stopIndex}
       onIndex={(stopIndex) => studio.update({ stopIndex })}
     />

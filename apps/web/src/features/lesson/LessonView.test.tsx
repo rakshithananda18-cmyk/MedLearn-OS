@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -62,7 +62,10 @@ describe('LessonView', () => {
     for (const fact of brachialPlexus.keyFacts) {
       expect(screen.getByText(fact)).toBeInTheDocument();
     }
-    expect(screen.getAllByRole('region')).toHaveLength(2);
+    // The key facts, then the two check questions.
+    expect(screen.getByRole('region', { name: 'Lesson complete' })).toBeInTheDocument();
+    const checks = screen.getByRole('region', { name: 'Check questions' });
+    expect(within(checks).getAllByRole('region')).toHaveLength(2);
     await expectNoA11yViolations(container);
 
     const [first] = brachialPlexus.questions;

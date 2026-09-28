@@ -108,7 +108,7 @@ export function DissociationCurve({ conditions, title, onChange }: DissociationC
 
   return (
     <figure className="flex flex-col gap-4">
-      <div className="rounded-xl border border-border bg-surface p-2">
+      <div className="rounded-lg border border-border bg-surface p-2">
         <svg
           role="img"
           aria-label={title}

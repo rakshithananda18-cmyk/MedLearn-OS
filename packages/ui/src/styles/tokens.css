@@ -453,6 +453,26 @@
   grid-area: side;
 }
 
+/*
+ * Lessons and drills on wide screens: the header across the top, the diagram's stage on the
+ * left, the step on the right with its controls under it.
+ */
+@utility grid-study {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'head head' 'stage panel' 'stage bar';
+}
+
+@utility area-stage {
+  grid-area: stage;
+}
+@utility area-panel {
+  grid-area: panel;
+}
+@utility area-bar {
+  grid-area: bar;
+}
+
 /* A topic card in a sideways-scrolling row. */
 @utility w-card {
   width: min(17rem, 80vw);

@@ -57,6 +57,8 @@ describe('design tokens', () => {
     'short:flex',
     'grid-today-2',
     'area-side',
+    'grid-study',
+    'area-stage',
   ])('provides %s', (className) => {
     expect(generates(className)).toBe(true);
   });

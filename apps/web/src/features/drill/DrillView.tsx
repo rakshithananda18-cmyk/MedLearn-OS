@@ -1,7 +1,7 @@
 'use client';
 
 import type { DrillStep, PathDiagram } from '@medlearn/schemas';
-import { ActionBar, Button, Card, cx, Heading, Medallion, StepDots, Text } from '@medlearn/ui';
+import { ActionBar, Button, cx, Display, Eyebrow, Heading, Medallion, Text } from '@medlearn/ui';
 import { ArrowRight, CircleCheck, PenLine } from '@medlearn/ui/icons';
 import {
   DiagramTrainer,
@@ -14,9 +14,10 @@ import {
   startDrill,
 } from '@medlearn/visuals';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { completeDrill } from '@/features/progress/store';
+import { FlowLayout, FlowProgress, STEP_LABEL, StepList } from '@/features/shell/Flow';
 
 export interface DrillViewProps {
   topicSlug: string;
@@ -25,10 +26,22 @@ export interface DrillViewProps {
   steps: DrillStep[];
   /** How long the drill takes, counted towards today's study time. */
   minutes: number;
+  /** The sample-content label and sources, under the progress. */
+  trust?: ReactNode;
 }
 
-/** Exam diagram trainer: label each layer from a bank of labels, then draw it on paper. */
-export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonly<DrillViewProps>) {
+/**
+ * Exam diagram trainer: label each layer from a bank of labels, then draw it on paper. The
+ * layer and its labels sit on the right, the diagram on a stage on the left, on wide screens.
+ */
+export function DrillView({
+  topicSlug,
+  title,
+  diagram,
+  steps,
+  minutes,
+  trust,
+}: Readonly<DrillViewProps>) {
   const router = useRouter();
   const [state, setState] = useState(() => startDrill(steps));
   const [wrong, setWrong] = useState<string | null>(null);
@@ -37,6 +50,7 @@ export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonl
   const stepDone = isStepDone(steps, state);
   const drillDone = isDrillDone(steps, state);
   const next = steps[state.stepIndex + 1];
+  const layersDone = state.stepIndex + (stepDone ? 1 : 0);
 
   const choose = (label: string) => {
     const result = placeLabel(diagram, steps, state, label);
@@ -50,22 +64,33 @@ export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonl
   };
 
   return (
-    <>
-      <div className="grid gap-6 lg:grid-cols-5 lg:gap-12">
-        <div className="lg:sticky lg:top-12 lg:col-span-3 lg:self-start">
-          <DiagramTrainer
-            diagram={diagram}
-            steps={steps}
-            state={state}
-            title={`${title} exam diagram`}
-            onSelectBlank={(id) => setState(selectBlank(steps, state, id))}
+    <FlowLayout
+      label="Exam diagram layer"
+      stageLabel="Exam diagram"
+      header={
+        <>
+          <FlowProgress
+            back={`/learn/${topicSlug}`}
+            backLabel="Back to the topic"
+            label={
+              drillDone ? 'All layers done' : `Layer ${state.stepIndex + 1} of ${steps.length}`
+            }
+            done={layersDone}
+            total={steps.length}
           />
-        </div>
-
-        <div className="order-first flex flex-col gap-6 lg:order-last lg:col-span-2">
-          <StepDots count={steps.length} current={state.stepIndex} />
+          {trust}
+        </>
+      }
+      panel={
+        <>
+          <div className="flex flex-col gap-2">
+            <Eyebrow>Exam diagram · {title}</Eyebrow>
+            <Display size="lg">
+              Draw it <em>layer by layer</em>
+            </Display>
+          </div>
           {drillDone ? (
-            <Card tone="glass" className="flex animate-rise flex-col items-start gap-4">
+            <div className="flex animate-rise flex-col items-start gap-4">
               <Medallion icon={PenLine} size="lg" />
               <Heading level={2}>Diagram built</Heading>
               <Text>
@@ -74,7 +99,7 @@ export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonl
                   : `Built with ${state.mistakes} ${state.mistakes === 1 ? 'correction' : 'corrections'}.`}{' '}
                 Now draw it on paper from memory, then compare it with the screen.
               </Text>
-            </Card>
+            </div>
           ) : (
             <div key={step.id} className="flex animate-rise flex-col gap-2">
               <Heading level={2}>{step.title}</Heading>
@@ -84,50 +109,65 @@ export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonl
               </Text>
             </div>
           )}
-        </div>
-      </div>
-      <ActionBar floating>
-        <div className="flex w-full flex-col gap-2 p-1">
-          <div role="status" className="text-sm text-fg empty:hidden">
-            {wrong ? `Not ${wrong}. Look at where the blank sits, then try again.` : ''}
+          <div className="hidden flex-col gap-1 xl:flex">
+            <h3 className={STEP_LABEL}>Layers</h3>
+            <StepList label="Layers" steps={steps} index={state.stepIndex} />
           </div>
-          {stepDone ? (
-            <div className="flex items-center justify-between gap-3">
-              <Text size="sm" tone="muted" className="pl-1">
-                {drillDone ? 'All layers done' : `${step.title} done`}
-              </Text>
-              {drillDone ? (
-                <Button iconEnd={CircleCheck} onClick={finish}>
-                  Finish
-                </Button>
-              ) : (
-                <Button
-                  iconEnd={ArrowRight}
-                  onClick={() => {
-                    setState(nextStep(steps, state));
-                    setWrong(null);
-                  }}
-                >
-                  Next: {next?.title}
-                </Button>
-              )}
+        </>
+      }
+      stage={
+        <DiagramTrainer
+          diagram={diagram}
+          steps={steps}
+          state={state}
+          title={`${title} exam diagram`}
+          onSelectBlank={(id) => setState(selectBlank(steps, state, id))}
+        />
+      }
+      controls={
+        <ActionBar floating className="area-bar">
+          <div className="flex w-full flex-col gap-2 p-1">
+            <div role="status" className="text-sm text-fg empty:hidden">
+              {wrong ? `Not ${wrong}. Look at where the blank sits, then try again.` : ''}
             </div>
-          ) : (
-            <div role="group" aria-label="Labels" className="flex flex-wrap gap-2">
-              {labelBank(diagram, steps, state).map((label) => (
-                <Button
-                  key={label}
-                  variant="secondary"
-                  onClick={() => choose(label)}
-                  className={cx(wrong === label && 'animate-shake')}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      </ActionBar>
-    </>
+            {stepDone ? (
+              <div className="flex items-center justify-between gap-3">
+                <Text size="sm" tone="muted" className="pl-1">
+                  {drillDone ? 'All layers done' : `${step.title} done`}
+                </Text>
+                {drillDone ? (
+                  <Button iconEnd={CircleCheck} onClick={finish}>
+                    Finish
+                  </Button>
+                ) : (
+                  <Button
+                    iconEnd={ArrowRight}
+                    onClick={() => {
+                      setState(nextStep(steps, state));
+                      setWrong(null);
+                    }}
+                  >
+                    Next: {next?.title}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div role="group" aria-label="Labels" className="flex flex-wrap gap-2">
+                {labelBank(diagram, steps, state).map((label) => (
+                  <Button
+                    key={label}
+                    variant="secondary"
+                    onClick={() => choose(label)}
+                    className={cx(wrong === label && 'animate-shake')}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </ActionBar>
+      }
+    />
   );
 }
