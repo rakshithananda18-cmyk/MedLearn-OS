@@ -118,7 +118,7 @@ export function TopicsPanel({
         onClick={() => onTopic(null)}
         className={cx(row, current === null ? now : other)}
       >
-        Whole body
+        <span>Whole body</span>
         <span className="text-xs font-semibold text-fg-muted">Regions</span>
       </button>
       {/* Docked beside an open topic, the list stays on that topic's region. */}
