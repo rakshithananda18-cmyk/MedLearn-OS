@@ -224,6 +224,46 @@ const KIND_LABEL: Record<NonNullable<StructureInfo['kind']>, string> = {
   outline: 'Outline',
 };
 
+function InfoDetails({
+  info,
+  onTopic,
+}: Readonly<{ info: StructureInfo; onTopic: (slug: string) => void }>) {
+  return (
+    <>
+      {info.lesson.length > 0 ? (
+        <div className="flex flex-col gap-1">
+          <h3 className="text-sm font-semibold text-ink">In the lesson</h3>
+          {info.lesson.map((step) => (
+            <Text key={step.title} size="sm">
+              <strong>{step.title}.</strong> {step.body}
+            </Text>
+          ))}
+        </div>
+      ) : null}
+      {info.clinical.length > 0 ? (
+        <div className="flex flex-col gap-1">
+          <h3 className="text-sm font-semibold text-ink">Clinical</h3>
+          {info.clinical.map((lesion) => (
+            <Text key={lesion.label} size="sm">
+              <strong>{lesion.label}.</strong> {lesion.explanation}
+            </Text>
+          ))}
+        </div>
+      ) : null}
+      {info.alsoIn.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-sm font-semibold text-ink">Also in</h3>
+          {info.alsoIn.map((topic) => (
+            <ToggleChip key={topic.slug} pressed={false} onClick={() => onTopic(topic.slug)}>
+              {topic.title}
+            </ToggleChip>
+          ))}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 /** What a picked structure is: short at first, with the lesson, clinical notes and links on demand. */
 export function InfoCard({
   info,
@@ -261,40 +301,8 @@ export function InfoCard({
           Path: {info.path.join(', ')}
         </Text>
       ) : null}
-      {expanded ? (
-        <>
-          {info.lesson.length > 0 ? (
-            <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-semibold text-ink">In the lesson</h3>
-              {info.lesson.map((step) => (
-                <Text key={step.title} size="sm">
-                  <strong>{step.title}.</strong> {step.body}
-                </Text>
-              ))}
-            </div>
-          ) : null}
-          {info.clinical.length > 0 ? (
-            <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-semibold text-ink">Clinical</h3>
-              {info.clinical.map((lesion) => (
-                <Text key={lesion.label} size="sm">
-                  <strong>{lesion.label}.</strong> {lesion.explanation}
-                </Text>
-              ))}
-            </div>
-          ) : null}
-          {info.alsoIn.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-ink">Also in</h3>
-              {info.alsoIn.map((topic) => (
-                <ToggleChip key={topic.slug} pressed={false} onClick={() => onTopic(topic.slug)}>
-                  {topic.title}
-                </ToggleChip>
-              ))}
-            </div>
-          ) : null}
-        </>
-      ) : more ? (
+      {expanded ? <InfoDetails info={info} onTopic={onTopic} /> : null}
+      {!expanded && more ? (
         <button
           type="button"
           onClick={onExpand}

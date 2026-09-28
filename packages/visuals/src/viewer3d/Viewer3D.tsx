@@ -8,8 +8,9 @@ import {
   CatmullRomCurve3,
   Color,
   type Group,
-  type Mesh,
+  Mesh,
   MeshStandardMaterial,
+  SphereGeometry,
   TubeGeometry,
   Vector3,
 } from 'three';
@@ -114,22 +115,23 @@ function Trace({
     () =>
       trace.paths.map((points) => {
         const curve = new CatmullRomCurve3(points.map((point) => new Vector3(...point)));
-        return new TubeGeometry(curve, points.length * 12, TRACE_RADIUS_MM[trace.kind], 8, false);
+        return new TubeGeometry(curve, points.length * 12, TRACE_RADIUS_MM[trace.kind], 8);
       }),
     [trace],
   );
-  const traceMaterial = useMemo(
-    () => material(tokenColour(TRACE_COLOUR[trace.kind]), lit, dimmed ? DIMMED : 1),
-    [trace.kind, lit, dimmed],
-  );
+  // Meshes are built here and handed over whole, like the model's own parts.
+  const meshes = useMemo(() => {
+    const traceMaterial = material(tokenColour(TRACE_COLOUR[trace.kind]), lit, dimmed ? DIMMED : 1);
+    return geometries.map((geometry) => new Mesh(geometry, traceMaterial));
+  }, [geometries, trace.kind, lit, dimmed]);
   const select = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
     onSelect(trace.id);
   };
   return (
     <>
-      {geometries.map((geometry) => (
-        <mesh key={geometry.uuid} geometry={geometry} material={traceMaterial} onClick={select} />
+      {meshes.map((mesh) => (
+        <primitive key={mesh.uuid} object={mesh} onClick={select} />
       ))}
     </>
   );
@@ -140,19 +142,27 @@ function Marker({
   lit,
   onSelect,
 }: Readonly<{ marker: Viewer3DMarker; lit: boolean; onSelect: (id: string) => void }>) {
-  const markerMaterial = useMemo(() => material(tokenColour('--ml-gold'), lit, 1), [lit]);
+  const geometry = useMemo(() => new SphereGeometry(MARKER_RADIUS_MM, 24, 16), []);
+  const sphere = useMemo(() => {
+    const mesh = new Mesh(geometry, material(tokenColour('--ml-gold'), lit, 1));
+    mesh.position.set(...marker.position);
+    mesh.scale.setScalar(lit ? 1.3 : 1);
+    return mesh;
+  }, [geometry, marker.position, lit]);
   return (
-    <mesh
-      position={marker.position}
-      material={markerMaterial}
-      onClick={(event) => {
+    <primitive
+      object={sphere}
+      onClick={(event: ThreeEvent<MouseEvent>) => {
         event.stopPropagation();
         onSelect(marker.id);
       }}
-    >
-      <sphereGeometry args={[lit ? MARKER_RADIUS_MM * 1.3 : MARKER_RADIUS_MM, 24, 16]} />
-    </mesh>
+    />
   );
+}
+
+/** A stroke never changes once drawn, so its colour, start and length identify it. */
+function strokeKey(stroke: Stroke): string {
+  return `${stroke.colour}:${stroke.points[0]?.join(',') ?? ''}:${stroke.points.length}`;
 }
 
 function Parts({
@@ -360,18 +370,17 @@ export default function Viewer3D({
             onSelect={pen ? () => {} : onSelect}
           />
         ))}
-        {[
-          ...strokes,
-          ...(draft.length > 1 && pen ? [{ colour: pen.colour, points: draft }] : []),
-        ].map((stroke, index) => (
-          // Strokes never change once drawn, so their place in the list identifies them.
+        {strokes.map((stroke) => (
           <Line
-            key={index}
+            key={strokeKey(stroke)}
             points={stroke.points}
             color={tokenColour(stroke.colour)}
             lineWidth={3}
           />
         ))}
+        {draft.length > 1 && pen ? (
+          <Line points={draft} color={tokenColour(pen.colour)} lineWidth={3} />
+        ) : null}
       </group>
       <OrbitControls
         makeDefault

@@ -38,28 +38,31 @@ export function BodyOutline({ selected, onSelect }: Readonly<BodyOutlineProps>) 
     onSelect(id);
   };
   return (
-    <svg viewBox="0 0 200 400" className="h-full w-full" role="group" aria-label="Body outline">
-      {SHAPES.map((shape) => (
-        <g
-          key={shape.id}
-          role="button"
-          tabIndex={0}
-          aria-label={shape.name}
-          aria-pressed={shape.id === selected}
-          onClick={() => onSelect(shape.id)}
-          onKeyDown={(event) => onKeyDown(event, shape.id)}
-          className={cx(
-            'cursor-pointer focus:outline-none [&:focus-visible>path]:stroke-focus',
-            shape.id === selected
-              ? 'fill-primary stroke-primary'
-              : 'fill-surface stroke-border-strong',
-          )}
-        >
-          {shape.paths.map((path) => (
-            <path key={path} d={path} strokeWidth={1.5} />
-          ))}
-        </g>
-      ))}
-    </svg>
+    <fieldset className="size-full">
+      <legend className="sr-only">Body outline</legend>
+      <svg viewBox="0 0 200 400" className="h-full w-full">
+        {SHAPES.map((shape) => (
+          <g
+            key={shape.id}
+            role="button"
+            tabIndex={0}
+            aria-label={shape.name}
+            aria-pressed={shape.id === selected}
+            onClick={() => onSelect(shape.id)}
+            onKeyDown={(event) => onKeyDown(event, shape.id)}
+            className={cx(
+              'cursor-pointer focus:outline-none [&:focus-visible>path]:stroke-focus',
+              shape.id === selected
+                ? 'fill-primary stroke-primary'
+                : 'fill-surface stroke-border-strong',
+            )}
+          >
+            {shape.paths.map((path) => (
+              <path key={path} d={path} strokeWidth={1.5} />
+            ))}
+          </g>
+        ))}
+      </svg>
+    </fieldset>
   );
 }

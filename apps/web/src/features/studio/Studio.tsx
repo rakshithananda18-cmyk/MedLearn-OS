@@ -1,23 +1,15 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { Button, cx, IconButton, Skeleton, Text } from '@medlearn/ui';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Layers,
-  Menu,
-  PenLine,
-  Target,
-  Trash2,
-  Undo2,
-} from '@medlearn/ui/icons';
+import { cx, IconButton, Skeleton, Text } from '@medlearn/ui';
+import { Layers, Menu, PenLine, Target } from '@medlearn/ui/icons';
 import { pathThrough, PathTracer } from '@medlearn/visuals';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 import { useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
+import { BodyBar, DrawBar, PENS, QuizBar, TourBar } from './bars';
 import { BodyOutline } from './BodyOutline';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import { InfoCard, LayersPanel, TopicsPanel } from './panels';
@@ -25,13 +17,6 @@ import { answerQuiz, type QuizState, skipQuiz, startQuiz } from './quiz';
 import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
 import { useCan3D, useReducedMotion, Viewer3D } from './viewer';
 
-// Pen colours stay clear of the anatomical ones (red arteries, blue veins, yellow nerves...).
-// A stroke keeps its pen's token, which the 3D view resolves to a colour.
-const PENS = [
-  { colour: '--color-pen-ink', name: 'Ink', swatch: 'bg-pen-ink' },
-  { colour: '--color-pen-violet', name: 'Violet', swatch: 'bg-pen-violet' },
-  { colour: '--color-pen-orange', name: 'Orange', swatch: 'bg-pen-orange' },
-];
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
 const BODY_KEY = 'body';
 
@@ -210,110 +195,35 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
   let bar: React.ReactNode;
   if (!topic) {
     bar = (
-      <div className="flex items-center justify-between gap-3">
-        <Text size="sm">
-          <strong>{regionInfo?.name}</strong>: {regionCount}{' '}
-          {regionCount === 1 ? 'topic' : 'topics'}. Tap a marker to pick a region.
-        </Text>
-        <Button variant="secondary" onClick={() => setPanel('topics')}>
-          Topics
-        </Button>
-      </div>
+      <BodyBar
+        region={regionInfo?.name ?? ''}
+        count={regionCount}
+        onTopics={() => setPanel('topics')}
+      />
     );
   } else if (mode === 'draw') {
     bar = (
-      <div className="flex flex-wrap items-center gap-2">
-        <fieldset className="flex gap-2">
-          <legend className="sr-only">Pen colour</legend>
-          {PENS.map((item) => (
-            <button
-              key={item.colour}
-              type="button"
-              aria-label={`${item.name} pen`}
-              aria-pressed={pen === item.colour}
-              onClick={() => setPen(item.colour)}
-              className={cx(
-                'size-12 rounded-full border-4 transition-transform duration-150',
-                item.swatch,
-                pen === item.colour ? 'scale-110 border-gold' : 'border-surface',
-              )}
-            />
-          ))}
-        </fieldset>
-        <IconButton
-          icon={Undo2}
-          label="Undo"
-          variant="secondary"
-          disabled={strokes.length === 0}
-          onClick={() => keepStrokes(strokes.slice(0, -1))}
-        />
-        <IconButton
-          icon={Trash2}
-          label="Clear drawing"
-          variant="secondary"
-          disabled={strokes.length === 0}
-          onClick={() => keepStrokes([])}
-        />
-        <Text size="xs" tone="muted" className="min-w-0 flex-1">
-          Drag on the model to draw. Saved on this phone.
-        </Text>
-        <Button onClick={() => changeMode('draw')}>Done</Button>
-      </div>
+      <DrawBar
+        pen={pen}
+        strokes={strokes.length}
+        onPen={setPen}
+        onUndo={() => keepStrokes(strokes.slice(0, -1))}
+        onClear={() => keepStrokes([])}
+        onDone={() => changeMode('draw')}
+      />
     );
   } else if (mode === 'quiz' && quiz) {
     bar = (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-display text-xl tracking-display text-ink">
-            Find: <em>{target?.name}</em>
-          </p>
-          <Text size="sm" tone="muted">
-            Score {quiz.score} · Streak {quiz.streak} · Best {quiz.best}
-          </Text>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <p aria-live="polite" className="text-sm text-fg">
-            {quiz.last === 'right' ? 'Right! Next one.' : null}
-            {quiz.last === 'wrong'
-              ? `You tapped ${nameOf(quiz.picked)}. Try again, or turn the model.`
-              : null}
-            {quiz.last === null ? 'Tap it on the model.' : null}
-          </p>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setQuiz(skipQuiz(quiz, pool))}>
-              Skip
-            </Button>
-            <Button onClick={() => changeMode('quiz')}>End</Button>
-          </div>
-        </div>
-      </div>
+      <QuizBar
+        quiz={quiz}
+        targetName={target?.name ?? ''}
+        pickedName={nameOf(quiz.picked)}
+        onSkip={() => setQuiz(skipQuiz(quiz, pool))}
+        onEnd={() => changeMode('quiz')}
+      />
     );
   } else {
-    bar = (
-      <div className="flex items-center gap-2">
-        <IconButton
-          icon={ChevronLeft}
-          label="Previous view"
-          disabled={stopIndex === 0}
-          onClick={() => setStopIndex(stopIndex - 1)}
-        />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <p className="text-sm font-semibold text-ink">
-            {stop?.title}{' '}
-            <span className="font-normal text-fg-muted">
-              {stopIndex + 1} of {model.stops.length}
-            </span>
-          </p>
-          <p className="line-clamp-2 text-sm text-fg">{stop?.description}</p>
-        </div>
-        <IconButton
-          icon={ChevronRight}
-          label="Next view"
-          disabled={stopIndex >= model.stops.length - 1}
-          onClick={() => setStopIndex(stopIndex + 1)}
-        />
-      </div>
-    );
+    bar = <TourBar stops={model.stops} index={stopIndex} onIndex={setStopIndex} />;
   }
 
   return (
@@ -321,13 +231,10 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
       aria-label="3D studio"
       className="relative -mx-4 -mt-8 -mb-8 h-studio overflow-hidden border-b border-border bg-surface md:mx-0 md:-mt-4 md:h-studio-wide md:rounded-2xl md:border"
     >
-      <div
-        role={capable ? 'img' : undefined}
-        aria-label={capable ? `3D model: ${topic?.title ?? 'the whole body'}` : undefined}
-        className="absolute inset-0"
-      >
+      <figure className="absolute inset-0">
         {view}
-      </div>
+        <figcaption className="sr-only">3D model: {topic?.title ?? 'the whole body'}</figcaption>
+      </figure>
 
       <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
         <div className="pointer-events-auto flex min-w-0 items-center gap-2">
