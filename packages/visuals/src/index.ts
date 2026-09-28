@@ -19,6 +19,7 @@ export {
   VENOUS_PO2,
 } from './oxygen';
 export { PathTracer, type PathTracerProps } from './PathTracer';
+export { pillSize } from './pill';
 // The 3D viewer itself is a separate entry ('@medlearn/visuals/viewer3d') so three.js loads only on 3D screens.
 export {
   blanks,

@@ -34,7 +34,11 @@ export default async function Explore3DPage({ params }: Props) {
         <Display size="lg">
           {topic.title} <em>in 3D</em>
         </Display>
-        <Text tone="muted">Pick a nerve to light its whole path from the spine to the arm.</Text>
+        <Text tone="muted">
+          {topic.visual.model3d.nerves.length > 0
+            ? 'Pick a nerve to light its whole path from the spine to the arm.'
+            : 'Turn the model and pick an artery to find it among the bones.'}
+        </Text>
       </div>
       <Explore3D
         title={`3D model: ${topic.title}, with the shoulder bones and arteries`}
