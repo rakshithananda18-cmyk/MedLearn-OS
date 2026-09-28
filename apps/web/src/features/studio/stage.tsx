@@ -119,7 +119,8 @@ export function StudioFooter({
 
 /**
  * The right-hand panel on tablets held sideways and laptops: the mode switch, the picked
- * structure (or how to pick one) and the layers. Nothing while the whole body is open.
+ * structure (or, with `hint`, how to pick one) and the layers. Nothing while the whole body is
+ * open.
  */
 export function DockedSide({
   switcher,
@@ -138,7 +139,7 @@ export function DockedSide({
     >
       {switcher}
       {info}
-      {!info && hint ? (
+      {hint ? (
         <Text size="sm" tone="muted">
           Tap a structure on the model to see what it is.
         </Text>

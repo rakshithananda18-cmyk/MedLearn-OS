@@ -53,6 +53,56 @@ export interface StudioProps {
   initialTopic: string | null;
 }
 
+/** The picked structure's card, while exploring a topic; nothing otherwise. */
+function StudioInfo({
+  studio,
+  topics,
+  docked,
+}: Readonly<{ studio: StudioState; topics: StudioTopic[]; docked: boolean }>) {
+  const { session, topic } = studio;
+  const selected = session.mode === 'explore' ? session.selected : null;
+  const info = topic && selected ? structureInfo(topic, selected, topics) : null;
+  if (!info) return null;
+  return (
+    <InfoCard
+      docked={docked}
+      info={info}
+      expanded={session.expanded}
+      onExpand={() => studio.update({ expanded: true })}
+      onTopic={studio.openTopic}
+      onClose={() => studio.pick(null)}
+    />
+  );
+}
+
+/** The topics: docked on wide screens, else a sheet while the topics button has it open. */
+function StudioTopics({
+  studio,
+  topics,
+  regions,
+  docked,
+}: Readonly<{
+  studio: StudioState;
+  topics: StudioTopic[];
+  regions: BodyRegionInfo[];
+  docked: boolean;
+}>) {
+  const { session, update } = studio;
+  if (!docked && session.panel !== 'topics') return null;
+  return (
+    <TopicsPanel
+      place={docked ? 'dock' : 'float'}
+      topics={topics}
+      regions={regions}
+      region={session.region}
+      current={studio.topic?.slug ?? null}
+      onRegion={(region) => update({ region })}
+      onTopic={studio.openTopic}
+      onClose={() => update({ panel: null })}
+    />
+  );
+}
+
 /**
  * The 3D studio: one model filling the screen, with everything else floating over it. Pick a
  * region on the body or a topic on the left; turn, light, hide and x-ray structures; draw on the
@@ -175,20 +225,9 @@ export function Studio(props: Readonly<StudioProps>) {
   const docked = useDocked();
   const studio = useStudio(props);
   const { session, topic, update } = studio;
-  const selected = topic && session.mode === 'explore' ? session.selected : null;
-  const info = topic && selected ? structureInfo(topic, selected, topics) : null;
   const switcher =
     topic && capable ? <ModeSwitch mode={session.mode} onMode={studio.changeMode} /> : null;
-  const infoCard = info ? (
-    <InfoCard
-      docked={docked}
-      info={info}
-      expanded={session.expanded}
-      onExpand={() => update({ expanded: true })}
-      onTopic={studio.openTopic}
-      onClose={() => studio.pick(null)}
-    />
-  ) : null;
+  const infoCard = <StudioInfo studio={studio} topics={topics} docked={docked} />;
   const layers = topic ? (
     <StudioLayers studio={studio} place={docked ? 'inline' : 'float'} />
   ) : null;
@@ -199,18 +238,7 @@ export function Studio(props: Readonly<StudioProps>) {
       <StudioModel studio={studio} regions={regions} capable={capable} />
 
       <div className="pointer-events-none absolute inset-0 flex gap-4 p-3 xl:p-4">
-        {docked || session.panel === 'topics' ? (
-          <TopicsPanel
-            place={docked ? 'dock' : 'float'}
-            topics={topics}
-            regions={regions}
-            region={session.region}
-            current={topic?.slug ?? null}
-            onRegion={(region) => update({ region })}
-            onTopic={studio.openTopic}
-            onClose={() => update({ panel: null })}
-          />
-        ) : null}
+        <StudioTopics studio={studio} topics={topics} regions={regions} docked={docked} />
 
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
           <StudioHeader
@@ -230,13 +258,17 @@ export function Studio(props: Readonly<StudioProps>) {
               studio={studio}
               regions={regions}
               regionCount={topics.filter((item) => item.regions.includes(session.region)).length}
-              onTopics={docked ? undefined : () => update({ panel: 'topics' })}
+              docked={docked}
             />
           </StudioFooter>
         </div>
 
         {docked ? (
-          <DockedSide switcher={switcher} info={infoCard} hint={session.mode === 'explore'}>
+          <DockedSide
+            switcher={switcher}
+            info={infoCard}
+            hint={session.mode === 'explore' && session.selected === null}
+          >
             {layers}
           </DockedSide>
         ) : null}
@@ -251,12 +283,13 @@ function ModeBar({
   studio,
   regions,
   regionCount,
-  onTopics,
+  docked,
 }: Readonly<{
   studio: StudioState;
   regions: BodyRegionInfo[];
   regionCount: number;
-  onTopics: (() => void) | undefined;
+  /** The topics are already on screen, so no button to open them. */
+  docked: boolean;
 }>) {
   const { session, model, update, changeMode: onMode } = studio;
   const nameOf = (id: string | null) =>
@@ -267,6 +300,7 @@ function ModeBar({
     update({ quiz: skipQuiz(quiz, studio.context.pool) });
   const onStop = (stopIndex: number) => update({ stopIndex });
   const topicOpen = studio.topic !== null;
+  const onTopics = docked ? undefined : () => update({ panel: 'topics' });
   const { mode, quiz, strokes } = session;
   if (!topicOpen) {
     const region = regions.find((item) => item.id === session.region);
