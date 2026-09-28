@@ -7,6 +7,7 @@ import type { Topic } from '@medlearn/schemas';
 export const oxygenCurve: Topic = {
   slug: 'oxygen-haemoglobin-curve',
   subjectSlug: 'physiology',
+  regions: ['thorax'],
   title: 'Oxygen–haemoglobin curve',
   summary: 'Why haemoglobin loads oxygen in the lungs and lets it go in the tissues.',
   estimatedMinutes: 12,

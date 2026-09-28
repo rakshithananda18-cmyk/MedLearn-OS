@@ -1,4 +1,6 @@
-import type { Model3D, Point3 } from '@medlearn/schemas';
+import type { Model3D, ModelTrace, Point3 } from '@medlearn/schemas';
+
+import { SHOULDER_MODEL_CREDIT, SHOULDER_MODEL_SRC, shoulderParts } from './shoulder-3d';
 
 // 3D view of the brachial plexus (M4c spike). Coordinates are the BodyParts3D frame: millimetres,
 // X towards the right side (negative), Y towards the back (positive), Z up.
@@ -31,84 +33,88 @@ const MC1: Point3 = [-130, -90, 1294];
 // The median nerve forms in front of the artery from lateral and medial roots.
 const MEDIAN_JOIN: Point3 = [-146, -92, 1284];
 
-/** Credit for the shoulder model's bones and arteries, shown wherever the model is. */
-export const SHOULDER_MODEL_CREDIT =
-  'Bones and arteries: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP).';
+/** Nerve paths of the plexus, by 2D diagram node id. */
+const NERVES: Array<{ id: string; paths: Point3[][] }> = [
+  { id: 'c5', paths: [[F5, [-45, -72, 1402], U0]] },
+  { id: 'c6', paths: [[F6, [-46, -72, 1392], U0]] },
+  { id: 'c7', paths: [[F7, [-47, -74, 1380], M0]] },
+  { id: 'c8', paths: [[F8, [-46, -76, 1366], L0]] },
+  { id: 't1', paths: [[F1, [-45, -79, 1356], L0]] },
+  { id: 'upper', paths: [[U0, U1]] },
+  { id: 'middle', paths: [[M0, M1]] },
+  { id: 'lower', paths: [[L0, L1]] },
+  { id: 'upper-ant', paths: [[U1, [-88, -82, 1346], LC0]] },
+  { id: 'upper-post', paths: [[U1, [-90, -78, 1348], PC0]] },
+  { id: 'middle-ant', paths: [[M1, [-88, -84, 1340], LC0]] },
+  { id: 'middle-post', paths: [[M1, [-90, -79, 1342], PC0]] },
+  { id: 'lower-ant', paths: [[L1, [-86, -86, 1332], MC0]] },
+  { id: 'lower-post', paths: [[L1, [-88, -80, 1338], PC0]] },
+  { id: 'lateral', paths: [[LC0, [-120, -97, 1322], LC1]] },
+  { id: 'posterior', paths: [[PC0, [-122, -83, 1316], PC1]] },
+  { id: 'medial', paths: [[MC0, [-116, -92, 1308], MC1]] },
+  {
+    id: 'musculocutaneous',
+    paths: [[LC1, [-158, -96, 1290], [-178, -90, 1235], [-194, -88, 1165], [-205, -90, 1095]]],
+  },
+  {
+    id: 'median',
+    paths: [
+      [
+        LC1,
+        MEDIAN_JOIN,
+        [-158, -88, 1236],
+        [-176, -84, 1166],
+        [-191, -92, 1096],
+        [-202, -93, 1040],
+      ],
+      [MC1, MEDIAN_JOIN],
+    ],
+  },
+  {
+    id: 'ulnar',
+    paths: [[MC1, [-148, -80, 1262], [-165, -72, 1200], [-178, -64, 1130], [-183, -58, 1062]]],
+  },
+  {
+    id: 'radial',
+    paths: [
+      [
+        PC1,
+        [-154, -72, 1272],
+        [-180, -58, 1225],
+        [-202, -55, 1160],
+        [-218, -64, 1105],
+        [-226, -80, 1066],
+      ],
+    ],
+  },
+  {
+    id: 'axillary',
+    paths: [[PC1, [-156, -72, 1292], [-172, -60, 1287], [-190, -64, 1284], [-194, -78, 1292]]],
+  },
+];
+
+/** The three cords as one trace, for topics that show the plexus only as a content of the axilla. */
+export const CORD_PATHS: Point3[][] = NERVES.filter((nerve) =>
+  ['lateral', 'posterior', 'medial'].includes(nerve.id),
+).flatMap((nerve) => nerve.paths);
 
 export const brachialPlexus3d: Model3D = {
-  src: '/models/upper-limb.glb',
+  src: SHOULDER_MODEL_SRC,
   credit: `${SHOULDER_MODEL_CREDIT} Nerve paths: MedLearn schematic, not yet medically reviewed.`,
-  parts: [
-    { id: 'clavicle', name: 'Clavicle', kind: 'bone' },
-    { id: 'scapula', name: 'Scapula', kind: 'bone' },
-    { id: 'humerus', name: 'Humerus', kind: 'bone' },
-    { id: 'first-rib', name: 'First rib', kind: 'bone' },
-    { id: 'vertebra-c5', name: 'C5 vertebra', kind: 'bone' },
-    { id: 'vertebra-c6', name: 'C6 vertebra', kind: 'bone' },
-    { id: 'vertebra-c7', name: 'C7 vertebra', kind: 'bone' },
-    { id: 'vertebra-t1', name: 'T1 vertebra', kind: 'bone' },
-    { id: 'subclavian-artery', name: 'Subclavian artery', kind: 'artery' },
-    { id: 'axillary-artery', name: 'Axillary artery', kind: 'artery' },
-    { id: 'brachial-artery', name: 'Brachial artery', kind: 'artery' },
-  ],
-  nerves: [
-    { id: 'c5', paths: [[F5, [-45, -72, 1402], U0]] },
-    { id: 'c6', paths: [[F6, [-46, -72, 1392], U0]] },
-    { id: 'c7', paths: [[F7, [-47, -74, 1380], M0]] },
-    { id: 'c8', paths: [[F8, [-46, -76, 1366], L0]] },
-    { id: 't1', paths: [[F1, [-45, -79, 1356], L0]] },
-    { id: 'upper', paths: [[U0, U1]] },
-    { id: 'middle', paths: [[M0, M1]] },
-    { id: 'lower', paths: [[L0, L1]] },
-    { id: 'upper-ant', paths: [[U1, [-88, -82, 1346], LC0]] },
-    { id: 'upper-post', paths: [[U1, [-90, -78, 1348], PC0]] },
-    { id: 'middle-ant', paths: [[M1, [-88, -84, 1340], LC0]] },
-    { id: 'middle-post', paths: [[M1, [-90, -79, 1342], PC0]] },
-    { id: 'lower-ant', paths: [[L1, [-86, -86, 1332], MC0]] },
-    { id: 'lower-post', paths: [[L1, [-88, -80, 1338], PC0]] },
-    { id: 'lateral', paths: [[LC0, [-120, -97, 1322], LC1]] },
-    { id: 'posterior', paths: [[PC0, [-122, -83, 1316], PC1]] },
-    { id: 'medial', paths: [[MC0, [-116, -92, 1308], MC1]] },
-    {
-      id: 'musculocutaneous',
-      paths: [[LC1, [-158, -96, 1290], [-178, -90, 1235], [-194, -88, 1165], [-205, -90, 1095]]],
-    },
-    {
-      id: 'median',
-      paths: [
-        [
-          LC1,
-          MEDIAN_JOIN,
-          [-158, -88, 1236],
-          [-176, -84, 1166],
-          [-191, -92, 1096],
-          [-202, -93, 1040],
-        ],
-        [MC1, MEDIAN_JOIN],
-      ],
-    },
-    {
-      id: 'ulnar',
-      paths: [[MC1, [-148, -80, 1262], [-165, -72, 1200], [-178, -64, 1130], [-183, -58, 1062]]],
-    },
-    {
-      id: 'radial',
-      paths: [
-        [
-          PC1,
-          [-154, -72, 1272],
-          [-180, -58, 1225],
-          [-202, -55, 1160],
-          [-218, -64, 1105],
-          [-226, -80, 1066],
-        ],
-      ],
-    },
-    {
-      id: 'axillary',
-      paths: [[PC1, [-156, -72, 1292], [-172, -60, 1287], [-190, -64, 1284], [-194, -78, 1292]]],
-    },
-  ],
+  parts: shoulderParts([
+    'clavicle',
+    'scapula',
+    'humerus',
+    'first-rib',
+    'vertebra-c5',
+    'vertebra-c6',
+    'vertebra-c7',
+    'vertebra-t1',
+    'subclavian-artery',
+    'axillary-artery',
+    'brachial-artery',
+  ]),
+  traces: NERVES.map((nerve): ModelTrace => ({ ...nerve, kind: 'nerve' })),
   stops: [
     {
       id: 'overview',

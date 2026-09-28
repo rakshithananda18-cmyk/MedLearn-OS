@@ -1,5 +1,5 @@
 import { Card, Display, Eyebrow, Text } from '@medlearn/ui';
-import { BookOpen } from '@medlearn/ui/icons';
+import { BookOpen, PersonStanding } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { connection } from 'next/server';
@@ -25,6 +25,12 @@ export default async function SubjectsPage() {
         </Display>
       </div>
       <SearchForm />
+      <LinkCard
+        href="/studio"
+        icon={PersonStanding}
+        title="Pick from the body"
+        meta="Explore the 3D body and open any region's topics"
+      />
       <Text size="sm">
         <Link
           href="/books"

@@ -5,6 +5,7 @@ import { Topic } from './content';
 const base = {
   slug: 'sample',
   subjectSlug: 'anatomy',
+  regions: ['upper-limb'],
   title: 'Sample',
   summary: 'x',
   estimatedMinutes: 5,
@@ -67,14 +68,20 @@ describe('Topic', () => {
     expect(Topic.safeParse(broken).success).toBe(false);
   });
 
-  it('checks that 3D nerves are nodes of the 2D diagram', () => {
+  it('tags every topic with a body region from the fixed list', () => {
+    expect(Topic.safeParse({ ...base, regions: ['elbow'] }).success).toBe(false);
+    expect(Topic.safeParse({ ...base, regions: [] }).success).toBe(false);
+  });
+
+  it('checks that 3D traces are nodes of the 2D diagram', () => {
     const model3d = {
       src: '/models/sample.glb',
       credit: 'Sample',
       parts: [{ id: 'humerus', name: 'Humerus', kind: 'bone' }],
-      nerves: [
+      traces: [
         {
           id: 'a',
+          kind: 'nerve',
           paths: [
             [
               [0, 0, 0],
@@ -90,9 +97,10 @@ describe('Topic', () => {
     expect(Topic.safeParse({ ...base, visual: { ...base.visual, model3d } }).success).toBe(true);
     const ghost = {
       ...model3d,
-      nerves: [
+      traces: [
         {
           id: 'ghost',
+          kind: 'lymph',
           paths: [
             [
               [0, 0, 0],

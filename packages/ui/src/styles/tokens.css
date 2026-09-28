@@ -162,6 +162,11 @@
   --color-anat-lymph: #2e8b57;
   --color-anat-muscle: #a0463c;
   --color-anat-bone: #e8dcc4;
+  --color-anat-skin: #d9b59a;
+  /* Pens for drawing on 3D models: clear of the anatomical hues above. */
+  --color-pen-ink: #1f2937;
+  --color-pen-violet: #7c3aed;
+  --color-pen-orange: #ea580c;
 }
 
 /* Interface colours: semantic names only; values switch with the theme. */
@@ -349,4 +354,22 @@
 
 @utility bottom-safe {
   bottom: calc(env(safe-area-inset-bottom) + var(--spacing-3));
+}
+
+/* The 3D studio fills the screen above the phone tab bar, and most of it beside the side rail. */
+@utility h-studio {
+  height: calc(100dvh - var(--spacing-16) - env(safe-area-inset-bottom));
+}
+
+@utility h-studio-wide {
+  height: calc(100dvh - var(--spacing-20));
+}
+
+/* Panels floating over the 3D studio: never wider than the phone, less the side gutters. */
+@utility w-sheet {
+  width: min(20rem, calc(100% - var(--spacing-6)));
+}
+
+@utility max-h-sheet {
+  max-height: 45dvh;
 }

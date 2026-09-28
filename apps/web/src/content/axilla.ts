@@ -1,13 +1,21 @@
 import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
-import { brachialPlexus3d, SHOULDER_MODEL_CREDIT } from './brachial-plexus-3d';
+import { CORD_PATHS } from './brachial-plexus-3d';
+import {
+  AXILLA_BONES,
+  LYMPH_GROUPS,
+  SHOULDER_MODEL_CREDIT,
+  SHOULDER_MODEL_SRC,
+  shoulderParts,
+} from './shoulder-3d';
 
 // Upper limb batch 1 (Blueprint v0.5, Section 34). Facts in our own words; `reviewed: false`
 // until a student checks the topic against the book pages.
 export const axilla: Topic = {
   slug: 'axilla',
   subjectSlug: 'anatomy',
+  regions: ['upper-limb'],
   title: 'Axilla: walls and contents',
   summary: 'The pyramid-shaped space that carries vessels and nerves from the neck into the arm.',
   estimatedMinutes: 12,
@@ -28,7 +36,7 @@ export const axilla: Topic = {
     },
     {
       title: 'BodyParts3D (DBCLS)',
-      detail: 'Bones and arteries in the 3D view',
+      detail: 'Bones, muscles and vessels in the 3D view',
       url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
       licence: 'CC BY 4.0 on the licence page (files marked CC BY-SA 2.1 JP)',
     },
@@ -182,9 +190,25 @@ export const axilla: Topic = {
     ],
     drill: [],
     model3d: {
-      ...brachialPlexus3d,
-      credit: SHOULDER_MODEL_CREDIT,
-      nerves: [],
+      src: SHOULDER_MODEL_SRC,
+      credit: `${SHOULDER_MODEL_CREDIT} Cords and lymph nodes: MedLearn schematic, not yet medically reviewed. The source model has no latissimus dorsi.`,
+      parts: shoulderParts([
+        ...AXILLA_BONES,
+        'pec-major',
+        'pec-minor',
+        'subclavius',
+        'serratus',
+        'subscapularis',
+        'teres-major',
+        'coracobrachialis',
+        'biceps-short',
+        'axillary-artery',
+        'axillary-vein',
+      ]),
+      traces: [
+        { id: 'cords', kind: 'nerve', paths: CORD_PATHS },
+        { id: 'lymph-nodes', kind: 'lymph', paths: [LYMPH_GROUPS.central] },
+      ],
       stops: [
         {
           id: 'overview',

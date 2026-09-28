@@ -55,20 +55,29 @@ export type CurveConditions = z.infer<typeof CurveConditions>;
 export const Point3 = z.tuple([z.number(), z.number(), z.number()]);
 export type Point3 = z.infer<typeof Point3>;
 
-/** A named mesh inside the model file (bones and vessels). */
+export const PartKind = z.enum(['bone', 'muscle', 'artery', 'vein', 'skin']);
+export type PartKind = z.infer<typeof PartKind>;
+
+/** A named mesh inside the model file; a model shows only the parts its content lists. */
 export const ModelPart = z.object({
   id: Id,
   name: z.string().min(1),
-  kind: z.enum(['bone', 'artery']),
+  kind: PartKind,
+  /** What it is and why it matters, in a sentence or two; shown when a student picks it. */
+  about: z.string().min(1).optional(),
 });
 export type ModelPart = z.infer<typeof ModelPart>;
 
-/** A nerve drawn as tubes through these points; the id is a node of the topic's 2D diagram. */
-export const ModelNerve = z.object({
+/**
+ * A structure the model file lacks (nerves, lymph node groups, the outline of an organ it has no
+ * mesh for), drawn as tubes through these points; the id is a node of the topic's 2D diagram.
+ */
+export const ModelTrace = z.object({
   id: Id,
+  kind: z.enum(['nerve', 'lymph', 'outline']),
   paths: z.array(z.array(Point3).min(2)).min(1),
 });
-export type ModelNerve = z.infer<typeof ModelNerve>;
+export type ModelTrace = z.infer<typeof ModelTrace>;
 
 /** A guided camera position, with what to look at there. */
 export const CameraStop = z.object({
@@ -86,7 +95,7 @@ export const Model3D = z.object({
   /** Visible credit for the model file and our schematic additions. */
   credit: z.string().min(1),
   parts: z.array(ModelPart).min(1),
-  nerves: z.array(ModelNerve),
+  traces: z.array(ModelTrace),
   stops: z.array(CameraStop).min(1),
 });
 export type Model3D = z.infer<typeof Model3D>;
@@ -163,10 +172,24 @@ export const BookRef = z.object({
 });
 export type BookRef = z.infer<typeof BookRef>;
 
+/** Where a topic sits on the body, so students can pick what to study from a body map. */
+export const BodyRegion = z.enum([
+  'head-neck',
+  'thorax',
+  'abdomen',
+  'pelvis',
+  'back',
+  'upper-limb',
+  'lower-limb',
+]);
+export type BodyRegion = z.infer<typeof BodyRegion>;
+
 export const Topic = z
   .object({
     slug: Id,
     subjectSlug: Id,
+    /** Body regions the topic belongs to, in the book's order (the pectoral region is both). */
+    regions: z.array(BodyRegion).min(1),
     title: z.string(),
     summary: z.string(),
     estimatedMinutes: z.number().int().positive(),
@@ -196,7 +219,7 @@ export const Topic = z
             ...visual.diagram.edges.flatMap((edge) => [edge.from, edge.to]),
             ...visual.lesions.flatMap((lesion) => lesion.nodeIds),
             ...visual.drill.flatMap((step) => step.nodeIds),
-            ...(visual.model3d?.nerves.map((nerve) => nerve.id) ?? []),
+            ...(visual.model3d?.traces.map((trace) => trace.id) ?? []),
           ]
         : []),
     ];

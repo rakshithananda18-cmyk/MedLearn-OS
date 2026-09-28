@@ -57,6 +57,8 @@ export default defineConfig({
         // Next.js entry files and browser wiring run only in a real browser; Playwright covers them.
         'apps/web/src/app/**/{page,layout}.tsx',
         'apps/web/src/lib/client-logger.ts',
+        // The 3D view needs WebGL, which jsdom lacks; the studio journeys in Playwright drive it.
+        'packages/visuals/src/viewer3d/Viewer3D.tsx',
       ],
       thresholds: {
         'packages/core/src/**': { lines: 90 },

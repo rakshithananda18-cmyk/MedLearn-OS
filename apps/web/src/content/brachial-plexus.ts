@@ -9,6 +9,7 @@ import { brachialPlexus3d } from './brachial-plexus-3d';
 export const brachialPlexus: Topic = {
   slug: 'brachial-plexus',
   subjectSlug: 'anatomy',
+  regions: ['upper-limb'],
   title: 'Brachial plexus',
   summary: 'How five nerve roots regroup into the nerves of the upper limb.',
   estimatedMinutes: 15,

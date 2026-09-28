@@ -52,6 +52,7 @@ const ANATOMY_COLOURS = [
   ['lymphatic', 'bg-anat-lymph'],
   ['muscle', 'bg-anat-muscle'],
   ['bone', 'bg-anat-bone'],
+  ['skin', 'bg-anat-skin'],
 ] as const;
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
