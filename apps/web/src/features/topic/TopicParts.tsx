@@ -50,7 +50,7 @@ export function ModeTile({
   meta,
   primary = false,
   wide = false,
-}: ModeTileProps) {
+}: Readonly<ModeTileProps>) {
   return (
     <li className={cx(wide && 'col-span-2')}>
       <Link

@@ -45,5 +45,7 @@ describe('findRawDesignValue', () => {
       'a spacing or radius step not in the tokens',
     );
     expect(findRawDesignValue('h-8 w-14')).toBe('a spacing or radius step not in the tokens');
+    expect(findRawDesignValue('-mx-0.5')).toBe('a spacing or radius step not in the tokens');
+    expect(findRawDesignValue('min-h-dvh h-studio rounded-t-lg')).toBeNull();
   });
 });

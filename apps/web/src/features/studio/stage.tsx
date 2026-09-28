@@ -1,10 +1,11 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, IconButton, Skeleton } from '@medlearn/ui';
+import { cx, IconButton, Skeleton, Text } from '@medlearn/ui';
 import { Layers, Menu } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
+import type { ReactNode } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
@@ -73,6 +74,77 @@ export function ModelView(props: Readonly<ModelViewProps>) {
     <div className="size-full px-8 pt-20 pb-24">
       <BodyOutline selected={props.region} onSelect={props.onRegion} />
     </div>
+  );
+}
+
+const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-md';
+
+/**
+ * The bottom of the studio: the picked structure's card (unless it is docked), the mode switch
+ * and the mode's own bar in one glass card, and the model's credit.
+ */
+export function StudioFooter({
+  docked,
+  info,
+  switcher,
+  credit,
+  children,
+}: Readonly<{
+  docked: boolean;
+  info: ReactNode;
+  switcher: ReactNode;
+  credit: string | null;
+  children: ReactNode;
+}>) {
+  return (
+    <footer className="flex flex-col gap-2">
+      {docked ? null : info}
+      <div
+        className={cx(
+          GLASS,
+          'pointer-events-auto flex flex-col gap-2 p-2 md:mx-auto md:w-full md:max-w-2xl',
+        )}
+      >
+        {docked ? null : switcher}
+        {children}
+      </div>
+      {credit ? (
+        <Text size="xs" tone="muted" className="pointer-events-auto line-clamp-1 px-2">
+          {credit}
+        </Text>
+      ) : null}
+    </footer>
+  );
+}
+
+/**
+ * The right-hand panel on tablets held sideways and laptops: the mode switch, the picked
+ * structure (or how to pick one) and the layers. Nothing while the whole body is open.
+ */
+export function DockedSide({
+  switcher,
+  info,
+  hint,
+  children,
+}: Readonly<{ switcher: ReactNode; info: ReactNode; hint: boolean; children: ReactNode }>) {
+  if (!children) return null;
+  return (
+    <aside
+      aria-label="About the model"
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex w-sheet shrink-0 flex-col gap-6 overflow-y-auto p-4',
+      )}
+    >
+      {switcher}
+      {info}
+      {!info && hint ? (
+        <Text size="sm" tone="muted">
+          Tap a structure on the model to see what it is.
+        </Text>
+      ) : null}
+      {children}
+    </aside>
   );
 }
 

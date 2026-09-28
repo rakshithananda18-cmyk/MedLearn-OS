@@ -5,12 +5,10 @@ import { TriangleAlert } from '@medlearn/ui/icons';
 export function SampleContentBanner({ reviewed }: { reviewed: boolean }) {
   if (reviewed) return null;
   return (
-    <p
-      role="status"
-      className="inline-flex min-h-8 items-center gap-2 rounded-full bg-warning-subtle px-3 text-sm font-semibold text-warning"
-    >
+    // <output> is a live status region, so screen readers announce the label.
+    <output className="inline-flex min-h-8 items-center gap-2 rounded-full bg-warning-subtle px-3 text-sm font-semibold text-warning">
       <Icon icon={TriangleAlert} size="sm" />
       Sample content, not medically reviewed
-    </p>
+    </output>
   );
 }

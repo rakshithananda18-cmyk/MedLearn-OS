@@ -28,11 +28,8 @@ export function ModeSwitch({
   onMode,
 }: Readonly<{ mode: Mode; onMode: (mode: Mode) => void }>) {
   return (
-    <div
-      role="group"
-      aria-label="Mode"
-      className="grid grid-cols-3 gap-1 rounded-md bg-surface-muted p-1"
-    >
+    <fieldset className="grid grid-cols-3 gap-1 rounded-md bg-surface-muted p-1">
+      <legend className="sr-only">Mode</legend>
       {MODES.map((item) => (
         <button
           key={item.mode}
@@ -51,7 +48,7 @@ export function ModeSwitch({
           {item.label}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
@@ -59,7 +56,7 @@ export function BodyBar({
   region,
   count,
   onTopics,
-}: Readonly<{ region: string; count: number; onTopics?: (() => void) | undefined }>) {
+}: Readonly<{ region: string; count: number; onTopics: (() => void) | undefined }>) {
   return (
     <div className="flex min-h-12 items-center justify-between gap-3 px-2">
       <Text size="sm">

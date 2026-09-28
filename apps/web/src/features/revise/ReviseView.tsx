@@ -42,17 +42,15 @@ export function ReviseView({ topics, cards }: Readonly<ReviseViewProps>) {
       }
     >
       {showing ? (
-        <>
-          <Card tone="glass" className="flex flex-col gap-3">
-            {showing.fromMistake ? <Eyebrow>From a question you missed</Eyebrow> : null}
-            <RecallCard
-              key={showing.id}
-              front={showing.front}
-              back={showing.back}
-              onRate={(rating) => rateCard(showing.id, rating)}
-            />
-          </Card>
-        </>
+        <Card tone="glass" className="flex flex-col gap-3">
+          {showing.fromMistake ? <Eyebrow>From a question you missed</Eyebrow> : null}
+          <RecallCard
+            key={showing.id}
+            front={showing.front}
+            back={showing.back}
+            onRate={(rating) => rateCard(showing.id, rating)}
+          />
+        </Card>
       ) : (
         <Card tone="glass">
           <EmptyState

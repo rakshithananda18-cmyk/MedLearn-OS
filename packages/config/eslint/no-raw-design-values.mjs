@@ -11,17 +11,25 @@ const ARBITRARY_PROPERTY = /(?:^|[\s:"'`])\[[a-z-]+:[^\]\s]+\]/i;
 // --spacing-* and --radius-* tokens.
 const SPACING_STEPS = new Set(['0', '1', '2', '3', '4', '6', '8', '12', '16', '20', '24']);
 const RADIUS_STEPS = new Set(['none', 'sm', 'md', 'lg', 'xl', 'full']);
-const SPACING_CLASS =
-  /^-?(?:p[xytrbl]?|m[xytrbl]?|gap(?:-[xy])?|space-[xy]|size|[wh]|min-[wh]|max-h|inset(?:-[xy])?|top|right|bottom|left|translate-[xy])-(\d+(?:\.\d+)?)$/;
-const RADIUS_CLASS = /^rounded(?:-(?:[trbl]|tl|tr|bl|br|s|e|ss|se|es|ee))?-([a-z0-9]+)$/;
+const SPACING_UTILITIES = new Set(
+  [
+    'p px py pt pr pb pl m mx my mt mr mb ml gap gap-x gap-y space-x space-y',
+    'size w h min-w min-h max-h inset inset-x inset-y top right bottom left',
+    'translate-x translate-y',
+  ]
+    .join(' ')
+    .split(' '),
+);
+// A utility and its step: `min-h-12` is ['min-h', '12'], `rounded-t-lg` is ['rounded-t', 'lg'].
+const UTILITY_STEP = /^-?([a-z]+(?:-[a-z]+)?)-([\w.]+)$/;
 
 function offScale(token) {
   // The utility itself, without variants (`md:`, `hover:`) or the important mark.
   const utility = token.slice(token.lastIndexOf(':') + 1).replace(/^!/, '');
-  const spacing = SPACING_CLASS.exec(utility);
-  if (spacing?.[1] !== undefined && !SPACING_STEPS.has(spacing[1])) return true;
-  const radius = RADIUS_CLASS.exec(utility);
-  return radius?.[1] !== undefined && !RADIUS_STEPS.has(radius[1]);
+  const [, name = '', step = ''] = UTILITY_STEP.exec(utility) ?? [];
+  if (SPACING_UTILITIES.has(name) && /^[\d.]+$/.test(step)) return !SPACING_STEPS.has(step);
+  if (name === 'rounded' || name.startsWith('rounded-')) return !RADIUS_STEPS.has(step);
+  return false;
 }
 
 export function findRawDesignValue(text) {
