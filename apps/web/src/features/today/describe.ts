@@ -10,6 +10,8 @@ export function describe(item: TodayItem): {
   icon: IconGlyph;
   /** Short name of the kind of study, for labels such as "Up next · Learn". */
   kind: string;
+  /** The button that starts it. */
+  action: string;
 } {
   switch (item.kind) {
     case 'review':
@@ -19,6 +21,7 @@ export function describe(item: TodayItem): {
         href: '/revise',
         icon: RotateCcw,
         kind: 'Recall',
+        action: 'Start recall',
       };
     case 'learn':
       return {
@@ -27,6 +30,7 @@ export function describe(item: TodayItem): {
         href: `/learn/${item.topicSlug}`,
         icon: BookOpen,
         kind: 'Learn',
+        action: 'Start lesson',
       };
     case 'practice':
       return {
@@ -35,6 +39,7 @@ export function describe(item: TodayItem): {
         href: '/practice',
         icon: ClipboardCheck,
         kind: 'Practice',
+        action: 'Start practice',
       };
     case 'drill':
       return {
@@ -43,6 +48,7 @@ export function describe(item: TodayItem): {
         href: `/learn/${item.topicSlug}/draw`,
         icon: PenLine,
         kind: 'Draw',
+        action: 'Start drawing',
       };
   }
 }

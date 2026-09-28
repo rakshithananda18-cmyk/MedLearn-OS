@@ -1,6 +1,6 @@
 import type { TodayItem } from '@medlearn/core';
 import { buttonClasses, cx, Eyebrow, Icon, Text } from '@medlearn/ui';
-import { ArrowRight, Check, Rotate3d } from '@medlearn/ui/icons';
+import { Box, Check, Flame, Play, Search } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { describe } from './describe';
 
 const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass';
+const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
 const GLOSS_LINK =
   'inline-flex h-12 items-center gap-2 rounded-full bg-gloss px-4 text-sm font-semibold text-ink shadow-glass transition-transform duration-150 hover:-translate-y-px';
 
@@ -23,14 +24,69 @@ export function titled(title: string): ReactNode {
   );
 }
 
+/** The streak as a glossy pill beside the headline: the count on phones, in words from tablets. */
+export function StreakPill({
+  streak,
+  className,
+}: Readonly<{ streak: number; className?: string }>) {
+  return (
+    <p
+      className={cx(
+        'inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-gloss px-4 text-sm font-semibold text-gold-ink shadow-glass',
+        className,
+      )}
+      suppressHydrationWarning
+    >
+      <Icon icon={Flame} size="sm" />
+      <span>
+        {streak}
+        <span className="sr-only md:not-sr-only">-day streak</span>
+      </span>
+    </p>
+  );
+}
+
+/** Search from Today, on wide screens: the browser sends it to /search, so it works at once. */
+export function SearchPill({ className }: Readonly<{ className?: string }>) {
+  return (
+    <form action="/search" role="search" className={className}>
+      <label className="flex h-12 items-center gap-2 rounded-full bg-gloss px-4 text-fg-muted shadow-glass focus-within:ring-2 focus-within:ring-focus">
+        <Icon icon={Search} size="sm" />
+        <span className="sr-only">Search topics, facts and questions</span>
+        <input
+          type="search"
+          name="q"
+          maxLength={100}
+          placeholder="Search topics, structures, notes"
+          className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-fg-muted"
+        />
+      </label>
+    </form>
+  );
+}
+
 /** The next thing to do, as the hero of the day: its 3D model on a pedestal when it has one. */
-export function UpNext({ item, poster }: Readonly<{ item: TodayItem; poster: string | null }>) {
-  const { title, meta, href, kind, icon: Glyph } = describe(item);
+export function UpNext({
+  item,
+  poster,
+  summary,
+  className,
+}: Readonly<{
+  item: TodayItem;
+  poster: string | null;
+  summary: string | null;
+  className?: string;
+}>) {
+  const { title, meta, href, kind, action, icon: Glyph } = describe(item);
   const heading = item.kind === 'learn' ? item.title : title;
   return (
     <section
       aria-labelledby="up-next-title"
-      className={cx(GLASS, 'relative flex animate-rise flex-col gap-6 overflow-hidden p-6 md:p-8')}
+      className={cx(
+        GLASS,
+        'relative flex animate-rise flex-col justify-between gap-6 overflow-hidden p-4 md:p-8',
+        className,
+      )}
     >
       {poster ? (
         <>
@@ -50,32 +106,37 @@ export function UpNext({ item, poster }: Readonly<{ item: TodayItem; poster: str
         // Without a model to show, the kind of study stands in, in a gold ring.
         <span
           aria-hidden="true"
-          className="absolute top-6 right-6 flex size-24 items-center justify-center rounded-full border-2 border-gold text-gold-ink"
+          className="absolute top-4 right-4 flex size-20 items-center justify-center rounded-full border-2 border-gold text-gold-ink md:top-8 md:right-8 md:size-24"
         >
-          <Glyph size={40} strokeWidth={1.5} aria-hidden="true" />
+          <Glyph size={36} strokeWidth={1.5} aria-hidden="true" />
         </span>
       )}
       <div className="relative flex w-3/5 flex-col gap-2">
         <Eyebrow>Up next · {kind}</Eyebrow>
         <h2
           id="up-next-title"
-          className="font-display text-4xl tracking-display text-ink text-balance md:text-5xl"
+          className="font-display text-3xl tracking-display text-ink text-balance md:text-5xl"
         >
           {titled(heading)}
         </h2>
-        <Text size="sm" tone="muted">
+        <Text size="sm" tone="muted" weight="semibold">
           {meta}
         </Text>
+        {summary ? (
+          <Text tone="muted" className="hidden md:block">
+            {summary}
+          </Text>
+        ) : null}
       </div>
       <div className="relative flex flex-wrap gap-2">
         <Link href={href} className={buttonClasses()}>
-          Start now
-          <Icon icon={ArrowRight} />
+          <Icon icon={Play} size="sm" />
+          {action}
         </Link>
         {item.kind === 'learn' && poster ? (
           <Link href={`/studio?topic=${item.topicSlug}`} className={GLOSS_LINK}>
-            <Icon icon={Rotate3d} className="text-gold-ink" />
-            Turn it in 3D
+            <Icon icon={Box} className="text-gold-ink" />
+            <span className="sr-only md:not-sr-only">Turn it in</span> 3D
           </Link>
         ) : null}
       </div>
@@ -91,18 +152,23 @@ export interface Tally {
 }
 
 /** Counts of what is waiting, each a way in: cards to recall, questions, exam diagrams. */
-export function Tallies({ tallies }: Readonly<{ tallies: Tally[] }>) {
+export function Tallies({
+  tallies,
+  className,
+}: Readonly<{ tallies: Tally[]; className?: string }>) {
   return (
-    <ul aria-label="Waiting for you" className="grid grid-cols-3 gap-3">
+    <ul aria-label="Waiting for you" className={cx('grid grid-cols-3 gap-3', className)}>
       {tallies.map((tally) => (
         <li key={tally.label}>
           <Link
             href={tally.href}
-            className={cx(GLASS, 'flex h-full flex-col p-3 transition-colors hover:border-gold')}
+            className="flex h-full flex-col rounded-lg border border-glass-border bg-glass p-3 shadow-glass transition-colors hover:border-gold @5xl:flex-row @5xl:items-center @5xl:gap-4 @5xl:p-4"
           >
-            <span className="text-gold font-display text-4xl">{tally.count}</span>
-            <span className="text-sm font-semibold text-ink">{tally.label}</span>
-            <span className="text-xs text-fg-muted">{tally.detail}</span>
+            <span className="text-gold font-display text-4xl @5xl:text-5xl">{tally.count}</span>
+            <span className="flex flex-col">
+              <span className="text-sm font-semibold text-ink">{tally.label}</span>
+              <span className="text-xs text-fg-muted">{tally.detail}</span>
+            </span>
           </Link>
         </li>
       ))}
@@ -110,21 +176,28 @@ export function Tallies({ tallies }: Readonly<{ tallies: Tally[] }>) {
   );
 }
 
-/** Today's plan: what is done, ticked off, then what is left, each a link in. */
+/** Today's plan: what is done, ticked off, then what is left, each a link in with its minutes. */
 export function PlanCard({
   done,
   items,
   planned,
   goal,
-}: Readonly<{ done: string[]; items: TodayItem[]; planned: number; goal: number }>) {
+  className,
+}: Readonly<{
+  done: string[];
+  items: TodayItem[];
+  planned: number;
+  goal: number;
+  className?: string;
+}>) {
   const row = 'flex min-h-12 items-center gap-3 border-t border-border py-2';
   return (
-    <section aria-labelledby="plan-title" className={cx(GLASS, 'flex flex-col px-4 pt-4 pb-2')}>
+    <section
+      aria-labelledby="plan-title"
+      className={cx(GLASS, 'flex flex-col self-start px-4 pt-3 pb-1', className)}
+    >
       <div className="flex items-center justify-between gap-3 pb-2">
-        <h2
-          id="plan-title"
-          className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink"
-        >
+        <h2 id="plan-title" className={LABEL}>
           Today’s plan
         </h2>
         <span className="text-sm font-semibold text-primary-strong">
@@ -142,22 +215,29 @@ export function PlanCard({
           </li>
         ))}
         {items.map((item, index) => {
-          const { title, meta, href } = describe(item);
+          const { title, href } = describe(item);
           return (
             <li key={`${item.kind}-${href}`}>
               <Link href={href} className={cx(row, 'group')}>
                 <span
                   aria-hidden="true"
                   className={cx(
-                    'size-6 rounded-full border-2',
-                    index === 0 ? 'border-gold bg-surface' : 'border-border-strong',
+                    'size-6 shrink-0 rounded-full',
+                    index === 0
+                      ? 'border-4 border-gold bg-surface'
+                      : 'border-2 border-border-strong',
                   )}
                 />
-                <span className="flex flex-1 flex-col">
-                  <span className="text-sm font-semibold text-ink group-hover:underline">
-                    {title}
-                  </span>
-                  <span className="text-xs text-fg-muted">{meta}</span>
+                <span className="flex-1 text-sm font-semibold text-ink group-hover:underline">
+                  {title}
+                </span>
+                <span
+                  className={cx(
+                    'shrink-0 text-xs',
+                    index === 0 ? 'font-semibold text-gold-ink' : 'text-fg-muted',
+                  )}
+                >
+                  {item.minutes} min
                 </span>
               </Link>
             </li>
@@ -168,17 +248,29 @@ export function PlanCard({
   );
 }
 
-/** Streak and the week: a gold day count and a bar for each of the last seven days. */
+type Week = Array<{ day: string; minutes: number }>;
+
+// A plain lookup: each toLocaleDateString builds a new date formatter, which is slow on phones.
+const letter = (day: string) => 'SMTWTFS'.charAt(new Date(`${day}T12:00:00`).getDay());
+
+function hoursAndMinutes(minutes: number): string {
+  const whole = Math.round(minutes);
+  const hours = Math.floor(whole / 60);
+  return hours > 0 ? `${hours} h ${whole % 60} min` : `${whole} min`;
+}
+
+/** The streak on wide screens: the day count, the best, and a dot for each of the last 7 days. */
 export function StreakCard({
   streak,
   best,
   week,
-}: Readonly<{ streak: number; best: number; week: Array<{ day: string; minutes: number }> }>) {
-  const most = Math.max(...week.map((day) => day.minutes), 1);
-  // A plain lookup: each toLocaleDateString builds a new date formatter, which is slow on phones.
-  const letter = (day: string) => 'SMTWTFS'.charAt(new Date(`${day}T12:00:00`).getDay());
+  className,
+}: Readonly<{ streak: number; best: number; week: Week; className?: string }>) {
   return (
-    <section aria-labelledby="streak-title" className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
+    <section
+      aria-labelledby="streak-title"
+      className={cx(GLASS, 'flex flex-col gap-4 p-4 @5xl:p-6', className)}
+    >
       <div className="flex items-baseline gap-3">
         <span className="text-gold font-display text-5xl" suppressHydrationWarning>
           {streak}
@@ -192,6 +284,50 @@ export function StreakCard({
           </span>
         </span>
       </div>
+      <ol aria-label="Days studied this week" className="grid grid-cols-7 gap-1">
+        {week.map((day, index) => {
+          const today = index === week.length - 1;
+          return (
+            <li key={day.day} className="flex flex-col items-center gap-1">
+              <span
+                aria-hidden="true"
+                className={cx(
+                  'size-6 rounded-full',
+                  day.minutes > 0 && (today ? 'bg-primary' : 'bg-gold'),
+                  day.minutes === 0 && (today ? 'border-4 border-primary' : 'bg-border'),
+                )}
+              />
+              <span className="text-xs font-semibold text-fg-muted" suppressHydrationWarning>
+                {letter(day.day)}
+              </span>
+              <span className="sr-only" suppressHydrationWarning>
+                {day.minutes > 0 ? 'studied' : 'not studied'}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+/** This week's study time: the total, and a bar for each day, today in the accent colour. */
+export function WeekCard({ week, className }: Readonly<{ week: Week; className?: string }>) {
+  const most = Math.max(...week.map((day) => day.minutes), 1);
+  const total = week.reduce((sum, day) => sum + day.minutes, 0);
+  return (
+    <section
+      aria-labelledby="week-title"
+      className={cx(GLASS, 'flex flex-col gap-4 p-4', className)}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="week-title" className={LABEL}>
+          This week
+        </h2>
+        <span className="text-sm font-semibold text-ink" suppressHydrationWarning>
+          {hoursAndMinutes(total)}
+        </span>
+      </div>
       <ol aria-label="Minutes studied this week" className="grid h-24 grid-cols-7 items-end gap-2">
         {week.map((day, index) => (
           <li key={day.day} className="flex h-full flex-col items-center justify-end gap-1">
@@ -203,7 +339,13 @@ export function StreakCard({
               )}
               style={{ height: `${Math.max(6, (day.minutes / most) * 100)}%` }}
             />
-            <span className="text-xs text-fg-muted" suppressHydrationWarning>
+            <span
+              className={cx(
+                'text-xs',
+                index === week.length - 1 ? 'font-semibold text-primary-strong' : 'text-fg-muted',
+              )}
+              suppressHydrationWarning
+            >
               {letter(day.day)}
             </span>
             <span className="sr-only" suppressHydrationWarning>
@@ -217,7 +359,11 @@ export function StreakCard({
 }
 
 /** Minutes studied today against the daily goal, as a ring. */
-export function TimeRing({ minutes, goal }: Readonly<{ minutes: number; goal: number }>) {
+export function TimeRing({
+  minutes,
+  goal,
+  className,
+}: Readonly<{ minutes: number; goal: number; className?: string }>) {
   const done = Math.round(minutes);
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
@@ -231,7 +377,7 @@ export function TimeRing({ minutes, goal }: Readonly<{ minutes: number; goal: nu
   return (
     <section
       aria-labelledby="time-title"
-      className={cx(GLASS, 'flex items-center gap-4 p-4 md:p-6')}
+      className={cx(GLASS, 'flex items-center gap-4 p-4 @5xl:p-6', className)}
     >
       <div className="relative size-24 shrink-0">
         <svg viewBox="0 0 88 88" className="size-24 -rotate-90" aria-hidden="true">
@@ -274,14 +420,17 @@ export function TimeRing({ minutes, goal }: Readonly<{ minutes: number; goal: nu
 }
 
 /** Topics with missed questions, each waiting as recall cards. */
-export function WeakSpots({ spots }: Readonly<{ spots: Array<{ title: string; count: number }> }>) {
+export function WeakSpots({
+  spots,
+  className,
+}: Readonly<{ spots: Array<{ title: string; count: number }>; className?: string }>) {
   if (spots.length === 0) return null;
   return (
-    <section aria-labelledby="weak-title" className={cx(GLASS, 'flex flex-col gap-3 p-4 md:p-6')}>
-      <h2
-        id="weak-title"
-        className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink"
-      >
+    <section
+      aria-labelledby="weak-title"
+      className={cx(GLASS, 'flex flex-col gap-3 self-start p-4', className)}
+    >
+      <h2 id="weak-title" className={LABEL}>
         Weak spots
       </h2>
       <ul className="flex flex-col gap-2">
@@ -289,7 +438,7 @@ export function WeakSpots({ spots }: Readonly<{ spots: Array<{ title: string; co
           <li key={spot.title}>
             <Link
               href="/revise"
-              className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2 hover:bg-surface-muted"
+              className="flex min-h-12 items-center gap-3 rounded-md bg-surface px-3 py-2 hover:bg-surface-muted"
             >
               <span aria-hidden="true" className="size-2 rounded-full bg-gold" />
               <span className="flex flex-1 flex-col">
@@ -308,11 +457,18 @@ export function WeakSpots({ spots }: Readonly<{ spots: Array<{ title: string; co
 }
 
 /** The way into the 3D body: pick a region and see what is left to learn there. */
-export function BodyCard({ learnt, total }: Readonly<{ learnt: number; total: number }>) {
+export function BodyCard({
+  learnt,
+  total,
+  className,
+}: Readonly<{ learnt: number; total: number; className?: string }>) {
   return (
     <Link
       href="/studio"
-      className="relative flex min-h-24 flex-col justify-between gap-3 overflow-hidden rounded-xl bg-ink p-4 text-canvas md:p-6 shadow-glass"
+      className={cx(
+        'relative flex min-h-24 flex-col justify-between gap-3 overflow-hidden rounded-xl bg-ink p-4 text-canvas shadow-glass md:p-6',
+        className,
+      )}
     >
       <Image
         src="/posters/body.webp"
@@ -325,7 +481,7 @@ export function BodyCard({ learnt, total }: Readonly<{ learnt: number; total: nu
       <span className="relative text-xs font-semibold uppercase tracking-eyebrow">
         Pick from the body
       </span>
-      <span className="relative w-3/5 font-display text-2xl" suppressHydrationWarning>
+      <span className="relative w-3/5 font-display text-2xl md:text-3xl" suppressHydrationWarning>
         {learnt} of {total} <em>topics learnt</em>
       </span>
     </Link>

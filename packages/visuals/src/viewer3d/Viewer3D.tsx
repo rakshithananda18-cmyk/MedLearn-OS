@@ -1,10 +1,11 @@
 'use client';
 
 import type { Model3D, ModelTrace, PartKind, Point3 } from '@medlearn/schemas';
-import { Line, OrbitControls, useGLTF } from '@react-three/drei';
+import { Html, Line, OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Box3,
   CatmullRomCurve3,
   Color,
   type Group,
@@ -21,6 +22,14 @@ import { MODEL_GROUP, toScene } from './scene';
 export interface Viewer3DMarker {
   id: string;
   position: Point3;
+}
+
+/** A name pinned to a part, a trace or a marker, with a short leader line. */
+export interface Viewer3DLabel {
+  id: string;
+  text: string;
+  /** The picked one: filled in the accent colour. */
+  active?: boolean;
 }
 
 /** A line a student drew on the model's surface, in the model's frame. */
@@ -49,6 +58,9 @@ export interface Viewer3DProps {
   /** While set, dragging over the model draws on its surface instead of turning it. */
   pen?: { colour: string; onStroke: (stroke: Stroke) => void } | null;
   strokes?: Stroke[];
+  labels?: Viewer3DLabel[];
+  /** Changing it sends the camera back to the current stop. */
+  resetToken?: number;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -217,12 +229,88 @@ function Parts({
   return <primitive object={scene} onClick={select} />;
 }
 
+/** Where a label sits, in the model frame: the middle of a part, a trace or a marker. */
+function anchorOf(
+  id: string,
+  scene: Group,
+  model: Model3D,
+  markers: Viewer3DMarker[],
+): Point3 | null {
+  const marker = markers.find((item) => item.id === id);
+  if (marker) return marker.position;
+  const trace = model.traces.find((item) => item.id === id);
+  const path = trace?.paths[0];
+  if (path) return path[Math.floor(path.length / 2)] ?? null;
+  // Model nodes carry no transform, so their geometry is already in the model frame.
+  const node = scene.getObjectByName(id);
+  if (!node) return null;
+  const box = new Box3();
+  node.traverse((child) => {
+    const mesh = child as Mesh;
+    if (!mesh.isMesh) return;
+    mesh.geometry.computeBoundingBox();
+    if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
+  });
+  if (box.isEmpty()) return null;
+  const centre = box.getCenter(new Vector3());
+  return [centre.x, centre.y, centre.z];
+}
+
+/** Names on the model, each on a dot with a short line out to a pill. */
+function Labels({
+  model,
+  labels,
+  markers,
+}: Readonly<{ model: Model3D; labels: Viewer3DLabel[]; markers: Viewer3DMarker[] }>) {
+  const { scene } = useGLTF(model.src, false, true);
+  const placed = useMemo(
+    () =>
+      labels.flatMap((label) => {
+        const anchor = anchorOf(label.id, scene, model, markers);
+        return anchor ? [{ ...label, anchor }] : [];
+      }),
+    [labels, scene, model, markers],
+  );
+  return (
+    <>
+      {placed.map((label) => (
+        <Html
+          key={label.id}
+          position={label.anchor}
+          // Under the page's panels: a label behind a sheet stays behind it.
+          zIndexRange={[0, 0]}
+          style={{ pointerEvents: 'none' }}
+        >
+          <span className="relative flex items-center">
+            <span
+              className={`absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ${label.active ? 'bg-primary' : 'bg-ink'}`}
+            />
+            <span
+              className={`absolute h-px w-6 -translate-y-1/2 ${label.active ? 'bg-primary' : 'bg-ink'}`}
+            />
+            <span
+              className={`absolute left-6 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold shadow-glass ${
+                label.active
+                  ? 'bg-primary text-on-primary'
+                  : 'border border-glass-border bg-surface text-ink'
+              }`}
+            >
+              {label.text}
+            </span>
+          </span>
+        </Html>
+      ))}
+    </>
+  );
+}
+
 /** Moves the camera to a guided stop: eased, or at once when motion is reduced. */
 function CameraRig({
   model,
   stopId,
   reducedMotion,
-}: Readonly<Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion'>>) {
+  resetToken,
+}: Readonly<Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'>>) {
   const { camera, invalidate } = useThree();
   const controls = useThree((state) => state.controls) as unknown as {
     target: Vector3;
@@ -244,7 +332,8 @@ function CameraRig({
       goal.current = { position, target };
     }
     invalidate();
-  }, [model.stops, stopId, reducedMotion, camera, controls, invalidate]);
+    // resetToken is read only to rerun this: a new token returns the camera to the stop.
+  }, [model.stops, stopId, reducedMotion, camera, controls, invalidate, resetToken]);
 
   useFrame((_, delta) => {
     if (!goal.current || !controls) return;
@@ -291,6 +380,8 @@ export default function Viewer3D({
   maxDistance = 1.5,
   pen = null,
   strokes = [],
+  labels = [],
+  resetToken = 0,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part or trace dims the rest; a lit marker leaves the model as it is.
   const selecting = [...model.parts, ...model.traces].some((item) => highlight.has(item.id));
@@ -385,6 +476,7 @@ export default function Viewer3D({
         {draft.length > 1 && pen ? (
           <Line points={draft} color={tokenColour(pen.colour)} lineWidth={3} />
         ) : null}
+        <Labels model={model} labels={labels} markers={markers} />
       </group>
       <OrbitControls
         makeDefault
@@ -393,7 +485,12 @@ export default function Viewer3D({
         minDistance={0.08}
         maxDistance={maxDistance}
       />
-      <CameraRig model={model} stopId={stopId} reducedMotion={reducedMotion} />
+      <CameraRig
+        model={model}
+        stopId={stopId}
+        reducedMotion={reducedMotion}
+        resetToken={resetToken}
+      />
     </Canvas>
   );
 }

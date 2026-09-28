@@ -16,6 +16,12 @@ export interface StudioTopic {
   summary: string;
   estimatedMinutes: number;
   regions: BodyRegion[];
+  /** A still of the model, for the topic cards on the body. */
+  poster: string | null;
+  /** For mastery: the topic's questions and recall cards. */
+  questionIds: string[];
+  cardIds: string[];
+  drillMinutes: number | null;
   model: Model3D | null;
   diagram: PathDiagram | null;
   lesson: Array<Pick<LessonStep, 'title' | 'body' | 'focus'>>;

@@ -52,7 +52,7 @@ describe('TodayView', () => {
       'href',
       '/welcome',
     );
-    expect(screen.getByRole('link', { name: 'Start now' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Start lesson' })).toHaveAttribute(
       'href',
       '/learn/pectoral-region',
     );

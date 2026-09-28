@@ -297,6 +297,8 @@
 }
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+/* Short windows, such as a phone held sideways: panels move from the bottom to the side. */
+@custom-variant short (@media (max-height: 30rem));
 
 /*
  * The sky behind every study screen: blue at the top fading to warm cream (night sky in the
@@ -401,6 +403,59 @@
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
 @utility h-stage {
   height: calc(100dvh - var(--spacing-16));
+}
+
+/*
+ * Today: one column on phones; two on tablets (the plan beside the counts); on wide screens a
+ * main column and a side column for the streak, the time, the plan and weak spots.
+ */
+@utility grid-today {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'head' 'hero' 'tallies' 'plan' 'body' 'week' 'ring' 'weak';
+}
+
+@utility grid-today-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: 'head head' 'hero hero' 'plan tallies' 'plan body' 'week weak' 'ring weak';
+}
+
+@utility grid-today-3 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) 20rem;
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: 'head head side' 'hero hero side' 'tallies tallies side' 'body week side';
+}
+
+@utility area-head {
+  grid-area: head;
+}
+@utility area-hero {
+  grid-area: hero;
+}
+@utility area-tallies {
+  grid-area: tallies;
+}
+@utility area-plan {
+  grid-area: plan;
+}
+@utility area-body {
+  grid-area: body;
+}
+@utility area-week {
+  grid-area: week;
+}
+@utility area-ring {
+  grid-area: ring;
+}
+@utility area-weak {
+  grid-area: weak;
+}
+@utility area-side {
+  grid-area: side;
+}
+
+/* A topic card in a sideways-scrolling row. */
+@utility w-card {
+  width: min(17rem, 80vw);
 }
 
 /* The topics panel docked beside the 3D studio on tablets held sideways and laptops. */

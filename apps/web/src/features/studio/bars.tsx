@@ -1,13 +1,15 @@
 'use client';
 
 import type { CameraStop } from '@medlearn/schemas';
-import { Button, cx, IconButton, Text } from '@medlearn/ui';
-import { ChevronLeft, ChevronRight, Trash2, Undo2 } from '@medlearn/ui/icons';
+import { Badge, Button, cx, Icon, IconButton, Text } from '@medlearn/ui';
+import { ChevronLeft, ChevronRight, Flame, Trash2, Undo2, X } from '@medlearn/ui/icons';
 
-import type { QuizState } from './quiz';
+import { type QuizState, ROUND, roundOver } from './quiz';
 import type { Mode } from './session';
 
-// The bar along the bottom of the 3D studio: one per mode.
+// The controls along the bottom of the 3D studio, one set per mode, and the "Find it" pieces.
+
+const TILE = 'rounded-md border border-glass-border bg-glass shadow-glass backdrop-blur-md';
 
 /** Pen colours stay clear of the anatomical ones (red arteries, blue veins, yellow nerves...). */
 export const PENS = [
@@ -52,26 +54,43 @@ export function ModeSwitch({
   );
 }
 
-export function BodyBar({
-  region,
-  count,
-  onTopics,
-}: Readonly<{ region: string; count: number; onTopics: (() => void) | undefined }>) {
+/** The guided views as a numbered list: the one showing filled, the rest as rings. */
+export function GuidedViews({
+  stops,
+  index,
+  onIndex,
+}: Readonly<{ stops: CameraStop[]; index: number; onIndex: (index: number) => void }>) {
   return (
-    <div className="flex min-h-12 items-center justify-between gap-3 px-2">
-      <Text size="sm">
-        <strong>{region}</strong>: {count} {count === 1 ? 'topic' : 'topics'}. Tap a marker to pick
-        a region.
-      </Text>
-      {onTopics ? (
-        <Button variant="secondary" onClick={onTopics}>
-          Topics
-        </Button>
-      ) : null}
-    </div>
+    <ol aria-label="Guided views" className="flex flex-col gap-1">
+      {stops.map((stop, position) => (
+        <li key={stop.id}>
+          <button
+            type="button"
+            aria-current={position === index ? 'step' : undefined}
+            onClick={() => onIndex(position)}
+            className="flex min-h-12 w-full items-center gap-3 rounded-md px-2 text-left text-sm transition-colors duration-150 hover:bg-surface-muted"
+          >
+            <span
+              className={cx(
+                'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                position === index
+                  ? 'bg-ink text-gold'
+                  : 'border-2 border-border-strong text-fg-muted',
+              )}
+            >
+              {position + 1}
+            </span>
+            <span className={cx(position === index ? 'font-semibold text-ink' : 'text-fg-muted')}>
+              {stop.title}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
   );
 }
 
+/** The guided views one at a time, with a line on what each shows. */
 export function TourBar({
   stops,
   index,
@@ -154,53 +173,123 @@ export function DrawBar({
         onClick={onClear}
       />
       <Text size="xs" tone="muted" className="min-w-0 flex-1">
-        Drag on the model to draw. Saved on this phone.
+        Drag on the model to draw. Saved on this device.
       </Text>
       <Button onClick={onDone}>Done</Button>
     </div>
   );
 }
 
-function feedback(quiz: QuizState, pickedName: string): string {
-  if (quiz.last === 'right') return 'Right! Next one.';
-  if (quiz.last === 'wrong') return `You tapped ${pickedName}. Try again, or turn the model.`;
-  return 'Tap it on the model.';
+/** The top of "Find it": end the game, how far through the round, and the streak. */
+export function QuizProgress({ quiz, onEnd }: Readonly<{ quiz: QuizState; onEnd: () => void }>) {
+  const question = Math.min(quiz.asked + 1, ROUND);
+  return (
+    <div className="flex items-center gap-3">
+      <IconButton
+        icon={X}
+        label="End the game"
+        variant="secondary"
+        className="pointer-events-auto shadow-glass"
+        onClick={onEnd}
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-xs font-semibold text-fg-muted">
+          Question {question} of {ROUND}
+        </span>
+        <span aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-surface">
+          <span
+            className="block h-full rounded-full bg-primary"
+            style={{ width: `${(Math.min(quiz.asked, ROUND) / ROUND) * 100}%` }}
+          />
+        </span>
+      </div>
+      <span className="inline-flex h-8 items-center gap-1 rounded-full bg-gloss px-3 text-sm font-semibold text-gold-ink shadow-glass">
+        <Icon icon={Flame} size="sm" />
+        <span className="sr-only">Streak</span>
+        {quiz.streak}
+      </span>
+    </div>
+  );
 }
 
+/** What to find, as a card at the top of the model. */
+export function QuizTarget({ name }: Readonly<{ name: string }>) {
+  return (
+    <div className="pointer-events-auto flex flex-col gap-1 rounded-lg border border-glass-border bg-glass p-4 shadow-glass backdrop-blur-md">
+      <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
+        Find it on the model
+      </span>
+      <p className="text-gold font-display text-4xl tracking-display">{name}</p>
+    </div>
+  );
+}
+
+function feedback(quiz: QuizState, pickedName: string): string | null {
+  if (quiz.last === 'right') return 'Right! Next one.';
+  if (quiz.last === 'wrong') return `You tapped ${pickedName}. Try again, or turn the model.`;
+  return null;
+}
+
+/** "Find it" along the bottom: how the last tap went, the score, and hint and skip. */
 export function QuizBar({
   quiz,
-  targetName,
   pickedName,
   onSkip,
+  onAgain,
   onEnd,
 }: Readonly<{
   quiz: QuizState;
-  targetName: string;
   pickedName: string;
   onSkip: () => void;
+  onAgain: () => void;
   onEnd: () => void;
 }>) {
+  const over = roundOver(quiz);
+  const said = over
+    ? `Round over: you found ${quiz.score} of ${ROUND}.`
+    : feedback(quiz, pickedName);
+  const tiles = [
+    { label: 'Score', value: quiz.score, gold: false },
+    { label: 'Streak', value: quiz.streak, gold: true },
+    { label: 'Best', value: quiz.best, gold: false },
+  ];
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <p className="font-display text-xl tracking-display text-ink">
-          Find: <em>{targetName}</em>
-        </p>
-        <Text size="sm" tone="muted">
-          Score {quiz.score} · Streak {quiz.streak} · Best {quiz.best}
-        </Text>
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <p aria-live="polite" className="text-sm text-fg">
-          {feedback(quiz, pickedName)}
-        </p>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={onSkip}>
-            Skip
+    <div className="pointer-events-auto flex flex-col gap-3">
+      <p
+        aria-live="polite"
+        className={cx(
+          'text-sm font-semibold text-ink',
+          said &&
+            'rounded-md border border-glass-border bg-glass px-4 py-3 shadow-glass backdrop-blur-md',
+        )}
+      >
+        {said}
+      </p>
+      <dl className="grid grid-cols-3 gap-2 text-center">
+        {tiles.map((tile) => (
+          <div key={tile.label} className={cx(TILE, 'flex flex-col-reverse py-2')}>
+            <dt className="text-xs font-semibold text-fg-muted">{tile.label}</dt>
+            <dd className={cx('text-xl font-semibold', tile.gold ? 'text-gold-ink' : 'text-ink')}>
+              {tile.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {over ? (
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={onEnd}>
+            Done
           </Button>
-          <Button onClick={onEnd}>End</Button>
+          <Button onClick={onAgain}>Play again</Button>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="secondary" disabled>
+            Hint <Badge>Soon</Badge>
+          </Button>
+          <Button onClick={onSkip}>Skip</Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -53,6 +53,10 @@ describe('design tokens', () => {
     'w-dock',
     'h-hero',
     'h-stage',
+    'w-card',
+    'short:flex',
+    'grid-today-2',
+    'area-side',
   ])('provides %s', (className) => {
     expect(generates(className)).toBe(true);
   });

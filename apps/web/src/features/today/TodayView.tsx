@@ -32,12 +32,15 @@ import { acceptCatchUp, useProgress } from '@/features/progress/store';
 import {
   BodyCard,
   PlanCard,
+  SearchPill,
   StreakCard,
+  StreakPill,
   Tallies,
   type Tally,
   TimeRing,
   UpNext,
   WeakSpots,
+  WeekCard,
 } from './parts';
 
 const HEADLINE = {
@@ -210,7 +213,8 @@ function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
 
 /**
  * The Today screen: the next thing to do as the hero, today's plan ticking itself off, and the
- * streak and time that keep a student coming back. One column on phones, a sidebar on laptops.
+ * streak and time that keep a student coming back. One column on phones, two on tablets, and a
+ * side column for the streak, time, plan and weak spots on wide screens.
  */
 export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
@@ -225,39 +229,62 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const done = doneToday(progress, topics, now);
   const date = longDate(now);
 
+  const week = lastDays(progress.activity, now);
+  const streak = currentStreak(progress.activity, now);
+
   return (
-    <div className="@container flex flex-col gap-6 xl:grid xl:grid-cols-3 xl:gap-8">
-      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
-        <div className="flex flex-col gap-3">
-          {/* The server renders in its own time zone; the browser's date wins. */}
-          <Eyebrow suppressHydrationWarning>{date}</Eyebrow>
-          <Display>{HEADLINE[plan.mode]}</Display>
-          {plan.examInDays === null ? null : (
-            <div>
-              <Pill icon={Hourglass}>{examLabel(plan.examInDays)}</Pill>
+    <div className="@container">
+      <div className="grid-today grid gap-4 @2xl:grid-today-2 @5xl:grid-today-3 @5xl:gap-6">
+        <div className="area-head flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              {/* The server renders in its own time zone; the browser's date wins. */}
+              <Eyebrow suppressHydrationWarning>{date}</Eyebrow>
+              <Display>{HEADLINE[plan.mode]}</Display>
+              {plan.examInDays === null ? null : (
+                <div>
+                  <Pill icon={Hourglass}>{examLabel(plan.examInDays)}</Pill>
+                </div>
+              )}
             </div>
+            <StreakPill streak={streak} className="@5xl:hidden" />
+            <SearchPill className="hidden w-full max-w-sm @6xl:block" />
+          </div>
+
+          {progress.profile ? null : (
+            <Prompt
+              id="setup-title"
+              icon={GraduationCap}
+              title="Make this plan yours"
+              text="Tell us your age, year, next exam and daily time. Four quick questions."
+              href="/welcome"
+              action="Set up my plan"
+            />
           )}
+          {plan.mode === 'catch-up' ? (
+            <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
+          ) : null}
+          {progress.profile && !progress.profile.books ? (
+            <Prompt
+              id="books-title"
+              icon={Library}
+              title="Which books do you follow?"
+              text="Pick them once. Every topic then shows where to read it in your books."
+              href="/books"
+              action="Choose my books"
+            />
+          ) : null}
         </div>
 
-        {progress.profile ? null : (
-          <Prompt
-            id="setup-title"
-            icon={GraduationCap}
-            title="Make this plan yours"
-            text="Tell us your age, year, next exam and daily time. Four quick questions."
-            href="/welcome"
-            action="Set up my plan"
-          />
-        )}
-
-        {plan.mode === 'catch-up' ? (
-          <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
-        ) : null}
-
         {first ? (
-          <UpNext item={first} poster={firstTopic?.poster ?? null} />
+          <UpNext
+            item={first}
+            poster={firstTopic?.poster ?? null}
+            summary={firstTopic?.summary ?? null}
+            className="area-hero"
+          />
         ) : (
-          <Card tone="glass">
+          <Card tone="glass" className="area-hero">
             <EmptyState
               icon={CircleCheck}
               title="All done for today"
@@ -270,44 +297,39 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
             />
           </Card>
         )}
-
-        <div className="grid gap-4 @2xl:grid-cols-2">
-          {first || done.length > 0 ? (
-            <PlanCard done={done} items={plan.items} planned={planned} goal={plan.dailyMinutes} />
-          ) : null}
-          <div className="flex flex-col gap-4">
-            <Tallies tallies={talliesFor(progress, topics, now)} />
-            <BodyCard
-              learnt={
-                topics.filter((topic) => progress.completedLessons.includes(topic.slug)).length
-              }
-              total={topics.length}
-            />
-          </div>
-        </div>
-
-        {/* After the plan: the day's tasks come first. */}
-        {progress.profile && !progress.profile.books ? (
-          <Prompt
-            id="books-title"
-            icon={Library}
-            title="Which books do you follow?"
-            text="Pick them once. Every topic then shows where to read it in your books."
-            href="/books"
-            action="Choose my books"
-          />
-        ) : null}
-      </div>
-
-      <aside aria-label="Your momentum" className="grid gap-4 @2xl:grid-cols-2 xl:flex xl:flex-col">
-        <StreakCard
-          streak={currentStreak(progress.activity, now)}
-          best={bestStreak(progress.activity)}
-          week={lastDays(progress.activity, now)}
+        <Tallies tallies={talliesFor(progress, topics, now)} className="area-tallies" />
+        <BodyCard
+          learnt={topics.filter((topic) => progress.completedLessons.includes(topic.slug)).length}
+          total={topics.length}
+          className="area-body"
         />
-        <TimeRing minutes={dayOf(progress.activity, now).minutes} goal={plan.dailyMinutes} />
-        <WeakSpots spots={weakSpots(progress, topics)} />
-      </aside>
+        <WeekCard week={week} className="area-week" />
+
+        {/* A side column on wide screens; elsewhere its cards take their own places in the grid. */}
+        <div className="contents @5xl:area-side @5xl:flex @5xl:flex-col @5xl:gap-4">
+          <StreakCard
+            streak={streak}
+            best={bestStreak(progress.activity)}
+            week={week}
+            className="hidden @5xl:flex"
+          />
+          <TimeRing
+            minutes={dayOf(progress.activity, now).minutes}
+            goal={plan.dailyMinutes}
+            className="area-ring"
+          />
+          {first || done.length > 0 ? (
+            <PlanCard
+              done={done}
+              items={plan.items}
+              planned={planned}
+              goal={plan.dailyMinutes}
+              className="area-plan"
+            />
+          ) : null}
+          <WeakSpots spots={weakSpots(progress, topics)} className="area-weak" />
+        </div>
+      </div>
     </div>
   );
 }

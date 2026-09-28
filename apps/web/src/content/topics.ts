@@ -36,6 +36,7 @@ export function hasDrill(topic: Topic): boolean {
 /** What the planner needs about each topic, plus its subject and its hero picture. */
 export type TopicSummary = PlannableTopic & {
   subjectSlug: string;
+  summary: string;
   /** A still of the topic's 3D model (scripts/models/render-posters.mjs), when it has one. */
   poster: string | null;
 };
@@ -50,6 +51,7 @@ export function posterOf(topic: Topic): string | null {
 export const PLANNABLE_TOPICS: TopicSummary[] = TOPICS.map((topic) => ({
   slug: topic.slug,
   subjectSlug: topic.subjectSlug,
+  summary: topic.summary,
   title: topic.title,
   estimatedMinutes: topic.estimatedMinutes,
   questionIds: topic.questions.map((question) => question.id),

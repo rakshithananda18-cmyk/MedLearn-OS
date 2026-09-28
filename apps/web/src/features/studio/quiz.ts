@@ -1,3 +1,6 @@
+/** "Find it" comes in rounds of this many questions. */
+export const ROUND = 10;
+
 /** "Find it": the studio names a structure and the student taps it on the model. */
 export interface QuizState {
   targetId: string;
@@ -50,6 +53,9 @@ export function answerQuiz(
     picked: pickedId,
   };
 }
+
+/** The round is over once every question has been found or skipped. */
+export const roundOver = (state: QuizState): boolean => state.asked >= ROUND;
 
 /** Moves on without scoring. */
 export function skipQuiz(state: QuizState, pool: string[], random = Math.random): QuizState {
