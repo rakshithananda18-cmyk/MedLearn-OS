@@ -221,10 +221,12 @@ export function TimeRing({ minutes, goal }: Readonly<{ minutes: number; goal: nu
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
   const share = Math.min(1, done / Math.max(goal, 1));
+  const left = goal - done;
+  const unit = left === 1 ? 'minute' : 'minutes';
   const message =
-    done >= goal
+    left <= 0
       ? 'Today’s goal is done. Anything more is a bonus.'
-      : `${goal - done} more ${goal - done === 1 ? 'minute' : 'minutes'} to today’s goal.`;
+      : `${left} more ${unit} to today’s goal.`;
   return (
     <section
       aria-labelledby="time-title"

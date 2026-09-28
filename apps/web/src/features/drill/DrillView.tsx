@@ -28,7 +28,7 @@ export interface DrillViewProps {
 }
 
 /** Exam diagram trainer: label each layer from a bank of labels, then draw it on paper. */
-export function DrillView({ topicSlug, title, diagram, steps, minutes }: DrillViewProps) {
+export function DrillView({ topicSlug, title, diagram, steps, minutes }: Readonly<DrillViewProps>) {
   const router = useRouter();
   const [state, setState] = useState(() => startDrill(steps));
   const [wrong, setWrong] = useState<string | null>(null);
