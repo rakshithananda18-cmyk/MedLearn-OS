@@ -38,6 +38,14 @@ describe('bundled content', () => {
     );
   });
 
+  it('gives every anatomy topic a 3D view', () => {
+    const anatomy = TOPICS.filter((topic) => topic.subjectSlug === 'anatomy');
+    expect(anatomy.length).toBeGreaterThan(0);
+    for (const topic of anatomy) {
+      expect(topic.visual.kind === 'path' && topic.visual.model3d, topic.slug).toBeTruthy();
+    }
+  });
+
   it('lays out every diagram label inside the diagram, without overlaps', () => {
     for (const topic of TOPICS) {
       if (topic.visual.kind !== 'path') continue;

@@ -1,12 +1,20 @@
 import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
+import {
+  AXILLA_BONES,
+  LYMPH_GROUPS,
+  SHOULDER_MODEL_CREDIT,
+  SHOULDER_MODEL_SRC,
+  shoulderParts,
+} from './shoulder-3d';
 
 // Upper limb batch 1 (Blueprint v0.5, Section 34). Facts in our own words; `reviewed: false`
 // until a student checks the topic against the book pages.
 export const axillaryLymphNodes: Topic = {
   slug: 'axillary-lymph-nodes',
   subjectSlug: 'anatomy',
+  regions: ['upper-limb'],
   title: 'Axillary lymph nodes',
   summary: 'Five groups of nodes, what each drains, and why they matter in breast cancer.',
   estimatedMinutes: 10,
@@ -24,6 +32,13 @@ export const axillaryLymphNodes: Topic = {
       title: 'TeachMeAnatomy: Lymphatic Drainage of the Upper Limb',
       url: 'https://teachmeanatomy.info/upper-limb/vessels/lymphatics/',
       licence: 'Cited, not copied',
+    },
+    {
+      title: 'BodyParts3D (DBCLS)',
+      detail:
+        'Bones, muscles and vessels in the 3D view; lymph node groups there are a MedLearn schematic',
+      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
+      licence: 'CC BY 4.0 on the licence page (files marked CC BY-SA 2.1 JP)',
     },
   ],
   keyFacts: [
@@ -140,6 +155,56 @@ export const axillaryLymphNodes: Topic = {
         nodeIds: ['lymph-trunk'],
       },
     ],
+    model3d: {
+      src: SHOULDER_MODEL_SRC,
+      credit: `${SHOULDER_MODEL_CREDIT} Lymph node groups: MedLearn schematic placed along the vessels they follow, not yet medically reviewed.`,
+      parts: shoulderParts([
+        ...AXILLA_BONES,
+        'pec-minor',
+        'axillary-artery',
+        'lateral-thoracic-artery',
+        'subscapular-artery',
+        'thoracodorsal-artery',
+        'subclavian-vein',
+        'axillary-vein',
+        'cephalic-vein',
+      ]),
+      traces: [
+        { id: 'pectoral-group', kind: 'lymph', paths: [LYMPH_GROUPS.pectoral] },
+        { id: 'lateral-group', kind: 'lymph', paths: [LYMPH_GROUPS.lateral] },
+        { id: 'subscapular-group', kind: 'lymph', paths: [LYMPH_GROUPS.subscapular] },
+        { id: 'central-group', kind: 'lymph', paths: [LYMPH_GROUPS.central] },
+        { id: 'apical-group', kind: 'lymph', paths: [LYMPH_GROUPS.apical] },
+        { id: 'deltopectoral', kind: 'lymph', paths: [LYMPH_GROUPS.deltopectoral] },
+        { id: 'lymph-trunk', kind: 'lymph', paths: [LYMPH_GROUPS.trunk] },
+      ],
+      stops: [
+        {
+          id: 'overview',
+          title: 'The five groups',
+          description:
+            'Pectoral nodes on the medial wall, lateral nodes by the axillary vein, subscapular nodes on the posterior wall, central nodes in the middle and apical nodes at the apex.',
+          target: [-120, -95, 1285],
+          position: [-260, -520, 1360],
+        },
+        {
+          id: 'levels',
+          title: 'Levels and pectoralis minor',
+          description:
+            'Pectoralis minor sorts the nodes into surgical levels: level I lateral to it, level II behind it, level III medial to it at the apex.',
+          target: [-110, -110, 1280],
+          position: [-150, -420, 1300],
+        },
+        {
+          id: 'apex',
+          title: 'Out at the apex',
+          description:
+            'The apical nodes lie beside the axillary vein at the apex; their subclavian trunk runs medially along the subclavian vein.',
+          target: [-70, -110, 1335],
+          position: [-160, -380, 1440],
+        },
+      ],
+    },
   },
   lesson: [
     {

@@ -51,13 +51,10 @@ export default async function TopicPage({ params }: Props) {
     ...(topic.visual.kind === 'path' && topic.visual.model3d
       ? [
           {
-            href: `/learn/${topic.slug}/3d`,
+            href: `/studio?topic=${topic.slug}`,
             icon: Rotate3d,
             title: 'Explore in 3D',
-            meta:
-              topic.visual.model3d.nerves.length > 0
-                ? 'Trace each nerve around the shoulder bones and arteries'
-                : 'See it among the shoulder bones and arteries',
+            meta: 'Turn it, light each structure and peel back the layers',
           },
         ]
       : []),

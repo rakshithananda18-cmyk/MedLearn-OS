@@ -40,8 +40,9 @@ const ROUTES = [
   '/learn/brachial-plexus',
   '/learn/brachial-plexus/lesson',
   '/learn/brachial-plexus/draw',
-  '/learn/brachial-plexus/3d',
   '/learn/oxygen-haemoglobin-curve/lesson',
+  '/studio',
+  '/studio?topic=axilla',
 ];
 
 // Three screens that stand for the rest: the landing page, Today and a lesson.

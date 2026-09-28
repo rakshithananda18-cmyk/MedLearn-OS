@@ -1,12 +1,31 @@
-import type { Topic } from '@medlearn/schemas';
+import type { Point3, Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
+import {
+  LYMPH_GROUPS,
+  SHOULDER_MODEL_CREDIT,
+  SHOULDER_MODEL_SRC,
+  shoulderParts,
+} from './shoulder-3d';
+
+// BodyParts3D has no breast: the 3D view outlines it on the chest wall, from the 2nd to the 6th
+// rib and from the edge of the sternum to the midaxillary line, with its axillary tail.
+const BREAST_OUTLINE: Point3[] = Array.from({ length: 17 }, (_, step) => {
+  const angle = (step / 16) * 2 * Math.PI;
+  return [-82 + 60 * Math.cos(angle), -212, 1210 + 68 * Math.sin(angle)];
+});
+const AXILLARY_TAIL: Point3[] = [
+  [-140, -200, 1215],
+  [-150, -170, 1240],
+  [-138, -140, 1256],
+];
 
 // Upper limb batch 1 (Blueprint v0.5, Section 34), in BD Chaurasia's chapter order. Facts in our
 // own words; `reviewed: false` until a student checks the topic against the book pages.
 export const pectoralRegion: Topic = {
   slug: 'pectoral-region',
   subjectSlug: 'anatomy',
+  regions: ['upper-limb', 'thorax'],
   title: 'Pectoral region and breast',
   summary: 'The chest-wall muscles, the clavipectoral fascia, and where the breast drains.',
   estimatedMinutes: 15,
@@ -29,6 +48,13 @@ export const pectoralRegion: Topic = {
       title: 'TeachMeAnatomy: Muscles of the Pectoral Region',
       url: 'https://teachmeanatomy.info/upper-limb/muscles/pectoral-region/',
       licence: 'Cited, not copied',
+    },
+    {
+      title: 'BodyParts3D (DBCLS)',
+      detail:
+        'Bones, muscles and vessels in the 3D view; the breast outline and lymph nodes there are a MedLearn schematic',
+      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
+      licence: 'CC BY 4.0 on the licence page (files marked CC BY-SA 2.1 JP)',
     },
   ],
   keyFacts: [
@@ -115,6 +141,62 @@ export const pectoralRegion: Topic = {
         nodeIds: ['subclavian-trunk'],
       },
     ],
+    model3d: {
+      src: SHOULDER_MODEL_SRC,
+      credit: `${SHOULDER_MODEL_CREDIT} Breast outline and lymph nodes: MedLearn schematic, not yet medically reviewed.`,
+      parts: shoulderParts([
+        'clavicle',
+        'humerus',
+        'first-rib',
+        'upper-ribs',
+        'sternum',
+        'pec-major',
+        'pec-minor',
+        'subclavius',
+        'serratus',
+        'axillary-artery',
+        'thoracoacromial-artery',
+        'lateral-thoracic-artery',
+        'internal-thoracic-artery',
+        'subclavian-vein',
+        'axillary-vein',
+        'cephalic-vein',
+      ]),
+      traces: [
+        { id: 'breast', kind: 'outline', paths: [BREAST_OUTLINE, AXILLARY_TAIL] },
+        { id: 'pectoral', kind: 'lymph', paths: [LYMPH_GROUPS.pectoral] },
+        { id: 'central', kind: 'lymph', paths: [LYMPH_GROUPS.central] },
+        { id: 'apical', kind: 'lymph', paths: [LYMPH_GROUPS.apical] },
+        { id: 'subclavian-trunk', kind: 'lymph', paths: [LYMPH_GROUPS.trunk] },
+        { id: 'parasternal', kind: 'lymph', paths: [LYMPH_GROUPS.parasternal] },
+      ],
+      stops: [
+        {
+          id: 'front',
+          title: 'The chest wall',
+          description:
+            'Pectoralis major covers the front of the chest; the breast lies on it from the 2nd to the 6th rib, its tail reaching up into the axilla.',
+          target: [-80, -150, 1230],
+          position: [-120, -700, 1300],
+        },
+        {
+          id: 'deep',
+          title: 'Under pectoralis major',
+          description:
+            'Pectoralis minor runs from ribs 3 to 5 up to the coracoid process; subclavius lies under the clavicle. Turn off muscles to see the vessels.',
+          target: [-100, -130, 1270],
+          position: [-180, -480, 1330],
+        },
+        {
+          id: 'drainage',
+          title: 'Where the lymph goes',
+          description:
+            'Most lymph runs to the pectoral nodes, then the central and apical nodes; the medial part drains beside the sternum to the parasternal nodes.',
+          target: [-80, -140, 1280],
+          position: [-240, -560, 1380],
+        },
+      ],
+    },
   },
   lesson: [
     {

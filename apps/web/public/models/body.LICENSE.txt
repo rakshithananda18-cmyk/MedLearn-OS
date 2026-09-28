@@ -1,19 +1,16 @@
-upper-limb.glb
+body.glb
 
-Bones and arteries of the right shoulder and upper arm (clavicle, scapula, humerus, first rib,
-C5 to T1 vertebrae, subclavian, axillary and brachial arteries).
+The whole body surface and skeleton, simplified for the body map.
 
 Source: BodyParts3D 4.0, (c) The Database Center for Life Science (DBCLS).
-https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html (isa_BP3D_4.0_obj_99.zip)
+https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html (isa_BP3D_4.0_obj_99.zip; the
+skeleton is every element file of the "bone organ" concept)
 
 Licence: the DBCLS licence page states Creative Commons Attribution 4.0 International
 (https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html, checked 26 September 2026). The
 2013 mesh files still carry the earlier notice, Creative Commons Attribution-Share Alike 2.1
 Japan. Until that difference is confirmed with DBCLS, this derived model (merged, simplified and
-compressed by scripts/models/build-upper-limb.mjs) is shared under CC BY-SA 2.1 Japan.
+compressed by scripts/models/build-models.mjs) is shared under CC BY-SA 2.1 Japan.
 
 Attribution: "BodyParts3D, (c) The Database Center for Life Science, licensed under CC BY 4.0
 (files marked CC BY-SA 2.1 JP)".
-
-Not part of this file: the brachial plexus nerves shown with it are a MedLearn OS schematic drawn
-from apps/web/src/content/brachial-plexus-3d.ts, not yet medically reviewed.
