@@ -58,6 +58,27 @@ const HEADLINE = {
   ),
 } as const;
 
+// "Monday, 28 September" from two lists: building an Intl date formatter blocks a phone for tens
+// of milliseconds, the largest single cost of opening Today.
+// ponytail: English only; use Intl again (created after first paint) when the Hindi toggle lands.
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const longDate = (date: Date) =>
+  `${WEEKDAYS[date.getDay()]}, ${date.getDate()} ${MONTHS[date.getMonth()]}`;
+
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
 function examLabel(days: number): string {
@@ -202,11 +223,7 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
       ? topics.find((topic) => topic.slug === first.topicSlug)
       : null;
   const done = doneToday(progress, topics, now);
-  const date = new Intl.DateTimeFormat('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(now);
+  const date = longDate(now);
 
   return (
     <div className="@container flex flex-col gap-6 xl:grid xl:grid-cols-3 xl:gap-8">

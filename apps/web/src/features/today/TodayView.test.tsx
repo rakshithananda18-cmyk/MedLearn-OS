@@ -39,6 +39,11 @@ describe('TodayView', () => {
 
   it('offers a new student the first lesson and the three setup questions', async () => {
     const { container } = render(<TodayView topics={PLANNABLE_TOPICS} />);
+    // The date is built by hand for speed; it must read as Intl would write it.
+    const today = { weekday: 'long', day: 'numeric', month: 'long' } as const;
+    expect(
+      screen.getByText(new Intl.DateTimeFormat('en-IN', today).format(new Date())),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Learn: Pectoral region and breast/ })).toHaveAttribute(
       'href',
       '/learn/pectoral-region',

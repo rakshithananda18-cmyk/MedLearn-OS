@@ -41,7 +41,8 @@ export function UpNext({ item, poster }: Readonly<{ item: TodayItem; poster: str
             width={560}
             height={600}
             unoptimized
-            fetchPriority="high"
+            // The largest thing on Today: fetched from the <head>, not when the layout reaches it.
+            preload
             className="pointer-events-none absolute -top-4 -right-6 h-full w-1/2 object-contain md:w-2/5"
           />
         </>
@@ -174,8 +175,8 @@ export function StreakCard({
   week,
 }: Readonly<{ streak: number; best: number; week: Array<{ day: string; minutes: number }> }>) {
   const most = Math.max(...week.map((day) => day.minutes), 1);
-  const letter = (day: string) =>
-    new Date(`${day}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'narrow' });
+  // A plain lookup: each toLocaleDateString builds a new date formatter, which is slow on phones.
+  const letter = (day: string) => 'SMTWTFS'.charAt(new Date(`${day}T12:00:00`).getDay());
   return (
     <section aria-labelledby="streak-title" className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
       <div className="flex items-baseline gap-3">
