@@ -1,15 +1,26 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { axilla } from './axilla';
+import { axillaryLymphNodes } from './axillary-lymph-nodes';
+import { axillaryVessels } from './axillary-vessels';
 import { brachialPlexus } from './brachial-plexus';
 import { oxygenCurve } from './oxygen-curve';
+import { pectoralRegion } from './pectoral-region';
 
 // Content is imported only by server components (pages, routes); each page hands its screen just
 // what that screen shows, so adding topics never grows the JavaScript every page downloads.
 // ponytail: bundled with the app while it is private and small; a content database comes with
 // the provenance foundation.
-/** Topics in teaching order. */
-export const TOPICS: Topic[] = [brachialPlexus, oxygenCurve];
+/** Topics in teaching order: anatomy follows BD Chaurasia's chapters (Blueprint v0.5, Section 34). */
+export const TOPICS: Topic[] = [
+  pectoralRegion,
+  axilla,
+  axillaryVessels,
+  axillaryLymphNodes,
+  brachialPlexus,
+  oxygenCurve,
+];
 
 /** Length of an exam diagram drill on Today. */
 export const DRILL_MINUTES = 10;

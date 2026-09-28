@@ -39,9 +39,9 @@ describe('TodayView', () => {
 
   it('offers a new student the first lesson and the three setup questions', async () => {
     const { container } = render(<TodayView topics={PLANNABLE_TOPICS} />);
-    expect(screen.getByRole('link', { name: /Learn: Brachial plexus/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Learn: Pectoral region and breast/ })).toHaveAttribute(
       'href',
-      '/learn/brachial-plexus',
+      '/learn/pectoral-region',
     );
     expect(screen.getByRole('link', { name: 'Set up my plan' })).toHaveAttribute(
       'href',
@@ -49,17 +49,20 @@ describe('TodayView', () => {
     );
     expect(screen.getByRole('link', { name: 'Start now' })).toHaveAttribute(
       'href',
-      '/learn/brachial-plexus',
+      '/learn/pectoral-region',
     );
     await expectNoA11yViolations(container);
   });
 
   it('adds reviews and practice once the lesson is done, within the daily minutes', () => {
     render(<TodayView topics={PLANNABLE_TOPICS} />);
-    act(() => completeLesson('brachial-plexus'));
-    expect(screen.getByRole('link', { name: /Review 4 cards/ })).toHaveAttribute('href', '/revise');
-    expect(screen.getByRole('link', { name: /Practice: Brachial plexus/ })).toBeInTheDocument();
-    expect(screen.getByText('18 of 20 min')).toBeInTheDocument();
+    act(() => completeLesson('pectoral-region'));
+    expect(screen.getByRole('link', { name: /Review 5 cards/ })).toHaveAttribute('href', '/revise');
+    expect(screen.getByRole('link', { name: /Learn: Axilla/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /Practice: Pectoral region and breast/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('19 of 20 min')).toBeInTheDocument();
   });
 
   it('switches to exam mode with a countdown and the diagram drill first', () => {

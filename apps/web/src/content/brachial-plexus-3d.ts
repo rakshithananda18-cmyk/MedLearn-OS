@@ -31,10 +31,13 @@ const MC1: Point3 = [-130, -90, 1294];
 // The median nerve forms in front of the artery from lateral and medial roots.
 const MEDIAN_JOIN: Point3 = [-146, -92, 1284];
 
+/** Credit for the shoulder model's bones and arteries, shown wherever the model is. */
+export const SHOULDER_MODEL_CREDIT =
+  'Bones and arteries: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP).';
+
 export const brachialPlexus3d: Model3D = {
   src: '/models/upper-limb.glb',
-  credit:
-    'Bones and arteries: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Nerve paths: MedLearn schematic, not yet medically reviewed.',
+  credit: `${SHOULDER_MODEL_CREDIT} Nerve paths: MedLearn schematic, not yet medically reviewed.`,
   parts: [
     { id: 'clavicle', name: 'Clavicle', kind: 'bone' },
     { id: 'scapula', name: 'Scapula', kind: 'bone' },

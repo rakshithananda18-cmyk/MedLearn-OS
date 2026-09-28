@@ -1,4 +1,5 @@
 import { Topic } from '@medlearn/schemas';
+import { pillSize } from '@medlearn/visuals';
 import { describe, expect, it } from 'vitest';
 
 import { DRILL_MINUTES, getTopic, hasDrill, PLANNABLE_TOPICS, TOPICS } from './topics';
@@ -30,7 +31,40 @@ describe('bundled content', () => {
   });
 
   it('offers the exam diagram drill only for topics with a diagram to build', () => {
-    expect(TOPICS.map(hasDrill)).toEqual([true, false]);
-    expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual([DRILL_MINUTES, null]);
+    const drills = TOPICS.map(hasDrill);
+    expect(drills).toEqual([true, false, true, true, true, false]);
+    expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual(
+      drills.map((drill) => (drill ? DRILL_MINUTES : null)),
+    );
+  });
+
+  it('lays out every diagram label inside the diagram, without overlaps', () => {
+    for (const topic of TOPICS) {
+      if (topic.visual.kind !== 'path') continue;
+      const { width, height, nodes } = topic.visual.diagram;
+      const boxes = nodes.map((node) => {
+        const size = pillSize(node.label);
+        return {
+          id: node.id,
+          left: node.x - size.width / 2,
+          right: node.x + size.width / 2,
+          top: node.y - size.height / 2,
+          bottom: node.y + size.height / 2,
+        };
+      });
+      for (const [index, box] of boxes.entries()) {
+        const where = `${topic.slug}: ${box.id}`;
+        expect(box.left >= 0 && box.right <= width, `${where} fits across`).toBe(true);
+        expect(box.top >= 0 && box.bottom <= height, `${where} fits down`).toBe(true);
+        for (const other of boxes.slice(index + 1)) {
+          const overlaps =
+            box.left < other.right &&
+            other.left < box.right &&
+            box.top < other.bottom &&
+            other.top < box.bottom;
+          expect(overlaps, `${where} overlaps ${other.id}`).toBe(false);
+        }
+      }
+    }
   });
 });

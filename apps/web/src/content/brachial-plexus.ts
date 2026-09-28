@@ -263,6 +263,17 @@ export const brachialPlexus: Topic = {
       back: 'Claw hand, from weakness of the small muscles of the hand (C8–T1).',
     },
   ],
-  // Chapter and page references are added from the group's textbooks.
-  readIn: [],
+  // Chapter and page references from the group's standard textbooks.
+  readIn: [
+    {
+      bookId: 'bd-chaurasia',
+      chapter: 'Chapter 4 Axilla',
+      pages: '59–65',
+    },
+    {
+      bookId: 'grays-anatomy',
+      chapter: 'Chapter 7 Upper Limb',
+      pages: '727–738',
+    },
+  ],
 };

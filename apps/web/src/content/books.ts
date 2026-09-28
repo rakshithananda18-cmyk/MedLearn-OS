@@ -1,4 +1,4 @@
-import type { Book } from '@medlearn/schemas';
+import type { Book, ContentSource } from '@medlearn/schemas';
 
 // Checked against the Book schema by books.test.ts.
 // ponytail: a starter list of widely used first-year books, titles and authors only; the group
@@ -11,6 +11,15 @@ export const BOOKS: Book[] = [
     title: "BD Chaurasia's Human Anatomy",
     shortTitle: 'BD Chaurasia',
     authors: 'B D Chaurasia',
+    edition: '8th',
+  },
+  {
+    id: 'grays-anatomy',
+    subjectSlug: 'anatomy',
+    title: "Gray's Anatomy for Students",
+    shortTitle: "Gray's Anatomy",
+    authors: 'Richard L. Drake, A. Wayne Vogl, Adam W. M. Mitchell',
+    edition: '4th',
   },
   {
     id: 'vishram-singh',
@@ -51,4 +60,15 @@ export const BOOKS: Book[] = [
 
 export function getBook(id: string): Book | undefined {
   return BOOKS.find((book) => book.id === id);
+}
+
+/** A standard book cited as a topic source: facts checked against it, nothing copied. */
+export function bookSource(bookId: string, detail: string): ContentSource {
+  const book = getBook(bookId);
+  if (!book) throw new Error(`Unknown book "${bookId}"`);
+  return {
+    title: book.edition ? `${book.title}, ${book.edition} edition` : book.title,
+    detail,
+    licence: 'Cited for facts; no text or figures copied',
+  };
 }

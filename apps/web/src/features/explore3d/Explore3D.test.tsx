@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { axillaryVessels } from '@/content/axillary-vessels';
 import { brachialPlexus } from '@/content/brachial-plexus';
 
 const capability = vi.hoisted(() => ({ supported: true }));
@@ -33,15 +34,14 @@ vi.mock('@medlearn/visuals', async (importOriginal) => ({
   supports3D: () => capability.supported,
 }));
 
-const visual = brachialPlexus.visual;
-if (visual.kind !== 'path' || !visual.model3d) throw new Error('The sample topic has a 3D model');
-const { diagram, model3d } = visual;
-
-async function renderExplore() {
+async function renderExplore(topic = brachialPlexus) {
+  if (topic.visual.kind !== 'path' || !topic.visual.model3d) throw new Error('No 3D model');
   // Fresh module each time: the device check is cached per page load.
   vi.resetModules();
   const { Explore3D } = await import('./Explore3D');
-  return render(<Explore3D title="3D model" model={model3d} diagram={diagram} />);
+  return render(
+    <Explore3D title="3D model" model={topic.visual.model3d} diagram={topic.visual.diagram} />,
+  );
 }
 
 // Each test imports the screen afresh (the device check is cached per page load). Loading it once
@@ -87,6 +87,14 @@ describe('Explore3D', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Bones' }));
     expect(screen.getByTestId('viewer')).toHaveAttribute('data-bones', 'false');
     expect(screen.getByRole('button', { name: 'Bones' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('lists only the layers a model has: arteries alone for the axillary vessels', async () => {
+    await renderExplore(axillaryVessels);
+    expect(screen.queryByRole('group', { name: 'Roots' })).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Arteries' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Into the arm' }));
+    expect(screen.getByTestId('viewer')).toHaveAttribute('data-stop', 'into-arm');
   });
 
   it('shows the 2D diagram on a phone that cannot show 3D', async () => {

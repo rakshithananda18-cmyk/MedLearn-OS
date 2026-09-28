@@ -54,7 +54,10 @@ export default async function TopicPage({ params }: Props) {
             href: `/learn/${topic.slug}/3d`,
             icon: Rotate3d,
             title: 'Explore in 3D',
-            meta: 'Trace each nerve around the shoulder bones and arteries',
+            meta:
+              topic.visual.model3d.nerves.length > 0
+                ? 'Trace each nerve around the shoulder bones and arteries'
+                : 'See it among the shoulder bones and arteries',
           },
         ]
       : []),

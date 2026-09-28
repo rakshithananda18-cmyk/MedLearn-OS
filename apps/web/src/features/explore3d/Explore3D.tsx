@@ -135,16 +135,18 @@ export function Explore3D({ title, model, diagram }: Readonly<Explore3DProps>) {
             Arteries
           </ToggleChip>
         </fieldset>
-        {NERVE_GROUPS.map((group) => (
-          <fieldset key={group.title} className="flex flex-wrap gap-2">
-            <legend className="pb-2 text-sm font-semibold text-ink">{group.title}</legend>
-            {group.ids.filter(isNerve).map((id) => (
-              <ToggleChip key={id} pressed={selected === id} onClick={() => toggle(id)}>
-                {nameOf(id)}
-              </ToggleChip>
-            ))}
-          </fieldset>
-        ))}
+        {NERVE_GROUPS.map((group) => ({ ...group, ids: group.ids.filter(isNerve) }))
+          .filter((group) => group.ids.length > 0)
+          .map((group) => (
+            <fieldset key={group.title} className="flex flex-wrap gap-2">
+              <legend className="pb-2 text-sm font-semibold text-ink">{group.title}</legend>
+              {group.ids.map((id) => (
+                <ToggleChip key={id} pressed={selected === id} onClick={() => toggle(id)}>
+                  {nameOf(id)}
+                </ToggleChip>
+              ))}
+            </fieldset>
+          ))}
         <fieldset className="flex flex-wrap gap-2">
           <legend className="pb-2 text-sm font-semibold text-ink">Arteries</legend>
           {model.parts
