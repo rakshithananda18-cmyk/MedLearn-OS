@@ -28,19 +28,12 @@ export function FlowProgress({
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-xs font-semibold text-fg-muted">{label}</span>
-        <span
-          role="progressbar"
+        <progress
+          value={done}
+          max={Math.max(total, 1)}
           aria-label={label}
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={done}
-          className="h-2 overflow-hidden rounded-full bg-surface"
-        >
-          <span
-            className="block h-full rounded-full bg-primary transition-all duration-250 ease-standard"
-            style={{ width: `${(done / Math.max(total, 1)) * 100}%` }}
-          />
-        </span>
+          className="progress-bar"
+        />
       </div>
     </div>
   );
@@ -57,7 +50,7 @@ export function StepList({
   steps: ReadonlyArray<{ id: string; title: string }>;
   index: number;
   /** Jumps to a step; without it the list only shows where the student is. */
-  onIndex?: ((index: number) => void) | undefined;
+  onIndex?: (index: number) => void;
 }>) {
   const row = 'flex min-h-12 w-full items-center gap-3 rounded-md px-2 text-left text-sm';
   return (
@@ -135,14 +128,14 @@ export function FlowLayout({
       {/* Both panes scroll on their own on wide screens, so the keyboard can reach them too. */}
       <section
         aria-label={label}
-        tabIndex={0}
+        tabIndex={0} // NOSONAR: a scrolling pane must take focus so the keyboard can scroll it
         className={cx('area-panel flex flex-col gap-4 xl:overflow-y-auto xl:p-6', GLASS)}
       >
         {panel}
       </section>
       <section
         aria-label={stageLabel}
-        tabIndex={0}
+        tabIndex={0} // NOSONAR: a scrolling pane must take focus so the keyboard can scroll it
         className={cx(
           'area-stage flex flex-col gap-4 xl:min-h-0 xl:overflow-y-auto',
           framed && cx(GLASS, 'xl:p-4'),
