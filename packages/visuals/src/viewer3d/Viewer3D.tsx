@@ -131,7 +131,11 @@ function Trace({
   return (
     <>
       {meshes.map((mesh) => (
-        <primitive key={mesh.uuid} object={mesh} onClick={select} />
+        <primitive
+          key={mesh.uuid}
+          object={mesh} // NOSONAR: a React Three Fiber prop, not a DOM attribute
+          onClick={select}
+        />
       ))}
     </>
   );
@@ -151,7 +155,7 @@ function Marker({
   }, [geometry, marker.position, lit]);
   return (
     <primitive
-      object={sphere}
+      object={sphere} // NOSONAR: a React Three Fiber prop, not a DOM attribute
       onClick={(event: ThreeEvent<MouseEvent>) => {
         event.stopPropagation();
         onSelect(marker.id);

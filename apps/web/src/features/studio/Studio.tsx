@@ -1,27 +1,33 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, IconButton, Skeleton, Text } from '@medlearn/ui';
-import { Layers, Menu, PenLine, Target } from '@medlearn/ui/icons';
-import { pathThrough, PathTracer } from '@medlearn/visuals';
+import { Text } from '@medlearn/ui';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 import { useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
 import { BodyBar, DrawBar, PENS, QuizBar, TourBar } from './bars';
-import { BodyOutline } from './BodyOutline';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import { InfoCard, LayersPanel, TopicsPanel } from './panels';
-import { answerQuiz, type QuizState, skipQuiz, startQuiz } from './quiz';
+import { skipQuiz } from './quiz';
 import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
-import { useCan3D, useReducedMotion, Viewer3D } from './viewer';
+import {
+  changeModeIn,
+  hiddenIn,
+  litIn,
+  type Mode,
+  openTopicIn,
+  pickIn,
+  type Session,
+  startSession,
+  toggled,
+} from './session';
+import { ModelView, StudioHeader } from './stage';
+import { useCan3D, useReducedMotion } from './viewer';
 
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
 const BODY_KEY = 'body';
-
-type Mode = 'explore' | 'draw' | 'quiz';
-type Panel = 'topics' | 'layers' | null;
 
 export interface StudioProps {
   topics: StudioTopic[];
@@ -42,189 +48,44 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
   const withModel = (slug: string | null) =>
     topics.find((topic) => topic.slug === slug && topic.model) ?? null;
 
-  const [topicSlug, setTopicSlug] = useState(withModel(initialTopic)?.slug ?? null);
-  const topic = withModel(topicSlug);
-  const model = topic?.model ?? body;
-  const [region, setRegion] = useState<BodyRegion>(
-    topic?.regions[0] ??
+  const [session, setSession] = useState<Session>(() => {
+    const first = withModel(initialTopic);
+    const region =
       regions.find((item) => topics.some((other) => other.regions.includes(item.id)))?.id ??
-      'upper-limb',
-  );
-  const [panel, setPanel] = useState<Panel>(topic ? null : 'topics');
-  const [mode, setMode] = useState<Mode>('explore');
-  const [selected, setSelected] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
-  const [stopIndex, setStopIndex] = useState(0);
-  const [hiddenKinds, setHiddenKinds] = useState<ReadonlySet<PartKind>>(new Set());
-  const [hiddenIds, setHiddenIds] = useState<ReadonlySet<string>>(new Set());
-  const [xray, setXray] = useState(false);
-  const [isolate, setIsolate] = useState(false);
-  const [pen, setPen] = useState(PENS[0]?.colour ?? '--color-pen-ink');
-  const [strokes, setStrokes] = useState<Stroke[]>(() => loadStrokes(topicSlug ?? BODY_KEY));
-  const [quiz, setQuiz] = useState<QuizState | null>(null);
-
+      'upper-limb';
+    const pen = PENS[0]?.colour ?? '--color-pen-ink';
+    return startSession(first, region, pen, loadStrokes(first?.slug ?? BODY_KEY));
+  });
+  const topic = withModel(session.topicSlug);
+  const model = topic?.model ?? body;
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
-  const pool = useMemo(() => structures.map((structure) => structure.id), [structures]);
-  const stop = model.stops[stopIndex] ?? model.stops[0];
-
-  const highlight = useMemo((): ReadonlySet<string> => {
-    if (!topic) return new Set([region]);
-    // No hints while playing "Find it".
-    if (mode === 'quiz' || !selected) return new Set();
-    const onDiagram = topic.diagram?.nodes.some((node) => node.id === selected);
-    return onDiagram && topic.diagram
-      ? pathThrough(topic.diagram.edges, selected)
-      : new Set([selected]);
-  }, [topic, region, mode, selected]);
-  const hidden = useMemo(
-    (): ReadonlySet<string> =>
-      isolate && selected ? new Set(pool.filter((id) => !highlight.has(id))) : hiddenIds,
-    [isolate, selected, pool, highlight, hiddenIds],
-  );
+  const context = { topic, regions, pool: structures.map((structure) => structure.id) };
+  const lit = useMemo(() => litIn(session, topic), [session, topic]);
   const info =
-    topic && selected && mode === 'explore' ? structureInfo(topic, selected, topics) : null;
-  const nameOf = (id: string | null) =>
-    structures.find((structure) => structure.id === id)?.name ?? 'something else';
-  const target = quiz ? structures.find((structure) => structure.id === quiz.targetId) : undefined;
+    topic && session.selected && session.mode === 'explore'
+      ? structureInfo(topic, session.selected, topics)
+      : null;
+  const update = (patch: Partial<Session>) => setSession({ ...session, ...patch });
 
   const openTopic = (slug: string | null) => {
     const next = withModel(slug);
-    setTopicSlug(next?.slug ?? null);
-    setSelected(null);
-    setExpanded(false);
-    setStopIndex(0);
-    setHiddenIds(new Set());
-    setIsolate(false);
-    setQuiz(null);
-    setMode('explore');
-    setStrokes(loadStrokes(next?.slug ?? BODY_KEY));
-    setPanel(next ? null : 'topics');
-    if (next && !next.regions.includes(region)) setRegion(next.regions[0] ?? region);
+    setSession(openTopicIn(session, next, loadStrokes(next?.slug ?? BODY_KEY)));
     // The address follows the open topic, so it can be shared or reopened.
     window.history.replaceState(null, '', next ? `/studio?topic=${next.slug}` : '/studio');
   };
-
-  const pickRegion = (id: BodyRegion) => {
-    setRegion(id);
-    setPanel('topics');
-  };
-
   const pick = (id: string | null) => {
-    if (!topic) {
-      const picked = regions.find((item) => item.id === id);
-      if (picked) pickRegion(picked.id);
-      return;
+    const next = pickIn(session, id, context);
+    if (topic && next.quiz && next.quiz.best > (session.quiz?.best ?? 0)) {
+      saveBest(topic.slug, next.quiz.best);
     }
-    if (mode === 'quiz') {
-      if (!quiz || !id) return;
-      const next = answerQuiz(quiz, id, pool);
-      if (next.best > quiz.best) saveBest(topic.slug, next.best);
-      setQuiz(next);
-      return;
-    }
-    setSelected(id);
-    setExpanded(false);
+    setSession(next);
   };
-
-  const changeMode = (next: Mode) => {
-    const leaving = mode === next;
-    setMode(leaving ? 'explore' : next);
-    setPanel(null);
-    setSelected(null);
-    setQuiz(!leaving && next === 'quiz' && topic ? startQuiz(pool, loadBest(topic.slug)) : null);
+  const changeMode = (mode: Mode) =>
+    setSession(changeModeIn(session, mode, context, topic ? loadBest(topic.slug) : 0));
+  const keepStrokes = (strokes: Stroke[]) => {
+    update({ strokes });
+    saveStrokes(topic?.slug ?? BODY_KEY, strokes);
   };
-
-  const keepStrokes = (next: Stroke[]) => {
-    setStrokes(next);
-    saveStrokes(topic?.slug ?? BODY_KEY, next);
-  };
-
-  const toggleIn = <T,>(set: ReadonlySet<T>, value: T): ReadonlySet<T> => {
-    const next = new Set(set);
-    if (!next.delete(value)) next.add(value);
-    return next;
-  };
-
-  const regionInfo = regions.find((item) => item.id === region);
-  const regionCount = topics.filter((item) => item.regions.includes(region)).length;
-  const tool = (active: boolean) => cx('shadow-glass', active && 'border-gold bg-primary-subtle');
-
-  let view: React.ReactNode;
-  if (capable === null) {
-    view = <Skeleton className="size-full" />;
-  } else if (capable) {
-    view = (
-      <Viewer3D
-        model={model}
-        highlight={highlight}
-        onSelect={pick}
-        stopId={stop?.id ?? ''}
-        hiddenKinds={hiddenKinds}
-        hiddenIds={hidden}
-        xray={xray}
-        reducedMotion={reducedMotion}
-        markers={topic ? [] : regions.map((item) => ({ id: item.id, position: item.marker }))}
-        maxDistance={topic ? 1.5 : 5}
-        pen={
-          mode === 'draw'
-            ? { colour: pen, onStroke: (stroke) => keepStrokes([...strokes, stroke]) }
-            : null
-        }
-        strokes={strokes}
-      />
-    );
-  } else if (topic?.diagram) {
-    view = (
-      <div className="size-full overflow-auto px-4 pt-20 pb-24">
-        <PathTracer
-          diagram={topic.diagram}
-          title={topic.title}
-          selectedId={selected}
-          onSelect={pick}
-        />
-      </div>
-    );
-  } else {
-    view = (
-      <div className="size-full px-8 pt-20 pb-24">
-        <BodyOutline selected={region} onSelect={pickRegion} />
-      </div>
-    );
-  }
-
-  let bar: React.ReactNode;
-  if (!topic) {
-    bar = (
-      <BodyBar
-        region={regionInfo?.name ?? ''}
-        count={regionCount}
-        onTopics={() => setPanel('topics')}
-      />
-    );
-  } else if (mode === 'draw') {
-    bar = (
-      <DrawBar
-        pen={pen}
-        strokes={strokes.length}
-        onPen={setPen}
-        onUndo={() => keepStrokes(strokes.slice(0, -1))}
-        onClear={() => keepStrokes([])}
-        onDone={() => changeMode('draw')}
-      />
-    );
-  } else if (mode === 'quiz' && quiz) {
-    bar = (
-      <QuizBar
-        quiz={quiz}
-        targetName={target?.name ?? ''}
-        pickedName={nameOf(quiz.picked)}
-        onSkip={() => setQuiz(skipQuiz(quiz, pool))}
-        onEnd={() => changeMode('quiz')}
-      />
-    );
-  } else {
-    bar = <TourBar stops={model.stops} index={stopIndex} onIndex={setStopIndex} />;
-  }
 
   return (
     <section
@@ -232,89 +93,66 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
       className="relative -mx-4 -mt-8 -mb-8 h-studio overflow-hidden border-b border-border bg-surface md:mx-0 md:-mt-4 md:h-studio-wide md:rounded-2xl md:border"
     >
       <figure className="absolute inset-0">
-        {view}
+        <ModelView
+          capable={capable}
+          model={model}
+          topic={topic}
+          regions={regions}
+          region={session.region}
+          selected={session.selected}
+          lit={lit}
+          stopId={model.stops[session.stopIndex]?.id ?? ''}
+          hiddenKinds={session.hiddenKinds}
+          hidden={hiddenIn(session, lit, context.pool)}
+          xray={session.xray}
+          reducedMotion={reducedMotion}
+          pen={session.mode === 'draw' ? session.pen : null}
+          strokes={session.strokes}
+          onPick={pick}
+          onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
+          onStroke={(stroke) => keepStrokes([...session.strokes, stroke])}
+        />
         <figcaption className="sr-only">3D model: {topic?.title ?? 'the whole body'}</figcaption>
       </figure>
 
-      <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-        <div className="pointer-events-auto flex min-w-0 items-center gap-2">
-          <IconButton
-            icon={Menu}
-            label="Topics"
-            variant="secondary"
-            aria-pressed={panel === 'topics'}
-            className={tool(panel === 'topics')}
-            onClick={() => setPanel(panel === 'topics' ? null : 'topics')}
-          />
-          <h1 className="truncate rounded-full border border-glass-border bg-glass px-4 py-3 text-sm font-semibold text-ink shadow-glass backdrop-blur-md">
-            {topic?.title ?? 'Whole body'}
-          </h1>
-        </div>
-        {topic ? (
-          <div className="pointer-events-auto flex gap-2">
-            <IconButton
-              icon={Layers}
-              label="Layers"
-              variant="secondary"
-              aria-pressed={panel === 'layers'}
-              className={tool(panel === 'layers')}
-              onClick={() => setPanel(panel === 'layers' ? null : 'layers')}
-            />
-            {capable ? (
-              <>
-                <IconButton
-                  icon={PenLine}
-                  label="Draw"
-                  variant="secondary"
-                  aria-pressed={mode === 'draw'}
-                  className={tool(mode === 'draw')}
-                  onClick={() => changeMode('draw')}
-                />
-                <IconButton
-                  icon={Target}
-                  label="Find it"
-                  variant="secondary"
-                  aria-pressed={mode === 'quiz'}
-                  className={tool(mode === 'quiz')}
-                  onClick={() => changeMode('quiz')}
-                />
-              </>
-            ) : null}
-          </div>
-        ) : null}
-      </header>
+      <StudioHeader
+        title={topic?.title ?? 'Whole body'}
+        panel={session.panel}
+        mode={session.mode}
+        tools={topic !== null}
+        canPlay={capable === true}
+        onPanel={(panel) => update({ panel })}
+        onMode={changeMode}
+      />
 
-      {panel === 'topics' ? (
+      {session.panel === 'topics' ? (
         <TopicsPanel
           topics={topics}
           regions={regions}
-          region={region}
+          region={session.region}
           current={topic?.slug ?? null}
-          onRegion={setRegion}
+          onRegion={(region) => update({ region })}
           onTopic={openTopic}
-          onClose={() => setPanel(null)}
+          onClose={() => update({ panel: null })}
         />
       ) : null}
-      {panel === 'layers' && topic ? (
+      {session.panel === 'layers' && topic ? (
         <LayersPanel
           kinds={PART_KINDS.filter((kind) => model.parts.some((part) => part.kind === kind))}
           structures={structures}
-          showStructures={mode !== 'quiz'}
-          hiddenKinds={hiddenKinds}
-          hiddenIds={hiddenIds}
-          xray={xray}
-          isolate={isolate}
-          selected={selected}
-          onKind={(kind) => setHiddenKinds(toggleIn(hiddenKinds, kind))}
-          onStructure={(id) => {
-            // Make room for the structure's card.
-            setPanel(null);
-            pick(id);
-          }}
-          onHide={(id) => setHiddenIds(toggleIn(hiddenIds, id))}
-          onXray={setXray}
-          onIsolate={setIsolate}
-          onClose={() => setPanel(null)}
+          showStructures={session.mode !== 'quiz'}
+          hiddenKinds={session.hiddenKinds}
+          hiddenIds={session.hiddenIds}
+          xray={session.xray}
+          isolate={session.isolate}
+          selected={session.selected}
+          onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
+          // Picking from the list closes the panel to make room for the structure's card.
+          onStructure={(id) => setSession({ ...pickIn(session, id, context), panel: null })}
+          onHide={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
+          onXray={(xray) => update({ xray })}
+          onIsolate={(isolate) => update({ isolate })}
+          onClose={() => update({ panel: null })}
         />
       ) : null}
 
@@ -322,14 +160,29 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
         {info ? (
           <InfoCard
             info={info}
-            expanded={expanded}
-            onExpand={() => setExpanded(true)}
+            expanded={session.expanded}
+            onExpand={() => update({ expanded: true })}
             onTopic={openTopic}
             onClose={() => pick(null)}
           />
         ) : null}
         <div className="pointer-events-auto rounded-2xl border border-glass-border bg-glass p-2 shadow-glass backdrop-blur-md md:max-w-2xl">
-          {bar}
+          <ModeBar
+            session={session}
+            model={model}
+            topicOpen={topic !== null}
+            regions={regions}
+            regionCount={topics.filter((item) => item.regions.includes(session.region)).length}
+            nameOf={(id) =>
+              structures.find((structure) => structure.id === id)?.name ?? 'something else'
+            }
+            onTopics={() => update({ panel: 'topics' })}
+            onPen={(pen) => update({ pen })}
+            onStrokes={keepStrokes}
+            onSkip={(quiz) => update({ quiz: skipQuiz(quiz, context.pool) })}
+            onMode={changeMode}
+            onStop={(stopIndex) => update({ stopIndex })}
+          />
         </div>
         {capable ? (
           <Text size="xs" tone="muted" className="pointer-events-auto line-clamp-1 px-1">
@@ -339,4 +192,63 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
       </footer>
     </section>
   );
+}
+
+/** The bottom bar for what the student is doing: the body, drawing, "Find it" or the tour. */
+function ModeBar({
+  session,
+  model,
+  topicOpen,
+  regions,
+  regionCount,
+  nameOf,
+  onTopics,
+  onPen,
+  onStrokes,
+  onSkip,
+  onMode,
+  onStop,
+}: Readonly<{
+  session: Session;
+  model: Model3D;
+  topicOpen: boolean;
+  regions: BodyRegionInfo[];
+  regionCount: number;
+  nameOf: (id: string | null) => string;
+  onTopics: () => void;
+  onPen: (pen: string) => void;
+  onStrokes: (strokes: Stroke[]) => void;
+  onSkip: (quiz: NonNullable<Session['quiz']>) => void;
+  onMode: (mode: Mode) => void;
+  onStop: (index: number) => void;
+}>) {
+  const { mode, quiz, strokes } = session;
+  if (!topicOpen) {
+    const region = regions.find((item) => item.id === session.region);
+    return <BodyBar region={region?.name ?? ''} count={regionCount} onTopics={onTopics} />;
+  }
+  if (mode === 'draw') {
+    return (
+      <DrawBar
+        pen={session.pen}
+        strokes={strokes.length}
+        onPen={onPen}
+        onUndo={() => onStrokes(strokes.slice(0, -1))}
+        onClear={() => onStrokes([])}
+        onDone={() => onMode('draw')}
+      />
+    );
+  }
+  if (mode === 'quiz' && quiz) {
+    return (
+      <QuizBar
+        quiz={quiz}
+        targetName={nameOf(quiz.targetId)}
+        pickedName={nameOf(quiz.picked)}
+        onSkip={() => onSkip(quiz)}
+        onEnd={() => onMode('quiz')}
+      />
+    );
+  }
+  return <TourBar stops={model.stops} index={session.stopIndex} onIndex={onStop} />;
 }
