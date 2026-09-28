@@ -1,15 +1,23 @@
-import { Display, Eyebrow, Text } from '@medlearn/ui';
+import { cx, Display, Eyebrow, Text } from '@medlearn/ui';
 import { BookOpen, ClipboardCheck, PenLine, Rotate3d, RotateCcw } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getBook } from '@/content/books';
-import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
+import {
+  DRILL_MINUTES,
+  getTopic,
+  hasDrill,
+  PLANNABLE_TOPICS,
+  posterOf,
+  TOPICS,
+} from '@/content/topics';
 import { WhereToRead } from '@/features/books/WhereToRead';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { TopicNotes } from '@/features/notes/TopicNotes';
-import { LinkCard } from '@/features/shell/LinkCard';
+import { MasteryCard } from '@/features/progress/MasteryCard';
 import { Screen } from '@/features/shell/Screen';
+import { ModeTile, type ModeTileProps, TopicHero } from '@/features/topic/TopicParts';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -29,24 +37,26 @@ export default async function TopicPage({ params }: Props) {
   const topic = getTopic((await params).slug);
   if (!topic) notFound();
 
-  const modes = [
+  const summary = PLANNABLE_TOPICS.find((item) => item.slug === topic.slug);
+  const modes: Array<Omit<ModeTileProps, 'wide'>> = [
     {
       href: `/learn/${topic.slug}/lesson`,
       icon: BookOpen,
       title: 'Start lesson',
-      meta: `Visual lesson · ${topic.lesson.length} steps · ${topic.estimatedMinutes} min`,
+      meta: `${topic.lesson.length} steps · ${topic.estimatedMinutes} min`,
+      primary: true,
     },
     {
       href: '/practice',
       icon: ClipboardCheck,
-      title: 'Practice questions',
-      meta: `${topic.questions.length} questions, unlocked by the lesson`,
+      title: 'Practice',
+      meta: `${topic.questions.length} questions`,
     },
     {
       href: '/revise',
       icon: RotateCcw,
-      title: 'Revise recall cards',
-      meta: `${topic.cards.length} cards, spaced over the coming weeks`,
+      title: 'Recall',
+      meta: `${topic.cards.length} cards, spaced`,
     },
     ...(topic.visual.kind === 'path' && topic.visual.model3d
       ? [
@@ -54,7 +64,7 @@ export default async function TopicPage({ params }: Props) {
             href: `/studio?topic=${topic.slug}`,
             icon: Rotate3d,
             title: 'Explore in 3D',
-            meta: 'Turn it, light each structure and peel back the layers',
+            meta: 'Layers, draw, Find it',
           },
         ]
       : []),
@@ -63,37 +73,57 @@ export default async function TopicPage({ params }: Props) {
           {
             href: `/learn/${topic.slug}/draw`,
             icon: PenLine,
-            title: 'Draw the exam diagram',
-            meta: `Build it layer by layer · ${DRILL_MINUTES} min`,
+            title: 'Draw it',
+            meta: `Exam diagram · ${DRILL_MINUTES} min`,
           },
         ]
       : []),
   ];
+  const poster = posterOf(topic);
 
   return (
-    <Screen>
-      <ContentTrust topic={topic} />
-      <div className="flex flex-col gap-3">
-        <Eyebrow>
-          {topic.subjectSlug} · {topic.estimatedMinutes} min
-        </Eyebrow>
-        <Display>{topic.title}</Display>
-        <Text tone="muted">{topic.summary}</Text>
+    <Screen width={poster ? 'wide' : 'narrow'}>
+      <div
+        className={cx('grid gap-4 md:gap-6', poster && 'xl:grid-cols-2 xl:items-start xl:gap-8')}
+      >
+        {poster ? (
+          <div className="xl:sticky xl:top-8">
+            <TopicHero slug={topic.slug} poster={poster} />
+          </div>
+        ) : null}
+        <div className="flex min-w-0 flex-col gap-4">
+          <div
+            className={cx(
+              'flex flex-col gap-2',
+              poster && 'items-center text-center xl:items-start xl:text-left',
+            )}
+          >
+            <Eyebrow>
+              {topic.subjectSlug} · {topic.estimatedMinutes} min
+            </Eyebrow>
+            <Display>{topic.title}</Display>
+            <Text tone="muted">{topic.summary}</Text>
+            <ContentTrust topic={topic} />
+          </div>
+          {summary ? <MasteryCard topic={summary} /> : null}
+          <ul aria-label="Ways to study this topic" className="grid grid-cols-2 gap-3">
+            {modes.map((mode, index) => (
+              <ModeTile
+                key={mode.href}
+                {...mode}
+                wide={modes.length % 2 === 1 && index === modes.length - 1}
+              />
+            ))}
+          </ul>
+          <WhereToRead
+            readings={topic.readIn.flatMap((ref) => {
+              const book = getBook(ref.bookId);
+              return book ? [{ ...ref, shortTitle: book.shortTitle, title: book.title }] : [];
+            })}
+          />
+          <TopicNotes topicSlug={topic.slug} />
+        </div>
       </div>
-      <ul aria-label="Ways to study this topic" className="grid gap-3 md:grid-cols-2">
-        {modes.map((mode, index) => (
-          <li key={mode.href}>
-            <LinkCard {...mode} style={{ animationDelay: `${index * 60}ms` }} />
-          </li>
-        ))}
-      </ul>
-      <WhereToRead
-        readings={topic.readIn.flatMap((ref) => {
-          const book = getBook(ref.bookId);
-          return book ? [{ ...ref, shortTitle: book.shortTitle, title: book.title }] : [];
-        })}
-      />
-      <TopicNotes topicSlug={topic.slug} />
     </Screen>
   );
 }

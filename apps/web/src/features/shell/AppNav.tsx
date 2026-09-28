@@ -53,7 +53,7 @@ export function AppNav() {
                     featured
                       ? // The 3D studio stands out: a raised tile, lifted above the phone bar.
                         'size-12 rounded-lg bg-ink text-canvas shadow-float max-md:-mt-6'
-                      : 'h-8 w-14 rounded-full',
+                      : 'h-8 w-12 rounded-full',
                     !featured && active && 'bg-primary-subtle text-primary-strong',
                   )}
                 >

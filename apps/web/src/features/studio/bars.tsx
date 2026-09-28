@@ -5,6 +5,7 @@ import { Button, cx, IconButton, Text } from '@medlearn/ui';
 import { ChevronLeft, ChevronRight, Trash2, Undo2 } from '@medlearn/ui/icons';
 
 import type { QuizState } from './quiz';
+import type { Mode } from './session';
 
 // The bar along the bottom of the 3D studio: one per mode.
 
@@ -15,20 +16,61 @@ export const PENS = [
   { colour: '--color-pen-orange', name: 'Orange', swatch: 'bg-pen-orange' },
 ];
 
+const MODES: Array<{ mode: Mode; label: string }> = [
+  { mode: 'explore', label: 'Explore' },
+  { mode: 'quiz', label: 'Find it' },
+  { mode: 'draw', label: 'Draw' },
+];
+
+/** Explore, "Find it" or draw: one segmented switch, the way into each. */
+export function ModeSwitch({
+  mode,
+  onMode,
+}: Readonly<{ mode: Mode; onMode: (mode: Mode) => void }>) {
+  return (
+    <div
+      role="group"
+      aria-label="Mode"
+      className="grid grid-cols-3 gap-1 rounded-md bg-surface-muted p-1"
+    >
+      {MODES.map((item) => (
+        <button
+          key={item.mode}
+          type="button"
+          aria-pressed={mode === item.mode}
+          onClick={() => {
+            if (mode !== item.mode) onMode(item.mode);
+          }}
+          className={cx(
+            'h-12 rounded-sm text-sm font-semibold transition-colors duration-150',
+            mode === item.mode
+              ? 'bg-surface text-ink shadow-raised'
+              : 'text-fg-muted hover:text-fg',
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function BodyBar({
   region,
   count,
   onTopics,
-}: Readonly<{ region: string; count: number; onTopics: () => void }>) {
+}: Readonly<{ region: string; count: number; onTopics?: (() => void) | undefined }>) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex min-h-12 items-center justify-between gap-3 px-2">
       <Text size="sm">
         <strong>{region}</strong>: {count} {count === 1 ? 'topic' : 'topics'}. Tap a marker to pick
         a region.
       </Text>
-      <Button variant="secondary" onClick={onTopics}>
-        Topics
-      </Button>
+      {onTopics ? (
+        <Button variant="secondary" onClick={onTopics}>
+          Topics
+        </Button>
+      ) : null}
     </div>
   );
 }

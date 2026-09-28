@@ -2,7 +2,7 @@
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
 import { cx, IconButton, Skeleton } from '@medlearn/ui';
-import { Layers, Menu, PenLine, Target } from '@medlearn/ui/icons';
+import { Layers, Menu } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 
@@ -10,7 +10,7 @@ import type { BodyRegionInfo } from '@/content/body';
 
 import { BodyOutline } from './BodyOutline';
 import type { StudioTopic } from './knowledge';
-import type { Mode, Panel } from './session';
+import type { Panel } from './session';
 import { Viewer3D } from './viewer';
 
 export interface ModelViewProps {
@@ -78,73 +78,54 @@ export function ModelView(props: Readonly<ModelViewProps>) {
 
 const tool = (active: boolean) => cx('shadow-glass', active && 'border-gold bg-primary-subtle');
 
-/** The bar across the top: topics and title on the left, the tools on the right. */
+/**
+ * The top of the studio. On phones and tablets held upright: the topics button, the title and
+ * the layers button. Where the panels are docked, only the title, in gold.
+ */
 export function StudioHeader({
   title,
   panel,
-  mode,
+  docked,
   tools,
-  canPlay,
   onPanel,
-  onMode,
 }: Readonly<{
   title: string;
   panel: Panel;
-  mode: Mode;
-  /** Layers, drawing and "Find it" belong to a topic, not the whole body. */
+  docked: boolean;
+  /** Layers belong to a topic, not the whole body. */
   tools: boolean;
-  /** Drawing and "Find it" need the 3D view. */
-  canPlay: boolean;
   onPanel: (panel: Panel) => void;
-  onMode: (mode: Mode) => void;
 }>) {
+  if (docked) {
+    return (
+      <header className="px-2">
+        <h1 className="truncate font-display text-4xl tracking-display text-gold">{title}</h1>
+      </header>
+    );
+  }
   const togglePanel = (next: Exclude<Panel, null>) => onPanel(panel === next ? null : next);
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-      <div className="pointer-events-auto flex min-w-0 items-center gap-2">
-        <IconButton
-          icon={Menu}
-          label="Topics"
-          variant="secondary"
-          aria-pressed={panel === 'topics'}
-          className={tool(panel === 'topics')}
-          onClick={() => togglePanel('topics')}
-        />
-        <h1 className="truncate rounded-full border border-glass-border bg-glass px-4 py-3 text-sm font-semibold text-ink shadow-glass backdrop-blur-md">
-          {title}
-        </h1>
-      </div>
+    <header className="flex items-center gap-2">
+      <IconButton
+        icon={Menu}
+        label="Topics"
+        variant="secondary"
+        aria-pressed={panel === 'topics'}
+        className={cx('pointer-events-auto', tool(panel === 'topics'))}
+        onClick={() => togglePanel('topics')}
+      />
+      <h1 className="pointer-events-auto min-w-0 truncate rounded-full border border-glass-border bg-glass px-4 py-3 text-sm font-semibold text-ink shadow-glass backdrop-blur-md">
+        {title}
+      </h1>
       {tools ? (
-        <div className="pointer-events-auto flex gap-2">
-          <IconButton
-            icon={Layers}
-            label="Layers"
-            variant="secondary"
-            aria-pressed={panel === 'layers'}
-            className={tool(panel === 'layers')}
-            onClick={() => togglePanel('layers')}
-          />
-          {canPlay ? (
-            <>
-              <IconButton
-                icon={PenLine}
-                label="Draw"
-                variant="secondary"
-                aria-pressed={mode === 'draw'}
-                className={tool(mode === 'draw')}
-                onClick={() => onMode('draw')}
-              />
-              <IconButton
-                icon={Target}
-                label="Find it"
-                variant="secondary"
-                aria-pressed={mode === 'quiz'}
-                className={tool(mode === 'quiz')}
-                onClick={() => onMode('quiz')}
-              />
-            </>
-          ) : null}
-        </div>
+        <IconButton
+          icon={Layers}
+          label="Layers"
+          variant="secondary"
+          aria-pressed={panel === 'layers'}
+          className={cx('pointer-events-auto ml-auto', tool(panel === 'layers'))}
+          onClick={() => togglePanel('layers')}
+        />
       ) : null}
     </header>
   );

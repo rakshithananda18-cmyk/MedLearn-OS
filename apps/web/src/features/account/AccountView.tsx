@@ -137,8 +137,8 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
   if (state.status === 'loading') {
     return (
       <div className="flex flex-col gap-3" aria-busy="true">
-        <Skeleton className="h-10 w-2/3" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-12 w-2/3" />
+        <Skeleton className="h-24 w-full" />
       </div>
     );
   }

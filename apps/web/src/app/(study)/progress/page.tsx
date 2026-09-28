@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Progress | MedLearn OS' };
 
 export default function ProgressPage() {
   return (
-    <Screen>
+    <Screen width="wide">
       <ProgressView topics={PLANNABLE_TOPICS} />
     </Screen>
   );

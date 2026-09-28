@@ -37,7 +37,7 @@ export function TextArea({
         id={inputId}
         rows={rows}
         aria-describedby={hint ? hintId : undefined}
-        className="min-h-24 w-full rounded-sm border border-border-strong bg-surface px-3 py-2 text-base text-fg placeholder:text-fg-muted"
+        className="min-h-24 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-base text-fg placeholder:text-fg-muted"
         {...rest}
       />
     </div>

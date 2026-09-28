@@ -26,7 +26,7 @@ export interface BannerProps {
 export function Banner({ tone = 'info', title, children, action }: BannerProps) {
   const { icon, classes, role } = TONE[tone];
   return (
-    <div role={role} className={cx('flex items-start gap-3 rounded-md px-4 py-3', classes)}>
+    <div role={role} className={cx('flex items-start gap-3 rounded-lg px-4 py-3', classes)}>
       <Icon icon={icon} className="mt-px" />
       <div className="flex flex-1 flex-col gap-1">
         <p className="font-semibold">{title}</p>

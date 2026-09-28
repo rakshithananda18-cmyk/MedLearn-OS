@@ -63,10 +63,14 @@
   --text-5xl: 3.25rem;
   --text-5xl--line-height: 3.5rem;
 
-  /* Radius: inputs, cards, sheets, pills. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /*
+   * Radius, one step per job so edges look alike everywhere: sm for checkboxes and tags, md for
+   * buttons, inputs and rows, lg for small cards and banners, xl for cards and panels, full for
+   * pills, chips and round icon buttons.
+   */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
@@ -80,11 +84,11 @@
 
   /*
    * Breakpoints (window size classes): 360 base phone, 600 tablet portrait or phone sideways,
-   * 840 tablet landscape or laptop (two panes), 1200 wide desktop.
+   * 840 two panes, 1024 tablet landscape and laptop (side panels docked).
    */
   --breakpoint-md: 37.5rem;
   --breakpoint-lg: 52.5rem;
-  --breakpoint-xl: 75rem;
+  --breakpoint-xl: 64rem;
 
   /* Motion: 150ms small changes, 250ms screen changes, 400ms arrivals. Transform and opacity only. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -384,13 +388,24 @@
   bottom: calc(env(safe-area-inset-bottom) + var(--spacing-3));
 }
 
-/* The 3D studio fills the screen above the phone tab bar, and most of it beside the side rail. */
+/* The 3D studio fills the screen above the phone tab bar (and all of it beside the side rail). */
 @utility h-studio {
   height: calc(100dvh - var(--spacing-16) - env(safe-area-inset-bottom));
 }
 
-@utility h-studio-wide {
-  height: calc(100dvh - var(--spacing-20));
+/* A topic's 3D model on its pedestal: tall enough to read, short enough to leave room below. */
+@utility h-hero {
+  height: clamp(15rem, 34dvh, 28rem);
+}
+
+/* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
+@utility h-stage {
+  height: calc(100dvh - var(--spacing-16));
+}
+
+/* The topics panel docked beside the 3D studio on tablets held sideways and laptops. */
+@utility w-dock {
+  width: 18rem;
 }
 
 /* Panels floating over the 3D studio: never wider than the phone, less the side gutters. */

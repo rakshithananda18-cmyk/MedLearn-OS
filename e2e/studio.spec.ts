@@ -1,6 +1,13 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 import { expectAccessible } from './support';
+
+/** Phones and upright tablets open the layers panel; laptops keep it docked beside the model. */
+async function layersPanel(page: Page) {
+  const button = page.getByRole('button', { name: 'Layers' });
+  if (await button.isVisible()) await button.click();
+  return page.getByRole('region', { name: 'Layers' });
+}
 
 // Reduced motion: camera moves jump instead of animating. Software WebGL in headless Chromium is
 // CPU-heavy, and this also covers the reduced-motion path.
@@ -26,11 +33,10 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   await expect(page).toHaveURL(/\/studio\?topic=axilla$/);
 
   // Layers: peel the muscles away, then pick one structure from the list.
-  await page.getByRole('button', { name: 'Layers' }).click();
-  const layers = page.getByRole('region', { name: 'Layers' });
-  await layers.getByRole('switch', { name: 'Muscles' }).click();
-  await expect(layers.getByRole('switch', { name: 'Muscles' })).toHaveAttribute(
-    'aria-checked',
+  const layers = await layersPanel(page);
+  await layers.getByRole('button', { name: 'Muscles', exact: true }).click();
+  await expect(layers.getByRole('button', { name: 'Muscles', exact: true })).toHaveAttribute(
+    'aria-pressed',
     'false',
   );
   // Picking from the list closes the panel to make room for the structure's card.
@@ -51,9 +57,9 @@ test('a topic opens the studio at its model, where nerves trace and "Find it" pl
   await expect(page).toHaveURL(/\/studio\?topic=brachial-plexus$/);
   await expect(page.locator('canvas')).toBeVisible({ timeout: 20_000 });
 
-  await page.getByRole('button', { name: 'Layers' }).click();
-  await page
-    .getByRole('region', { name: 'Layers' })
+  await (
+    await layersPanel(page)
+  )
     .getByRole('button', { name: 'Median nerve', exact: true })
     .click();
   await expect(page.getByText(/^Path: C5 root/)).toBeVisible();

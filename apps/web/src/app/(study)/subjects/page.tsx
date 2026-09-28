@@ -17,29 +17,35 @@ export default async function SubjectsPage() {
   const subjects = await getSubjectsRepository().list();
 
   return (
-    <Screen>
-      <div className="flex flex-col gap-3">
-        <Eyebrow>First year</Eyebrow>
-        <Display>
-          Your <em>subjects</em>
-        </Display>
+    <Screen width="wide">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between xl:gap-8">
+        <div className="flex flex-col gap-3">
+          <Eyebrow>First year</Eyebrow>
+          <Display>
+            Your <em>subjects</em>
+          </Display>
+        </div>
+        <div className="xl:w-full xl:max-w-lg">
+          <SearchForm />
+        </div>
       </div>
-      <SearchForm />
-      <LinkCard
-        href="/studio"
-        icon={PersonStanding}
-        title="Pick from the body"
-        meta="Explore the 3D body and open any region's topics"
-      />
-      <Text size="sm">
-        <Link
-          href="/books"
-          className="font-semibold text-primary-strong underline-offset-4 hover:underline"
-        >
-          Choose the books you follow
-        </Link>{' '}
-        and every topic points you to the right chapter.
-      </Text>
+      <div className="grid gap-3 lg:grid-cols-2 lg:items-center">
+        <LinkCard
+          href="/studio"
+          icon={PersonStanding}
+          title="Pick from the body"
+          meta="Explore the 3D body and open any region's topics"
+        />
+        <Text size="sm" className="lg:px-4">
+          <Link
+            href="/books"
+            className="font-semibold text-primary-strong underline-offset-4 hover:underline"
+          >
+            Choose the books you follow
+          </Link>{' '}
+          and every topic points you to the right chapter.
+        </Text>
+      </div>
       <ul aria-label="Subjects" className="flex flex-col gap-8">
         {subjects.map((subject) => {
           const topics = TOPICS.filter((topic) => topic.subjectSlug === subject.slug);
@@ -59,9 +65,9 @@ export default async function SubjectsPage() {
                     </Text>
                   </Card>
                 ) : (
-                  <ul className="flex flex-col gap-2">
+                  <ul className="grid gap-3 lg:grid-cols-2">
                     {topics.map((topic) => (
-                      <li key={topic.slug}>
+                      <li key={topic.slug} className="flex">
                         <LinkCard
                           href={`/learn/${topic.slug}`}
                           icon={BookOpen}

@@ -3,7 +3,7 @@ import type { HTMLAttributes } from 'react';
 import { cx } from './cx';
 
 const TONE = {
-  solid: 'rounded-md border-border bg-surface shadow-raised',
+  solid: 'rounded-xl border-border bg-surface shadow-raised',
   /** Calm Sky: a translucent card floating over the sky backdrop. */
   glass: 'rounded-xl border-glass-border bg-glass shadow-glass',
 } as const;
@@ -15,5 +15,5 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
 
 /** A raised surface for grouping related content. */
 export function Card({ as: Tag = 'div', tone = 'solid', className, ...rest }: CardProps) {
-  return <Tag className={cx('border p-4 md:p-6', TONE[tone], className)} {...rest} />;
+  return <Tag className={cx('border p-4 xl:p-6', TONE[tone], className)} {...rest} />;
 }

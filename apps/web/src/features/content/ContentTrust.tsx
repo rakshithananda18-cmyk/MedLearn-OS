@@ -14,7 +14,7 @@ import { SampleContentBanner } from './SampleContentBanner';
  */
 export function ContentTrust({ topic }: Readonly<{ topic: TopicTrust }>) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <SampleContentBanner reviewed={topic.reviewed} />
       <div>
         <BottomSheet

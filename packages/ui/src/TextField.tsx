@@ -50,7 +50,7 @@ export function TextField({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cx(
-          'h-12 rounded-sm border bg-surface px-3 text-base text-fg placeholder:text-fg-muted',
+          'h-12 rounded-md border bg-surface px-3 text-base text-fg placeholder:text-fg-muted',
           error ? 'border-danger' : 'border-border-strong',
         )}
         {...input}

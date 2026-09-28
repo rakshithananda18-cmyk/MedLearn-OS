@@ -15,12 +15,18 @@ const noSubscription = () => () => {};
 // Checked once: each check opens a WebGL context, and browsers allow only a few.
 let capability: boolean | undefined;
 const canShow3D = () => (capability ??= supports3D());
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
-function subscribeToMotion(listener: () => void) {
-  const query = matchMedia(REDUCED_MOTION);
-  query.addEventListener('change', listener);
-  return () => query.removeEventListener('change', listener);
+/** A hook for one media query: false on the server, then the browser's answer, kept current. */
+function watch(query: string) {
+  const subscribe = (listener: () => void) => {
+    const list = matchMedia(query);
+    list.addEventListener('change', listener);
+    return () => list.removeEventListener('change', listener);
+  };
+  const matches = () => matchMedia(query).matches;
+  return function useQuery(): boolean {
+    return useSyncExternalStore(subscribe, matches, () => false);
+  };
 }
 
 /** Whether this device can show 3D: null until known (during the server render). */
@@ -28,10 +34,7 @@ export function useCan3D(): boolean | null {
   return useSyncExternalStore(noSubscription, canShow3D, () => null);
 }
 
-export function useReducedMotion(): boolean {
-  return useSyncExternalStore(
-    subscribeToMotion,
-    () => matchMedia(REDUCED_MOTION).matches,
-    () => false,
-  );
-}
+export const useReducedMotion = watch('(prefers-reduced-motion: reduce)');
+
+/** Tablets held sideways and laptops (the xl breakpoint): the side panels stay open. */
+export const useDocked = watch('(min-width: 64rem)');

@@ -36,7 +36,7 @@ export function IconButton({
       type={type}
       aria-label={label}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-md transition-colors duration-150 ease-standard disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-standard disabled:cursor-not-allowed disabled:opacity-50',
         size === 'md' ? 'size-12' : 'size-8',
         VARIANT[variant],
         className,

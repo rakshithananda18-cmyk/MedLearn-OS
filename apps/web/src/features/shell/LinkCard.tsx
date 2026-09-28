@@ -18,7 +18,7 @@ export function LinkCard({ href, icon, title, meta, style }: LinkCardProps) {
     <Link
       href={href}
       style={style}
-      className="group flex animate-rise items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
+      className="group flex flex-1 animate-rise items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
     >
       <Medallion icon={icon} />
       <span className="flex flex-1 flex-col">

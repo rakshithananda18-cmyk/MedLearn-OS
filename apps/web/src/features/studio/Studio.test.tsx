@@ -69,7 +69,10 @@ beforeEach(() => {
   vi.spyOn(Math, 'random').mockReturnValue(0);
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('Studio', () => {
   it('opens on the whole body with the topics of the first region', async () => {
@@ -118,7 +121,7 @@ describe('Studio', () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Layers' }));
     const layers = screen.getByRole('region', { name: 'Layers' });
-    await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
+    await userEvent.click(within(layers).getByRole('button', { name: 'Muscles', pressed: true }));
     expect(viewer.props?.hiddenKinds.has('muscle')).toBe(true);
     await userEvent.click(within(layers).getByRole('button', { name: 'Hide Axillary vein' }));
     expect(viewer.props?.hiddenIds.has('axillary-vein')).toBe(true);
@@ -154,6 +157,25 @@ describe('Studio', () => {
     expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
     await userEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(viewer.props?.pen).toBeNull();
+  });
+
+  it('docks the topics and the structure beside the model on a wide screen', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(min-width: 64rem)',
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    const { container } = await renderStudio('axilla');
+    expect(screen.queryByRole('button', { name: 'Topics' })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
+    const side = screen.getByRole('complementary', { name: 'About the model' });
+    expect(within(side).getByRole('region', { name: 'Layers' })).toBeInTheDocument();
+    tap('serratus');
+    expect(within(side).getByRole('region', { name: 'Serratus anterior' })).toBeInTheDocument();
+    await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
+    expect(screen.getByText(/^Find:/)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
   });
 
   it('shows the flat diagram or body outline on a phone that cannot show 3D', async () => {

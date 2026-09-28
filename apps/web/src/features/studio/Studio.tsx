@@ -1,15 +1,15 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { Text } from '@medlearn/ui';
+import { cx, Text } from '@medlearn/ui';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 import { useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
-import { BodyBar, DrawBar, PENS, QuizBar, TourBar } from './bars';
+import { BodyBar, DrawBar, ModeSwitch, PENS, QuizBar, TourBar } from './bars';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
-import { InfoCard, LayersPanel, TopicsPanel } from './panels';
+import { InfoCard, LayersPanel, type Place, TopicsPanel } from './panels';
 import { skipQuiz } from './quiz';
 import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
 import {
@@ -24,9 +24,10 @@ import {
   toggled,
 } from './session';
 import { ModelView, StudioHeader } from './stage';
-import { useCan3D, useReducedMotion } from './viewer';
+import { useCan3D, useDocked, useReducedMotion } from './viewer';
 
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
+const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-md';
 const BODY_KEY = 'body';
 
 export interface StudioProps {
@@ -40,11 +41,13 @@ export interface StudioProps {
 /**
  * The 3D studio: one model filling the screen, with everything else floating over it. Pick a
  * region on the body or a topic on the left; turn, light, hide and x-ray structures; draw on the
- * model; or play "Find it". Phones that cannot show 3D get the flat diagram instead.
+ * model; or play "Find it". Tablets held sideways and laptops keep the topics docked on the left
+ * and the structure and layers on the right. Phones that cannot show 3D get the flat diagram.
  */
 export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioProps>) {
   const capable = useCan3D();
   const reducedMotion = useReducedMotion();
+  const docked = useDocked();
   const withModel = (slug: string | null) =>
     topics.find((topic) => topic.slug === slug && topic.model) ?? null;
 
@@ -87,11 +90,42 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
     saveStrokes(topic?.slug ?? BODY_KEY, strokes);
   };
 
+  const modes = topic !== null && capable === true;
+  const layers = (place: Place) =>
+    topic ? (
+      <LayersPanel
+        place={place}
+        kinds={PART_KINDS.filter((kind) => model.parts.some((part) => part.kind === kind))}
+        structures={structures}
+        showStructures={session.mode !== 'quiz'}
+        hiddenKinds={session.hiddenKinds}
+        hiddenIds={session.hiddenIds}
+        xray={session.xray}
+        isolate={session.isolate}
+        selected={session.selected}
+        onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
+        // Picking from the list closes the panel to make room for the structure's card.
+        onStructure={(id) => setSession({ ...pickIn(session, id, context), panel: null })}
+        onHide={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
+        onXray={(xray) => update({ xray })}
+        onIsolate={(isolate) => update({ isolate })}
+        onClose={() => update({ panel: null })}
+      />
+    ) : null;
+  const infoCard = info ? (
+    <InfoCard
+      docked={docked}
+      info={info}
+      expanded={session.expanded}
+      onExpand={() => update({ expanded: true })}
+      onTopic={openTopic}
+      onClose={() => pick(null)}
+    />
+  ) : null;
+
   return (
-    <section
-      aria-label="3D studio"
-      className="relative -mx-4 -mt-8 -mb-8 h-studio overflow-hidden border-b border-border bg-surface md:mx-0 md:-mt-4 md:h-studio-wide md:rounded-2xl md:border"
-    >
+    // Edge to edge: the model is the screen, and everything else floats over it.
+    <section aria-label="3D studio" className="relative h-studio overflow-hidden md:h-dvh">
       <figure className="absolute inset-0">
         <ModelView
           capable={capable}
@@ -115,81 +149,82 @@ export function Studio({ topics, regions, body, initialTopic }: Readonly<StudioP
         <figcaption className="sr-only">3D model: {topic?.title ?? 'the whole body'}</figcaption>
       </figure>
 
-      <StudioHeader
-        title={topic?.title ?? 'Whole body'}
-        panel={session.panel}
-        mode={session.mode}
-        tools={topic !== null}
-        canPlay={capable === true}
-        onPanel={(panel) => update({ panel })}
-        onMode={changeMode}
-      />
-
-      {session.panel === 'topics' ? (
-        <TopicsPanel
-          topics={topics}
-          regions={regions}
-          region={session.region}
-          current={topic?.slug ?? null}
-          onRegion={(region) => update({ region })}
-          onTopic={openTopic}
-          onClose={() => update({ panel: null })}
-        />
-      ) : null}
-      {session.panel === 'layers' && topic ? (
-        <LayersPanel
-          kinds={PART_KINDS.filter((kind) => model.parts.some((part) => part.kind === kind))}
-          structures={structures}
-          showStructures={session.mode !== 'quiz'}
-          hiddenKinds={session.hiddenKinds}
-          hiddenIds={session.hiddenIds}
-          xray={session.xray}
-          isolate={session.isolate}
-          selected={session.selected}
-          onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
-          // Picking from the list closes the panel to make room for the structure's card.
-          onStructure={(id) => setSession({ ...pickIn(session, id, context), panel: null })}
-          onHide={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
-          onXray={(xray) => update({ xray })}
-          onIsolate={(isolate) => update({ isolate })}
-          onClose={() => update({ panel: null })}
-        />
-      ) : null}
-
-      <footer className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3">
-        {info ? (
-          <InfoCard
-            info={info}
-            expanded={session.expanded}
-            onExpand={() => update({ expanded: true })}
-            onTopic={openTopic}
-            onClose={() => pick(null)}
-          />
-        ) : null}
-        <div className="pointer-events-auto rounded-2xl border border-glass-border bg-glass p-2 shadow-glass backdrop-blur-md md:max-w-2xl">
-          <ModeBar
-            session={session}
-            model={model}
-            topicOpen={topic !== null}
+      <div className="pointer-events-none absolute inset-0 flex gap-4 p-3 xl:p-4">
+        {docked || session.panel === 'topics' ? (
+          <TopicsPanel
+            place={docked ? 'dock' : 'float'}
+            topics={topics}
             regions={regions}
-            regionCount={topics.filter((item) => item.regions.includes(session.region)).length}
-            nameOf={(id) =>
-              structures.find((structure) => structure.id === id)?.name ?? 'something else'
-            }
-            onTopics={() => update({ panel: 'topics' })}
-            onPen={(pen) => update({ pen })}
-            onStrokes={keepStrokes}
-            onSkip={(quiz) => update({ quiz: skipQuiz(quiz, context.pool) })}
-            onMode={changeMode}
-            onStop={(stopIndex) => update({ stopIndex })}
+            region={session.region}
+            current={topic?.slug ?? null}
+            onRegion={(region) => update({ region })}
+            onTopic={openTopic}
+            onClose={() => update({ panel: null })}
           />
-        </div>
-        {capable ? (
-          <Text size="xs" tone="muted" className="pointer-events-auto line-clamp-1 px-1">
-            {model.credit}
-          </Text>
         ) : null}
-      </footer>
+
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
+          <StudioHeader
+            title={topic?.title ?? 'Whole body'}
+            panel={session.panel}
+            docked={docked}
+            tools={topic !== null}
+            onPanel={(panel) => update({ panel })}
+          />
+          <footer className="flex flex-col gap-2">
+            {docked ? null : infoCard}
+            <div
+              className={cx(
+                GLASS,
+                'pointer-events-auto flex flex-col gap-2 p-2 md:mx-auto md:w-full md:max-w-2xl',
+              )}
+            >
+              {modes && !docked ? <ModeSwitch mode={session.mode} onMode={changeMode} /> : null}
+              <ModeBar
+                session={session}
+                model={model}
+                topicOpen={topic !== null}
+                regions={regions}
+                regionCount={topics.filter((item) => item.regions.includes(session.region)).length}
+                nameOf={(id) =>
+                  structures.find((structure) => structure.id === id)?.name ?? 'something else'
+                }
+                onTopics={docked ? undefined : () => update({ panel: 'topics' })}
+                onPen={(pen) => update({ pen })}
+                onStrokes={keepStrokes}
+                onSkip={(quiz) => update({ quiz: skipQuiz(quiz, context.pool) })}
+                onMode={changeMode}
+                onStop={(stopIndex) => update({ stopIndex })}
+              />
+            </div>
+            {capable ? (
+              <Text size="xs" tone="muted" className="pointer-events-auto line-clamp-1 px-2">
+                {model.credit}
+              </Text>
+            ) : null}
+          </footer>
+        </div>
+
+        {docked && topic ? (
+          <aside
+            aria-label="About the model"
+            className={cx(
+              GLASS,
+              'pointer-events-auto flex w-sheet shrink-0 flex-col gap-6 overflow-y-auto p-4',
+            )}
+          >
+            {modes ? <ModeSwitch mode={session.mode} onMode={changeMode} /> : null}
+            {infoCard ??
+              (session.mode === 'explore' ? (
+                <Text size="sm" tone="muted">
+                  Tap a structure on the model to see what it is.
+                </Text>
+              ) : null)}
+            {layers('inline')}
+          </aside>
+        ) : null}
+        {!docked && session.panel === 'layers' ? layers('float') : null}
+      </div>
     </section>
   );
 }
@@ -215,7 +250,7 @@ function ModeBar({
   regions: BodyRegionInfo[];
   regionCount: number;
   nameOf: (id: string | null) => string;
-  onTopics: () => void;
+  onTopics: (() => void) | undefined;
   onPen: (pen: string) => void;
   onStrokes: (strokes: Stroke[]) => void;
   onSkip: (quiz: NonNullable<Session['quiz']>) => void;
