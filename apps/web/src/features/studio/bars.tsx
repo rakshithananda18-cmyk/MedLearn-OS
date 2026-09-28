@@ -74,7 +74,7 @@ export function GuidedViews({
               className={cx(
                 'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                 position === index
-                  ? 'bg-ink text-gold'
+                  ? 'bg-ink text-canvas'
                   : 'border-2 border-border-strong text-fg-muted',
               )}
             >
