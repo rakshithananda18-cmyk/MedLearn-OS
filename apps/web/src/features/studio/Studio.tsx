@@ -165,12 +165,14 @@ function labelsFor(
   }
   const selected = session.mode === 'explore' ? session.selected : null;
   if (!selected) return [];
+  // Only structures on the model: a path also runs through diagram-only steps.
   const others = [...litIn(session, topic)].filter((id) => id !== selected);
-  return [selected, ...others].slice(0, 4).map((id) => ({
-    id,
-    text: studio.nameOf(id),
-    active: id === selected,
-  }));
+  return [selected, ...others]
+    .flatMap((id) => {
+      const structure = studio.structures.find((item) => item.id === id);
+      return structure ? [{ id, text: structure.name, active: id === selected }] : [];
+    })
+    .slice(0, 4);
 }
 
 /** The model filling the studio, with a caption for screen readers. */
