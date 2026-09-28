@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Practice | MedLearn OS' };
 
 export default function PracticePage() {
   return (
-    <Screen>
+    <Screen width="wide">
       <PracticeView topics={PLANNABLE_TOPICS} questions={practiceQuestions()} />
     </Screen>
   );

@@ -1,8 +1,7 @@
-import { Display, Eyebrow } from '@medlearn/ui';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { getTopic, hasDrill, TOPICS } from '@/content/topics';
+import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { DrillView } from '@/features/drill/DrillView';
 import { Screen } from '@/features/shell/Screen';
@@ -26,18 +25,13 @@ export default async function DrawPage({ params }: Props) {
 
   return (
     <Screen width="wide">
-      <ContentTrust topic={topic} />
-      <div className="flex flex-col gap-3">
-        <Eyebrow>Exam diagram · {topic.title}</Eyebrow>
-        <Display size="lg">
-          Draw it <em>layer by layer</em>
-        </Display>
-      </div>
       <DrillView
         topicSlug={topic.slug}
         title={topic.title}
         diagram={topic.visual.diagram}
         steps={topic.visual.drill}
+        minutes={DRILL_MINUTES}
+        trust={<ContentTrust topic={topic} />}
       />
     </Screen>
   );

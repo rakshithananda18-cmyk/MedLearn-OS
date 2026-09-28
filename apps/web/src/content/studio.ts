@@ -1,6 +1,6 @@
 import type { StudioTopic } from '@/features/studio/knowledge';
 
-import { TOPICS } from './topics';
+import { DRILL_MINUTES, hasDrill, posterOf, TOPICS } from './topics';
 
 /** Every topic as the 3D studio sees it: its model, diagram and the lesson text it draws on. */
 export function studioTopics(): StudioTopic[] {
@@ -10,6 +10,10 @@ export function studioTopics(): StudioTopic[] {
     summary: topic.summary,
     estimatedMinutes: topic.estimatedMinutes,
     regions: topic.regions,
+    poster: posterOf(topic),
+    questionIds: topic.questions.map((question) => question.id),
+    cardIds: topic.cards.map((card) => card.id),
+    drillMinutes: hasDrill(topic) ? DRILL_MINUTES : null,
     model: topic.visual.kind === 'path' ? (topic.visual.model3d ?? null) : null,
     diagram: topic.visual.kind === 'path' ? topic.visual.diagram : null,
     lesson: topic.lesson.map(({ title, body, focus }) => ({ title, body, focus })),

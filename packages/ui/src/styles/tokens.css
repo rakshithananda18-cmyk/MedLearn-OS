@@ -63,10 +63,14 @@
   --text-5xl: 3.25rem;
   --text-5xl--line-height: 3.5rem;
 
-  /* Radius: inputs, cards, sheets, pills. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /*
+   * Radius, one step per job so edges look alike everywhere: sm for checkboxes and tags, md for
+   * buttons, inputs and rows, lg for small cards and banners, xl for cards and panels, full for
+   * pills, chips and round icon buttons.
+   */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
@@ -80,11 +84,11 @@
 
   /*
    * Breakpoints (window size classes): 360 base phone, 600 tablet portrait or phone sideways,
-   * 840 tablet landscape or laptop (two panes), 1200 wide desktop.
+   * 840 two panes, 1024 tablet landscape and laptop (side panels docked).
    */
   --breakpoint-md: 37.5rem;
   --breakpoint-lg: 52.5rem;
-  --breakpoint-xl: 75rem;
+  --breakpoint-xl: 64rem;
 
   /* Motion: 150ms small changes, 250ms screen changes, 400ms arrivals. Transform and opacity only. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -240,24 +244,30 @@
   --ml-cloud: rgb(255 255 255 / 0.8);
   --ml-cloud-warm: rgb(255 238 219 / 0.9);
   --ml-cloud-shade: rgb(170 196 214 / 0.45);
+  --ml-pedestal: #e9dcc5;
+  --ml-pedestal-edge: #d9c7a6;
+  --ml-pedestal-shadow: rgb(122 90 20 / 0.16);
+  --ml-gloss-top: #ffffff;
+  --ml-gloss-bottom: #f3f5f7;
 }
 
 /* Dark theme: set on <html> by the theme script (explicit choice or system preference). */
 [data-theme='dark'] {
   color-scheme: dark;
-  --ml-canvas: #0f1720;
-  --ml-surface: #16202b;
-  --ml-surface-muted: #1e2a36;
-  --ml-fg: #e6edf3;
-  --ml-fg-muted: #9aa8b5;
-  --ml-ink: #f0f5f9;
-  --ml-border: #2c3a47;
-  --ml-border-strong: #6b7a88;
-  --ml-primary: #3fb8c2;
-  --ml-primary-hover: #62c9d1;
-  --ml-primary-subtle: #12343a;
-  --ml-primary-strong: #8adbe1;
-  --ml-on-primary: #0b1a1f;
+  /* Night: near-black with champagne gold, like the light theme's gold after dark. */
+  --ml-canvas: #0b0c0f;
+  --ml-surface: #16181d;
+  --ml-surface-muted: #1f2228;
+  --ml-fg: #e8e5de;
+  --ml-fg-muted: #a3a6ae;
+  --ml-ink: #f4f0e8;
+  --ml-border: #2c2f36;
+  --ml-border-strong: #666a74;
+  --ml-primary: #2dd4bf;
+  --ml-primary-hover: #5eead4;
+  --ml-primary-subtle: #0f2f2b;
+  --ml-primary-strong: #5eead4;
+  --ml-on-primary: #04211e;
   --ml-success: #5ccb85;
   --ml-success-subtle: #133222;
   --ml-warning: #f0b44c;
@@ -266,22 +276,29 @@
   --ml-danger-hover: #f6aaa3;
   --ml-danger-subtle: #3b1714;
   --ml-on-danger: #1f0b09;
-  --ml-focus: #62c9d1;
-  --ml-scrim: rgb(0 0 0 / 0.6);
-  --ml-gold: #c9a55a;
-  --ml-gold-ink: #e6c77e;
-  --ml-gold-ink-light: #f3dfae;
-  --ml-glass: rgb(20 31 45 / 0.74);
-  --ml-glass-border: rgb(255 255 255 / 0.08);
-  --ml-sky-top: #0a1420;
-  --ml-sky-mid: #101d2e;
-  --ml-sky-warm: #1f2336;
-  --ml-cloud: rgb(150 176 210 / 0.1);
-  --ml-cloud-warm: rgb(214 160 120 / 0.12);
-  --ml-cloud-shade: rgb(8 14 22 / 0.5);
+  --ml-focus: #5eead4;
+  --ml-scrim: rgb(0 0 0 / 0.65);
+  --ml-gold: #d9b56a;
+  --ml-gold-ink: #e2c784;
+  --ml-gold-ink-light: #f6e3b4;
+  --ml-glass: rgb(255 255 255 / 0.05);
+  --ml-glass-border: rgb(255 255 255 / 0.1);
+  --ml-sky-top: #15171c;
+  --ml-sky-mid: #0e1013;
+  --ml-sky-warm: #0b0c0f;
+  --ml-cloud: rgb(226 199 132 / 0.05);
+  --ml-cloud-warm: rgb(226 199 132 / 0.08);
+  --ml-cloud-shade: rgb(0 0 0 / 0.25);
+  --ml-pedestal: rgb(226 199 132 / 0.2);
+  --ml-pedestal-edge: rgb(226 199 132 / 0.07);
+  --ml-pedestal-shadow: rgb(0 0 0 / 0.5);
+  --ml-gloss-top: #25282f;
+  --ml-gloss-bottom: #1a1c21;
 }
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+/* Short windows, such as a phone held sideways: panels move from the bottom to the side. */
+@custom-variant short (@media (max-height: 30rem));
 
 /*
  * The sky behind every study screen: blue at the top fading to warm cream (night sky in the
@@ -339,6 +356,23 @@
   }
 }
 
+/* The soft stone pedestal a 3D model's poster stands on, like a product on display. */
+@utility pedestal {
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--ml-pedestal) 0%,
+    var(--ml-pedestal-edge) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 12px 22px var(--ml-pedestal-shadow);
+}
+
+/* Glossy pill surface for chips and secondary actions. */
+@utility bg-gloss {
+  background-image: linear-gradient(180deg, var(--ml-gloss-top) 0%, var(--ml-gloss-bottom) 100%);
+}
+
 /* Room for the phone tab bar and the home indicator. */
 @utility pb-tabbar {
   padding-bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom));
@@ -356,13 +390,131 @@
   bottom: calc(env(safe-area-inset-bottom) + var(--spacing-3));
 }
 
-/* The 3D studio fills the screen above the phone tab bar, and most of it beside the side rail. */
+/* The 3D studio fills the screen above the phone tab bar (and all of it beside the side rail). */
 @utility h-studio {
   height: calc(100dvh - var(--spacing-16) - env(safe-area-inset-bottom));
 }
 
-@utility h-studio-wide {
-  height: calc(100dvh - var(--spacing-20));
+/* A topic's 3D model on its pedestal: tall enough to read, short enough to leave room below. */
+@utility h-hero {
+  height: clamp(15rem, 34dvh, 28rem);
+}
+
+/* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
+@utility h-stage {
+  height: calc(100dvh - var(--spacing-16));
+}
+
+/*
+ * Today: one column on phones; two on tablets (the plan beside the counts); on wide screens a
+ * main column and a side column for the streak, the time, the plan and weak spots.
+ */
+@utility grid-today {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'head' 'hero' 'tallies' 'plan' 'body' 'week' 'ring' 'weak';
+}
+
+@utility grid-today-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: 'head head' 'hero hero' 'plan tallies' 'plan body' 'week weak' 'ring weak';
+}
+
+@utility grid-today-3 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) 20rem;
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: 'head head side' 'hero hero side' 'tallies tallies side' 'body week side';
+}
+
+@utility area-head {
+  grid-area: head;
+}
+@utility area-hero {
+  grid-area: hero;
+}
+@utility area-tallies {
+  grid-area: tallies;
+}
+@utility area-plan {
+  grid-area: plan;
+}
+@utility area-body {
+  grid-area: body;
+}
+@utility area-week {
+  grid-area: week;
+}
+@utility area-ring {
+  grid-area: ring;
+}
+@utility area-weak {
+  grid-area: weak;
+}
+@utility area-side {
+  grid-area: side;
+}
+
+/*
+ * Lessons and drills on wide screens: the header across the top, the diagram's stage on the
+ * left, the step on the right with its controls under it.
+ */
+@utility grid-study {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'head head' 'stage panel' 'stage bar';
+}
+
+@utility area-stage {
+  grid-area: stage;
+}
+@utility area-panel {
+  grid-area: panel;
+}
+@utility area-bar {
+  grid-area: bar;
+}
+
+/*
+ * A native <progress> drawn as the app's thin rounded bar. Plain selectors: the bar's parts are
+ * pseudo-elements, one per browser engine.
+ */
+@layer components {
+  .progress-bar {
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: var(--spacing-2);
+    border: 0;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+  }
+
+  .progress-bar::-webkit-progress-bar {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-full);
+  }
+
+  .progress-bar::-webkit-progress-value {
+    background-color: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width 250ms var(--ease-standard);
+  }
+
+  .progress-bar::-moz-progress-bar {
+    background-color: var(--color-primary);
+    border-radius: var(--radius-full);
+  }
+}
+
+/* A topic card in a sideways-scrolling row. */
+@utility w-card {
+  width: min(17rem, 80vw);
+}
+
+/* The topics panel docked beside the 3D studio on tablets held sideways and laptops. */
+@utility w-dock {
+  width: 18rem;
 }
 
 /* Panels floating over the 3D studio: never wider than the phone, less the side gutters. */

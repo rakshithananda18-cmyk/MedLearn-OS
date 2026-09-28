@@ -50,6 +50,16 @@ describe('design tokens', () => {
     'shadow-glass',
     'animate-rise',
     'pb-tabbar',
+    'w-dock',
+    'h-hero',
+    'h-stage',
+    'w-card',
+    'short:flex',
+    'grid-today-2',
+    'area-side',
+    'grid-study',
+    'progress-bar',
+    'area-stage',
   ])('provides %s', (className) => {
     expect(generates(className)).toBe(true);
   });
@@ -64,7 +74,7 @@ describe('design tokens', () => {
     ['rounded-2xl', 'radius outside the five tokens'],
     ['shadow-lg', 'shadow outside the elevation tokens'],
     ['text-6xl', 'type size outside the scale'],
-    ['sm:flex', 'breakpoint outside 600 / 840 / 1200'],
+    ['sm:flex', 'breakpoint outside 600 / 840 / 1024'],
     ['ease-in', 'easing other than the standard curve'],
   ])('does not provide %s (%s)', (className) => {
     expect(generates(className)).toBe(false);

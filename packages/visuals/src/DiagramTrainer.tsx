@@ -41,14 +41,15 @@ export function DiagramTrainer({
   };
 
   return (
-    <figure className="flex flex-col gap-3">
-      <div className="rounded-xl border border-border bg-surface p-2">
+    // Fills the height it is given (a drill's stage), or sizes from its width in a column.
+    <figure className="flex h-full flex-col gap-3">
+      <div className="min-h-0 flex-1 rounded-lg border border-border bg-surface p-2">
         <svg
           role="group"
           aria-label={title}
           aria-describedby={descriptionId}
           viewBox={`0 0 ${diagram.width} ${diagram.height}`}
-          className="h-auto w-full"
+          className="size-full"
         >
           {diagram.edges
             .filter((edge) => placed.has(edge.from) && placed.has(edge.to))

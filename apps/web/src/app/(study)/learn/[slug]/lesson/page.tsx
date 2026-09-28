@@ -1,9 +1,7 @@
-import { Display, Eyebrow } from '@medlearn/ui';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getTopic, TOPICS } from '@/content/topics';
-import { ContentTrust } from '@/features/content/ContentTrust';
 import { LessonView } from '@/features/lesson/LessonView';
 import { Screen } from '@/features/shell/Screen';
 
@@ -26,11 +24,6 @@ export default async function LessonPage({ params }: Props) {
 
   return (
     <Screen width="wide">
-      <ContentTrust topic={topic} />
-      <div className="flex flex-col gap-3">
-        <Eyebrow>Visual lesson</Eyebrow>
-        <Display size="lg">{topic.title}</Display>
-      </div>
       <LessonView topic={topic} />
     </Screen>
   );

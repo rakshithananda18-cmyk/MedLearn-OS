@@ -10,8 +10,9 @@ export default function StudyLayout({ children }: { children: ReactNode }) {
     <div className="min-h-dvh pb-tabbar md:pb-0 md:pl-20">
       <SkyBackdrop />
       <AppNav />
-      <main className="px-4 pt-8 pb-8 md:px-8 md:pt-12 md:pb-12">
-        <div className="mx-auto mb-6 max-w-2xl empty:hidden">
+      {/* Each screen sets its own gutters, so the 3D studio can fill the window edge to edge. */}
+      <main>
+        <div className="mx-auto max-w-3xl px-4 pt-4 empty:hidden md:px-6">
           <OfflineBanner />
         </div>
         {children}

@@ -1,6 +1,6 @@
 import { dayKey } from '@medlearn/core';
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -39,6 +39,11 @@ describe('TodayView', () => {
 
   it('offers a new student the first lesson and the three setup questions', async () => {
     const { container } = render(<TodayView topics={PLANNABLE_TOPICS} />);
+    // The date is built by hand for speed; it must read as Intl would write it.
+    const today = { weekday: 'long', day: 'numeric', month: 'long' } as const;
+    expect(
+      screen.getByText(new Intl.DateTimeFormat('en-IN', today).format(new Date())),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Learn: Pectoral region and breast/ })).toHaveAttribute(
       'href',
       '/learn/pectoral-region',
@@ -47,7 +52,7 @@ describe('TodayView', () => {
       'href',
       '/welcome',
     );
-    expect(screen.getByRole('link', { name: 'Start now' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Start lesson' })).toHaveAttribute(
       'href',
       '/learn/pectoral-region',
     );
@@ -77,7 +82,10 @@ describe('TodayView', () => {
       completeLesson('brachial-plexus');
     });
     expect(screen.getByText('Exam in 12 days')).toBeInTheDocument();
-    expect(screen.getAllByRole('link')[0]).toHaveTextContent('Draw: Brachial plexus');
+    // The drill leads: it is the hero and the first step of the plan.
+    expect(screen.getByRole('heading', { name: 'Draw: Brachial plexus' })).toBeInTheDocument();
+    const plan = screen.getByRole('list', { name: "Today's plan" });
+    expect(within(plan).getAllByRole('link')[0]).toHaveTextContent('Draw: Brachial plexus');
     expect(screen.queryByRole('link', { name: 'Set up my plan' })).not.toBeInTheDocument();
   });
 
@@ -90,6 +98,28 @@ describe('TodayView', () => {
     expect(screen.getByRole('heading', { name: 'You were away for 4 days' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Accept plan' }));
     expect(screen.getByText('Plan accepted. Start with the first step below.')).toBeInTheDocument();
+  });
+
+  it('ticks off what is done today, and counts the streak and the minutes', () => {
+    seed({
+      activity: {
+        [dayKey(new Date(Date.now() - DAY_MS))]: {
+          minutes: 20,
+          lessons: [],
+          drills: [],
+          answered: 0,
+          reviewed: 0,
+        },
+      },
+    });
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
+    act(() => completeLesson('pectoral-region', 15));
+    const plan = screen.getByRole('list', { name: "Today's plan" });
+    expect(within(plan).getByText('Learned: Pectoral region and breast')).toBeInTheDocument();
+    const streak = screen.getByRole('region', { name: 'day streak' });
+    expect(within(streak).getByText('2')).toBeInTheDocument();
+    const time = screen.getByRole('region', { name: 'Studied today' });
+    expect(within(time).getByText('15')).toBeInTheDocument();
   });
 
   it('shows the all-done state when nothing is left', () => {

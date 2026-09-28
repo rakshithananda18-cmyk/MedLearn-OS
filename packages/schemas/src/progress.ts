@@ -32,6 +32,15 @@ export const StudyProfileInput = z.object({
   books: z.array(ItemId).max(50).optional(),
 });
 
+/** One day of study activity, as stored. */
+const DayActivity = z.object({
+  minutes: z.number().nonnegative().max(1440),
+  lessons: IdList.max(200),
+  drills: IdList.max(200),
+  answered: z.number().int().nonnegative(),
+  reviewed: z.number().int().nonnegative(),
+});
+
 export const LearnerProgressInput = z.object({
   profile: StudyProfileInput.nullable(),
   completedLessons: IdList,
@@ -47,6 +56,11 @@ export const LearnerProgressInput = z.object({
   notes: z
     .record(ItemId, z.object({ text: z.string().max(NOTE_MAX_LENGTH), updatedAt: IsoTime }))
     .refine((notes) => Object.keys(notes).length <= MAX_ITEMS, 'Too many notes')
+    .default({}),
+  // Missing from progress saved before activity was kept.
+  activity: z
+    .record(LocalDate, DayActivity)
+    .refine((days) => Object.keys(days).length <= 400, 'Too many days')
     .default({}),
   updatedAt: IsoTime.nullable(),
 });

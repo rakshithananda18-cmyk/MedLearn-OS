@@ -3,13 +3,15 @@ import { pathThrough } from '@medlearn/visuals';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 
 import type { StudioTopic } from './knowledge';
-import { answerQuiz, type QuizState, startQuiz } from './quiz';
+import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 
 // What the student is doing in the 3D studio, and every change to it, as plain functions: the
 // component keeps only the side effects (saving, the address bar) and the layout.
 
 export type Mode = 'explore' | 'draw' | 'quiz';
-export type Panel = 'topics' | 'layers' | null;
+export type Panel = 'topics' | 'layers' | 'search' | null;
+/** The extra a picked structure's card shows under its summary. */
+export type Detail = 'clinical' | 'lesson' | null;
 
 export interface Session {
   topicSlug: string | null;
@@ -17,8 +19,10 @@ export interface Session {
   panel: Panel;
   mode: Mode;
   selected: string | null;
-  expanded: boolean;
+  detail: Detail;
   stopIndex: number;
+  /** Counts "reset the view" taps; each new count sends the camera back. */
+  reset: number;
   hiddenKinds: ReadonlySet<PartKind>;
   hiddenIds: ReadonlySet<string>;
   xray: boolean;
@@ -48,8 +52,9 @@ export function startSession(
     panel: topic ? null : 'topics',
     mode: 'explore',
     selected: null,
-    expanded: false,
+    detail: null,
     stopIndex: 0,
+    reset: 0,
     hiddenKinds: new Set(),
     hiddenIds: new Set(),
     xray: false,
@@ -85,11 +90,12 @@ export function pickIn(session: Session, id: string | null, context: SessionCont
     return region ? { ...session, region: region.id, panel: 'topics' } : session;
   }
   if (session.mode === 'quiz') {
-    return session.quiz && id
+    // Taps after the round is over do nothing until the student plays again.
+    return session.quiz && id && !roundOver(session.quiz)
       ? { ...session, quiz: answerQuiz(session.quiz, id, context.pool) }
       : session;
   }
-  return { ...session, selected: id, expanded: false };
+  return { ...session, selected: id, detail: null };
 }
 
 /** Switches to a mode, or back to exploring when it is already on. */

@@ -18,6 +18,8 @@ tester.run('no-raw-design-values', noRawDesignValues, {
     { code: 'const size = "h-12 w-full";' },
     { code: 'const el = <div className="gap-6">Topic #12</div>;' },
     { code: 'const c = "data-[state=checked]:bg-primary aria-[sort=ascending]:font-bold";' },
+    { code: 'const c = "md:px-6 -mt-24 size-12 w-1/2 rounded-t-lg rounded-full grid-cols-3";' },
+    { code: 'const id = "axillary-artery-1";' },
   ],
   invalid: [
     { code: 'const c = "p-[13px]";', errors: [{ messageId: 'raw' }] },
@@ -38,5 +40,12 @@ describe('findRawDesignValue', () => {
     expect(findRawDesignValue('#fff')).toBe('a hex colour');
     expect(findRawDesignValue('mt-[3px]')).toBe('a Tailwind arbitrary value');
     expect(findRawDesignValue('mt-4')).toBeNull();
+    expect(findRawDesignValue('flex md:p-5')).toBe('a spacing or radius step not in the tokens');
+    expect(findRawDesignValue('hover:rounded-2xl')).toBe(
+      'a spacing or radius step not in the tokens',
+    );
+    expect(findRawDesignValue('h-8 w-14')).toBe('a spacing or radius step not in the tokens');
+    expect(findRawDesignValue('-mx-0.5')).toBe('a spacing or radius step not in the tokens');
+    expect(findRawDesignValue('min-h-dvh h-studio rounded-t-lg')).toBeNull();
   });
 });

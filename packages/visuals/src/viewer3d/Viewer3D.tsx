@@ -3,13 +3,15 @@
 import type { Model3D, ModelTrace, PartKind, Point3 } from '@medlearn/schemas';
 import { Line, OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Box3,
   CatmullRomCurve3,
   Color,
   type Group,
   Mesh,
   MeshStandardMaterial,
+  type Object3D,
   SphereGeometry,
   TubeGeometry,
   Vector3,
@@ -21,6 +23,14 @@ import { MODEL_GROUP, toScene } from './scene';
 export interface Viewer3DMarker {
   id: string;
   position: Point3;
+}
+
+/** A name pinned to a part, a trace or a marker, with a short leader line. */
+export interface Viewer3DLabel {
+  id: string;
+  text: string;
+  /** The picked one: filled in the accent colour. */
+  active?: boolean;
 }
 
 /** A line a student drew on the model's surface, in the model's frame. */
@@ -49,6 +59,9 @@ export interface Viewer3DProps {
   /** While set, dragging over the model draws on its surface instead of turning it. */
   pen?: { colour: string; onStroke: (stroke: Stroke) => void } | null;
   strokes?: Stroke[];
+  labels?: Viewer3DLabel[];
+  /** Changing it sends the camera back to the current stop. */
+  resetToken?: number;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -217,12 +230,124 @@ function Parts({
   return <primitive object={scene} onClick={select} />;
 }
 
+/**
+ * What a label points at: a point in the model frame (the middle of a trace, a marker), or a
+ * part of the model file, whose own transform is applied when it is measured.
+ */
+type Anchor = { point: Point3 } | { node: Object3D } | null;
+
+function anchorOf(id: string, scene: Group, model: Model3D, markers: Viewer3DMarker[]): Anchor {
+  const marker = markers.find((item) => item.id === id);
+  if (marker) return { point: marker.position };
+  const path = model.traces.find((item) => item.id === id)?.paths[0];
+  const middle = path?.[Math.floor(path.length / 2)];
+  if (middle) return { point: middle };
+  const node = scene.getObjectByName(id);
+  return node ? { node } : null;
+}
+
+/**
+ * Keeps each name over its structure: projects the anchors to the screen on every rendered frame
+ * and moves the label elements there. The labels are plain page elements beside the canvas
+ * (see LabelLayer), so React owns them; only their position is set here.
+ */
+function LabelTracker({
+  model,
+  labels,
+  markers,
+  groupRef,
+  nodesRef,
+  redrawRef,
+}: Readonly<{
+  model: Model3D;
+  labels: Viewer3DLabel[];
+  markers: Viewer3DMarker[];
+  groupRef: RefObject<Group | null>;
+  nodesRef: RefObject<Map<string, HTMLElement>>;
+  redrawRef: RefObject<() => void>;
+}>) {
+  const { scene } = useGLTF(model.src, false, true);
+  const { camera, size, invalidate } = useThree();
+  // The label layer lives outside the canvas and asks for a frame once its elements exist.
+  useEffect(() => {
+    redrawRef.current = invalidate;
+  }, [redrawRef, invalidate]);
+  const anchors = useMemo(
+    () => labels.map((label) => [label.id, anchorOf(label.id, scene, model, markers)] as const),
+    [labels, scene, model, markers],
+  );
+  const point = useMemo(() => new Vector3(), []);
+  const box = useMemo(() => new Box3(), []);
+  useFrame(() => {
+    const group = groupRef.current;
+    if (!group) return;
+    for (const [id, anchor] of anchors) {
+      const node = nodesRef.current.get(id);
+      if (!node) continue;
+      if (anchor && 'point' in anchor) group.localToWorld(point.set(...anchor.point));
+      if (anchor && 'node' in anchor) box.setFromObject(anchor.node).getCenter(point);
+      point.project(camera);
+      // Behind the camera or off the edge: hidden.
+      const shown =
+        anchor !== null && point.z < 1 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1;
+      node.style.visibility = shown ? 'visible' : 'hidden';
+      node.style.transform = `translate(${((point.x + 1) / 2) * size.width}px, ${((1 - point.y) / 2) * size.height}px)`;
+    }
+  });
+  return null;
+}
+
+/** The names themselves: a dot on the structure, a short line, and a pill. */
+function LabelLayer({
+  labels,
+  nodesRef,
+  redrawRef,
+}: Readonly<{
+  labels: Viewer3DLabel[];
+  nodesRef: RefObject<Map<string, HTMLElement>>;
+  redrawRef: RefObject<() => void>;
+}>) {
+  // The canvas draws only on demand: one more frame places names that just appeared.
+  useEffect(() => redrawRef.current(), [labels, redrawRef]);
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      {labels.map((label) => (
+        <span
+          key={label.id}
+          ref={(node) => {
+            if (node) nodesRef.current.set(label.id, node);
+            else nodesRef.current.delete(label.id);
+          }}
+          className="invisible absolute top-0 left-0 flex items-center"
+        >
+          <span
+            className={`absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ${label.active ? 'bg-primary' : 'bg-ink'}`}
+          />
+          <span
+            className={`absolute h-px w-6 -translate-y-1/2 ${label.active ? 'bg-primary' : 'bg-ink'}`}
+          />
+          <span
+            className={`absolute left-6 -translate-y-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold shadow-glass ${
+              label.active
+                ? 'bg-primary text-on-primary'
+                : 'border border-glass-border bg-surface text-ink'
+            }`}
+          >
+            {label.text}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Moves the camera to a guided stop: eased, or at once when motion is reduced. */
 function CameraRig({
   model,
   stopId,
   reducedMotion,
-}: Readonly<Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion'>>) {
+  resetToken,
+}: Readonly<Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'>>) {
   const { camera, invalidate } = useThree();
   const controls = useThree((state) => state.controls) as unknown as {
     target: Vector3;
@@ -244,7 +369,8 @@ function CameraRig({
       goal.current = { position, target };
     }
     invalidate();
-  }, [model.stops, stopId, reducedMotion, camera, controls, invalidate]);
+    // resetToken is read only to rerun this: a new token returns the camera to the stop.
+  }, [model.stops, stopId, reducedMotion, camera, controls, invalidate, resetToken]);
 
   useFrame((_, delta) => {
     if (!goal.current || !controls) return;
@@ -291,12 +417,16 @@ export default function Viewer3D({
   maxDistance = 1.5,
   pen = null,
   strokes = [],
+  labels = [],
+  resetToken = 0,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part or trace dims the rest; a lit marker leaves the model as it is.
   const selecting = [...model.parts, ...model.traces].some((item) => highlight.has(item.id));
   const group = useRef<Group>(null);
   const [draft, setDraft] = useState<Point3[]>([]);
   const drawing = useRef<Point3[] | null>(null);
+  const labelNodes = useRef(new Map<string, HTMLElement>());
+  const redraw = useRef<() => void>(() => {});
 
   const finishStroke = () => {
     const points = drawing.current;
@@ -325,75 +455,91 @@ export default function Viewer3D({
     : {};
 
   return (
-    <Canvas
-      frameloop="demand"
-      dpr={[1, 2]}
-      camera={{ fov: 35, near: 0.005, far: 10, position: [0.3, 0.2, 0.6] }}
-      onPointerMissed={() => {
-        if (!pen) onSelect(null);
-      }}
-      // A stroke ends wherever the finger lifts, on the model or off it.
-      onPointerUp={pen ? finishStroke : undefined}
-      onPointerLeave={pen ? finishStroke : undefined}
-    >
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[1, 1.5, 1.2]} intensity={1.4} />
-      <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
-      <group
-        ref={group}
-        position={MODEL_GROUP.position}
-        rotation={MODEL_GROUP.rotation}
-        scale={MODEL_GROUP.scale}
-        {...penHandlers}
+    <div className="relative size-full">
+      <Canvas
+        frameloop="demand"
+        dpr={[1, 2]}
+        camera={{ fov: 35, near: 0.005, far: 10, position: [0.3, 0.2, 0.6] }}
+        onPointerMissed={() => {
+          if (!pen) onSelect(null);
+        }}
+        // A stroke ends wherever the finger lifts, on the model or off it.
+        onPointerUp={pen ? finishStroke : undefined}
+        onPointerLeave={pen ? finishStroke : undefined}
       >
-        <Parts
-          model={model}
-          highlight={highlight}
-          selecting={selecting}
-          onSelect={pen ? () => {} : onSelect}
-          hiddenKinds={hiddenKinds}
-          hiddenIds={hiddenIds}
-          xray={xray}
-        />
-        {model.traces
-          .filter((trace) => !hiddenIds.has(trace.id))
-          .map((trace) => (
-            <Trace
-              key={trace.id}
-              trace={trace}
-              lit={highlight.has(trace.id)}
-              dimmed={selecting && !highlight.has(trace.id)}
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[1, 1.5, 1.2]} intensity={1.4} />
+        <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
+        <group
+          ref={group}
+          position={MODEL_GROUP.position}
+          rotation={MODEL_GROUP.rotation}
+          scale={MODEL_GROUP.scale}
+          {...penHandlers}
+        >
+          <Parts
+            model={model}
+            highlight={highlight}
+            selecting={selecting}
+            onSelect={pen ? () => {} : onSelect}
+            hiddenKinds={hiddenKinds}
+            hiddenIds={hiddenIds}
+            xray={xray}
+          />
+          {model.traces
+            .filter((trace) => !hiddenIds.has(trace.id))
+            .map((trace) => (
+              <Trace
+                key={trace.id}
+                trace={trace}
+                lit={highlight.has(trace.id)}
+                dimmed={selecting && !highlight.has(trace.id)}
+                onSelect={pen ? () => {} : onSelect}
+              />
+            ))}
+          {markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              marker={marker}
+              lit={highlight.has(marker.id)}
               onSelect={pen ? () => {} : onSelect}
             />
           ))}
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            marker={marker}
-            lit={highlight.has(marker.id)}
-            onSelect={pen ? () => {} : onSelect}
-          />
-        ))}
-        {strokes.map((stroke) => (
-          <Line
-            key={strokeKey(stroke)}
-            points={stroke.points}
-            color={tokenColour(stroke.colour)}
-            lineWidth={3}
-          />
-        ))}
-        {draft.length > 1 && pen ? (
-          <Line points={draft} color={tokenColour(pen.colour)} lineWidth={3} />
-        ) : null}
-      </group>
-      <OrbitControls
-        makeDefault
-        enabled={!pen}
-        enableDamping={!reducedMotion}
-        minDistance={0.08}
-        maxDistance={maxDistance}
-      />
-      <CameraRig model={model} stopId={stopId} reducedMotion={reducedMotion} />
-    </Canvas>
+          {strokes.map((stroke) => (
+            <Line
+              key={strokeKey(stroke)}
+              points={stroke.points}
+              color={tokenColour(stroke.colour)}
+              lineWidth={3}
+            />
+          ))}
+          {draft.length > 1 && pen ? (
+            <Line points={draft} color={tokenColour(pen.colour)} lineWidth={3} />
+          ) : null}
+        </group>
+        <LabelTracker
+          model={model}
+          labels={labels}
+          markers={markers}
+          groupRef={group}
+          nodesRef={labelNodes}
+          redrawRef={redraw}
+        />
+        <OrbitControls
+          makeDefault
+          enabled={!pen}
+          enableDamping={!reducedMotion}
+          minDistance={0.08}
+          maxDistance={maxDistance}
+        />
+        <CameraRig
+          model={model}
+          stopId={stopId}
+          reducedMotion={reducedMotion}
+          resetToken={resetToken}
+        />
+      </Canvas>
+      <LabelLayer labels={labels} nodesRef={labelNodes} redrawRef={redraw} />
+    </div>
   );
 }

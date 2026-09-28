@@ -18,6 +18,7 @@ import { useState } from 'react';
 import type { PracticeQuestion, TopicSummary } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { recordAnswer, useProgress } from '@/features/progress/store';
+import { TaskColumns } from '@/features/shell/Screen';
 
 /** One question at a time from finished lessons; answered ones stay on screen until "Next". */
 interface PracticeViewProps {
@@ -38,17 +39,22 @@ export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>)
   const finishedAnyLesson = progress.completedLessons.length > 0;
 
   return (
-    <>
-      <div className="flex flex-col gap-3">
-        <Eyebrow>Practice</Eyebrow>
-        <Display size="lg">
-          Test <em>yourself</em>
-        </Display>
-        <Text tone="muted">Questions from the lessons you have finished.</Text>
-      </div>
+    <TaskColumns
+      intro={
+        <>
+          <div className="flex flex-col gap-3">
+            <Eyebrow>Practice</Eyebrow>
+            <Display size="lg">
+              Test <em>yourself</em>
+            </Display>
+            <Text tone="muted">Questions from the lessons you have finished.</Text>
+          </div>
+          {showing ? <ContentTrust topic={showing.topic} /> : null}
+        </>
+      }
+    >
       {showing ? (
         <>
-          <ContentTrust topic={showing.topic} />
           <Card tone="glass">
             <QuestionCard
               key={showing.question.id}
@@ -92,6 +98,6 @@ export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>)
           />
         </Card>
       )}
-    </>
+    </TaskColumns>
   );
 }

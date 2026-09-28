@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Revise | MedLearn OS' };
 
 export default function RevisePage() {
   return (
-    <Screen>
+    <Screen width="wide">
       <ReviseView topics={PLANNABLE_TOPICS} cards={recallDeck()} />
     </Screen>
   );

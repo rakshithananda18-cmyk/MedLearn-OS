@@ -56,32 +56,37 @@ export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         </div>
       </div>
 
-      <AccountCard />
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <AccountCard />
 
-      {weak.length > 0 ? (
-        <Card tone="glass" as="section" aria-labelledby="weak-spots" className="flex gap-4">
-          <Medallion icon={Target} />
-          <div className="flex flex-1 flex-col gap-2">
-            <h2 id="weak-spots" className="font-semibold text-ink">
-              Weak spots
-            </h2>
-            <ul className="flex flex-col gap-1">
-              {weak.map((item) => (
-                <li key={item.slug}>
-                  <Text size="sm" tone="muted">
-                    {item.title}: {plural(item.weakSpots, 'missed question')} to recall
-                  </Text>
-                </li>
-              ))}
-            </ul>
-            <div>
-              <Link href="/revise" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Revise them
-              </Link>
+        {weak.length > 0 ? (
+          <Card tone="glass" as="section" aria-labelledby="weak-spots" className="flex gap-4">
+            <Medallion icon={Target} />
+            <div className="flex flex-1 flex-col gap-2">
+              <h2 id="weak-spots" className="font-semibold text-ink">
+                Weak spots
+              </h2>
+              <ul className="flex flex-col gap-1">
+                {weak.map((item) => (
+                  <li key={item.slug}>
+                    <Text size="sm" tone="muted">
+                      {item.title}: {plural(item.weakSpots, 'missed question')} to recall
+                    </Text>
+                  </li>
+                ))}
+              </ul>
+              <div>
+                <Link
+                  href="/revise"
+                  className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+                >
+                  Revise them
+                </Link>
+              </div>
             </div>
-          </div>
-        </Card>
-      ) : null}
+          </Card>
+        ) : null}
+      </div>
 
       {subjects.map((subject) => (
         <section
@@ -95,17 +100,17 @@ export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
           >
             {subject}
           </h2>
-          <ul className="flex flex-col gap-2">
+          <ul className="grid gap-3 lg:grid-cols-2">
             {topics
               .filter((topic) => topic.subjectSlug === subject)
               .map((topic) => {
                 const item = mastery.find((entry) => entry.slug === topic.slug);
                 if (!item) return null;
                 return (
-                  <li key={topic.slug}>
+                  <li key={topic.slug} className="flex">
                     <Link
                       href={`/learn/${topic.slug}`}
-                      className="group flex items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
+                      className="group flex flex-1 items-center gap-4 rounded-xl border border-glass-border bg-glass p-4 shadow-glass transition-colors duration-150 hover:border-gold"
                     >
                       <ProgressRing value={item.percent} label={`${topic.title} mastery`} />
                       <span className="flex flex-1 flex-col">

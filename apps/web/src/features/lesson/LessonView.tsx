@@ -1,7 +1,7 @@
 'use client';
 
 import type { LessonStep, PathVisual, Topic } from '@medlearn/schemas';
-import { ActionBar, Button, Heading, StepDots, Text, ToggleChip } from '@medlearn/ui';
+import { ActionBar, Button, Display, Eyebrow, Heading, Text, ToggleChip } from '@medlearn/ui';
 import { ArrowRight, ChevronLeft, CircleCheck } from '@medlearn/ui/icons';
 import {
   type BloodConditions,
@@ -11,7 +11,9 @@ import {
 } from '@medlearn/visuals';
 import { useState } from 'react';
 
+import { ContentTrust } from '@/features/content/ContentTrust';
 import { completeLesson } from '@/features/progress/store';
+import { FlowLayout, FlowProgress, STEP_LABEL, StepList } from '@/features/shell/Flow';
 
 import { LessonWrapUp } from './LessonWrapUp';
 
@@ -29,22 +31,24 @@ function PathLesson({ topic, visual, step, explore }: VisualProps & { visual: Pa
   const lesion = visual.lesions.find((item) => item.id === lesionId);
 
   return (
-    <div className="flex flex-col gap-4">
-      <PathTracer
-        diagram={visual.diagram}
-        title={`${topic.title} diagram`}
-        focus={step.focus}
-        selectedId={explore ? selected : null}
-        onSelect={
-          explore
-            ? (id) => {
-                setSelected(id);
-                setLesionId(null);
-              }
-            : undefined
-        }
-        lesion={lesion?.nodeIds ?? []}
-      />
+    <div className="flex h-full flex-col gap-4">
+      <div className="min-h-0 flex-1">
+        <PathTracer
+          diagram={visual.diagram}
+          title={`${topic.title} diagram`}
+          focus={step.focus}
+          selectedId={explore ? selected : null}
+          onSelect={
+            explore
+              ? (id) => {
+                  setSelected(id);
+                  setLesionId(null);
+                }
+              : undefined
+          }
+          lesion={lesion?.nodeIds ?? []}
+        />
+      </div>
       {explore && visual.lesions.length > 0 ? (
         <div className="flex flex-col gap-2">
           <Text size="sm" weight="semibold">
@@ -84,8 +88,12 @@ function CurveLesson({ step, explore }: VisualProps) {
   );
 }
 
-/** A visual lesson: short steps over one interactive visual, ending with free exploration. */
-export function LessonView({ topic }: { topic: Topic }) {
+/**
+ * A visual lesson: short steps over one interactive visual, ending with free exploration. The
+ * step reads on the right and the visual fills a stage on the left on wide screens; on phones
+ * the step comes first, the visual under it.
+ */
+export function LessonView({ topic }: Readonly<{ topic: Topic }>) {
   const [stepIndex, setStepIndex] = useState(0);
   const [finished, setFinished] = useState(false);
   const step = topic.lesson[stepIndex] ?? topic.lesson[0];
@@ -93,51 +101,80 @@ export function LessonView({ topic }: { topic: Topic }) {
   if (finished) return <LessonWrapUp topic={topic} />;
   const isLast = stepIndex === topic.lesson.length - 1;
   const { visual } = topic;
+  const total = topic.lesson.length;
 
   // Finishing unlocks the topic's recall cards and practice, then shows the wrap-up.
   const finish = () => {
-    completeLesson(topic.slug);
+    completeLesson(topic.slug, topic.estimatedMinutes);
     setFinished(true);
   };
 
   return (
-    <>
-      <div className="grid gap-6 lg:grid-cols-5 lg:gap-12">
-        <div className="lg:sticky lg:top-12 lg:col-span-3 lg:self-start">
-          {visual.kind === 'path' ? (
-            <PathLesson key={step.id} topic={topic} visual={visual} step={step} explore={isLast} />
-          ) : (
-            <CurveLesson key={step.id} topic={topic} step={step} explore={isLast} />
-          )}
-        </div>
-
-        <div className="order-first flex flex-col gap-6 lg:order-last lg:col-span-2">
-          <StepDots count={topic.lesson.length} current={stepIndex} />
+    <FlowLayout
+      label="Lesson step"
+      stageLabel="Lesson visual"
+      header={
+        <>
+          <FlowProgress
+            back={`/learn/${topic.slug}`}
+            backLabel="Back to the topic"
+            label={`Step ${stepIndex + 1} of ${total}`}
+            done={stepIndex + 1}
+            total={total}
+          />
+          <ContentTrust topic={topic} />
+        </>
+      }
+      panel={
+        <>
+          <div className="flex flex-col gap-2">
+            <Eyebrow>Visual lesson</Eyebrow>
+            <Display size="lg">{topic.title}</Display>
+          </div>
           <div key={step.id} className="flex animate-rise flex-col gap-2">
             <Heading level={2}>{step.title}</Heading>
             <Text>{step.body}</Text>
           </div>
-        </div>
-      </div>
-      <ActionBar floating>
-        <Button
-          variant="ghost"
-          iconStart={ChevronLeft}
-          disabled={stepIndex === 0}
-          onClick={() => setStepIndex(stepIndex - 1)}
-        >
-          Back
-        </Button>
-        {isLast ? (
-          <Button iconEnd={CircleCheck} onClick={finish}>
-            Finish lesson
-          </Button>
+          {/* Where this step sits in the lesson, on screens with room beside the visual. */}
+          <div className="hidden flex-col gap-1 xl:flex">
+            <h3 className={STEP_LABEL}>Steps</h3>
+            <StepList
+              label="Lesson steps"
+              steps={topic.lesson}
+              index={stepIndex}
+              onIndex={setStepIndex}
+            />
+          </div>
+        </>
+      }
+      stage={
+        visual.kind === 'path' ? (
+          <PathLesson key={step.id} topic={topic} visual={visual} step={step} explore={isLast} />
         ) : (
-          <Button iconEnd={ArrowRight} onClick={() => setStepIndex(stepIndex + 1)}>
-            Next
+          <CurveLesson key={step.id} topic={topic} step={step} explore={isLast} />
+        )
+      }
+      controls={
+        <ActionBar floating className="area-bar">
+          <Button
+            variant="ghost"
+            iconStart={ChevronLeft}
+            disabled={stepIndex === 0}
+            onClick={() => setStepIndex(stepIndex - 1)}
+          >
+            Back
           </Button>
-        )}
-      </ActionBar>
-    </>
+          {isLast ? (
+            <Button iconEnd={CircleCheck} onClick={finish}>
+              Finish lesson
+            </Button>
+          ) : (
+            <Button iconEnd={ArrowRight} onClick={() => setStepIndex(stepIndex + 1)}>
+              Next
+            </Button>
+          )}
+        </ActionBar>
+      }
+    />
   );
 }

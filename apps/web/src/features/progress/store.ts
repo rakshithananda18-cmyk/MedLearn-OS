@@ -1,7 +1,9 @@
 import {
+  type ActivityEvent,
   dayKey,
   EMPTY_PROGRESS,
   type LearnerProgress,
+  logActivity,
   type ReviewRating,
   scheduleReview,
   type StudyProfile,
@@ -69,21 +71,36 @@ function commit(change: Partial<LearnerProgress>, now = new Date()): void {
   write({ ...read(), ...change, updatedAt: now.toISOString() });
 }
 
-/** Every study action also records when the student was last active (for the catch-up plan). */
-function recordActivity(change: Partial<LearnerProgress>, now = new Date()): void {
-  commit({ ...change, lastActiveAt: now.toISOString() }, now);
+/**
+ * Every study action also records when the student was last active (for the catch-up plan) and
+ * what they did today (for streaks, the daily ring and the plan's ticks).
+ */
+function recordActivity(
+  change: Partial<LearnerProgress>,
+  event: ActivityEvent,
+  now = new Date(),
+): void {
+  const activity = logActivity(read().activity ?? {}, event, now);
+  commit({ ...change, activity, lastActiveAt: now.toISOString() }, now);
 }
 
 export function saveProfile(profile: StudyProfile): void {
   commit({ profile });
 }
 
-export function completeLesson(topicSlug: string): void {
-  recordActivity({ completedLessons: addOnce(read().completedLessons, topicSlug) });
+/** Marks a lesson done; `minutes` is its length, counted towards today's study time. */
+export function completeLesson(topicSlug: string, minutes = 0): void {
+  recordActivity(
+    { completedLessons: addOnce(read().completedLessons, topicSlug) },
+    { kind: 'lesson', topicSlug, minutes },
+  );
 }
 
-export function completeDrill(topicSlug: string): void {
-  recordActivity({ completedDrills: addOnce(read().completedDrills, topicSlug) });
+export function completeDrill(topicSlug: string, minutes = 0): void {
+  recordActivity(
+    { completedDrills: addOnce(read().completedDrills, topicSlug) },
+    { kind: 'drill', topicSlug, minutes },
+  );
 }
 
 /** A wrong answer is remembered: the question comes back as a recall card. */
@@ -93,13 +110,14 @@ export function recordAnswer(questionId: string, correct: boolean): void {
     correct
       ? { correctAnswers: addOnce(correctAnswers, questionId) }
       : { mistakes: addOnce(mistakes, questionId) },
+    { kind: 'answer' },
   );
 }
 
 export function rateCard(cardId: string, rating: ReviewRating, now = new Date()): void {
   const { reviews } = read();
   const next = scheduleReview(reviews[cardId], rating, now);
-  recordActivity({ reviews: { ...reviews, [cardId]: next } }, now);
+  recordActivity({ reviews: { ...reviews, [cardId]: next } }, { kind: 'review' }, now);
 }
 
 /** The standard books this student follows; needs the study plan (profile) to exist. */

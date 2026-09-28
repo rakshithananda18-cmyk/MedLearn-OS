@@ -1,16 +1,25 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, IconButton, Skeleton } from '@medlearn/ui';
-import { Layers, Menu, PenLine, Target } from '@medlearn/ui/icons';
+import { cx, Icon, IconButton, Skeleton } from '@medlearn/ui';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Crosshair,
+  Layers,
+  RotateCcw,
+  ScanEye,
+  Search,
+} from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
-import type { Stroke } from '@medlearn/visuals/viewer3d';
+import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
+import type { ReactNode } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
 import { BodyOutline } from './BodyOutline';
 import type { StudioTopic } from './knowledge';
-import type { Mode, Panel } from './session';
+import { GLASS } from './panels';
 import { Viewer3D } from './viewer';
 
 export interface ModelViewProps {
@@ -30,6 +39,8 @@ export interface ModelViewProps {
   /** The pen's colour while drawing, else null. */
   pen: string | null;
   strokes: Stroke[];
+  labels: Viewer3DLabel[];
+  resetToken: number;
   onPick: (id: string | null) => void;
   onRegion: (id: BodyRegion) => void;
   onStroke: (stroke: Stroke) => void;
@@ -54,6 +65,8 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         maxDistance={topic ? 1.5 : 5}
         pen={props.pen ? { colour: props.pen, onStroke: props.onStroke } : null}
         strokes={props.strokes}
+        labels={props.labels}
+        resetToken={props.resetToken}
       />
     );
   }
@@ -70,82 +83,181 @@ export function ModelView(props: Readonly<ModelViewProps>) {
     );
   }
   return (
-    <div className="size-full px-8 pt-20 pb-24">
+    <div className="h-3/5 w-full px-8 pt-20">
       <BodyOutline selected={props.region} onSelect={props.onRegion} />
     </div>
   );
 }
 
-const tool = (active: boolean) => cx('shadow-glass', active && 'border-gold bg-primary-subtle');
+const pressed = (on: boolean) =>
+  cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
 
-/** The bar across the top: topics and title on the left, the tools on the right. */
-export function StudioHeader({
+/**
+ * Round buttons for the view: layers (on phones), x-ray, only the picked structure, and back to
+ * the guided view. A column down the left on phones, a row beside the title where docked.
+ */
+export function ViewTools({
+  row,
+  layers,
+  xray,
+  isolate,
+  canIsolate,
+  onLayers,
+  onXray,
+  onIsolate,
+  onReset,
+}: Readonly<{
+  row: boolean;
+  /** Whether the layers sheet is open, or null where the layers are docked. */
+  layers: boolean | null;
+  xray: boolean | null;
+  isolate: boolean;
+  canIsolate: boolean;
+  onLayers: () => void;
+  onXray: () => void;
+  onIsolate: () => void;
+  onReset: () => void;
+}>) {
+  return (
+    <div
+      role="toolbar"
+      aria-label="View"
+      aria-orientation={row ? 'horizontal' : 'vertical'}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex gap-1 rounded-full p-1',
+        row ? 'flex-row' : 'flex-col',
+      )}
+    >
+      {layers === null ? null : (
+        <IconButton
+          icon={Layers}
+          label="Layers"
+          aria-pressed={layers}
+          className={pressed(layers)}
+          onClick={onLayers}
+        />
+      )}
+      {xray === null ? null : (
+        <>
+          <IconButton
+            icon={ScanEye}
+            label="X-ray"
+            aria-pressed={xray}
+            className={pressed(xray)}
+            onClick={onXray}
+          />
+          <IconButton
+            icon={Crosshair}
+            label="Only the picked structure"
+            aria-pressed={isolate}
+            disabled={!canIsolate}
+            className={pressed(isolate)}
+            onClick={onIsolate}
+          />
+        </>
+      )}
+      <IconButton
+        icon={RotateCcw}
+        label="Reset the view"
+        className={pressed(false)}
+        onClick={onReset}
+      />
+    </div>
+  );
+}
+
+/**
+ * The top of the studio on phones and tablets held upright. On a topic: back, the topic (tap to
+ * change it) and search. On the whole body: a search field and the view reset.
+ */
+export function PhoneHeader({
   title,
-  panel,
-  mode,
+  topicOpen,
   tools,
-  canPlay,
-  onPanel,
-  onMode,
+  onBack,
+  onTopics,
+  onSearch,
 }: Readonly<{
   title: string;
-  panel: Panel;
-  mode: Mode;
-  /** Layers, drawing and "Find it" belong to a topic, not the whole body. */
-  tools: boolean;
-  /** Drawing and "Find it" need the 3D view. */
-  canPlay: boolean;
-  onPanel: (panel: Panel) => void;
-  onMode: (mode: Mode) => void;
+  topicOpen: boolean;
+  /** Shown beside the search on the whole body. */
+  tools: ReactNode;
+  onBack: () => void;
+  onTopics: () => void;
+  onSearch: () => void;
 }>) {
-  const togglePanel = (next: Exclude<Panel, null>) => onPanel(panel === next ? null : next);
+  if (!topicOpen) {
+    return (
+      <header className="flex items-center gap-2">
+        <h1 className="sr-only">{title}</h1>
+        <button
+          type="button"
+          onClick={onSearch}
+          className={cx(
+            GLASS,
+            'pointer-events-auto flex h-12 min-w-0 flex-1 items-center gap-2 rounded-md px-4 text-sm text-fg-muted',
+          )}
+        >
+          <Icon icon={Search} size="sm" />
+          Find a structure or topic
+        </button>
+        {tools}
+      </header>
+    );
+  }
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-      <div className="pointer-events-auto flex min-w-0 items-center gap-2">
-        <IconButton
-          icon={Menu}
-          label="Topics"
-          variant="secondary"
-          aria-pressed={panel === 'topics'}
-          className={tool(panel === 'topics')}
-          onClick={() => togglePanel('topics')}
-        />
-        <h1 className="truncate rounded-full border border-glass-border bg-glass px-4 py-3 text-sm font-semibold text-ink shadow-glass backdrop-blur-md">
-          {title}
-        </h1>
-      </div>
-      {tools ? (
-        <div className="pointer-events-auto flex gap-2">
-          <IconButton
-            icon={Layers}
-            label="Layers"
-            variant="secondary"
-            aria-pressed={panel === 'layers'}
-            className={tool(panel === 'layers')}
-            onClick={() => togglePanel('layers')}
-          />
-          {canPlay ? (
-            <>
-              <IconButton
-                icon={PenLine}
-                label="Draw"
-                variant="secondary"
-                aria-pressed={mode === 'draw'}
-                className={tool(mode === 'draw')}
-                onClick={() => onMode('draw')}
-              />
-              <IconButton
-                icon={Target}
-                label="Find it"
-                variant="secondary"
-                aria-pressed={mode === 'quiz'}
-                className={tool(mode === 'quiz')}
-                onClick={() => onMode('quiz')}
-              />
-            </>
-          ) : null}
-        </div>
-      ) : null}
+    <header className="flex items-center gap-2">
+      <IconButton
+        icon={ArrowLeft}
+        label="Go back"
+        variant="secondary"
+        className="pointer-events-auto shadow-glass"
+        onClick={onBack}
+      />
+      <h1 className="min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={onTopics}
+          className={cx(
+            GLASS,
+            'pointer-events-auto flex h-12 w-full items-center justify-between gap-2 rounded-full px-4 text-sm font-semibold text-ink',
+          )}
+        >
+          <span className="truncate">{title}</span>
+          <Icon icon={ChevronDown} size="sm" />
+        </button>
+      </h1>
+      <IconButton
+        icon={Search}
+        label="Search structures"
+        variant="secondary"
+        className="pointer-events-auto shadow-glass"
+        onClick={onSearch}
+      />
     </header>
+  );
+}
+
+/** The top of the studio where the panels are docked: the title in gold, the view tools. */
+export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: ReactNode }>) {
+  return (
+    <header className="flex items-center justify-between gap-4 px-2">
+      <h1 className="text-gold truncate font-display text-4xl tracking-display">{title}</h1>
+      {tools}
+    </header>
+  );
+}
+
+/** The sheet along the bottom of a phone: a grip, then the mode switch and what the mode shows. */
+export function BottomSheet({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <div className="pointer-events-auto flex max-h-sheet flex-col gap-3 overflow-y-auto *:shrink-0 rounded-t-xl border-t border-glass-border bg-surface/95 px-4 pt-2 pb-4 shadow-overlay backdrop-blur-md md:mx-auto md:mb-3 md:w-full md:max-w-2xl md:rounded-xl md:border short:absolute short:top-20 short:right-3 short:bottom-3 short:m-0 short:max-h-none short:w-sheet short:max-w-none">
+      <span
+        aria-hidden="true"
+        className="h-1 w-12 shrink-0 self-center rounded-full bg-border-strong"
+      />
+      {children}
+    </div>
   );
 }

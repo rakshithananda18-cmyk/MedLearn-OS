@@ -1,3 +1,4 @@
+import { mergeActivity } from './activity';
 import type { ReviewState } from './review';
 import type { LearnerProgress } from './today';
 
@@ -41,6 +42,7 @@ export function mergeProgress(
     lastActiveAt: later(account.lastActiveAt, local.lastActiveAt),
     catchUpAcceptedOn: account.catchUpAcceptedOn ?? local.catchUpAcceptedOn,
     notes,
+    activity: mergeActivity(local.activity, account.activity),
     updatedAt: now.toISOString(),
   };
 }

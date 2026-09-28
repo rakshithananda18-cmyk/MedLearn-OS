@@ -33,17 +33,31 @@ export function hasDrill(topic: Topic): boolean {
   return topic.visual.kind === 'path' && topic.visual.drill.length > 0;
 }
 
-/** What the planner needs about each topic, plus its subject for grouping. */
-export type TopicSummary = PlannableTopic & { subjectSlug: string };
+/** What the planner needs about each topic, plus its subject and its hero picture. */
+export type TopicSummary = PlannableTopic & {
+  subjectSlug: string;
+  summary: string;
+  /** A still of the topic's 3D model (scripts/models/render-posters.mjs), when it has one. */
+  poster: string | null;
+};
+
+/** Where a topic's poster lives, when the topic has a 3D model. */
+export function posterOf(topic: Topic): string | null {
+  return topic.visual.kind === 'path' && topic.visual.model3d
+    ? `/posters/${topic.slug}.webp`
+    : null;
+}
 
 export const PLANNABLE_TOPICS: TopicSummary[] = TOPICS.map((topic) => ({
   slug: topic.slug,
   subjectSlug: topic.subjectSlug,
+  summary: topic.summary,
   title: topic.title,
   estimatedMinutes: topic.estimatedMinutes,
   questionIds: topic.questions.map((question) => question.id),
   cardIds: topic.cards.map((card) => card.id),
   drillMinutes: hasDrill(topic) ? DRILL_MINUTES : null,
+  poster: posterOf(topic),
 }));
 
 /** What the source drawer shows about the topic a question or card comes from. */
