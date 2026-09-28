@@ -12,15 +12,19 @@ describe('AppNav', () => {
     pathname.current = '/today';
     const { container } = render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Revise' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Practice' })).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('link', { name: 'Progress' })).toHaveAttribute('href', '/progress');
     expect(screen.getByRole('link', { name: '3D' })).toHaveAttribute('href', '/studio');
     await expectNoA11yViolations(container);
   });
 
-  it('keeps Subjects active inside a topic', () => {
+  it('keeps Library active inside a topic, and Today while recalling cards', () => {
     pathname.current = '/learn/brachial-plexus/lesson';
+    const { unmount } = render(<AppNav />);
+    expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute('aria-current', 'page');
+    unmount();
+    pathname.current = '/revise';
     render(<AppNav />);
-    expect(screen.getByRole('link', { name: 'Subjects' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
   });
 });

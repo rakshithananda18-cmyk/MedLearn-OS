@@ -29,6 +29,7 @@ function renderDrill() {
       title="Brachial plexus"
       diagram={diagram}
       steps={drill}
+      minutes={10}
     />,
   );
 }

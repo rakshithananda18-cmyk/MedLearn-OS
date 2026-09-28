@@ -96,7 +96,7 @@ export function LessonView({ topic }: { topic: Topic }) {
 
   // Finishing unlocks the topic's recall cards and practice, then shows the wrap-up.
   const finish = () => {
-    completeLesson(topic.slug);
+    completeLesson(topic.slug, topic.estimatedMinutes);
     setFinished(true);
   };
 

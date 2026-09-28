@@ -1,3 +1,4 @@
+import type { Activity } from './activity';
 import { isDue, type ReviewState } from './review';
 
 export type MbbsYear = 1 | 2 | 3 | 4;
@@ -36,6 +37,8 @@ export interface LearnerProgress {
   catchUpAcceptedOn: string | null;
   /** Notes by topic slug. */
   notes: Record<string, TopicNote>;
+  /** What was studied on each recent day: streaks, the daily ring and the plan's ticks. */
+  activity: Activity;
   /** Last change (ISO time); the newer copy wins when the device and the server differ. */
   updatedAt: string | null;
 }
@@ -50,6 +53,7 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   lastActiveAt: null,
   catchUpAcceptedOn: null,
   notes: {},
+  activity: {},
   updatedAt: null,
 };
 

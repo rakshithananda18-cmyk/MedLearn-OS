@@ -1,3 +1,15 @@
+export {
+  type Activity,
+  ACTIVITY_DAYS,
+  type ActivityEvent,
+  bestStreak,
+  currentStreak,
+  type DayActivity,
+  dayOf,
+  lastDays,
+  logActivity,
+  mergeActivity,
+} from './activity';
 export { AppError, isAppError, toAppError } from './errors';
 export { type TopicMastery, topicMastery } from './mastery';
 export { mergeProgress } from './merge';

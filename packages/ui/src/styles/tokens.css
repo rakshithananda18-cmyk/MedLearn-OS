@@ -240,24 +240,30 @@
   --ml-cloud: rgb(255 255 255 / 0.8);
   --ml-cloud-warm: rgb(255 238 219 / 0.9);
   --ml-cloud-shade: rgb(170 196 214 / 0.45);
+  --ml-pedestal: #e9dcc5;
+  --ml-pedestal-edge: #d9c7a6;
+  --ml-pedestal-shadow: rgb(122 90 20 / 0.16);
+  --ml-gloss-top: #ffffff;
+  --ml-gloss-bottom: #f3f5f7;
 }
 
 /* Dark theme: set on <html> by the theme script (explicit choice or system preference). */
 [data-theme='dark'] {
   color-scheme: dark;
-  --ml-canvas: #0f1720;
-  --ml-surface: #16202b;
-  --ml-surface-muted: #1e2a36;
-  --ml-fg: #e6edf3;
-  --ml-fg-muted: #9aa8b5;
-  --ml-ink: #f0f5f9;
-  --ml-border: #2c3a47;
-  --ml-border-strong: #6b7a88;
-  --ml-primary: #3fb8c2;
-  --ml-primary-hover: #62c9d1;
-  --ml-primary-subtle: #12343a;
-  --ml-primary-strong: #8adbe1;
-  --ml-on-primary: #0b1a1f;
+  /* Night: near-black with champagne gold, like the light theme's gold after dark. */
+  --ml-canvas: #0b0c0f;
+  --ml-surface: #16181d;
+  --ml-surface-muted: #1f2228;
+  --ml-fg: #e8e5de;
+  --ml-fg-muted: #a3a6ae;
+  --ml-ink: #f4f0e8;
+  --ml-border: #2c2f36;
+  --ml-border-strong: #666a74;
+  --ml-primary: #2dd4bf;
+  --ml-primary-hover: #5eead4;
+  --ml-primary-subtle: #0f2f2b;
+  --ml-primary-strong: #5eead4;
+  --ml-on-primary: #04211e;
   --ml-success: #5ccb85;
   --ml-success-subtle: #133222;
   --ml-warning: #f0b44c;
@@ -266,19 +272,24 @@
   --ml-danger-hover: #f6aaa3;
   --ml-danger-subtle: #3b1714;
   --ml-on-danger: #1f0b09;
-  --ml-focus: #62c9d1;
-  --ml-scrim: rgb(0 0 0 / 0.6);
-  --ml-gold: #c9a55a;
-  --ml-gold-ink: #e6c77e;
-  --ml-gold-ink-light: #f3dfae;
-  --ml-glass: rgb(20 31 45 / 0.74);
-  --ml-glass-border: rgb(255 255 255 / 0.08);
-  --ml-sky-top: #0a1420;
-  --ml-sky-mid: #101d2e;
-  --ml-sky-warm: #1f2336;
-  --ml-cloud: rgb(150 176 210 / 0.1);
-  --ml-cloud-warm: rgb(214 160 120 / 0.12);
-  --ml-cloud-shade: rgb(8 14 22 / 0.5);
+  --ml-focus: #5eead4;
+  --ml-scrim: rgb(0 0 0 / 0.65);
+  --ml-gold: #d9b56a;
+  --ml-gold-ink: #e2c784;
+  --ml-gold-ink-light: #f6e3b4;
+  --ml-glass: rgb(255 255 255 / 0.05);
+  --ml-glass-border: rgb(255 255 255 / 0.1);
+  --ml-sky-top: #15171c;
+  --ml-sky-mid: #0e1013;
+  --ml-sky-warm: #0b0c0f;
+  --ml-cloud: rgb(226 199 132 / 0.05);
+  --ml-cloud-warm: rgb(226 199 132 / 0.08);
+  --ml-cloud-shade: rgb(0 0 0 / 0.25);
+  --ml-pedestal: rgb(226 199 132 / 0.2);
+  --ml-pedestal-edge: rgb(226 199 132 / 0.07);
+  --ml-pedestal-shadow: rgb(0 0 0 / 0.5);
+  --ml-gloss-top: #25282f;
+  --ml-gloss-bottom: #1a1c21;
 }
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
@@ -337,6 +348,23 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+}
+
+/* The soft stone pedestal a 3D model's poster stands on, like a product on display. */
+@utility pedestal {
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--ml-pedestal) 0%,
+    var(--ml-pedestal-edge) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 12px 22px var(--ml-pedestal-shadow);
+}
+
+/* Glossy pill surface for chips and secondary actions. */
+@utility bg-gloss {
+  background-image: linear-gradient(180deg, var(--ml-gloss-top) 0%, var(--ml-gloss-bottom) 100%);
 }
 
 /* Room for the phone tab bar and the home indicator. */

@@ -23,10 +23,12 @@ export interface DrillViewProps {
   title: string;
   diagram: PathDiagram;
   steps: DrillStep[];
+  /** How long the drill takes, counted towards today's study time. */
+  minutes: number;
 }
 
 /** Exam diagram trainer: label each layer from a bank of labels, then draw it on paper. */
-export function DrillView({ topicSlug, title, diagram, steps }: DrillViewProps) {
+export function DrillView({ topicSlug, title, diagram, steps, minutes }: DrillViewProps) {
   const router = useRouter();
   const [state, setState] = useState(() => startDrill(steps));
   const [wrong, setWrong] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function DrillView({ topicSlug, title, diagram, steps }: DrillViewProps) 
   };
 
   const finish = () => {
-    completeDrill(topicSlug);
+    completeDrill(topicSlug, minutes);
     router.push('/today');
   };
 

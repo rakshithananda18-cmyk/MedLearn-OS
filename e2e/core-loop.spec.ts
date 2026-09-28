@@ -69,10 +69,11 @@ test('Today → lesson → practice → revise, then the next topic', async ({ p
   }
   await expect(page.getByText('All questions done')).toBeVisible();
 
-  // Revise: recall and rate all five cards.
+  // Recall: back on Today, the plan leads to the five cards; recall and rate them all.
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
   await page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'Revise' })
+    .getByRole('list', { name: "Today's plan" })
+    .getByRole('link', { name: /Review 5 cards/ })
     .click();
   for (let card = 0; card < 5; card += 1) {
     await page.getByRole('button', { name: 'Show answer' }).click();

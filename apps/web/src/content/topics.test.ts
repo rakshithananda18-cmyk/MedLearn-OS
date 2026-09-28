@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { Topic } from '@medlearn/schemas';
 import { pillSize } from '@medlearn/visuals';
 import { describe, expect, it } from 'vitest';
@@ -36,6 +39,15 @@ describe('bundled content', () => {
     expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual(
       drills.map((drill) => (drill ? DRILL_MINUTES : null)),
     );
+  });
+
+  it('has a poster for every topic with a 3D model', () => {
+    for (const topic of PLANNABLE_TOPICS) {
+      if (!topic.poster) continue;
+      const file = fileURLToPath(new URL(`../../public${topic.poster}`, import.meta.url));
+      expect(existsSync(file), topic.slug).toBe(true);
+    }
+    expect(PLANNABLE_TOPICS.filter((topic) => topic.poster).length).toBeGreaterThan(0);
   });
 
   it('gives every anatomy topic a 3D view', () => {
