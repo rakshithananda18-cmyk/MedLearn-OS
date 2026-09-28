@@ -1,3 +1,4 @@
+import type { PartKind } from '@medlearn/schemas';
 import { describe, expect, it } from 'vitest';
 
 import { studioTopics } from '@/content/studio';
@@ -78,7 +79,7 @@ describe('studio session', () => {
       ...startSession(vessels, 'upper-limb', 'violet', []),
       selected: 'subscapular-artery',
       xray: true,
-      hiddenKinds: toggled(new Set(), 'muscle' as const),
+      hiddenKinds: toggled(new Set<PartKind>(), 'muscle'),
     };
     const next = openTopicIn(busy, null, []);
     expect(next).toMatchObject({ topicSlug: null, selected: null, pen: 'violet', xray: true });
