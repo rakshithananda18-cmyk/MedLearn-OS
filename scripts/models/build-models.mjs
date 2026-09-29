@@ -36,7 +36,7 @@ const PEC_MINOR_X = { lateral: -137, medial: -107 };
 export const MODELS = [
   {
     name: 'upper-limb',
-    // Shoulder, back, arm, forearm and hand (upper limb batches 1 to 5): one file every upper limb
+    // Shoulder, back, arm, forearm and hand (upper limb batches 1 to 6): one file every upper limb
     // topic shares.
     maxTriangles: 150_000,
     error: 0.002,
@@ -242,6 +242,9 @@ export const MODELS = [
       { id: 'dorsal-venous-network', files: ['FJ2280'], ratio: 0.12 },
       // Joints (batch 5).
       { id: 'interosseous-membrane', files: ['FJ1476'], ratio: 0.3 },
+      // Anastomosis round the elbow (batch 6).
+      { id: 'superior-ulnar-collateral-artery', files: ['FJ2373'], ratio: 0.3 },
+      { id: 'inferior-ulnar-collateral-artery', files: ['FJ2267'], ratio: 0.5 },
     ],
   },
   {
