@@ -28,7 +28,7 @@ export const forearmExtensors: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 147 to 151'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 146 to 150'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 775 to 782'),
     {
       title: 'TeachMeAnatomy: Muscles of the Posterior Forearm',
@@ -408,7 +408,7 @@ export const forearmExtensors: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '147–151' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '146–150' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '775–782' },
   ],
 };

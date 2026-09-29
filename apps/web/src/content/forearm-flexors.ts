@@ -32,7 +32,7 @@ export const forearmFlexors: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 115 to 120'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 114 to 118'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 767 to 771'),
     {
       title: 'TeachMeAnatomy: Muscles of the Anterior Forearm',
@@ -422,7 +422,7 @@ export const forearmFlexors: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '115–120' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '114–118' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '767–771' },
   ],
 };

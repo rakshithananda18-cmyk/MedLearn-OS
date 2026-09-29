@@ -39,6 +39,11 @@ export const POSTERS = [
   { name: 'palm-spaces', path: '/studio?topic=palm-spaces' },
   { name: 'wrist-back', path: '/studio?topic=wrist-back' },
   { name: 'forearm-extensors', path: '/studio?topic=forearm-extensors' },
+  { name: 'shoulder-girdle', path: '/studio?topic=shoulder-girdle' },
+  { name: 'shoulder-joint', path: '/studio?topic=shoulder-joint' },
+  { name: 'elbow-joint', path: '/studio?topic=elbow-joint' },
+  { name: 'radioulnar-joints', path: '/studio?topic=radioulnar-joints' },
+  { name: 'wrist-hand-joints', path: '/studio?topic=wrist-hand-joints' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

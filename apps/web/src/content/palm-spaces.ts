@@ -36,7 +36,7 @@ export const palmSpaces: Topic = {
     },
     bookSource(
       'bd-chaurasia',
-      'Volume 1, Chapter 9 Forearm and Hand, pages 126 to 127 and 142 to 144',
+      'Volume 1, Chapter 9 Forearm and Hand, pages 125 to 126 and 141 to 143',
     ),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 791 to 792'),
     {
@@ -408,7 +408,7 @@ export const palmSpaces: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '126–127, 142–144' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '125–126, 141–143' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '791–792' },
   ],
 };

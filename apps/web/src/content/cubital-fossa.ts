@@ -22,7 +22,7 @@ export const cubitalFossa: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 8 Arm, pages 104 to 106'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 8 Arm, pages 103 to 105'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, elbow, pages 759 to 760'),
     {
       title: 'TeachMeAnatomy: The Cubital Fossa',
@@ -354,7 +354,7 @@ export const cubitalFossa: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 8 Arm', pages: '104–106' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 8 Arm', pages: '103–105' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '759–760' },
   ],
 };
