@@ -1,5 +1,5 @@
 // Builds the app's 3D models in apps/web/public/models from BodyParts3D meshes:
-//  - shoulder-chest.glb: bones, muscles, arteries and veins of the right shoulder and chest, shared
+//  - upper-limb.glb: bones, muscles, arteries and veins of the right upper limb and chest, shared
 //    by the upper limb topics (each topic shows its own parts)
 //  - body.glb: the whole body surface, for picking a region to study
 //
@@ -11,7 +11,8 @@
 // Usage: node scripts/models/build-models.mjs <folder with the extracted FJ*.obj files>
 //          <isa_element_parts.txt, the index from the same download page>
 // Coordinates stay in the source frame (millimetres, Z up); the viewer turns them into its scene.
-// Model files are cached forever by URL, so a rebuilt model with new parts needs a new name.
+// Model files are cached forever by URL, so a rebuilt model with new parts needs a new address
+// (the version in SHOULDER_MODEL_SRC, apps/web/src/content/shoulder-3d.ts).
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -34,8 +35,9 @@ const PEC_MINOR_X = { lateral: -137, medial: -107 };
 
 export const MODELS = [
   {
-    name: 'shoulder-chest',
-    // Shoulder, back and arm (upper limb batches 1 and 2): one file every upper limb topic shares.
+    name: 'upper-limb',
+    // Shoulder, back, arm, forearm and hand (upper limb batches 1 to 3): one file every upper limb
+    // topic shares.
     maxTriangles: 150_000,
     error: 0.002,
     parts: [
@@ -151,6 +153,58 @@ export const MODELS = [
       { id: 'axillary-vein', files: ['FJ2269'], ratio: 1 },
       { id: 'cephalic-vein', files: ['FJ2272'], ratio: 0.12 },
       { id: 'basilic-vein', files: ['FJ2270'], ratio: 0.12 },
+      // Elbow, front of the forearm and hand (batch 3).
+      { id: 'scaphoid', files: ['FJ3383'], ratio: 0.5 },
+      { id: 'lunate', files: ['FJ3374'], ratio: 0.5 },
+      { id: 'triquetral', files: ['FJ3390'], ratio: 0.5 },
+      { id: 'pisiform', files: ['FJ3382'], ratio: 0.5 },
+      { id: 'trapezium', files: ['FJ3388'], ratio: 0.5 },
+      { id: 'trapezoid', files: ['FJ3389'], ratio: 0.5 },
+      { id: 'capitate', files: ['FJ3361'], ratio: 0.5 },
+      { id: 'hamate', files: ['FJ3367'], ratio: 0.5 },
+      {
+        // First to fifth, lateral to medial.
+        id: 'metacarpals',
+        files: ['FJ3350', 'FJ3352', 'FJ3354', 'FJ3356', 'FJ3358'],
+        ratio: 0.4,
+      },
+      {
+        // Proximal, middle and distal phalanges of the thumb and fingers.
+        id: 'phalanges',
+        files: ['FJ3327', 'FJ3322', 'FJ3325', 'FJ3326', 'FJ3323'].concat(
+          ['FJ3303', 'FJ3306', 'FJ3292', 'FJ3304'],
+          ['FJ3198', 'FJ3193', 'FJ3196', 'FJ3197', 'FJ3194'],
+        ),
+        ratio: 0.3,
+      },
+      { id: 'pronator-teres', files: ['FJ1474', 'FJ1516'], ratio: 0.3 },
+      { id: 'flexor-carpi-radialis', files: ['FJ1496'], ratio: 0.5 },
+      { id: 'palmaris-longus', files: ['FJ1502'], ratio: 0.12 },
+      { id: 'flexor-carpi-ulnaris', files: ['FJ1473', 'FJ1518'], ratio: 0.15 },
+      { id: 'flexor-digitorum-superficialis', files: ['FJ1475', 'FJ1499'], ratio: 0.12 },
+      { id: 'flexor-digitorum-profundus', files: ['FJ1497'], ratio: 0.2 },
+      { id: 'flexor-pollicis-longus', files: ['FJ1498'], ratio: 0.4 },
+      { id: 'pronator-quadratus', files: ['FJ1503'], ratio: 0.3 },
+      { id: 'supinator', files: ['FJ1505'], ratio: 0.3 },
+      { id: 'flexor-retinaculum', files: ['FJ1471'], ratio: 0.4 },
+      {
+        // Abductor and flexor pollicis brevis, opponens pollicis. BodyParts3D files the right
+        // flexor pollicis brevis as FJ1469M, but that mesh lies on the left; FJ1469 is the right.
+        id: 'thenar-muscles',
+        files: ['FJ1483', 'FJ1469', 'FJ1501'],
+        ratio: 0.4,
+      },
+      { id: 'hypothenar-muscles', files: ['FJ1466', 'FJ1470', 'FJ1482'], ratio: 0.4 },
+      { id: 'radial-artery', files: ['FJ2294'], ratio: 0.1 },
+      { id: 'ulnar-artery', files: ['FJ2310'], ratio: 0.1 },
+      { id: 'radial-recurrent-artery', files: ['FJ2295'], ratio: 0.3 },
+      { id: 'ulnar-recurrent-arteries', files: ['FJ2311', 'FJ2293'], ratio: 1 },
+      { id: 'common-interosseous-artery', files: ['FJ2275'], ratio: 1 },
+      { id: 'anterior-interosseous-artery', files: ['FJ2266'], ratio: 0.3 },
+      { id: 'superficial-palmar-arch', files: ['FJ2300'], ratio: 0.2 },
+      { id: 'deep-palmar-arch', files: ['FJ2279'], ratio: 0.3 },
+      { id: 'median-cubital-vein', files: ['FJ2287'], ratio: 0.2 },
+      { id: 'median-antebrachial-vein', files: ['FJ2286'], ratio: 0.1 },
     ],
   },
   {

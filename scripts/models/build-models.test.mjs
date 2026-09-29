@@ -80,7 +80,7 @@ describe('content and models', () => {
     MODELS.find((model) => model.name === name)?.parts.map((part) => part.id);
 
   it('has a mesh for every part the content can show', () => {
-    expect(meshes('shoulder-chest')).toEqual(expect.arrayContaining(SHOULDER_PART_IDS));
+    expect(meshes('upper-limb')).toEqual(expect.arrayContaining(SHOULDER_PART_IDS));
     expect(meshes('body')).toEqual(expect.arrayContaining(BODY_MODEL.parts.map((part) => part.id)));
   });
 });

@@ -1,9 +1,10 @@
 import type { ModelPart, Point3 } from '@medlearn/schemas';
 
-// The shoulder and chest model shared by the upper limb topics. Coordinates are the BodyParts3D
+// The upper limb and chest model shared by the upper limb topics. Coordinates are the BodyParts3D
 // frame: millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
-export const SHOULDER_MODEL_SRC = '/models/shoulder-chest.glb';
+// Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
+export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=3';
 
 /** Credit for the model's bones, muscles and vessels, shown wherever the model is. */
 export const SHOULDER_MODEL_CREDIT =
@@ -373,6 +374,195 @@ const PARTS = {
     about:
       'From the subclavian artery (or the transverse cervical artery). Runs down along the medial border of the scapula with the dorsal scapular nerve. Part of the scapular anastomosis.',
   },
+  // Elbow, front of the forearm and hand (upper limb batch 3).
+  scaphoid: {
+    name: 'Scaphoid',
+    kind: 'bone',
+    about:
+      'Lateral bone of the proximal carpal row, felt in the anatomical snuffbox. Its tubercle takes the lateral end of the flexor retinaculum. The most often fractured carpal bone.',
+  },
+  lunate: {
+    name: 'Lunate',
+    kind: 'bone',
+    about:
+      'Middle bone of the proximal carpal row. The carpal bone most often dislocated: it slips forwards into the carpal tunnel and presses on the median nerve.',
+  },
+  triquetral: {
+    name: 'Triquetral',
+    kind: 'bone',
+    about: 'Medial bone of the proximal carpal row, with the pisiform on its front.',
+  },
+  pisiform: {
+    name: 'Pisiform',
+    kind: 'bone',
+    about:
+      'Pea-shaped bone in the tendon of flexor carpi ulnaris. The medial end of the flexor retinaculum attaches to it; the ulnar nerve and artery pass just lateral to it.',
+  },
+  trapezium: {
+    name: 'Trapezium',
+    kind: 'bone',
+    about:
+      'Lateral bone of the distal carpal row. It carries the saddle joint of the thumb, and its crest takes the lateral end of the flexor retinaculum.',
+  },
+  trapezoid: {
+    name: 'Trapezoid',
+    kind: 'bone',
+    about: 'Small bone of the distal carpal row, between the trapezium and the capitate.',
+  },
+  capitate: {
+    name: 'Capitate',
+    kind: 'bone',
+    about: 'The largest carpal bone, in the middle of the distal row. It ossifies first.',
+  },
+  hamate: {
+    name: 'Hamate',
+    kind: 'bone',
+    about:
+      'Medial bone of the distal carpal row. Its hook takes the medial end of the flexor retinaculum; the deep branch of the ulnar nerve curls round it.',
+  },
+  metacarpals: {
+    name: 'Metacarpals',
+    kind: 'bone',
+    about: 'The five bones of the palm, numbered from the thumb.',
+  },
+  phalanges: {
+    name: 'Phalanges',
+    kind: 'bone',
+    about:
+      'Bones of the digits: two in the thumb, three in each finger. Superficialis tendons insert into the middle phalanges and profundus tendons into the distal ones.',
+  },
+  'pronator-teres': {
+    name: 'Pronator teres',
+    kind: 'muscle',
+    about:
+      'Humeral head from the medial epicondyle, ulnar head from the coronoid process; the median nerve passes between them. Inserts into the middle of the lateral side of the radius and pronates the forearm. Median nerve.',
+  },
+  'flexor-carpi-radialis': {
+    name: 'Flexor carpi radialis',
+    kind: 'muscle',
+    about:
+      'From the medial epicondyle to the bases of the second and third metacarpals, its tendon in its own groove on the trapezium. Flexes and abducts the wrist. Median nerve. The radial pulse is felt just lateral to its tendon.',
+  },
+  'palmaris-longus': {
+    name: 'Palmaris longus',
+    kind: 'muscle',
+    about:
+      'From the medial epicondyle to the palmar aponeurosis, passing in front of the flexor retinaculum. Missing in some people, on one or both sides. Median nerve. Its tendon is a common graft.',
+  },
+  'flexor-carpi-ulnaris': {
+    name: 'Flexor carpi ulnaris',
+    kind: 'muscle',
+    about:
+      'Humeral head from the medial epicondyle, ulnar head from the olecranon and back of the ulna; the ulnar nerve enters the forearm between them. Inserts through the pisiform into the hamate and fifth metacarpal. Flexes and adducts the wrist. Ulnar nerve.',
+  },
+  'flexor-digitorum-superficialis': {
+    name: 'Flexor digitorum superficialis',
+    kind: 'muscle',
+    about:
+      'Middle layer. Humero-ulnar and radial heads joined by a fibrous arch the median nerve and ulnar artery pass under. Four tendons split to insert into the middle phalanges of the fingers. Median nerve.',
+  },
+  'flexor-digitorum-profundus': {
+    name: 'Flexor digitorum profundus',
+    kind: 'muscle',
+    about:
+      'Deep layer, from the front and medial side of the ulna and the interosseous membrane. Its tendons pierce the superficialis tendons to reach the distal phalanges. Medial half ulnar nerve, lateral half anterior interosseous nerve.',
+  },
+  'flexor-pollicis-longus': {
+    name: 'Flexor pollicis longus',
+    kind: 'muscle',
+    about:
+      'Deep layer, from the front of the radius, to the distal phalanx of the thumb. The only muscle that bends the tip of the thumb. Anterior interosseous nerve.',
+  },
+  'pronator-quadratus': {
+    name: 'Pronator quadratus',
+    kind: 'muscle',
+    about:
+      'Square muscle across the lower quarter of the front of the radius and ulna, the deepest in the forearm. The main pronator. Anterior interosseous nerve.',
+  },
+  supinator: {
+    name: 'Supinator',
+    kind: 'muscle',
+    about:
+      'Wraps round the upper radius and forms the lateral part of the floor of the cubital fossa. The deep branch of the radial nerve passes through it.',
+  },
+  'flexor-retinaculum': {
+    name: 'Flexor retinaculum',
+    kind: 'muscle',
+    about:
+      'Thick fibrous band from the pisiform and hook of the hamate to the scaphoid tubercle and trapezium. It roofs the carpal tunnel. Shown with the muscles because it is soft tissue, not bone.',
+  },
+  'thenar-muscles': {
+    name: 'Thenar muscles',
+    kind: 'muscle',
+    about:
+      'Abductor pollicis brevis, flexor pollicis brevis and opponens pollicis, the ball of the thumb. The recurrent branch of the median nerve supplies them after the carpal tunnel.',
+  },
+  'hypothenar-muscles': {
+    name: 'Hypothenar muscles',
+    kind: 'muscle',
+    about:
+      'Abductor, flexor and opponens digiti minimi, the ball of the little finger. The deep branch of the ulnar nerve supplies them.',
+  },
+  'radial-artery': {
+    name: 'Radial artery',
+    kind: 'artery',
+    about:
+      'The smaller terminal branch of the brachial artery. Under brachioradialis down the lateral forearm, then on the lower radius lateral to the flexor carpi radialis tendon, where its pulse is felt. It ends mainly as the deep palmar arch.',
+  },
+  'ulnar-artery': {
+    name: 'Ulnar artery',
+    kind: 'artery',
+    about:
+      'The larger terminal branch of the brachial artery. Under pronator teres and the superficialis arch, then with the ulnar nerve on its medial side under flexor carpi ulnaris. It crosses in front of the retinaculum and ends mainly as the superficial palmar arch.',
+  },
+  'radial-recurrent-artery': {
+    name: 'Radial recurrent artery',
+    kind: 'artery',
+    about:
+      'From the radial artery just below the elbow; it runs up to join the radial collateral artery in the anastomosis round the elbow.',
+  },
+  'ulnar-recurrent-arteries': {
+    name: 'Ulnar recurrent arteries',
+    kind: 'artery',
+    about:
+      'Anterior and posterior branches of the ulnar artery just below the elbow, running up in front of and behind the medial epicondyle to join the anastomosis round the elbow.',
+  },
+  'common-interosseous-artery': {
+    name: 'Common interosseous artery',
+    kind: 'artery',
+    about:
+      'A short trunk from the ulnar artery just below the elbow. It splits into the anterior and posterior interosseous arteries at the upper border of the interosseous membrane.',
+  },
+  'anterior-interosseous-artery': {
+    name: 'Anterior interosseous artery',
+    kind: 'artery',
+    about:
+      'Runs down on the front of the interosseous membrane with the anterior interosseous nerve, between flexor digitorum profundus and flexor pollicis longus, to pronator quadratus.',
+  },
+  'superficial-palmar-arch': {
+    name: 'Superficial palmar arch',
+    kind: 'artery',
+    about:
+      'Mainly the end of the ulnar artery, completed by a branch of the radial. It lies under the palmar aponeurosis, level with the fully stretched-out thumb.',
+  },
+  'deep-palmar-arch': {
+    name: 'Deep palmar arch',
+    kind: 'artery',
+    about:
+      'Mainly the end of the radial artery, completed by the deep branch of the ulnar. It lies on the bases of the metacarpals, about a finger breadth above the superficial arch.',
+  },
+  'median-cubital-vein': {
+    name: 'Median cubital vein',
+    kind: 'vein',
+    about:
+      'Joins the cephalic to the basilic vein across the front of the elbow. The bicipital aponeurosis separates it from the brachial artery and median nerve. The usual vein for taking blood.',
+  },
+  'median-antebrachial-vein': {
+    name: 'Median vein of the forearm',
+    kind: 'vein',
+    about:
+      'Drains the front of the palm up the middle of the forearm into the median cubital or basilic vein.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type ShoulderPartId = keyof typeof PARTS;
@@ -392,6 +582,20 @@ export const AXILLA_BONES: ShoulderPartId[] = [
   'humerus',
   'first-rib',
   'upper-ribs',
+];
+
+/** The bones of the wrist and hand, shown by the forearm and hand topics. */
+export const HAND_BONES: ShoulderPartId[] = [
+  'scaphoid',
+  'lunate',
+  'triquetral',
+  'pisiform',
+  'trapezium',
+  'trapezoid',
+  'capitate',
+  'hamate',
+  'metacarpals',
+  'phalanges',
 ];
 
 // Lymph node groups have no meshes in BodyParts3D: they are a MedLearn schematic, each a short
