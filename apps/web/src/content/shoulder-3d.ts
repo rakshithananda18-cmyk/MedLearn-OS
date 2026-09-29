@@ -4,7 +4,7 @@ import type { ModelPart, Point3 } from '@medlearn/schemas';
 // frame: millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=3';
+export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=4';
 
 /** Credit for the model's bones, muscles and vessels, shown wherever the model is. */
 export const SHOULDER_MODEL_CREDIT =
@@ -562,6 +562,132 @@ const PARTS = {
     kind: 'vein',
     about:
       'Drains the front of the palm up the middle of the forearm into the median cubital or basilic vein.',
+  },
+  // Back of the forearm and the hand (upper limb batch 4).
+  'extensor-carpi-radialis-longus': {
+    name: 'Extensor carpi radialis longus',
+    kind: 'muscle',
+    about:
+      'From the lateral supracondylar ridge to the base of the second metacarpal, through the second compartment under the extensor retinaculum. Extends and abducts the wrist. Radial nerve, above its division, so it still works when the posterior interosseous nerve is cut.',
+  },
+  'extensor-carpi-radialis-brevis': {
+    name: 'Extensor carpi radialis brevis',
+    kind: 'muscle',
+    about:
+      'From the common extensor origin on the lateral epicondyle to the base of the third metacarpal, in the second compartment. Extends and abducts the wrist. Its origin is the usual site of tennis elbow. Deep branch of the radial nerve.',
+  },
+  'extensor-digitorum': {
+    name: 'Extensor digitorum',
+    kind: 'muscle',
+    about:
+      'From the common extensor origin to the extensor expansions of the four fingers, through the fourth compartment. Its tendons are linked on the back of the hand. Extends the fingers and wrist. Posterior interosseous nerve.',
+  },
+  'extensor-digiti-minimi': {
+    name: 'Extensor digiti minimi',
+    kind: 'muscle',
+    about:
+      'A slip from the common extensor origin to the extensor expansion of the little finger, through its own fifth compartment. Posterior interosseous nerve.',
+  },
+  'extensor-carpi-ulnaris': {
+    name: 'Extensor carpi ulnaris',
+    kind: 'muscle',
+    about:
+      'From the common extensor origin and the back of the ulna to the base of the fifth metacarpal, in the groove beside the ulnar styloid (sixth compartment). Extends and adducts the wrist. Posterior interosseous nerve.',
+  },
+  'abductor-pollicis-longus': {
+    name: 'Abductor pollicis longus',
+    kind: 'muscle',
+    about:
+      'Deep muscle from the backs of the radius, ulna and interosseous membrane to the base of the first metacarpal, through the first compartment with extensor pollicis brevis. Abducts the thumb. Posterior interosseous nerve.',
+  },
+  'extensor-pollicis-brevis': {
+    name: 'Extensor pollicis brevis',
+    kind: 'muscle',
+    about:
+      'Deep muscle from the back of the radius to the base of the proximal phalanx of the thumb, in the first compartment. Forms the front boundary of the anatomical snuffbox with abductor pollicis longus. Posterior interosseous nerve.',
+  },
+  'extensor-pollicis-longus': {
+    name: 'Extensor pollicis longus',
+    kind: 'muscle',
+    about:
+      'Deep muscle from the back of the ulna to the base of the distal phalanx of the thumb. Its tendon hooks round the dorsal tubercle of the radius (third compartment) and forms the back boundary of the anatomical snuffbox. Posterior interosseous nerve.',
+  },
+  'extensor-indicis': {
+    name: 'Extensor indicis',
+    kind: 'muscle',
+    about:
+      'Deep muscle from the back of the ulna to the extensor expansion of the index finger, in the fourth compartment beside extensor digitorum. Lets the index finger point on its own. Posterior interosseous nerve.',
+  },
+  'adductor-pollicis': {
+    name: 'Adductor pollicis',
+    kind: 'muscle',
+    about:
+      'Oblique head from the capitate and bases of the second and third metacarpals, transverse head from the shaft of the third metacarpal; both reach the base of the proximal phalanx of the thumb. Pulls the thumb against the palm, as in gripping a card. Deep branch of the ulnar nerve.',
+  },
+  lumbricals: {
+    name: 'Lumbricals',
+    kind: 'muscle',
+    about:
+      'Four slender muscles from the profundus tendons to the radial side of the extensor expansions. They bend the knuckles and straighten the finger joints, the position for writing. First and second: median nerve; third and fourth: deep branch of the ulnar nerve.',
+  },
+  'dorsal-interossei': {
+    name: 'Dorsal interossei',
+    kind: 'muscle',
+    about:
+      'Four two-headed muscles between the metacarpals, to the extensor expansions. They spread the fingers away from the middle finger (dorsal abduct), and help the lumbricals. Deep branch of the ulnar nerve.',
+  },
+  'palmar-interossei': {
+    name: 'Palmar interossei',
+    kind: 'muscle',
+    about:
+      'Small muscles on the palm side of the metacarpals. They bring the fingers together towards the middle finger (palmar adduct). Deep branch of the ulnar nerve.',
+  },
+  'princeps-pollicis-artery': {
+    name: 'Princeps pollicis artery',
+    kind: 'artery',
+    about:
+      'From the radial artery as it enters the palm; it splits into two branches along the palm side of the thumb.',
+  },
+  'radialis-indicis-artery': {
+    name: 'Radialis indicis artery',
+    kind: 'artery',
+    about: 'From the radial artery in the palm, along the lateral side of the index finger.',
+  },
+  'palmar-metacarpal-arteries': {
+    name: 'Palmar metacarpal arteries',
+    kind: 'artery',
+    about:
+      'Three branches of the deep palmar arch on the interossei; they join the common palmar digital arteries of the superficial arch.',
+  },
+  'palmar-digital-arteries': {
+    name: 'Palmar digital arteries',
+    kind: 'artery',
+    about:
+      'Common digital arteries from the superficial palmar arch, each splitting into proper digital arteries along the adjacent sides of two fingers.',
+  },
+  'dorsal-carpal-branches': {
+    name: 'Dorsal carpal branches',
+    kind: 'artery',
+    about:
+      'Branches of the radial and ulnar arteries that form the dorsal carpal arch on the back of the wrist; it gives the dorsal metacarpal arteries.',
+  },
+  'dorsal-metacarpal-arteries': {
+    name: 'Dorsal metacarpal arteries',
+    kind: 'artery',
+    about:
+      'From the dorsal carpal arch and the radial artery, down the backs of the interosseous spaces to the fingers.',
+  },
+  'recurrent-interosseous-artery': {
+    name: 'Recurrent interosseous artery',
+    kind: 'artery',
+    about:
+      'From the posterior interosseous artery; it climbs behind the lateral epicondyle to the anastomosis round the elbow.',
+  },
+  'dorsal-venous-network': {
+    name: 'Dorsal venous network',
+    kind: 'vein',
+    about:
+      'The veins on the back of the hand. The cephalic vein leaves its lateral end and the basilic vein its medial end. A common site for a cannula.',
   },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 

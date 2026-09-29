@@ -35,7 +35,7 @@ export const forearmVesselsNerves: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 120 to 125'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 772 to 775'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 772 to 774'),
     {
       title: 'TeachMeAnatomy: The Median Nerve',
       url: 'https://teachmeanatomy.info/upper-limb/nerves/median-nerve/',
@@ -418,6 +418,6 @@ export const forearmVesselsNerves: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '120–125' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '772–775' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '772–774' },
   ],
 };

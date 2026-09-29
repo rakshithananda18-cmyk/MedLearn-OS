@@ -84,10 +84,9 @@ export const ANTERIOR_INTEROSSEOUS_NERVE: Point3[][] = [
  * Ulnar nerve: behind the medial epicondyle, into the forearm between the two heads of flexor
  * carpi ulnaris, down on flexor digitorum profundus under that muscle with the ulnar artery on
  * its lateral side, then in front of the retinaculum lateral to the pisiform (Guyon's canal).
- * There it splits: the superficial branch to the little and ring fingers, the deep branch round
- * the hook of the hamate and across the palm with the deep palmar arch.
+ * There it splits into its superficial and deep branches (below).
  */
-export const ULNAR_FOREARM: Point3[][] = [
+export const ULNAR_FOREARM_MAIN: Point3[][] = [
   [
     ULNAR_ELBOW,
     [-180, -64, 1044],
@@ -101,10 +100,45 @@ export const ULNAR_FOREARM: Point3[][] = [
     [-238, -131, 810],
     ULNAR_WRIST,
   ],
-  // Superficial branch.
+];
+
+/** Superficial branch of the ulnar nerve, to the little and ring fingers. */
+export const ULNAR_SUPERFICIAL_BRANCH: Point3[][] = [
   [ULNAR_WRIST, [-239, -146, 770], [-236, -150, 740]],
-  // Deep branch, with the deep palmar arch.
-  [ULNAR_WRIST, [-248, -134, 786], [-258, -128, 782], [-270, -127, 783], [-278, -126, 786]],
+];
+
+/** Deep branch of the ulnar nerve: round the hook of the hamate, across with the deep arch. */
+export const ULNAR_DEEP_BRANCH: Point3[][] = [
+  [
+    ULNAR_WRIST,
+    [-248, -134, 786],
+    [-258, -128, 782],
+    [-270, -127, 783],
+    [-278, -126, 786],
+    [-288, -130, 778],
+  ],
+];
+
+/** The ulnar nerve with both its branches in the hand. */
+export const ULNAR_FOREARM: Point3[][] = [
+  ...ULNAR_FOREARM_MAIN,
+  ...ULNAR_SUPERFICIAL_BRANCH,
+  ...ULNAR_DEEP_BRANCH,
+];
+
+/**
+ * Dorsal branch of the ulnar nerve: leaves about 5 cm above the wrist, winds back round the
+ * ulna under flexor carpi ulnaris, and supplies the medial half of the back of the hand.
+ */
+export const ULNAR_DORSAL_BRANCH: Point3[][] = [
+  [
+    [-223, -109, 866],
+    [-222, -101, 850],
+    [-226, -95, 828],
+    [-232, -100, 805],
+    [-235, -110, 772],
+    [-233, -116, 748],
+  ],
 ];
 
 /**
@@ -126,9 +160,24 @@ export const SUPERFICIAL_RADIAL_NERVE: Point3[][] = [
   ],
 ];
 
-/** Deep branch of the radial nerve (posterior interosseous): back through supinator. */
+/**
+ * Deep branch of the radial nerve (posterior interosseous): back through supinator, then down
+ * between the superficial and deep extensors on the interosseous membrane to the back of the
+ * wrist.
+ */
 export const DEEP_RADIAL_NERVE: Point3[][] = [
-  [RADIAL_ELBOW, [-240, -80, 1000], [-246, -72, 982], [-247, -64, 962], [-248, -68, 930]],
+  [
+    RADIAL_ELBOW,
+    [-240, -80, 1000],
+    [-246, -72, 982],
+    [-247, -64, 962],
+    [-248, -68, 930],
+    [-250, -80, 900],
+    [-251, -92, 870],
+    [-252, -100, 845],
+    [-254, -106, 822],
+    [-257, -108, 805],
+  ],
 ];
 
 /**
