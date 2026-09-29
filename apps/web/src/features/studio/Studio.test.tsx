@@ -94,9 +94,10 @@ describe('Studio on a phone', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Whole body' })).toBeInTheDocument();
     const browser = screen.getByRole('region', { name: 'Regions and topics' });
     expect(within(browser).getByRole('button', { name: /Axilla: walls/ })).toBeInTheDocument();
+    const upperLimb = studioTopics().filter((topic) => topic.regions.includes('upper-limb'));
     expect(viewer.props?.labels).toContainEqual({
       id: 'upper-limb',
-      text: 'Upper limb · 5',
+      text: `Upper limb · ${upperLimb.length}`,
       active: true,
     });
     await expectNoA11yViolations(container);

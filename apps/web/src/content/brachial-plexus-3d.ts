@@ -75,23 +75,67 @@ const NERVES: Array<{ id: string; paths: Point3[][] }> = [
     paths: [[MC1, [-148, -80, 1262], [-165, -72, 1200], [-178, -64, 1130], [-183, -58, 1062]]],
   },
   {
+    // Behind the brachial artery, through the lower triangular space with the profunda brachii,
+    // round the back of the humerus in the radial groove, then forwards in front of the lateral
+    // epicondyle between brachialis and brachioradialis. Placed along the measured profunda
+    // brachii and radial collateral arteries.
     id: 'radial',
     paths: [
       [
         PC1,
-        [-154, -72, 1272],
-        [-180, -58, 1225],
-        [-202, -55, 1160],
-        [-218, -64, 1105],
-        [-226, -80, 1066],
+        [-146, -78, 1285],
+        [-152, -75, 1265],
+        [-162, -71, 1240],
+        [-172, -70, 1205],
+        [-179, -65, 1180],
+        [-186, -59, 1160],
+        [-193, -56, 1144],
+        [-200, -54, 1128],
+        [-207, -52, 1113],
+        [-217, -52, 1094],
+        [-226, -56, 1076],
+        [-231, -66, 1056],
+        [-232, -78, 1036],
+        [-234, -88, 1015],
       ],
     ],
   },
   {
+    // Through the quadrangular space just above the posterior circumflex humeral artery, round
+    // the surgical neck under deltoid, with its branch to teres minor.
     id: 'axillary',
-    paths: [[PC1, [-156, -72, 1292], [-172, -60, 1287], [-190, -64, 1284], [-194, -78, 1292]]],
+    paths: [
+      [
+        PC1,
+        [-150, -78, 1294],
+        [-160, -69, 1292],
+        [-170, -63, 1292],
+        [-180, -63, 1293],
+        [-190, -70, 1298],
+        [-197, -82, 1300],
+        [-194, -95, 1302],
+      ],
+      [
+        [-163, -66, 1292],
+        [-152, -52, 1292],
+      ],
+    ],
   },
 ];
+
+/** One nerve's paths, for other topics that show it on the same model. */
+export function plexusNerve(id: string): Point3[][] {
+  const nerve = NERVES.find((item) => item.id === id);
+  if (!nerve) throw new Error(`No nerve "${id}" in the plexus model`);
+  return nerve.paths;
+}
+
+/** Where the posterior cord ends and its branches begin. */
+export const POSTERIOR_CORD_END = PC1;
+/** Where the upper trunk divides, behind the clavicle. */
+export const UPPER_TRUNK_END = U1;
+/** Where the C5 root leaves the spine. */
+export const C5_FORAMEN = F5;
 
 /** The three cords as one trace, for topics that show the plexus only as a content of the axilla. */
 export const CORD_PATHS: Point3[][] = NERVES.filter((nerve) =>

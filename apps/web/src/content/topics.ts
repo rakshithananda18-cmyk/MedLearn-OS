@@ -1,12 +1,17 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { armBackRadial } from './arm-back-radial';
+import { armFront } from './arm-front';
 import { axilla } from './axilla';
 import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
+import { backMuscles } from './back-muscles';
 import { brachialPlexus } from './brachial-plexus';
+import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
 import { oxygenCurve } from './oxygen-curve';
 import { pectoralRegion } from './pectoral-region';
+import { scapularSpaces } from './scapular-spaces';
 
 // Content is imported only by server components (pages, routes); each page hands its screen just
 // what that screen shows, so adding topics never grows the JavaScript every page downloads.
@@ -19,6 +24,11 @@ export const TOPICS: Topic[] = [
   axillaryVessels,
   axillaryLymphNodes,
   brachialPlexus,
+  backMuscles,
+  deltoidRotatorCuff,
+  scapularSpaces,
+  armFront,
+  armBackRadial,
   oxygenCurve,
 ];
 
