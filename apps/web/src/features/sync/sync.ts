@@ -22,7 +22,9 @@ export function newerCopy(
   if (!server) return local.updatedAt ? 'local' : 'same';
   if (!local.updatedAt) return 'server';
   const difference = Date.parse(local.updatedAt) - Date.parse(server.updatedAt ?? '');
-  return difference > 0 ? 'local' : difference < 0 ? 'server' : 'same';
+  if (difference > 0) return 'local';
+  if (difference < 0) return 'server';
+  return 'same';
 }
 
 const SAVE_DELAY_MS = 1000;
@@ -66,23 +68,30 @@ const report = (error: unknown) => {
   });
 };
 
+/** Matches Array.sort's default UTF-16 order for these string IDs. */
+function compareIds(a: string, b: string): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
 /** Ignores snapshot timestamps and collection order when deciding whether a save is needed. */
 function contentKey(progress: LearnerProgress): string {
   return JSON.stringify(
     {
       ...progress,
       updatedAt: null,
-      completedLessons: [...progress.completedLessons].sort(),
-      completedDrills: [...progress.completedDrills].sort(),
-      correctAnswers: [...progress.correctAnswers].sort(),
-      mistakes: [...progress.mistakes].sort(),
+      completedLessons: [...progress.completedLessons].sort(compareIds),
+      completedDrills: [...progress.completedDrills].sort(compareIds),
+      correctAnswers: [...progress.correctAnswers].sort(compareIds),
+      mistakes: [...progress.mistakes].sort(compareIds),
       activity: Object.fromEntries(
         Object.entries(progress.activity).map(([day, activity]) => [
           day,
           {
             ...activity,
-            lessons: [...activity.lessons].sort(),
-            drills: [...activity.drills].sort(),
+            lessons: [...activity.lessons].sort(compareIds),
+            drills: [...activity.drills].sort(compareIds),
           },
         ]),
       ),
@@ -107,6 +116,10 @@ function mergedCopy(local: LearnerProgress, saved: SavedProgress | null): Learne
   return contentKey(merged) === contentKey(server) ? server : merged;
 }
 
+function applyMergedCopy(local: LearnerProgress, merged: LearnerProgress): void {
+  if (JSON.stringify(local) !== JSON.stringify(merged)) replaceProgress(merged);
+}
+
 /**
  * Reads before writing and compares the database version atomically. On a conflict, joins the
  * competing change before trying again. Retries are bounded, so an unavailable/busy server
@@ -119,7 +132,7 @@ async function synchronize(signal: AbortSignal, current: () => boolean): Promise
     const local = readProgress();
     if (local.profile?.adult !== true) return null;
     const merged = mergedCopy(local, saved);
-    if (JSON.stringify(local) !== JSON.stringify(merged)) replaceProgress(merged);
+    applyMergedCopy(local, merged);
     if (saved && contentKey(merged) === contentKey(saved.progress)) return merged.updatedAt;
     const response = await fetch('/api/progress', {
       method: 'PUT',

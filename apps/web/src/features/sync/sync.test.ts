@@ -190,6 +190,44 @@ describe('progress sync', () => {
     expect(puts()).toHaveLength(0);
   });
 
+  it('treats all ID collections as unchanged when devices store them in different orders', async () => {
+    const day = {
+      minutes: 15,
+      lessons: ['lesson-10', 'lesson-2'],
+      drills: ['drill-10', 'drill-2'],
+      answered: 2,
+      reviewed: 1,
+    };
+    const remote = copy({
+      completedLessons: ['lesson-10', 'lesson-2'],
+      completedDrills: ['drill-10', 'drill-2'],
+      correctAnswers: ['answer-10', 'answer-2'],
+      mistakes: ['mistake-10', 'mistake-2'],
+      activity: { '2026-09-28': day },
+    });
+    replaceProgress(
+      copy({
+        completedLessons: [...remote.completedLessons].reverse(),
+        completedDrills: [...remote.completedDrills].reverse(),
+        correctAnswers: [...remote.correctAnswers].reverse(),
+        mistakes: [...remote.mistakes].reverse(),
+        activity: {
+          '2026-09-28': {
+            ...day,
+            lessons: [...day.lessons].reverse(),
+            drills: [...day.drills].reverse(),
+          },
+        },
+        updatedAt: LATE,
+      }),
+    );
+    saved = stored(remote);
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(puts()).toHaveLength(0);
+    expect(readProgress()).toEqual(remote);
+  });
+
   it('merges a competing save before retrying with the new database version', async () => {
     replaceProgress(copy({ completedLessons: ['local-lesson'] }));
     const normalFetch = defaultFetch;

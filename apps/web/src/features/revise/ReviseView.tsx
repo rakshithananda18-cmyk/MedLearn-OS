@@ -20,6 +20,109 @@ interface ReviseViewProps {
   limit?: number;
 }
 
+interface ReviseIntroProps {
+  topic?: ReviseViewProps['topic'];
+  showing?: DeckCard;
+  remainingCount: number;
+  limit?: number;
+  backHref: string;
+  backLabel: string;
+}
+
+function reviewStatus(remainingCount: number, limit?: number) {
+  if (remainingCount === 0) {
+    return 'Cards come back here just before you would forget them.';
+  }
+  const count = `${remainingCount} ${remainingCount === 1 ? 'card' : 'cards'}`;
+  if (limit === undefined) {
+    return `${count} due. Answer in your head, then check.`;
+  }
+  return `${count} left in this session. Answer in your head, then check.`;
+}
+
+function ReviseIntro({
+  topic,
+  showing,
+  remainingCount,
+  limit,
+  backHref,
+  backLabel,
+}: Readonly<ReviseIntroProps>) {
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>Revise{topic ? ` · ${topic.title}` : ''}</Eyebrow>
+        <Display size="lg">
+          Recall, <em>then check</em>
+        </Display>
+        <Text tone="muted">{reviewStatus(remainingCount, limit)}</Text>
+        {topic || limit !== undefined ? (
+          <div>
+            <Link href={backHref} className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+              {backLabel}
+            </Link>
+          </div>
+        ) : null}
+      </div>
+      {showing ? <ContentTrust topic={showing.topic} /> : null}
+    </>
+  );
+}
+
+interface ReviseEmptyProps {
+  sessionComplete: boolean;
+  reviewed: number;
+  dueCount: number;
+  lessonDone: boolean;
+  topic?: ReviseViewProps['topic'];
+  backHref: string;
+  backLabel: string;
+}
+
+function reviewEmptyDescription({
+  sessionComplete,
+  reviewed,
+  dueCount,
+  lessonDone,
+  topic,
+}: Readonly<ReviseEmptyProps>) {
+  if (sessionComplete) {
+    const count = `${reviewed} ${reviewed === 1 ? 'card' : 'cards'}`;
+    if (dueCount > 0) {
+      return `You reviewed ${count}. Your remaining reviews are saved for another session.`;
+    }
+    return `You reviewed ${count}. Your next reviews will appear when they are due.`;
+  }
+  if (topic && !lessonDone) {
+    return `Finish the ${topic.title} lesson to unlock its recall cards.`;
+  }
+  if (lessonDone) {
+    return 'You are up to date. Your next reviews will appear when they are due.';
+  }
+  return 'Finish lessons to unlock their recall cards.';
+}
+
+function ReviseEmpty(props: Readonly<ReviseEmptyProps>) {
+  const { sessionComplete, lessonDone, topic, backHref, backLabel } = props;
+  const needsLesson = topic && !lessonDone;
+  const actionHref = needsLesson ? `/learn/${topic.slug}/lesson` : backHref;
+  const actionLabel = needsLesson ? 'Start this lesson' : backLabel;
+  return (
+    <Card tone="glass">
+      <EmptyState
+        icon={CircleCheck}
+        title={sessionComplete ? 'Review session complete' : 'No reviews due'}
+        description={reviewEmptyDescription(props)}
+        action={
+          <Link href={actionHref} className={buttonClasses({ variant: 'secondary' })}>
+            {actionLabel}
+          </Link>
+        }
+      />
+    </Card>
+  );
+}
+
 /** Spaced recall: a Today session has a fixed queue once the student rates the first card. */
 export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewProps>) {
   const progress = useProgress();
@@ -38,29 +141,14 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
   return (
     <TaskColumns
       intro={
-        <>
-          <div className="flex flex-col gap-3">
-            <Eyebrow>Revise{topic ? ` · ${topic.title}` : ''}</Eyebrow>
-            <Display size="lg">
-              Recall, <em>then check</em>
-            </Display>
-            <Text tone="muted">
-              {remaining.length > 0
-                ? limit === undefined
-                  ? `${remaining.length} ${remaining.length === 1 ? 'card' : 'cards'} due. Answer in your head, then check.`
-                  : `${remaining.length} ${remaining.length === 1 ? 'card' : 'cards'} left in this session. Answer in your head, then check.`
-                : 'Cards come back here just before you would forget them.'}
-            </Text>
-            {topic || limit !== undefined ? (
-              <div>
-                <Link href={backHref} className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
-                  {backLabel}
-                </Link>
-              </div>
-            ) : null}
-          </div>
-          {showing ? <ContentTrust topic={showing.topic} /> : null}
-        </>
+        <ReviseIntro
+          topic={topic}
+          showing={showing}
+          remainingCount={remaining.length}
+          limit={limit}
+          backHref={backHref}
+          backLabel={backLabel}
+        />
       }
     >
       {showing ? (
@@ -80,29 +168,15 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
           />
         </Card>
       ) : (
-        <Card tone="glass">
-          <EmptyState
-            icon={CircleCheck}
-            title={sessionComplete ? 'Review session complete' : 'No reviews due'}
-            description={
-              sessionComplete
-                ? `You reviewed ${reviewed} ${reviewed === 1 ? 'card' : 'cards'}. ${due.length > 0 ? 'Your remaining reviews are saved for another session.' : 'Your next reviews will appear when they are due.'}`
-                : topic && !lessonDone
-                  ? `Finish the ${topic.title} lesson to unlock its recall cards.`
-                  : lessonDone
-                    ? 'You are up to date. Your next reviews will appear when they are due.'
-                    : 'Finish lessons to unlock their recall cards.'
-            }
-            action={
-              <Link
-                href={topic && !lessonDone ? `/learn/${topic.slug}/lesson` : backHref}
-                className={buttonClasses({ variant: 'secondary' })}
-              >
-                {topic && !lessonDone ? 'Start this lesson' : backLabel}
-              </Link>
-            }
-          />
-        </Card>
+        <ReviseEmpty
+          sessionComplete={sessionComplete}
+          reviewed={reviewed}
+          dueCount={due.length}
+          lessonDone={lessonDone}
+          topic={topic}
+          backHref={backHref}
+          backLabel={backLabel}
+        />
       )}
     </TaskColumns>
   );

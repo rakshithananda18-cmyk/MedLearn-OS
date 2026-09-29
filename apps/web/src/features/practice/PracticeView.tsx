@@ -27,6 +27,102 @@ interface PracticeViewProps {
   topic?: Pick<TopicSummary, 'slug' | 'title'>;
 }
 
+interface PracticeIntroProps {
+  topic?: PracticeViewProps['topic'];
+  showing?: PracticeQuestion;
+  backHref: string;
+  backLabel: string;
+}
+
+function PracticeIntro({ topic, showing, backHref, backLabel }: Readonly<PracticeIntroProps>) {
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>Practice{topic ? ` · ${topic.title}` : ''}</Eyebrow>
+        <Display size="lg">
+          Test <em>yourself</em>
+        </Display>
+        <Text tone="muted">
+          {topic
+            ? `Questions for ${topic.title}.`
+            : 'Questions from the lessons you have finished.'}
+        </Text>
+        {topic ? (
+          <div>
+            <Link href={backHref} className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+              {backLabel}
+            </Link>
+          </div>
+        ) : null}
+      </div>
+      {showing ? <ContentTrust topic={showing.topic} /> : null}
+    </>
+  );
+}
+
+function practiceEmptyDetails(
+  finishedAnyLesson: boolean,
+  topic: PracticeViewProps['topic'],
+  backHref: string,
+  backLabel: string,
+) {
+  if (finishedAnyLesson) {
+    return {
+      icon: CircleCheck,
+      title: 'All questions done',
+      description: 'Questions you got wrong will come back in your next session.',
+      actionHref: backHref,
+      actionLabel: backLabel,
+    };
+  }
+  if (topic) {
+    return {
+      icon: ClipboardCheck,
+      title: 'Nothing to practise yet',
+      description: `Finish the ${topic.title} lesson to unlock its questions.`,
+      actionHref: `/learn/${topic.slug}/lesson`,
+      actionLabel: 'Start this lesson',
+    };
+  }
+  return {
+    icon: ClipboardCheck,
+    title: 'Nothing to practise yet',
+    description: 'Finish a lesson first; its questions will appear here.',
+    actionHref: backHref,
+    actionLabel: backLabel,
+  };
+}
+
+interface PracticeEmptyProps {
+  finishedAnyLesson: boolean;
+  topic?: PracticeViewProps['topic'];
+  backHref: string;
+  backLabel: string;
+}
+
+function PracticeEmpty({
+  finishedAnyLesson,
+  topic,
+  backHref,
+  backLabel,
+}: Readonly<PracticeEmptyProps>) {
+  const details = practiceEmptyDetails(finishedAnyLesson, topic, backHref, backLabel);
+  return (
+    <Card tone="glass">
+      <EmptyState
+        icon={details.icon}
+        title={details.title}
+        description={details.description}
+        action={
+          <Link href={details.actionHref} className={buttonClasses({ variant: 'secondary' })}>
+            {details.actionLabel}
+          </Link>
+        }
+      />
+    </Card>
+  );
+}
+
 export function PracticeView({ topics, questions, topic }: Readonly<PracticeViewProps>) {
   const progress = useProgress();
   const [current, setCurrent] = useState<string | null>(null);
@@ -44,27 +140,7 @@ export function PracticeView({ topics, questions, topic }: Readonly<PracticeView
   return (
     <TaskColumns
       intro={
-        <>
-          <div className="flex flex-col gap-3">
-            <Eyebrow>Practice{topic ? ` · ${topic.title}` : ''}</Eyebrow>
-            <Display size="lg">
-              Test <em>yourself</em>
-            </Display>
-            <Text tone="muted">
-              {topic
-                ? `Questions for ${topic.title}.`
-                : 'Questions from the lessons you have finished.'}
-            </Text>
-            {topic ? (
-              <div>
-                <Link href={backHref} className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
-                  {backLabel}
-                </Link>
-              </div>
-            ) : null}
-          </div>
-          {showing ? <ContentTrust topic={showing.topic} /> : null}
-        </>
+        <PracticeIntro topic={topic} showing={showing} backHref={backHref} backLabel={backLabel} />
       }
     >
       {showing ? (
@@ -95,27 +171,12 @@ export function PracticeView({ topics, questions, topic }: Readonly<PracticeView
           ) : null}
         </>
       ) : (
-        <Card tone="glass">
-          <EmptyState
-            icon={finishedAnyLesson ? CircleCheck : ClipboardCheck}
-            title={finishedAnyLesson ? 'All questions done' : 'Nothing to practise yet'}
-            description={
-              finishedAnyLesson
-                ? 'Questions you got wrong will come back in your next session.'
-                : topic
-                  ? `Finish the ${topic.title} lesson to unlock its questions.`
-                  : 'Finish a lesson first; its questions will appear here.'
-            }
-            action={
-              <Link
-                href={topic && !finishedAnyLesson ? `/learn/${topic.slug}/lesson` : backHref}
-                className={buttonClasses({ variant: 'secondary' })}
-              >
-                {topic && !finishedAnyLesson ? 'Start this lesson' : backLabel}
-              </Link>
-            }
-          />
-        </Card>
+        <PracticeEmpty
+          finishedAnyLesson={finishedAnyLesson}
+          topic={topic}
+          backHref={backHref}
+          backLabel={backLabel}
+        />
       )}
     </TaskColumns>
   );
