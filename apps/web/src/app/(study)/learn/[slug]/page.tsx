@@ -16,6 +16,7 @@ import { WhereToRead } from '@/features/books/WhereToRead';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { TopicNotes } from '@/features/notes/TopicNotes';
 import { MasteryCard } from '@/features/progress/MasteryCard';
+import { BackLink } from '@/features/shell/BackLink';
 import { Screen } from '@/features/shell/Screen';
 import { ModeTile, type ModeTileProps, TopicHero } from '@/features/topic/TopicParts';
 
@@ -83,6 +84,8 @@ export default async function TopicPage({ params }: Props) {
 
   return (
     <Screen width={poster ? 'wide' : 'narrow'}>
+      {/* Back up to the library, with this topic still picked there. */}
+      <BackLink href={`/subjects?topic=${topic.slug}`} label="Back to the library" text="Library" />
       <div
         className={cx('grid gap-4 md:gap-6', poster && 'xl:grid-cols-2 xl:items-start xl:gap-8')}
       >

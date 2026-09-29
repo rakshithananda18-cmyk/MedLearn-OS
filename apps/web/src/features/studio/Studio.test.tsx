@@ -22,6 +22,8 @@ const viewer = vi.hoisted(() => ({
     highlight: ReadonlySet<string>;
     labels: Viewer3DLabel[];
     resetToken: number;
+    reducedMotion: boolean;
+    dpr: number | [number, number];
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -267,5 +269,38 @@ describe('Studio on a wide screen', () => {
 
     await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+  });
+
+  it('lists the region as cards with their models, the open topic marked', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    const list = screen.getByRole('list', { name: 'Topics in this region' });
+    const open = within(list).getByRole('button', { name: /Axilla: walls.*Open/ });
+    expect(open).toHaveAttribute('aria-current', 'true');
+    expect(
+      within(list).getByRole('button', { name: /Pectoral region.*Up next/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('changes names, camera moves and sharpness in the settings, and keeps them', async () => {
+    wideScreen();
+    const { container, unmount } = await renderStudio();
+    expect(viewer.props?.labels.length).toBeGreaterThan(0);
+    expect(viewer.props?.dpr).toEqual([1, 2]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const settings = screen.getByRole('region', { name: 'Settings' });
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Names on the model' }));
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Smooth camera moves' }));
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Sharper picture' }));
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.reducedMotion).toBe(true);
+    expect(viewer.props?.dpr).toBe(1);
+
+    unmount();
+    await renderStudio();
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.dpr).toBe(1);
   });
 });

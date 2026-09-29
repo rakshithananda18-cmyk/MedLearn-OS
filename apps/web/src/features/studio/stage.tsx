@@ -10,6 +10,7 @@ import {
   RotateCcw,
   ScanEye,
   Search,
+  Settings,
 } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
@@ -41,6 +42,8 @@ export interface ModelViewProps {
   strokes: Stroke[];
   labels: Viewer3DLabel[];
   resetToken: number;
+  /** A sharp picture (up to twice the pixels) or a lighter one. */
+  sharp: boolean;
   onPick: (id: string | null) => void;
   onRegion: (id: BodyRegion) => void;
   onStroke: (stroke: Stroke) => void;
@@ -67,6 +70,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         strokes={props.strokes}
         labels={props.labels}
         resetToken={props.resetToken}
+        dpr={props.sharp ? [1, 2] : 1}
       />
     );
   }
@@ -93,8 +97,9 @@ const pressed = (on: boolean) =>
   cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
 
 /**
- * Round buttons for the view: layers (on phones), x-ray, only the picked structure, and back to
- * the guided view. A column down the left on phones, a row beside the title where docked.
+ * Round buttons for the view: layers (on phones), x-ray, only the picked structure, back to the
+ * guided view, and the settings. A column down the left on phones, a row beside the title where
+ * docked.
  */
 export function ViewTools({
   row,
@@ -102,10 +107,12 @@ export function ViewTools({
   xray,
   isolate,
   canIsolate,
+  settings,
   onLayers,
   onXray,
   onIsolate,
   onReset,
+  onSettings,
 }: Readonly<{
   row: boolean;
   /** Whether the layers sheet is open, or null where the layers are docked. */
@@ -113,10 +120,13 @@ export function ViewTools({
   xray: boolean | null;
   isolate: boolean;
   canIsolate: boolean;
+  /** Whether the settings sheet is open. */
+  settings: boolean;
   onLayers: () => void;
   onXray: () => void;
   onIsolate: () => void;
   onReset: () => void;
+  onSettings: () => void;
 }>) {
   return (
     <div
@@ -162,6 +172,13 @@ export function ViewTools({
         label="Reset the view"
         className={pressed(false)}
         onClick={onReset}
+      />
+      <IconButton
+        icon={Settings}
+        label="Settings"
+        aria-pressed={settings}
+        className={pressed(settings)}
+        onClick={onSettings}
       />
     </div>
   );

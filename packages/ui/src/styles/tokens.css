@@ -100,11 +100,43 @@
   --animate-glow: glow 0.6s var(--ease-arrive);
   --animate-draw: draw 0.6s var(--ease-arrive) both;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-slide-in: slide-in 0.32s var(--ease-arrive) both;
 
   @keyframes rise {
     from {
       opacity: 0;
       transform: translateY(8px);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--spacing-12));
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
     }
   }
 
@@ -400,6 +432,22 @@
   height: clamp(15rem, 34dvh, 28rem);
 }
 
+/* The model's still in the library preview: smaller than a hero, scaled to the screen. */
+@utility h-preview {
+  height: clamp(10rem, 24dvh, 14rem);
+}
+
+/* A panel that folds open and shut smoothly: its one child needs min-h-0 and overflow-hidden. */
+@utility fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms var(--ease-standard);
+}
+
+@utility fold-open {
+  grid-template-rows: 1fr;
+}
+
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
 @utility h-stage {
   height: calc(100dvh - var(--spacing-16));
@@ -478,6 +526,32 @@
  * pseudo-elements, one per browser engine.
  */
 @layer components {
+  /* A drawer rising from the bottom and its scrim, animated in and out as Radix opens and closes
+     them (it waits for the closing animation before removing them). Transform and opacity only,
+     so the phone's graphics chip does the work. */
+  .drawer[data-state='open'] {
+    animation: sheet-in 0.32s var(--ease-arrive) both;
+  }
+
+  .drawer[data-state='closed'] {
+    animation: sheet-out 0.22s var(--ease-standard) both;
+  }
+
+  .drawer-scrim[data-state='open'] {
+    animation: fade-in 0.22s var(--ease-standard) both;
+  }
+
+  .drawer-scrim[data-state='closed'] {
+    animation: fade-out 0.22s var(--ease-standard) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer,
+    .drawer-scrim {
+      animation-duration: 0s !important;
+    }
+  }
+
   .progress-bar {
     appearance: none;
     display: block;
@@ -520,6 +594,11 @@
 /* Panels floating over the 3D studio: never wider than the phone, less the side gutters. */
 @utility w-sheet {
   width: min(20rem, calc(100% - var(--spacing-6)));
+}
+
+/* The library's topic preview, sliding in beside the list on wide screens. */
+@utility w-preview {
+  width: min(34rem, 42vw);
 }
 
 @utility max-h-sheet {

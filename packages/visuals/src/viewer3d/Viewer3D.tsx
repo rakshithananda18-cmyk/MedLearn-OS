@@ -62,6 +62,8 @@ export interface Viewer3DProps {
   labels?: Viewer3DLabel[];
   /** Changing it sends the camera back to the current stop. */
   resetToken?: number;
+  /** Pixel ratio: the device's up to 2 for a sharp picture, or 1 to save battery. */
+  dpr?: number | [number, number];
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -419,6 +421,7 @@ export default function Viewer3D({
   strokes = [],
   labels = [],
   resetToken = 0,
+  dpr = [1, 2],
 }: Readonly<Viewer3DProps>) {
   // Only a lit part or trace dims the rest; a lit marker leaves the model as it is.
   const selecting = [...model.parts, ...model.traces].some((item) => highlight.has(item.id));
@@ -458,7 +461,7 @@ export default function Viewer3D({
     <div className="relative size-full">
       <Canvas
         frameloop="demand"
-        dpr={[1, 2]}
+        dpr={dpr}
         camera={{ fov: 35, near: 0.005, far: 10, position: [0.3, 0.2, 0.6] }}
         onPointerMissed={() => {
           if (!pen) onSelect(null);

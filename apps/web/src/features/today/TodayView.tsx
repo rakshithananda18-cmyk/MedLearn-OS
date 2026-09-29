@@ -28,11 +28,11 @@ import Link from 'next/link';
 
 import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
+import { BodyCard } from '@/features/shell/BodyCard';
+import { SearchPill } from '@/features/shell/SearchPill';
 
 import {
-  BodyCard,
   PlanCard,
-  SearchPill,
   StreakCard,
   StreakPill,
   Tallies,

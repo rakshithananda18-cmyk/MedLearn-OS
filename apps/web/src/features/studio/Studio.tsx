@@ -18,11 +18,20 @@ import {
   LayersPanel,
   type Place,
   SearchSheet,
+  SettingsPanel,
   StructureSearch,
   TopicsPanel,
 } from './panels';
 import { skipQuiz, startQuiz } from './quiz';
-import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
+import {
+  loadBest,
+  loadSettings,
+  loadStrokes,
+  saveBest,
+  saveSettings,
+  saveStrokes,
+  type StudioSettings,
+} from './saved';
 import {
   changeModeIn,
   hiddenIn,
@@ -72,6 +81,7 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
   const [session, setSession] = useState<Session>(() =>
     firstSession(topics, regions, initialTopic),
   );
+  const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
   const context = { topic, regions, pool: structures.map((structure) => structure.id) };
@@ -84,6 +94,11 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
     session,
     setSession,
     update,
+    settings,
+    changeSettings: (next: StudioSettings) => {
+      setSettings(next);
+      saveSettings(next);
+    },
     topic,
     model: topic?.model ?? body,
     structures,
@@ -133,7 +148,8 @@ interface OverlayProps {
 
 /**
  * Names on the model: each region's topic count on the whole body, or the picked structure and
- * its path while exploring a topic. None during "Find it", where they would give answers away.
+ * its path while exploring a topic. None during "Find it", where they would give answers away, or
+ * when the student has turned them off.
  */
 function labelsFor(
   studio: StudioState,
@@ -141,6 +157,7 @@ function labelsFor(
   regions: BodyRegionInfo[],
 ): Viewer3DLabel[] {
   const { session, topic } = studio;
+  if (!studio.settings.labels) return [];
   if (!topic) {
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
@@ -179,8 +196,9 @@ function StudioModel({
   capable: boolean | null;
   labels: Viewer3DLabel[];
 }>) {
-  const { session, topic, model, update } = studio;
-  const reducedMotion = useReducedMotion();
+  const { session, topic, model, update, settings } = studio;
+  const systemReducedMotion = useReducedMotion();
+  const reducedMotion = settings.smooth === null ? systemReducedMotion : !settings.smooth;
   const lit = useMemo(() => litIn(session, topic), [session, topic]);
   return (
     <figure className="absolute inset-0">
@@ -201,6 +219,7 @@ function StudioModel({
         strokes={session.strokes}
         labels={labels}
         resetToken={session.reset}
+        sharp={settings.sharp}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
         onStroke={(stroke) => studio.keepStrokes([...session.strokes, stroke])}
@@ -221,10 +240,12 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       xray={topic ? session.xray : null}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
+      settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
       onIsolate={() => update({ isolate: !session.isolate })}
       onReset={studio.resetView}
+      onSettings={() => studio.togglePanel('settings')}
     />
   );
 }
@@ -289,6 +310,19 @@ function Layers({ studio, place }: Readonly<{ studio: StudioState; place: Place 
       onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
       onShow={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
       onClose={() => update({ panel: null })}
+    />
+  );
+}
+
+function Settings({ studio }: Readonly<{ studio: StudioState }>) {
+  const reducedMotion = useReducedMotion();
+  if (studio.session.panel !== 'settings') return null;
+  return (
+    <SettingsPanel
+      settings={studio.settings}
+      reducedMotion={reducedMotion}
+      onChange={studio.changeSettings}
+      onClose={() => studio.update({ panel: null })}
     />
   );
 }
@@ -427,6 +461,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           <Search studio={studio} topics={topics} autoFocus />
         </SearchSheet>
       ) : null}
+      <Settings studio={studio} />
     </div>
   );
 }
@@ -512,6 +547,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
           <Layers studio={studio} place="inline" />
         </aside>
       ) : null}
+      <Settings studio={studio} />
     </div>
   );
 }

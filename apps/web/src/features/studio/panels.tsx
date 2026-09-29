@@ -2,7 +2,7 @@
 
 import { topicMastery } from '@medlearn/core';
 import type { BodyRegion, PartKind } from '@medlearn/schemas';
-import { cx, Icon, IconButton, Text, ToggleChip } from '@medlearn/ui';
+import { cx, Icon, IconButton, Switch, Text, ToggleChip } from '@medlearn/ui';
 import { Eye, Search, X } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ import type { BodyRegionInfo } from '@/content/body';
 import { useProgress } from '@/features/progress/store';
 
 import type { StructureInfo, StudioTopic } from './knowledge';
+import type { StudioSettings } from './saved';
 import type { Detail } from './session';
 
 export const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-md';
@@ -27,12 +28,15 @@ function Sheet({
   label,
   side,
   place,
+  compact = false,
   onClose,
   children,
 }: Readonly<{
   label: string;
   side: 'left' | 'right';
   place: Place;
+  /** A floating sheet only as tall as its content, rather than down to the bottom bar. */
+  compact?: boolean;
   onClose: () => void;
   children: ReactNode;
 }>) {
@@ -44,7 +48,8 @@ function Sheet({
         place === 'float' &&
           cx(
             GLASS,
-            'absolute top-20 bottom-24 z-20 w-sheet animate-rise overflow-y-auto p-4',
+            'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto p-4',
+            compact ? 'max-h-sheet' : 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
         place === 'dock' && cx(GLASS, 'w-dock shrink-0 overflow-y-auto p-4'),
@@ -61,17 +66,96 @@ function Sheet({
   );
 }
 
-/** How far along each topic is: open now, a mastery percentage once learnt, or new. */
-function useTopicStatus(current: string | null) {
+interface CardNote {
+  text: string;
+  tone: string;
+  border: string;
+}
+
+/** What each topic's card says: open now, up next, how well it is learnt, or how long it takes. */
+function useCardNotes(topics: StudioTopic[], current: string | null) {
   const progress = useProgress();
   const now = new Date();
-  return (topic: StudioTopic): { text: string; tone: string } => {
-    if (topic.slug === current) return { text: 'Open', tone: 'text-gold-ink' };
+  const next = topics.find((topic) => !progress.completedLessons.includes(topic.slug));
+  return (topic: StudioTopic): CardNote => {
+    if (topic.slug === current) {
+      return { text: 'Open', tone: 'text-gold-ink', border: 'border-gold' };
+    }
+    if (topic === next) {
+      return {
+        text: `Up next · ${topic.estimatedMinutes} min`,
+        tone: 'text-primary-strong',
+        border: 'border-primary',
+      };
+    }
     const mastery = topicMastery(topic, progress, now);
     return mastery.lessonDone
-      ? { text: `${mastery.percent}%`, tone: 'text-primary-strong' }
-      : { text: 'New', tone: 'text-fg-muted' };
+      ? {
+          text: `Learnt · ${mastery.percent}%`,
+          tone: 'text-primary-strong',
+          border: 'border-glass-border',
+        }
+      : {
+          text: `${topic.estimatedMinutes} min`,
+          tone: 'text-fg-muted',
+          border: 'border-glass-border',
+        };
   };
+}
+
+/**
+ * A topic as a card with a still of its model: a button that opens it in the studio, or a link to
+ * the lesson for a topic with nothing to show in 3D.
+ */
+function TopicCard({
+  topic,
+  note,
+  current,
+  onOpen,
+}: Readonly<{
+  topic: StudioTopic;
+  note: CardNote;
+  current: boolean;
+  onOpen: (slug: string) => void;
+}>) {
+  const card = cx(
+    'flex h-24 w-full gap-3 rounded-lg border bg-glass p-2 text-left shadow-glass backdrop-blur-md',
+    note.border,
+  );
+  const body = (
+    <>
+      <span className="relative size-20 shrink-0 overflow-hidden rounded-md bg-surface-muted">
+        {topic.poster ? (
+          <Image
+            src={topic.poster}
+            alt=""
+            width={96}
+            height={96}
+            unoptimized
+            className="size-full object-contain"
+          />
+        ) : null}
+      </span>
+      <span className="flex min-w-0 flex-col justify-between py-1">
+        <span className="line-clamp-2 text-sm font-semibold text-ink">{topic.title}</span>
+        <span className={cx('text-xs font-semibold', note.tone)}>{note.text}</span>
+      </span>
+    </>
+  );
+  return topic.model ? (
+    <button
+      type="button"
+      aria-current={current ? 'true' : undefined}
+      onClick={() => onOpen(topic.slug)}
+      className={card}
+    >
+      {body}
+    </button>
+  ) : (
+    <Link href={`/learn/${topic.slug}`} className={card}>
+      {body}
+    </Link>
+  );
 }
 
 export function TopicsPanel({
@@ -102,8 +186,8 @@ export function TopicsPanel({
   onTopic: (slug: string | null) => void;
   onClose: () => void;
 }>) {
-  const status = useTopicStatus(current);
   const inRegion = topics.filter((topic) => topic.regions.includes(region));
+  const noteOf = useCardNotes(inRegion, current);
   const regionName = regions.find((item) => item.id === region)?.name ?? 'Topics';
   const row =
     'flex min-h-12 w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm font-semibold text-ink transition-colors duration-150';
@@ -136,46 +220,13 @@ export function TopicsPanel({
           ))}
         </fieldset>
       )}
-      <div className="flex flex-col gap-1">
-        <h3 className={LABEL}>{regionName}</h3>
-        {inRegion.length === 0 ? (
-          <Text size="sm" tone="muted">
-            Topics coming soon.
-          </Text>
-        ) : (
-          <ul aria-label="Topics in this region" className="flex flex-col gap-1">
-            {inRegion.map((topic) => (
-              <li key={topic.slug}>
-                {topic.model ? (
-                  <button
-                    type="button"
-                    aria-current={topic.slug === current ? 'true' : undefined}
-                    onClick={() => onTopic(topic.slug)}
-                    className={cx(row, topic.slug === current ? now : other)}
-                  >
-                    {topic.title}
-                    <span className={cx('shrink-0 text-xs', status(topic).tone)}>
-                      {status(topic).text}
-                    </span>
-                  </button>
-                ) : (
-                  // Topics with no body structures to show (a physiology graph) open their lesson.
-                  <Link href={`/learn/${topic.slug}`} className={cx(row, other)}>
-                    {topic.title}
-                    <span className="shrink-0 text-xs text-fg-muted">Lesson</span>
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* The open model's views come before the region's topics, which can run to dozens. */}
       <div className="flex flex-col gap-1">
         <h3 className={LABEL}>Guided views</h3>
         {guide}
       </div>
       {best === null ? null : (
-        <div className="mt-auto flex items-center gap-3 rounded-lg border border-border bg-surface-muted p-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-muted p-3">
           <span className="text-gold font-display text-4xl">{best}</span>
           <span className="flex flex-col">
             <span className="text-sm font-semibold text-ink">Best “Find it” streak</span>
@@ -183,6 +234,27 @@ export function TopicsPanel({
           </span>
         </div>
       )}
+      <div className="flex flex-col gap-1">
+        <h3 className={LABEL}>{regionName}</h3>
+        {inRegion.length === 0 ? (
+          <Text size="sm" tone="muted">
+            Topics coming soon.
+          </Text>
+        ) : (
+          <ul aria-label="Topics in this region" className="flex flex-col gap-2">
+            {inRegion.map((topic) => (
+              <li key={topic.slug}>
+                <TopicCard
+                  topic={topic}
+                  note={noteOf(topic)}
+                  current={topic.slug === current}
+                  onOpen={onTopic}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </Sheet>
   );
 }
@@ -523,11 +595,6 @@ export function InfoCard({
   );
 }
 
-function cardNote(topic: StudioTopic, next: boolean, learnt: boolean): string {
-  if (next) return `Up next · ${topic.estimatedMinutes} min`;
-  return learnt ? 'Learnt' : `${topic.estimatedMinutes} min`;
-}
-
 /**
  * The whole body on a phone: a chip for each region, then that region's topics as cards with
  * their model, the next one to learn marked.
@@ -548,10 +615,8 @@ export function BodyBrowser({
   const progress = useProgress();
   const inRegion = topics.filter((topic) => topic.regions.includes(region));
   const learnt = inRegion.filter((topic) => progress.completedLessons.includes(topic.slug));
-  const next = inRegion.find((topic) => !progress.completedLessons.includes(topic.slug));
+  const noteOf = useCardNotes(inRegion, null);
   const name = regions.find((item) => item.id === region)?.name ?? '';
-  const card =
-    'flex h-24 w-full gap-3 rounded-lg border bg-glass p-2 text-left shadow-glass backdrop-blur-md';
   return (
     <section aria-label="Regions and topics" className="pointer-events-auto flex flex-col gap-3">
       <fieldset className="flex gap-2 overflow-x-auto pb-1">
@@ -585,54 +650,67 @@ export function BodyBrowser({
         </Text>
       ) : (
         <ul aria-label="Topics in this region" className="flex gap-2 overflow-x-auto pb-1">
-          {inRegion.map((topic) => {
-            const body = (
-              <>
-                <span className="relative size-20 shrink-0 overflow-hidden rounded-md bg-surface-muted">
-                  {topic.poster ? (
-                    <Image
-                      src={topic.poster}
-                      alt=""
-                      width={96}
-                      height={96}
-                      unoptimized
-                      className="size-full object-contain"
-                    />
-                  ) : null}
-                </span>
-                <span className="flex min-w-0 flex-col justify-between py-1">
-                  <span className="line-clamp-2 text-sm font-semibold text-ink">{topic.title}</span>
-                  <span
-                    className={cx(
-                      'text-xs font-semibold',
-                      topic === next ? 'text-primary-strong' : 'text-fg-muted',
-                    )}
-                  >
-                    {cardNote(topic, topic === next, learnt.includes(topic))}
-                  </span>
-                </span>
-              </>
-            );
-            return (
-              <li key={topic.slug} className="w-card shrink-0">
-                {topic.model ? (
-                  <button
-                    type="button"
-                    onClick={() => onTopic(topic.slug)}
-                    className={cx(card, topic === next ? 'border-primary' : 'border-glass-border')}
-                  >
-                    {body}
-                  </button>
-                ) : (
-                  <Link href={`/learn/${topic.slug}`} className={cx(card, 'border-glass-border')}>
-                    {body}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
+          {inRegion.map((topic) => (
+            <li key={topic.slug} className="w-card shrink-0">
+              <TopicCard topic={topic} note={noteOf(topic)} current={false} onOpen={onTopic} />
+            </li>
+          ))}
         </ul>
       )}
     </section>
+  );
+}
+
+/** One setting: its switch, and a line on what it does. */
+function Setting({
+  label,
+  hint,
+  checked,
+  onChange,
+}: Readonly<{ label: string; hint: string; checked: boolean; onChange: (on: boolean) => void }>) {
+  return (
+    <div className="flex flex-col gap-1">
+      <Switch label={label} checked={checked} onCheckedChange={onChange} />
+      <Text size="sm" tone="muted">
+        {hint}
+      </Text>
+    </div>
+  );
+}
+
+/** How the 3D view looks and moves, kept on this device. */
+export function SettingsPanel({
+  settings,
+  reducedMotion,
+  onChange,
+  onClose,
+}: Readonly<{
+  settings: StudioSettings;
+  /** The device asks for less motion; smooth moves follow it until the student chooses. */
+  reducedMotion: boolean;
+  onChange: (settings: StudioSettings) => void;
+  onClose: () => void;
+}>) {
+  return (
+    <Sheet label="Settings" side="right" place="float" compact onClose={onClose}>
+      <Setting
+        label="Names on the model"
+        hint="Region counts on the body, and the picked structure with its path on a topic."
+        checked={settings.labels}
+        onChange={(labels) => onChange({ ...settings, labels })}
+      />
+      <Setting
+        label="Smooth camera moves"
+        hint="Glide between guided views. Off jumps straight there."
+        checked={settings.smooth ?? !reducedMotion}
+        onChange={(smooth) => onChange({ ...settings, smooth })}
+      />
+      <Setting
+        label="Sharper picture"
+        hint="Draws the model at full screen resolution; off saves battery."
+        checked={settings.sharp}
+        onChange={(sharp) => onChange({ ...settings, sharp })}
+      />
+    </Sheet>
   );
 }

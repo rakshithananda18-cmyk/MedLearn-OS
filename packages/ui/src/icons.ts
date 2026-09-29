@@ -49,6 +49,7 @@ export {
   RotateCcw,
   ScanEye,
   Search,
+  Settings,
   SlidersHorizontal,
   Stethoscope,
   Sun,

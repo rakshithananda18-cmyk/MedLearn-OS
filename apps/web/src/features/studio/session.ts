@@ -9,7 +9,7 @@ import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 // component keeps only the side effects (saving, the address bar) and the layout.
 
 export type Mode = 'explore' | 'draw' | 'quiz';
-export type Panel = 'topics' | 'layers' | 'search' | null;
+export type Panel = 'topics' | 'layers' | 'search' | 'settings' | null;
 /** The extra a picked structure's card shows under its summary. */
 export type Detail = 'clinical' | 'lesson' | null;
 
