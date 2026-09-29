@@ -19,7 +19,7 @@ export interface DrawerProps {
  * page: focus stays inside, Escape or a tap on the scrim closes it, and the page behind does not
  * scroll. On tablets it floats as a card near the bottom.
  */
-export function Drawer({ title, open, onOpenChange, children, className }: DrawerProps) {
+export function Drawer({ title, open, onOpenChange, children, className }: Readonly<DrawerProps>) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>

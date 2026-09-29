@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Library | MedLearn OS' };
 const PREVIEW_FACTS = 3;
 
 interface Props {
-  searchParams: Promise<{ topic?: string | string[] }>;
+  readonly searchParams: Promise<{ topic?: string | string[] }>;
 }
 
 export default async function SubjectsPage({ searchParams }: Props) {

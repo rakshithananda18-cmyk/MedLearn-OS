@@ -282,11 +282,10 @@ export function GuideCard({
   const stop = stops[index];
   if (!stop) return null;
   return (
-    <div
-      role="group"
+    <fieldset
       aria-label="Guided views"
       title={stop.description}
-      className={cx(GLASS, 'pointer-events-auto flex items-center gap-1 rounded-full p-1')}
+      className={cx(GLASS, 'pointer-events-auto flex min-w-0 items-center gap-1 rounded-full p-1')}
     >
       <IconButton
         icon={ChevronLeft}
@@ -313,7 +312,7 @@ export function GuideCard({
         disabled={index >= stops.length - 1}
         onClick={() => onIndex(index + 1)}
       />
-    </div>
+    </fieldset>
   );
 }
 
@@ -328,7 +327,7 @@ export function BestCard({ best }: Readonly<{ best: number }>) {
     >
       <span className="text-gold font-display text-2xl">{best}</span>
       <span className="flex flex-col leading-tight">
-        Best streak
+        <span>Best streak</span>
         <span className="text-xs font-normal text-fg-muted">in Find it</span>
       </span>
     </p>

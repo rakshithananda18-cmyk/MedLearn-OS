@@ -40,7 +40,7 @@ describe('libraryTree', () => {
   it('lists topics with no BD chapter straight under the subject', () => {
     const tree = libraryTree(bySubject('physiology'));
     expect(tree.every((node) => node.kind === 'topic')).toBe(true);
-    expect(tree.length).toBe(bySubject('physiology').length);
+    expect(tree).toHaveLength(bySubject('physiology').length);
     expect(libraryTree([])).toEqual([]);
   });
 

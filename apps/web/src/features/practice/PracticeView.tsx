@@ -91,6 +91,15 @@ function Mode({
   );
 }
 
+/** "6 of 8 right · 70% mastery" once questions are answered, else how many topics it holds. */
+function sectionDetail(section: SectionStrength): string {
+  if (section.answered > 0) {
+    return `${section.correct} of ${section.answered} right · ${section.percent}% mastery`;
+  }
+  const count = section.slugs.length;
+  return `${count} ${count === 1 ? 'topic' : 'topics'}`;
+}
+
 /** Each book section with how it is going, and a button to practise just that section. */
 function Strengths({
   sections,
@@ -132,9 +141,7 @@ function Strengths({
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-sm font-semibold text-ink">{section.label}</span>
               <span className="text-xs text-fg-muted" suppressHydrationWarning>
-                {section.answered > 0
-                  ? `${section.correct} of ${section.answered} right · ${section.percent}% mastery`
-                  : `${section.slugs.length} ${section.slugs.length === 1 ? 'topic' : 'topics'}`}
+                {sectionDetail(section)}
               </span>
             </span>
             <span
@@ -265,6 +272,28 @@ export interface PracticeStart {
 }
 
 /**
+ * The session a step of Today's plan asks for: a practice step holds the questions still to get
+ * right, as the plan counted them; a goal's step goes over the whole topic.
+ */
+function fromPlan(
+  start: PracticeStart | undefined,
+  titles: Record<string, string>,
+  all: string[],
+  correct: string[],
+): Running | null {
+  const slug = start?.topic;
+  const title = slug ? titles[slug] : undefined;
+  if (!slug || !title) return null;
+  const open = all.filter((id) => !correct.includes(id));
+  return {
+    title,
+    ids: start.goal || open.length === 0 ? all : open,
+    seconds: null,
+    ...(start.goal ? { goal: { id: start.goal, topic: slug } } : {}),
+  };
+}
+
+/**
  * Practice: a hub of ways in (a quick mix, weak spots, a timed test, recall), how each book
  * section is going, and the class tests and revisits the student has planned. A session takes
  * over the page until it ends with its score. Opened with a topic (from Today's plan), it goes
@@ -291,23 +320,19 @@ export function PracticeView({
     buildSession(kind, topics, progress, slugs ? { slugs, now } : { now });
   const [running, setRunning] = useState<Running | null>(null);
   // Opened from Today's plan: straight into that topic, once this device's progress is known
-  // (the server draws the hub without it). A practice step holds the questions still to get
-  // right, as the plan counted them; a goal's step goes over the whole topic.
+  // (the server draws the hub without it).
   const hydrated = useHydrated();
   const [opened, setOpened] = useState(false);
   if (hydrated && !opened) {
     setOpened(true);
-    const slug = start?.topic;
-    if (slug && titles[slug]) {
-      const all = session('topics', [slug]);
-      const open = all.filter((id) => !progress.correctAnswers.includes(id));
-      setRunning({
-        title: titles[slug],
-        ids: start.goal || open.length === 0 ? all : open,
-        seconds: null,
-        ...(start.goal ? { goal: { id: start.goal, topic: slug } } : {}),
-      });
-    }
+    setRunning(
+      fromPlan(
+        start,
+        titles,
+        session('topics', start?.topic ? [start.topic] : []),
+        progress.correctAnswers,
+      ),
+    );
   }
   const run = (next: Running) => {
     setRunning(next);
