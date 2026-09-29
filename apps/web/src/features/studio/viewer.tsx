@@ -5,7 +5,7 @@ import { supports3D } from '@medlearn/visuals';
 import dynamic from 'next/dynamic';
 import { useSyncExternalStore } from 'react';
 
-import { mediaQuery, useWide } from '@/features/shell/media';
+import { mediaQuery } from '@/features/shell/media';
 
 // three.js loads only here, and only on devices that can show 3D.
 export const Viewer3D = dynamic(() => import('@medlearn/visuals/viewer3d'), {
@@ -26,4 +26,4 @@ export function useCan3D(): boolean | null {
 export const useReducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
 
 /** Tablets held sideways and laptops (the xl breakpoint): the side panels stay open. */
-export const useDocked = useWide;
+export { useWide as useDocked } from '@/features/shell/media';

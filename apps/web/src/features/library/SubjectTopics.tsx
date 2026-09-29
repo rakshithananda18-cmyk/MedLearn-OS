@@ -26,7 +26,7 @@ export interface TopicsState {
   /** The topic shown in the preview, highlighted. */
   selected: string | null;
   /** Where a preview sits beside the list, picking a topic shows it there; else topics are links. */
-  onSelect?: ((slug: string) => void) | undefined;
+  onSelect?: (slug: string) => void;
 }
 
 /** The first topic in teaching order that the student has not learnt yet. */

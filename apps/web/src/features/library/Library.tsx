@@ -41,7 +41,7 @@ function SubjectTabs({
   onPick,
 }: Readonly<{ subjects: LibrarySubject[]; current: string; onPick: (slug: string) => void }>) {
   return (
-    <div role="group" aria-label="Subjects" className="flex gap-2 overflow-x-auto pb-1">
+    <fieldset aria-label="Subjects" className="flex min-w-0 gap-2 overflow-x-auto pb-1">
       {subjects.map((subject) => {
         const on = subject.slug === current;
         const count = subject.nodes.flatMap(topicsUnder).length;
@@ -66,7 +66,7 @@ function SubjectTabs({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 

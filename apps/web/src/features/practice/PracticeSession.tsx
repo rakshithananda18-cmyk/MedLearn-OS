@@ -175,19 +175,12 @@ export function PracticeSession({
               {index + 1} of {questions.length}
             </span>
           </div>
-          <div
-            role="progressbar"
+          <progress
             aria-label="Questions answered"
-            aria-valuemin={0}
-            aria-valuemax={questions.length}
-            aria-valuenow={Object.keys(answers).length}
-            className="h-2 overflow-hidden rounded-full bg-border"
-          >
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-250"
-              style={{ width: `${(100 * Object.keys(answers).length) / questions.length}%` }}
-            />
-          </div>
+            value={Object.keys(answers).length}
+            max={questions.length}
+            className="progress-bar"
+          />
         </div>
         {streak >= 2 ? (
           <span className="flex shrink-0 animate-rise items-center gap-1 rounded-full bg-gloss px-3 py-1 text-sm font-semibold text-gold-ink shadow-glass">

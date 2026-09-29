@@ -526,6 +526,23 @@ function Fold({
   );
 }
 
+/** Beside the title where docked: the best streak, the guided views and the view tools. */
+function HeaderTools({
+  studio,
+  folded,
+  onUnfold,
+}: Readonly<{ studio: StudioState; folded: boolean; onUnfold: () => void }>) {
+  const { topic } = studio;
+  return (
+    <>
+      {topic ? <BestCard best={loadBest(topic.slug)} /> : null}
+      <Guide studio={studio} />
+      <Tools studio={studio} row />
+      {topic && folded ? <Fold side="right" open={false} onToggle={onUnfold} /> : null}
+    </>
+  );
+}
+
 /**
  * Tablets held sideways and laptops: the topics docked on the left, the picked structure and
  * the layers on the right, the model in between. Either side folds away to give the model room.
@@ -563,14 +580,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
             title={topic?.title ?? 'Whole body'}
             tools={
               quiz ? null : (
-                <>
-                  {topic ? <BestCard best={loadBest(topic.slug)} /> : null}
-                  <Guide studio={studio} />
-                  <Tools studio={studio} row />
-                  {topic && !right ? (
-                    <Fold side="right" open={false} onToggle={() => setRight(true)} />
-                  ) : null}
-                </>
+                <HeaderTools studio={studio} folded={!right} onUnfold={() => setRight(true)} />
               )
             }
           />
