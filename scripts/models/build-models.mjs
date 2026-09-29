@@ -36,7 +36,7 @@ const PEC_MINOR_X = { lateral: -137, medial: -107 };
 export const MODELS = [
   {
     name: 'upper-limb',
-    // Shoulder, back, arm, forearm and hand (upper limb batches 1 to 3): one file every upper limb
+    // Shoulder, back, arm, forearm and hand (upper limb batches 1 to 4): one file every upper limb
     // topic shares.
     maxTriangles: 150_000,
     error: 0.002,
@@ -134,7 +134,7 @@ export const MODELS = [
         ratio: 1,
         clipX: [-Infinity, PEC_MINOR_X.lateral],
       },
-      { id: 'brachial-artery', files: ['FJ2271'], ratio: 1 },
+      { id: 'brachial-artery', files: ['FJ2271'], ratio: 0.5 },
       { id: 'thoracoacromial-artery', files: ['FJ2361', 'FJ2263', 'FJ2282'], ratio: 0.5 },
       { id: 'lateral-thoracic-artery', files: ['FJ1938'], ratio: 0.5 },
       { id: 'subscapular-artery', files: ['FJ2298'], ratio: 1 },
@@ -143,11 +143,11 @@ export const MODELS = [
       { id: 'anterior-circumflex-humeral-artery', files: ['FJ2264'], ratio: 0.5 },
       { id: 'posterior-circumflex-humeral-artery', files: ['FJ2291', 'FJ2292'], ratio: 0.6 },
       { id: 'internal-thoracic-artery', files: ['FJ1937'], ratio: 0.5 },
-      { id: 'deep-brachial-artery', files: ['FJ2277'], ratio: 1 },
+      { id: 'deep-brachial-artery', files: ['FJ2277'], ratio: 0.5 },
       { id: 'radial-collateral-artery', files: ['FJ2262'], ratio: 1 },
       { id: 'middle-collateral-artery', files: ['FJ2362'], ratio: 1 },
       { id: 'suprascapular-artery', files: ['FJ2303'], ratio: 1 },
-      { id: 'dorsal-scapular-artery', files: ['FJ2284'], ratio: 1 },
+      { id: 'dorsal-scapular-artery', files: ['FJ2284'], ratio: 0.3 },
       // Veins.
       { id: 'subclavian-vein', files: ['FJ3587'], ratio: 1 },
       { id: 'axillary-vein', files: ['FJ2269'], ratio: 1 },
@@ -205,6 +205,41 @@ export const MODELS = [
       { id: 'deep-palmar-arch', files: ['FJ2279'], ratio: 0.3 },
       { id: 'median-cubital-vein', files: ['FJ2287'], ratio: 0.2 },
       { id: 'median-antebrachial-vein', files: ['FJ2286'], ratio: 0.1 },
+      // Back of the forearm and the hand (batch 4).
+      { id: 'extensor-carpi-radialis-longus', files: ['FJ1490'], ratio: 0.25 },
+      { id: 'extensor-carpi-radialis-brevis', files: ['FJ1489'], ratio: 0.25 },
+      { id: 'extensor-digitorum', files: ['FJ1492'], ratio: 0.2 },
+      { id: 'extensor-digiti-minimi', files: ['FJ1491'], ratio: 0.3 },
+      { id: 'extensor-carpi-ulnaris', files: ['FJ1472', 'FJ1517'], ratio: 0.25 },
+      { id: 'abductor-pollicis-longus', files: ['FJ1484'], ratio: 0.3 },
+      { id: 'extensor-pollicis-brevis', files: ['FJ1494'], ratio: 0.4 },
+      { id: 'extensor-pollicis-longus', files: ['FJ1495'], ratio: 0.4 },
+      { id: 'extensor-indicis', files: ['FJ1493'], ratio: 0.5 },
+      { id: 'adductor-pollicis', files: ['FJ1481', 'FJ1515'], ratio: 0.5 },
+      { id: 'lumbricals', files: ['FJ1510'], ratio: 0.3 },
+      { id: 'dorsal-interossei', files: ['FJ1509'], ratio: 0.3 },
+      { id: 'palmar-interossei', files: ['FJ1511'], ratio: 0.4 },
+      { id: 'princeps-pollicis-artery', files: ['FJ2371', 'FJ2372'], ratio: 0.3 },
+      { id: 'radialis-indicis-artery', files: ['FJ2342', 'FJ2363'], ratio: 0.3 },
+      { id: 'palmar-metacarpal-arteries', files: ['FJ2289'], ratio: 0.2 },
+      {
+        // Common and proper palmar digital arteries from the superficial arch.
+        id: 'palmar-digital-arteries',
+        files: ['FJ2343', 'FJ2344', 'FJ2345', 'FJ2370'].concat([
+          'FJ2364',
+          'FJ2365',
+          'FJ2366',
+          'FJ2367',
+          'FJ2368',
+          'FJ2369',
+        ]),
+        ratio: 0.25,
+      },
+      { id: 'dorsal-carpal-branches', files: ['FJ2283', 'FJ2288'], ratio: 0.4 },
+      // FJ2347 and FJ2348 share a name; FJ2347 is the right hand's.
+      { id: 'dorsal-metacarpal-arteries', files: ['FJ2347'], ratio: 0.1 },
+      { id: 'recurrent-interosseous-artery', files: ['FJ2297'], ratio: 0.3 },
+      { id: 'dorsal-venous-network', files: ['FJ2280'], ratio: 0.12 },
     ],
   },
   {

@@ -11,12 +11,17 @@ import { brachialPlexus } from './brachial-plexus';
 import { carpalTunnel } from './carpal-tunnel';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
+import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
+import { handMuscles } from './hand-muscles';
 import { oxygenCurve } from './oxygen-curve';
+import { palmSpaces } from './palm-spaces';
+import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
 import { scapularSpaces } from './scapular-spaces';
 import { skinVeinsLymph } from './skin-veins-lymph';
+import { wristBack } from './wrist-back';
 
 // Content is imported only by server components (pages, routes); each page hands its screen just
 // what that screen shows, so adding topics never grows the JavaScript every page downloads.
@@ -39,6 +44,11 @@ export const TOPICS: Topic[] = [
   forearmFlexors,
   forearmVesselsNerves,
   carpalTunnel,
+  handMuscles,
+  palmVesselsNerves,
+  palmSpaces,
+  wristBack,
+  forearmExtensors,
   oxygenCurve,
 ];
 

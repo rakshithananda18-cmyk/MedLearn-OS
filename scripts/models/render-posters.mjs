@@ -34,6 +34,11 @@ export const POSTERS = [
   { name: 'forearm-flexors', path: '/studio?topic=forearm-flexors' },
   { name: 'forearm-vessels-nerves', path: '/studio?topic=forearm-vessels-nerves' },
   { name: 'carpal-tunnel', path: '/studio?topic=carpal-tunnel' },
+  { name: 'hand-muscles', path: '/studio?topic=hand-muscles' },
+  { name: 'palm-vessels-nerves', path: '/studio?topic=palm-vessels-nerves' },
+  { name: 'palm-spaces', path: '/studio?topic=palm-spaces' },
+  { name: 'wrist-back', path: '/studio?topic=wrist-back' },
+  { name: 'forearm-extensors', path: '/studio?topic=forearm-extensors' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
