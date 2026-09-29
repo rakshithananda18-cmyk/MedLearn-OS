@@ -11,9 +11,8 @@ describe('searchTopics', () => {
 
   it('needs every word, ignores case and accents, and links to the right place', () => {
     const results = searchTopics('KLUMPKE hand');
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.map((result) => result.topicTitle)).toContain('Brachial plexus');
     for (const result of results) {
-      expect(result.topicTitle).toBe('Brachial plexus');
       expect(result.excerpt.toLowerCase()).toContain('klumpke');
     }
     expect(searchTopics('klumpke oxygen')).toEqual([]);

@@ -44,6 +44,11 @@ export const POSTERS = [
   { name: 'elbow-joint', path: '/studio?topic=elbow-joint' },
   { name: 'radioulnar-joints', path: '/studio?topic=radioulnar-joints' },
   { name: 'wrist-hand-joints', path: '/studio?topic=wrist-hand-joints' },
+  { name: 'surface-marking', path: '/studio?topic=surface-marking' },
+  { name: 'upper-limb-xrays', path: '/studio?topic=upper-limb-xrays' },
+  { name: 'nerve-injuries', path: '/studio?topic=nerve-injuries' },
+  { name: 'elbow-anastomosis', path: '/studio?topic=elbow-anastomosis' },
+  { name: 'upper-limb-development', path: '/studio?topic=upper-limb-development' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

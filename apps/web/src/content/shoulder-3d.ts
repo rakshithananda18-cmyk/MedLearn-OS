@@ -4,7 +4,7 @@ import type { ModelPart, Point3 } from '@medlearn/schemas';
 // frame: millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=5';
+export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=6';
 
 /** Credit for the model's bones, muscles and vessels, shown wherever the model is. */
 export const SHOULDER_MODEL_CREDIT =
@@ -695,6 +695,19 @@ const PARTS = {
     kind: 'muscle',
     about:
       'Fibrous sheet between the radius and ulna, its fibres running down and medially from radius to ulna, so force from the hand passes to the ulna and on to the humerus. It forms the middle radioulnar joint. Shown with the muscles because it is soft tissue, not bone.',
+  },
+  // Anastomosis round the elbow (upper limb batch 6).
+  'superior-ulnar-collateral-artery': {
+    name: 'Superior ulnar collateral artery',
+    kind: 'artery',
+    about:
+      'From the brachial artery in the middle of the arm; it runs with the ulnar nerve behind the medial epicondyle and joins the posterior ulnar recurrent artery.',
+  },
+  'inferior-ulnar-collateral-artery': {
+    name: 'Inferior ulnar collateral artery',
+    kind: 'artery',
+    about:
+      'From the brachial artery just above the elbow; it passes in front of the medial epicondyle and joins the anterior ulnar recurrent artery.',
   },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
