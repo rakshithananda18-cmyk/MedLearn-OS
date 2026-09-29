@@ -1,9 +1,18 @@
 import { Display, EmptyState, Eyebrow, type IconGlyph } from '@medlearn/ui';
-import { BookOpen, ClipboardCheck, Layers, RotateCcw, Search, Target } from '@medlearn/ui/icons';
+import {
+  BookOpen,
+  Box,
+  ClipboardCheck,
+  Layers,
+  RotateCcw,
+  Search,
+  Target,
+} from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
 
 import { type SearchKind, searchTopics } from '@/content/search';
-import { SearchForm } from '@/features/search/SearchForm';
+import { PLANNABLE_TOPICS } from '@/content/topics';
+import { LiveSearch } from '@/features/search/LiveSearch';
 import { LinkCard } from '@/features/shell/LinkCard';
 import { Screen } from '@/features/shell/Screen';
 
@@ -11,6 +20,7 @@ export const metadata: Metadata = { title: 'Search | MedLearn OS' };
 
 const ICONS: Record<SearchKind, IconGlyph> = {
   Topic: BookOpen,
+  Structure: Box,
   'Key fact': Target,
   Lesson: Layers,
   Question: ClipboardCheck,
@@ -35,7 +45,9 @@ export default async function SearchPage({ searchParams }: Props) {
           Find it <em>fast</em>
         </Display>
       </div>
-      <SearchForm defaultValue={query} />
+      <div className="relative">
+        <LiveSearch topics={PLANNABLE_TOPICS} defaultValue={query} />
+      </div>
       {query && results.length === 0 ? (
         <EmptyState
           icon={Search}

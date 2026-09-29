@@ -15,12 +15,12 @@ export const metadata: Metadata = { title: 'Library | MedLearn OS' };
 const PREVIEW_FACTS = 3;
 
 interface Props {
-  readonly searchParams: Promise<{ topic?: string | string[] }>;
+  readonly searchParams: Promise<{ topic?: string | string[]; view?: string | string[] }>;
 }
 
 export default async function SubjectsPage({ searchParams }: Props) {
   await connection();
-  const { topic: asked } = await searchParams;
+  const { topic: asked, view } = await searchParams;
   const subjects = await getSubjectsRepository().list();
   const subjectName = (slug: string) =>
     subjects.find((subject) => subject.slug === slug)?.name ?? slug;
@@ -58,6 +58,7 @@ export default async function SubjectsPage({ searchParams }: Props) {
         previews={previews}
         books={Object.fromEntries(BOOKS.map((book) => [book.id, book.shortTitle]))}
         initialTopic={typeof asked === 'string' && asked in previews ? asked : null}
+        initialView={view === 'progress' ? 'progress' : 'topics'}
       />
     </Screen>
   );

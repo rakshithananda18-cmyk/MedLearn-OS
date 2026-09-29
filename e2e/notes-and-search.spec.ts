@@ -4,7 +4,7 @@ import { expectAccessible } from './support';
 
 test('search from the library finds material inside a topic and opens it', async ({ page }) => {
   await page.goto('/subjects');
-  const search = page.getByLabel('Search topics, facts and questions');
+  const search = page.getByRole('combobox', { name: 'Search topics, structures and notes' });
   await search.fill('klumpke');
   await search.press('Enter');
 

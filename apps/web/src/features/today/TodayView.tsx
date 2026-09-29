@@ -27,7 +27,7 @@ import Link from 'next/link';
 
 import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
-import { SearchPill } from '@/features/shell/SearchPill';
+import { LiveSearch } from '@/features/search/LiveSearch';
 
 import { GoalsCard, PlanCard, StreakCard, StreakPill, TimeRing, UpNext, WeakSpots } from './parts';
 
@@ -214,12 +214,12 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
           <Eyebrow suppressHydrationWarning>{longDate(now)}</Eyebrow>
           <Display size="lg">{HEADLINE[plan.mode]}</Display>
         </div>
-        <div className="flex items-center gap-2 max-md:w-full">
+        <div className="relative flex items-center gap-2 max-md:w-full">
           {plan.examInDays === null ? null : (
             <Pill icon={Hourglass}>{examLabel(plan.examInDays)}</Pill>
           )}
           <StreakPill streak={streak} className="xl:hidden" />
-          <SearchPill className="min-w-0 flex-1 md:w-sm md:flex-none" />
+          <LiveSearch topics={topics} className="min-w-0 flex-1 md:w-sm md:flex-none" />
         </div>
       </header>
 
