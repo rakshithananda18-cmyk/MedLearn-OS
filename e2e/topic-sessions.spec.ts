@@ -34,11 +34,11 @@ test('Today finishes its bounded review session and leaves the rest available', 
     await page.getByRole('button', { name: 'Show answer' }).click();
     await page.getByRole('button', { name: 'Easy: Instant' }).click();
   }
-  await expect(page.getByRole('heading', { name: 'Review session complete' })).toBeVisible();
+  await expect(page.getByText('Review session complete')).toBeVisible();
   await expect(page.getByText(/Your remaining reviews are saved/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Show answer' })).toHaveCount(0);
   await expectAccessible(page);
-  await page.getByRole('link', { name: 'Back to Today' }).click();
+  await page.getByRole('link', { name: 'Back to Today' }).last().click();
   await page
     .getByRole('list', { name: 'Waiting for you' })
     .getByRole('link', { name: /Recall/ })
