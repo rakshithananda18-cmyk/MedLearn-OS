@@ -2,7 +2,7 @@
 
 The daily learning system for MBBS students. Phase 1 is an installable web app (Next.js + Supabase).
 
-The current private prototype includes eleven sample topics, two Upper Limb batches, a shared 3D studio,
+The current private prototype includes sixteen sample topics, three Upper Limb batches, a shared 3D studio,
 and Today with activity summaries and topic mastery. The content remains marked as not medically
 reviewed. See the alignment review below for the current scope and remaining release gates.
 

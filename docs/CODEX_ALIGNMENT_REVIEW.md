@@ -1,8 +1,8 @@
 # MedLearn OS alignment review
 
-Reviewed on 29 September 2026 against Product Blueprint v0.5, Visual, UX/UI & Engineering Plan v0.6, source main at [`fa5f0e4`](https://github.com/rakshithananda18-cmyk/MedLearn-OS/commit/fa5f0e4), and the Upper Limb batch 2 branch at [`4c37b14`](https://github.com/rakshithananda18-cmyk/MedLearn-OS/commit/4c37b14).
+Reviewed on 29 September 2026 against Product Blueprint v0.5, Visual, UX/UI & Engineering Plan v0.6, source main at [`55a7806`](https://github.com/rakshithananda18-cmyk/MedLearn-OS/commit/55a7806), and the Upper Limb batch 3 branch at [`3db6439`](https://github.com/rakshithananda18-cmyk/MedLearn-OS/commit/3db6439).
 
-The app has a working foundation for the planned private study group: a shared learning loop, visual lessons, questions, spaced recall, accounts, offline support, notes and textbook choices. It now has eleven sample topics, a shared 3D studio, and the redesigned Today and progress screens. All eleven topics remain marked as not medically reviewed. The second Upper Limb batch is incorporated from the separate Claude branch. The immediate Codex work strengthens continuity and protects saved progress; the knowledge map, reading guidance and reviewed content pipeline remain separate milestones.
+The app has a working foundation for the planned private study group: a shared learning loop, visual lessons, questions, spaced recall, accounts, offline support, notes and textbook choices. It now has sixteen sample topics, a shared 3D studio, and the redesigned Today and progress screens. All sixteen topics remain marked as not medically reviewed. The third Upper Limb batch is incorporated from the separate Claude branch. The immediate Codex work strengthens continuity and protects saved progress; the knowledge map, reading guidance and reviewed content pipeline remain separate milestones.
 
 ## Planning sources
 
@@ -24,7 +24,7 @@ Blueprint v0.5 Section 34 adds a concrete textbook-to-topic pipeline:
 - Deliver batches of 4-6 topics on dedicated branches. The first batch covers the pectoral region, axilla boundaries, axillary vessels, axillary lymph nodes and brachial plexus.
 - Keep full textbooks local and excluded from Git. Original notes need source attribution and a way to identify and replace book-derived content.
 
-The source baseline includes both anatomy editions and reading references for the five first-batch Upper Limb topics; the copied second-batch topics also include references. This review does not verify those page ranges against the books or treat their presence as medical approval.
+The source baseline includes both anatomy editions and reading references for the first-batch Upper Limb topics; the second- and third-batch topics also include references. This review does not verify those page ranges against the books or treat their presence as medical approval.
 
 ## Source changes incorporated
 
@@ -33,7 +33,8 @@ The current Codex branch builds on these source changes, rather than replacing t
 - [Upper Limb batch, pull request 14](https://github.com/rakshithananda18-cmyk/MedLearn-OS/pull/14): pectoral region, axilla, axillary vessels and axillary lymph nodes join brachial plexus and the oxygen curve. The fixed topic order follows the anatomy chapters before physiology.
 - [3D studio, pull request 15](https://github.com/rakshithananda18-cmyk/MedLearn-OS/pull/15): `/studio` provides body-region browsing, topic models, layers, guided views, drawings, a structure quiz and links to other topics showing a structure. Old topic 3D routes redirect to the studio.
 - [Redesign phase 1, pull request 16](https://github.com/rakshithananda18-cmyk/MedLearn-OS/pull/16): Today has an up-next card, activity summaries, a daily ring, streaks and weekly activity; topic mastery and lesson/drill layouts share the redesigned components. The navigation features the 3D studio and the night theme has updated tokens.
-- [Upper Limb batch 2 branch](https://github.com/rakshithananda18-cmyk/MedLearn-OS/tree/upper-limb-batch-2) adds back muscles, deltoid/rotator cuff, scapular spaces, front of arm and back of arm/radial nerve, along with the larger shared 3D model and regenerated posters. Its commits are integrated into this Codex branch for validation; the Claude branch remains separate.
+- [Upper Limb batch 2, pull request 17](https://github.com/rakshithananda18-cmyk/MedLearn-OS/pull/17) adds back muscles, deltoid/rotator cuff, scapular spaces, front of arm and back of arm/radial nerve, along with the larger shared 3D model and regenerated posters. It is now part of main.
+- [Upper Limb batch 3 branch](https://github.com/rakshithananda18-cmyk/MedLearn-OS/tree/upper-limb-batch-3) adds skin/veins/lymph, cubital fossa, forearm flexors, forearm vessels/nerves and carpal tunnel, together with expanded 3D structures and posters. Its published commit is integrated into this Codex branch for validation; the Claude branch remains separate.
 
 These are implemented source features, not evidence of completed medical review, usability sessions or release validation. Daily minutes are estimates from completed activities, not measured active-study time.
 ## Alignment by capability
@@ -47,8 +48,8 @@ These are implemented source features, not evidence of completed medical review,
 | Private access and accounts | Implemented | Invite-list checks, email/password accounts, emailed codes, recovery and adult progress sync exist. Production configuration and invite-list operation still require deployment validation. |
 | Offline and multiple-device progress | Partial | Opened pages cache and offline progress saves exist. Concurrent saves, merging, cancellation, sign-out and unavailable browser storage are the current reliability work. |
 | Textbook catalogue and My books | Implemented starter catalogue | `apps/web/src/content/books.ts` includes BD Chaurasia 8th and Gray's 4th; profile stores multiple selected book IDs. There is no distinct primary-book preference per subject. |
-| Where to read this | Partial | All ten Upper Limb topics have `readIn` references; oxygen curve has none. The UI prefers selected books, but there is no reading-depth choice, stopping rule or structured page-level evidence per answer. |
-| Learning content | Upper Limb batch implemented as samples | `apps/web/src/content/topics.ts` registers ten Upper Limb anatomy topics and the oxygen curve. All eleven remain `reviewed: false`. Content review and the complete production-topic gate remain open. |
+| Where to read this | Partial | All fifteen Upper Limb topics have `readIn` references; oxygen curve has none. The UI prefers selected books, but there is no reading-depth choice, stopping rule or structured page-level evidence per answer. |
+| Learning content | Upper Limb batches implemented as samples | `apps/web/src/content/topics.ts` registers fifteen Upper Limb anatomy topics and the oxygen curve. All sixteen remain `reviewed: false`. Content review and the complete production-topic gate remain open. |
 | Permanent knowledge map and Connections | Partial foundation | Topic regions and the studio body browser organize anatomy; shared structure IDs expose other topics showing a structure. A persistent cross-subject concept graph, explicit relationship types and topic-hub Connections are still missing. |
 | 3D and visual workspace | Implemented, with validation gaps | The studio unifies topic models, layer controls, drawing and structure quizzes, with a 2D fallback. It is not a complete reviewed whole-body anatomy library. Drawings and quiz best scores are stored on the device, separately from account progress. |
 | College and exam sequences | Partial | Today changes its task mix near an exam and after missed days. New learning still uses one fixed topic array; there is no college timetable or separate sequence model. |
@@ -93,7 +94,7 @@ Engineering Section 25A records the BodyParts3D licence-page/file-notice mismatc
 1. Establish the source registry and separate peer/medical review records with an enforced publication lifecycle. Tag textbook-derived content and store versioned evidence for questions as well as whole topics. Extend source, review-status and report controls to the studio's lesson and clinical information.
 2. Extend the existing body-region and shared-structure foundation into a permanent concept/topic map with separate teaching/exam sequences. Add the minimal topic-hub Connections block from Blueprint Section 10 before a graph explorer.
 3. Add primary-book preferences and structured reading guidance: verified edition/chapter/pages, purpose, reading depth and stop condition. Keep missing references visibly unavailable. Allow a student to see why a reading was selected.
-4. Finish the brachial-plexus package against that workflow, then review and complete both implemented sample Upper Limb batches. Preserve sample status until the appropriate review actually happens.
+4. Finish the brachial-plexus package against that workflow, then review and complete the three implemented sample Upper Limb batches. Preserve sample status until the appropriate review actually happens.
 5. Run the existing usability kit with the private group, collect its real timetable and use the observations to refine Today and reading guidance. Validate production email, access restrictions, recovery/offline behavior and performance on actual phones before widening access.
 
 The permanent map, sequence and reading work can proceed independently of completing the textbook batch if they share agreed schema contracts. Keep Codex and Claude changes on their own branches and reconcile those contracts through reviewed changes.
