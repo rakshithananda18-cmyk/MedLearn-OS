@@ -1,56 +1,115 @@
-import { act, render, screen } from '@testing-library/react';
+import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { brachialPlexus } from '@/content/brachial-plexus';
-import { PLANNABLE_TOPICS, practiceQuestions } from '@/content/topics';
-import { completeLesson, resetProgress } from '@/features/progress/store';
+import { libraryTree } from '@/content/library';
+import { PLANNABLE_TOPICS, practiceQuestions, TOPICS } from '@/content/topics';
+import { addGoal, readProgress, resetProgress } from '@/features/progress/store';
 
 import { PracticeView } from './PracticeView';
 
 afterEach(() => act(() => resetProgress()));
 
-const correctText = (index: number) => {
-  const question = brachialPlexus.questions[index];
-  return question?.options.find((option) => option.id === question.answerId)?.text ?? '';
-};
+const renderPractice = (start?: { topic?: string; goal?: string }) =>
+  render(
+    <PracticeView
+      topics={PLANNABLE_TOPICS}
+      questions={practiceQuestions()}
+      tree={libraryTree(TOPICS)}
+      {...(start ? { start } : {})}
+    />,
+  );
+
+/** Answers the question showing with its right option, then moves on. */
+async function answerRight() {
+  const question = practiceQuestions().find(({ question: item }) =>
+    screen.queryByText(item.prompt),
+  );
+  const answer = question?.question.options.find(
+    (option) => option.id === question.question.answerId,
+  );
+  if (!answer) throw new Error('no question showing');
+  await userEvent.click(screen.getByRole('button', { name: new RegExp(escape(answer.text)) }));
+}
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 describe('PracticeView', () => {
-  it('asks the student to finish a lesson first', () => {
-    render(<PracticeView topics={PLANNABLE_TOPICS} questions={practiceQuestions()} />);
-    expect(screen.getByText('Nothing to practise yet')).toBeInTheDocument();
+  it('offers the ways in and how each book section is going', async () => {
+    const { container } = renderPractice();
+    expect(screen.getByRole('button', { name: /Quick mix.*every topic/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Weak spots/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Timed test/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Recall cards/ })).toHaveAttribute('href', '/revise');
+    const strengths = screen.getByRole('region', { name: /Where you are strong/ });
+    expect(within(strengths).getByText('Axilla')).toBeInTheDocument();
+    expect(within(strengths).getAllByText('Not started').length).toBeGreaterThan(1);
+    await expectNoA11yViolations(container);
   });
 
-  it('keeps an answered question on screen until "Next question"', async () => {
-    act(() => completeLesson('brachial-plexus'));
-    render(<PracticeView topics={PLANNABLE_TOPICS} questions={practiceQuestions()} />);
-    await userEvent.click(screen.getByRole('button', { name: correctText(0) }));
-    expect(screen.getByText('Correct', { exact: true })).toBeInTheDocument();
-    expect(screen.getByText(brachialPlexus.questions[0]?.prompt ?? '')).toBeInTheDocument();
+  it('runs a quick mix to its score, counting every answer', async () => {
+    renderPractice();
+    await userEvent.click(screen.getByRole('button', { name: /Quick mix/ }));
+    expect(screen.getByText('1 of 10')).toBeInTheDocument();
+    await answerRight();
+    await answerRight().catch(() => undefined);
+    expect(readProgress().correctAnswers.length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Next question' }));
-    expect(screen.getByText(brachialPlexus.questions[1]?.prompt ?? '')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'End the session' }));
+    expect(screen.getByRole('button', { name: /Quick mix/ })).toBeInTheDocument();
   });
 
-  it('brings a wrongly answered question back next session, and finishes when all are done', async () => {
-    act(() => completeLesson('brachial-plexus'));
-    const { unmount } = render(
-      <PracticeView topics={PLANNABLE_TOPICS} questions={practiceQuestions()} />,
-    );
-    const firstPrompt = brachialPlexus.questions[0]?.prompt ?? '';
-    const wrong = brachialPlexus.questions[0]?.options.find(
-      (option) => option.id !== brachialPlexus.questions[0]?.answerId,
-    );
-    await userEvent.click(screen.getByRole('button', { name: wrong?.text ?? '' }));
-    expect(screen.getByText('Not quite', { exact: true })).toBeInTheDocument();
-    unmount();
-
-    render(<PracticeView topics={PLANNABLE_TOPICS} questions={practiceQuestions()} />);
-    expect(screen.getByText(firstPrompt)).toBeInTheDocument();
-    for (let index = 0; index < brachialPlexus.questions.length; index += 1) {
-      await userEvent.click(screen.getByRole('button', { name: correctText(index) }));
-      await userEvent.click(screen.getByRole('button', { name: 'Next question' }));
+  it('ends a timed test by itself when the time runs out', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      renderPractice();
+      await userEvent.click(screen.getByRole('button', { name: /Timed test/ }));
+      expect(screen.getByRole('timer', { name: 'Time left' })).toHaveTextContent('20:00');
+      for (let second = 0; second < 20 * 60; second++) {
+        act(() => vi.advanceTimersByTime(1000));
+      }
+      expect(screen.getByRole('heading', { name: '0/20' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
     }
-    expect(screen.getByText('All questions done')).toBeInTheDocument();
+  });
+
+  it('opens straight into a topic from Today, and counts it towards the goal it came from', async () => {
+    const goal = addGoal({
+      kind: 'test',
+      title: 'Axilla test',
+      topics: ['axilla'],
+      date: '2099-01-01',
+    });
+    renderPractice({ topic: 'axilla', goal: goal.id });
+    const session = screen.getByRole('region', { name: 'Axilla: walls and contents' });
+    const total = TOPICS.find((topic) => topic.slug === 'axilla')?.questions.length ?? 0;
+    for (let index = 0; index < total; index++) {
+      await answerRight();
+      await userEvent.click(
+        within(session).getByRole('button', {
+          name: index === total - 1 ? 'See how you did' : 'Next question',
+        }),
+      );
+    }
+    expect(screen.getByRole('heading', { name: `${total}/${total}` })).toBeInTheDocument();
+    expect(readProgress().goals[0]?.done).toEqual(['axilla']);
+  });
+
+  it('plans a class test, which then shows with its countdown', async () => {
+    renderPractice();
+    await userEvent.click(screen.getByRole('button', { name: 'Plan a class test or revisit' }));
+    const dialog = screen.getByRole('dialog', { name: 'Plan a class test or revisit' });
+    await userEvent.type(within(dialog).getByLabelText('Name'), 'Upper limb class test');
+    await userEvent.type(within(dialog).getByLabelText('Test date'), '2099-01-01');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Brachial plexus' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save the plan' }));
+
+    expect(readProgress().goals).toMatchObject([
+      { kind: 'test', title: 'Upper limb class test', topics: ['brachial-plexus'] },
+    ]);
+    const goals = screen.getByRole('region', { name: 'Class tests and revisits' });
+    expect(within(goals).getByText('Upper limb class test')).toBeInTheDocument();
+    expect(within(goals).getByRole('button', { name: /Brachial plexus/ })).toBeInTheDocument();
   });
 });

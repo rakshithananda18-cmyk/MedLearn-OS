@@ -1,10 +1,10 @@
 'use client';
 
-import { type TextareaHTMLAttributes, useId } from 'react';
+import { type ComponentPropsWithRef, useId } from 'react';
 
 import { cx } from './cx';
 
-export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextAreaProps extends ComponentPropsWithRef<'textarea'> {
   label: string;
   /** Guidance shown under the label and read out with the field. */
   hint?: string;

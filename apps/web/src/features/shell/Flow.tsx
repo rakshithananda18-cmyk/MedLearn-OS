@@ -1,7 +1,7 @@
-import { cx, Icon } from '@medlearn/ui';
-import { ArrowLeft } from '@medlearn/ui/icons';
-import Link from 'next/link';
+import { cx } from '@medlearn/ui';
 import type { ReactNode } from 'react';
+
+import { BackLink } from './BackLink';
 
 // The pieces of a study flow (a lesson, an exam drill): how far along it is, the steps as a
 // numbered list, and one layout that stacks on phones and splits into stage and panel on wide
@@ -19,13 +19,7 @@ export function FlowProgress({
 }: Readonly<{ back: string; backLabel: string; label: string; done: number; total: number }>) {
   return (
     <div className="flex items-center gap-3">
-      <Link
-        href={back}
-        aria-label={backLabel}
-        className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border-strong bg-surface text-ink shadow-glass transition-colors duration-150 hover:bg-surface-muted"
-      >
-        <Icon icon={ArrowLeft} />
-      </Link>
+      <BackLink href={back} label={backLabel} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-xs font-semibold text-fg-muted">{label}</span>
         <progress

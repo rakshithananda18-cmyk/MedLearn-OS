@@ -7,9 +7,11 @@ import {
   daysBetween,
   dueCardIds,
   EMPTY_PROGRESS,
+  goalToday,
   type LearnerProgress,
   openQuestionIds,
   type PlannableTopic,
+  type StudyGoal,
   type StudyProfile,
 } from './today';
 
@@ -195,5 +197,50 @@ describe('dueCardIds and openQuestionIds', () => {
   it('leave out questions already answered correctly', () => {
     const progress = after({ completedLessons: ['plexus'], correctAnswers: ['q1'] });
     expect(openQuestionIds(topics[0] as PlannableTopic, progress)).toEqual(['q2']);
+  });
+});
+
+describe('goals: class tests and revisits', () => {
+  const goal = (change: Partial<StudyGoal>): StudyGoal => ({
+    id: 'g1',
+    kind: 'test',
+    title: 'Class test',
+    topics: ['plexus', 'axilla', 'arm', 'forearm'],
+    date: '2026-09-28',
+    done: [],
+    createdAt: NOW.toISOString(),
+    ...change,
+  });
+
+  it('spread a test over the days before it, and a revisit over its last day too', () => {
+    // The test is in two days: two topics a day, finishing the day before.
+    expect(goalToday(goal({}), TODAY)).toEqual({ daysLeft: 2, topics: ['plexus', 'axilla'] });
+    // A revisit by the same day has three days: two topics today, then one a day.
+    expect(goalToday(goal({ kind: 'revisit' }), TODAY).topics).toEqual(['plexus', 'axilla']);
+    expect(goalToday(goal({ kind: 'revisit', done: ['plexus'] }), TODAY).topics).toEqual([
+      'axilla',
+    ]);
+  });
+
+  it('put everything left on a test that is today, and nothing once it has passed or is done', () => {
+    expect(goalToday(goal({ date: TODAY }), TODAY).topics).toHaveLength(4);
+    expect(goalToday(goal({ date: '2026-09-25' }), TODAY).topics).toEqual([]);
+    const all = ['plexus', 'axilla', 'arm', 'forearm'];
+    expect(goalToday(goal({ done: all }), TODAY).topics).toEqual([]);
+  });
+
+  it('come into Today after due reviews, even beyond the daily minutes', () => {
+    const progress = after({
+      profile: profile({ dailyMinutes: 10 }),
+      goals: [goal({ topics: ['plexus', 'axilla'], date: '2026-09-27' })],
+    });
+    const plan = buildTodayPlan(topics, progress, NOW);
+    expect(plan.items.map((item) => item.kind)).toEqual(['goal', 'goal']);
+    expect(plan.items[0]).toMatchObject({
+      goalId: 'g1',
+      goalTitle: 'Class test',
+      topicSlug: 'plexus',
+      minutes: 3,
+    });
   });
 });

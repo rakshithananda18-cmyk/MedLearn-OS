@@ -71,4 +71,23 @@ describe('mergeProgress', () => {
     const phone = progress({ profile: { year: 2, examDate: null, dailyMinutes: 20, adult: true } });
     expect(mergeProgress(phone, EMPTY_PROGRESS, NOW).profile?.year).toBe(2);
   });
+
+  it('joins goals by id, keeping topics gone over on either side', () => {
+    const goal = {
+      id: 'g1',
+      kind: 'test' as const,
+      title: 'Class test',
+      topics: ['a', 'b', 'c'],
+      date: '2026-10-01',
+      done: ['a'],
+      createdAt: EARLY.toISOString(),
+    };
+    const phone = progress({ goals: [goal, { ...goal, id: 'g2', done: [] }] });
+    const account = progress({ goals: [{ ...goal, done: ['b'] }] });
+    const merged = mergeProgress(phone, account, NOW);
+    expect(merged.goals.map((item) => [item.id, item.done])).toEqual([
+      ['g1', ['b', 'a']],
+      ['g2', []],
+    ]);
+  });
 });

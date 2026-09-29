@@ -41,6 +41,17 @@ const DayActivity = z.object({
   reviewed: z.number().int().nonnegative(),
 });
 
+/** A class test to prepare for, or topics to revisit by a date. */
+const StudyGoalInput = z.object({
+  id: ItemId,
+  kind: z.enum(['test', 'revisit']),
+  title: z.string().min(1).max(80),
+  topics: z.array(ItemId).min(1).max(200),
+  date: LocalDate,
+  done: z.array(ItemId).max(200),
+  createdAt: IsoTime,
+});
+
 export const LearnerProgressInput = z.object({
   profile: StudyProfileInput.nullable(),
   completedLessons: IdList,
@@ -62,6 +73,8 @@ export const LearnerProgressInput = z.object({
     .record(LocalDate, DayActivity)
     .refine((days) => Object.keys(days).length <= 400, 'Too many days')
     .default({}),
+  // Missing from progress saved before class tests and revisits could be planned.
+  goals: z.array(StudyGoalInput).max(100).default([]),
   updatedAt: IsoTime.nullable(),
 });
 export type LearnerProgressInput = z.infer<typeof LearnerProgressInput>;

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
 import {
+  addGoal,
   chooseBooks,
   completeDrill,
   completeLesson,
@@ -133,5 +134,20 @@ describe('TodayView', () => {
       }
     });
     expect(screen.getByText('All done for today')).toBeInTheDocument();
+  });
+
+  it('fits a planned class test into the plan, and counts it down', () => {
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
+    const goal = { kind: 'test' as const, title: 'Axilla test', topics: ['axilla'] };
+    act(() => {
+      addGoal({ ...goal, date: dayKey(new Date(Date.now() + 3 * DAY_MS)) });
+    });
+    const plan = screen.getByRole('list', { name: "Today's plan" });
+    expect(
+      within(plan).getByRole('link', { name: /Revise: Axilla: walls and contents/ }),
+    ).toHaveAttribute('href', expect.stringMatching(/^\/practice\?goal=goal-\w+&topic=axilla$/));
+    const goals = screen.getByRole('region', { name: 'Tests and revisits' });
+    expect(within(goals).getByText('Axilla test')).toBeInTheDocument();
+    expect(within(goals).getByText(/Test in 3 days/)).toBeInTheDocument();
   });
 });

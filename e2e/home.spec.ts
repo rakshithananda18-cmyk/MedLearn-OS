@@ -14,11 +14,11 @@ test.describe('landing and subjects', () => {
 
   test('subjects come from the database', async ({ page }) => {
     await page.goto('/subjects');
-    const subjects = page.getByRole('list', { name: 'Subjects' });
-    await expect(subjects.getByRole('heading', { level: 2 })).toHaveText([
-      'Anatomy',
-      'Physiology',
-      'Biochemistry',
+    const subjects = page.getByRole('group', { name: 'Subjects' });
+    await expect(subjects.getByRole('button')).toHaveText([
+      /Anatomy/,
+      /Physiology/,
+      /Biochemistry/,
     ]);
   });
 

@@ -15,5 +15,5 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
 
 /** A raised surface for grouping related content. */
 export function Card({ as: Tag = 'div', tone = 'solid', className, ...rest }: CardProps) {
-  return <Tag className={cx('border p-4 xl:p-6', TONE[tone], className)} {...rest} />;
+  return <Tag className={cx('border p-4', TONE[tone], className)} {...rest} />;
 }

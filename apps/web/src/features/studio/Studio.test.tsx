@@ -7,7 +7,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BODY_MODEL, BODY_REGIONS } from '@/content/body';
+import { libraryTree } from '@/content/library';
 import { studioTopics } from '@/content/studio';
+import { TOPICS } from '@/content/topics';
 
 const capability = vi.hoisted(() => ({ supported: true }));
 // What the 3D view last received, so a test can tap the model or draw as a finger would.
@@ -22,6 +24,8 @@ const viewer = vi.hoisted(() => ({
     highlight: ReadonlySet<string>;
     labels: Viewer3DLabel[];
     resetToken: number;
+    reducedMotion: boolean;
+    dpr: number | [number, number];
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -55,6 +59,7 @@ async function renderStudio(initialTopic: string | null = null) {
   return render(
     <Studio
       topics={studioTopics()}
+      tree={libraryTree(TOPICS.filter((topic) => topic.subjectSlug === 'anatomy'))}
       regions={BODY_REGIONS}
       body={BODY_MODEL}
       initialTopic={initialTopic}
@@ -113,7 +118,7 @@ describe('Studio on a phone', () => {
     );
   });
 
-  it('opens a topic in place, with its guided views, and goes back', async () => {
+  it('opens a topic in place, walks its guided views, and goes back', async () => {
     await renderStudio();
     await userEvent.click(screen.getByRole('button', { name: /Axilla: walls/ }));
     expect(
@@ -124,10 +129,9 @@ describe('Studio on a phone', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next view' }));
     expect(screen.getByText(/^Apex/)).toBeInTheDocument();
 
-    // The topic's name opens the topics, with the guided views.
+    // The topic's name opens the topics as the library's tree, the open one marked.
     await userEvent.click(screen.getByRole('button', { name: 'Axilla: walls and contents' }));
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(within(topics).getByRole('list', { name: 'Guided views' })).toBeInTheDocument();
     expect(within(topics).getByRole('button', { name: /Axilla: walls.*Open/ })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Go back' }));
@@ -246,12 +250,16 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
-  it('docks the topics with search and guided views, and the structure and layers', async () => {
+  it('docks the topics and search, the guided views by the tools, and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');
     expect(screen.queryByRole('button', { name: 'Search structures' })).not.toBeInTheDocument();
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(within(topics).getByText('Best “Find it” streak')).toBeInTheDocument();
+    expect(screen.getByText('Best streak')).toBeInTheDocument();
+    const guide = screen.getByRole('group', { name: 'Guided views' });
+    expect(guide).toHaveTextContent('1/');
+    await userEvent.click(within(guide).getByRole('button', { name: 'Next view' }));
+    expect(guide).toHaveTextContent('2/');
     const side = screen.getByRole('complementary', { name: 'About the model' });
     expect(within(side).getByRole('region', { name: 'Layers' })).toBeInTheDocument();
 
@@ -267,5 +275,72 @@ describe('Studio on a wide screen', () => {
 
     await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+  });
+
+  it('lists regions and book sections as a tree of topic cards, each branch folding', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    const tree = screen.getByRole('list', { name: 'Regions and topics' });
+    const open = within(tree).getByRole('button', { name: /Axilla: walls.*Open/ });
+    expect(open).toHaveAttribute('aria-current', 'true');
+    // The branches leading to the open topic start open; the others are folded.
+    expect(within(tree).getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
+    const pectoral = within(tree).getByRole('button', {
+      name: /^Pectoral region/,
+      expanded: false,
+    });
+    await userEvent.click(pectoral);
+    expect(pectoral).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      within(tree).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
+    ).toBeInTheDocument();
+
+    // The whole body sits beside the search.
+    await userEvent.click(screen.getByRole('button', { name: 'Whole body', pressed: false }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Whole body' })).toBeInTheDocument();
+  });
+
+  it('folds either panel away and brings it back', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Hide the topics' }));
+    expect(screen.queryByRole('region', { name: 'Topics' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Hide the model panel' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Show the topics' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Show the model panel' }));
+    expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'About the model' })).toBeInTheDocument();
+  });
+
+  it('shows the topic as its flat diagram when the student picks 2D in the settings', async () => {
+    wideScreen();
+    await renderStudio('brachial-plexus');
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    await userEvent.click(screen.getByRole('switch', { name: 'Flat diagram (2D)' }));
+    expect(screen.queryByTestId('viewer')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Median nerve' })).toBeInTheDocument();
+  });
+
+  it('changes names, camera moves and sharpness in the settings, and keeps them', async () => {
+    wideScreen();
+    const { container, unmount } = await renderStudio();
+    expect(viewer.props?.labels.length).toBeGreaterThan(0);
+    expect(viewer.props?.dpr).toEqual([1, 2]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const settings = screen.getByRole('region', { name: 'Settings' });
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Names on the model' }));
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Smooth camera moves' }));
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Sharper picture' }));
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.reducedMotion).toBe(true);
+    expect(viewer.props?.dpr).toBe(1);
+
+    unmount();
+    await renderStudio();
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.dpr).toBe(1);
   });
 });

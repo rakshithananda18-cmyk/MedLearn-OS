@@ -1,13 +1,14 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, Text } from '@medlearn/ui';
+import { cx, IconButton, Text } from '@medlearn/ui';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
-import { StepList } from '@/features/shell/Flow';
+import type { LibraryNode } from '@/content/library';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
@@ -18,11 +19,20 @@ import {
   LayersPanel,
   type Place,
   SearchSheet,
+  SettingsPanel,
   StructureSearch,
   TopicsPanel,
 } from './panels';
 import { skipQuiz, startQuiz } from './quiz';
-import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
+import {
+  loadBest,
+  loadSettings,
+  loadStrokes,
+  saveBest,
+  saveSettings,
+  saveStrokes,
+  type StudioSettings,
+} from './saved';
 import {
   changeModeIn,
   hiddenIn,
@@ -35,7 +45,15 @@ import {
   startSession,
   toggled,
 } from './session';
-import { BottomSheet, DockedHeader, ModelView, PhoneHeader, ViewTools } from './stage';
+import {
+  BestCard,
+  BottomSheet,
+  DockedHeader,
+  GuideCard,
+  ModelView,
+  PhoneHeader,
+  ViewTools,
+} from './stage';
 import { useCan3D, useDocked, useReducedMotion } from './viewer';
 
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
@@ -43,6 +61,8 @@ const BODY_KEY = 'body';
 
 export interface StudioProps {
   topics: StudioTopic[];
+  /** The anatomy topics as the library's tree: region, book section, topic. */
+  tree: LibraryNode[];
   regions: BodyRegionInfo[];
   /** The whole body, shown when no topic is open. */
   body: Model3D;
@@ -72,6 +92,7 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
   const [session, setSession] = useState<Session>(() =>
     firstSession(topics, regions, initialTopic),
   );
+  const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
   const context = { topic, regions, pool: structures.map((structure) => structure.id) };
@@ -84,6 +105,11 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
     session,
     setSession,
     update,
+    settings,
+    changeSettings: (next: StudioSettings) => {
+      setSettings(next);
+      saveSettings(next);
+    },
     topic,
     model: topic?.model ?? body,
     structures,
@@ -127,13 +153,15 @@ type StudioState = ReturnType<typeof useStudio>;
 interface OverlayProps {
   studio: StudioState;
   topics: StudioTopic[];
+  tree: LibraryNode[];
   regions: BodyRegionInfo[];
   capable: boolean | null;
 }
 
 /**
  * Names on the model: each region's topic count on the whole body, or the picked structure and
- * its path while exploring a topic. None during "Find it", where they would give answers away.
+ * its path while exploring a topic. None during "Find it", where they would give answers away, or
+ * when the student has turned them off.
  */
 function labelsFor(
   studio: StudioState,
@@ -141,6 +169,7 @@ function labelsFor(
   regions: BodyRegionInfo[],
 ): Viewer3DLabel[] {
   const { session, topic } = studio;
+  if (!studio.settings.labels) return [];
   if (!topic) {
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
@@ -179,8 +208,9 @@ function StudioModel({
   capable: boolean | null;
   labels: Viewer3DLabel[];
 }>) {
-  const { session, topic, model, update } = studio;
-  const reducedMotion = useReducedMotion();
+  const { session, topic, model, update, settings } = studio;
+  const systemReducedMotion = useReducedMotion();
+  const reducedMotion = settings.smooth === null ? systemReducedMotion : !settings.smooth;
   const lit = useMemo(() => litIn(session, topic), [session, topic]);
   return (
     <figure className="absolute inset-0">
@@ -201,6 +231,8 @@ function StudioModel({
         strokes={session.strokes}
         labels={labels}
         resetToken={session.reset}
+        sharp={settings.sharp}
+        flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
         onStroke={(stroke) => studio.keepStrokes([...session.strokes, stroke])}
@@ -221,19 +253,20 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       xray={topic ? session.xray : null}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
+      settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
       onIsolate={() => update({ isolate: !session.isolate })}
       onReset={studio.resetView}
+      onSettings={() => studio.togglePanel('settings')}
     />
   );
 }
 
 function Guide({ studio }: Readonly<{ studio: StudioState }>) {
   return (
-    <StepList
-      label="Guided views"
-      steps={studio.model.stops}
+    <GuideCard
+      stops={studio.model.stops}
       index={studio.session.stopIndex}
       onIndex={(stopIndex) => studio.update({ stopIndex })}
     />
@@ -289,6 +322,20 @@ function Layers({ studio, place }: Readonly<{ studio: StudioState; place: Place 
       onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
       onShow={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
       onClose={() => update({ panel: null })}
+    />
+  );
+}
+
+function Settings({ studio }: Readonly<{ studio: StudioState }>) {
+  const reducedMotion = useReducedMotion();
+  if (studio.session.panel !== 'settings') return null;
+  return (
+    <SettingsPanel
+      settings={studio.settings}
+      reducedMotion={reducedMotion}
+      canFlat={Boolean(studio.topic?.diagram)}
+      onChange={studio.changeSettings}
+      onClose={() => studio.update({ panel: null })}
     />
   );
 }
@@ -376,7 +423,7 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
 
 /** Phones and tablets held upright: everything floats over the model, sheets open on demand. */
 function PhoneOverlay(props: Readonly<OverlayProps>) {
-  const { studio, topics, regions } = props;
+  const { studio, topics, tree, regions } = props;
   const { session, topic } = studio;
   const title = topic?.title ?? 'Whole body';
   const quiz = session.mode === 'quiz' ? session.quiz : null;
@@ -410,12 +457,10 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
       {topic && session.panel === 'topics' ? (
         <TopicsPanel
           place="float"
+          tree={tree}
           topics={topics}
           regions={regions}
-          region={session.region}
           current={topic.slug}
-          guide={<Guide studio={studio} />}
-          best={loadBest(topic.slug)}
           onRegion={(region) => studio.update({ region })}
           onTopic={studio.openTopic}
           onClose={() => studio.update({ panel: null })}
@@ -427,12 +472,13 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           <Search studio={studio} topics={topics} autoFocus />
         </SearchSheet>
       ) : null}
+      <Settings studio={studio} />
     </div>
   );
 }
 
 /** Along the bottom where docked: the drawing tools, "Find it", or how to use the model. */
-function DockedFooter({ studio, capable }: Readonly<Omit<OverlayProps, 'topics' | 'regions'>>) {
+function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' | 'capable'>>) {
   const { mode } = studio.session;
   return (
     <footer className="flex flex-col gap-2">
@@ -456,34 +502,77 @@ function DockedFooter({ studio, capable }: Readonly<Omit<OverlayProps, 'topics' 
   );
 }
 
+/** Folds a docked panel away, or brings it back from the edge. */
+function Fold({
+  side,
+  open,
+  onToggle,
+}: Readonly<{ side: 'left' | 'right'; open: boolean; onToggle: () => void }>) {
+  const left = side === 'left';
+  let icon = left ? PanelLeftOpen : PanelRightOpen;
+  if (open) icon = left ? PanelLeftClose : PanelRightClose;
+  const name = left ? 'topics' : 'model panel';
+  return (
+    <IconButton
+      icon={icon}
+      label={open ? `Hide the ${name}` : `Show the ${name}`}
+      title={open ? `Hide the ${name}` : `Show the ${name}`}
+      size="sm"
+      variant={open ? 'ghost' : 'secondary'}
+      aria-expanded={open}
+      className={cx('pointer-events-auto', !open && 'shadow-glass')}
+      onClick={onToggle}
+    />
+  );
+}
+
 /**
  * Tablets held sideways and laptops: the topics docked on the left, the picked structure and
- * the layers on the right, the model in between.
+ * the layers on the right, the model in between. Either side folds away to give the model room.
+ * By the view tools sit the best "Find it" streak and the guided views.
  */
 function DockedOverlay(props: Readonly<OverlayProps>) {
-  const { studio, topics, regions, capable } = props;
+  const { studio, topics, tree, regions, capable } = props;
   const { session, topic } = studio;
+  const [left, setLeft] = useState(true);
+  const [right, setRight] = useState(true);
   const quiz = session.mode === 'quiz' ? session.quiz : null;
   return (
     <div className="pointer-events-none absolute inset-0 flex gap-4 p-4">
-      <TopicsPanel
-        place="dock"
-        topics={topics}
-        regions={regions}
-        region={session.region}
-        current={topic?.slug ?? null}
-        search={quiz ? undefined : <Search studio={studio} topics={topics} />}
-        guide={<Guide studio={studio} />}
-        best={topic ? loadBest(topic.slug) : null}
-        onRegion={(region) => studio.update({ region })}
-        onTopic={studio.openTopic}
-        onClose={() => studio.update({ panel: null })}
-      />
+      {left ? (
+        <TopicsPanel
+          place="dock"
+          tree={tree}
+          topics={topics}
+          regions={regions}
+          current={topic?.slug ?? null}
+          search={quiz ? undefined : <Search studio={studio} topics={topics} />}
+          action={<Fold side="left" open onToggle={() => setLeft(false)} />}
+          onRegion={(region) => studio.update({ region })}
+          onTopic={studio.openTopic}
+          onClose={() => studio.update({ panel: null })}
+        />
+      ) : (
+        <div className="self-start">
+          <Fold side="left" open={false} onToggle={() => setLeft(true)} />
+        </div>
+      )}
       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
         <div className="flex flex-col gap-3">
           <DockedHeader
             title={topic?.title ?? 'Whole body'}
-            tools={quiz ? null : <Tools studio={studio} row />}
+            tools={
+              quiz ? null : (
+                <>
+                  {topic ? <BestCard best={loadBest(topic.slug)} /> : null}
+                  <Guide studio={studio} />
+                  <Tools studio={studio} row />
+                  {topic && !right ? (
+                    <Fold side="right" open={false} onToggle={() => setRight(true)} />
+                  ) : null}
+                </>
+              )
+            }
           />
           {quiz ? (
             <div className="pointer-events-auto flex flex-col gap-3">
@@ -494,15 +583,20 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
         </div>
         <DockedFooter studio={studio} capable={capable} />
       </div>
-      {topic ? (
+      {topic && right ? (
         <aside
           aria-label="About the model"
           className={cx(
             GLASS,
-            'pointer-events-auto flex w-sheet shrink-0 flex-col gap-6 overflow-y-auto p-4',
+            'pointer-events-auto flex w-sheet shrink-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4',
           )}
         >
-          {capable ? <ModeSwitch mode={session.mode} onMode={studio.changeMode} /> : null}
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              {capable ? <ModeSwitch mode={session.mode} onMode={studio.changeMode} /> : null}
+            </div>
+            <Fold side="right" open onToggle={() => setRight(false)} />
+          </div>
           {session.mode === 'explore' && !session.selected ? (
             <Text size="sm" tone="muted">
               Tap a structure on the model, or find it by name, to see what it is.
@@ -512,6 +606,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
           <Layers studio={studio} place="inline" />
         </aside>
       ) : null}
+      <Settings studio={studio} />
     </div>
   );
 }
@@ -524,7 +619,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
  * button in place of the tab bar. Phones that cannot show 3D get the flat diagram.
  */
 export function Studio(props: Readonly<StudioProps>) {
-  const { topics, regions } = props;
+  const { topics, tree, regions } = props;
   const capable = useCan3D();
   const docked = useDocked();
   const studio = useStudio(props);
@@ -543,7 +638,7 @@ export function Studio(props: Readonly<StudioProps>) {
         capable={capable}
         labels={labelsFor(studio, topics, regions)}
       />
-      <Overlay studio={studio} topics={topics} regions={regions} capable={capable} />
+      <Overlay studio={studio} topics={topics} tree={tree} regions={regions} capable={capable} />
     </section>
   );
 }

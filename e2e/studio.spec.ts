@@ -31,6 +31,9 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   await expect(page.getByRole('heading', { level: 1, name: 'Whole body' })).toBeAttached();
   await expectAccessible(page);
 
+  // Laptops list the topics as a tree whose Axilla section starts folded; phones show cards.
+  const section = page.getByRole('button', { name: /^Axilla\s?\d/, expanded: false });
+  if (await section.isVisible()) await section.click();
   await page.getByRole('button', { name: /Axilla: walls/ }).click();
   await expect(
     page.getByRole('heading', { level: 1, name: 'Axilla: walls and contents' }),
