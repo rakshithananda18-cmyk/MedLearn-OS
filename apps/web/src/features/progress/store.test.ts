@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
+import { EMPTY_PROGRESS } from '@medlearn/core';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { parseLocalProgress } from './parseLocalProgress';
 import {
   acceptCatchUp,
   chooseBooks,
@@ -126,9 +128,11 @@ describe('storage recovery', () => {
   it.each([
     { completedLessons: null },
     { completedLessons: 'all' },
+    { completedLessons: [42] },
     { reviews: { card: { due: 'not a date' } } },
     { notes: { topic: { text: 5, updatedAt: 'bad' } } },
     { profile: { adult: true } },
+    { profile: { year: 1, dailyMinutes: 20, examDate: null, adult: true, books: [42] } },
     { activity: { '2026-09-28': { minutes: 'invalid' } } },
     [],
     'not an object',
@@ -140,9 +144,86 @@ describe('storage recovery', () => {
 
   it('preserves valid legacy progress with missing newer fields', () => {
     localStorage.setItem('ml-progress-v1', JSON.stringify({ completedLessons: ['old-lesson'] }));
+    const progress = readProgress();
+    expect(progress.completedLessons).toEqual(['old-lesson']);
+    expect(progress.notes).toEqual({});
+    expect(progress.activity).toEqual({});
+    expect(progress.completedLessons).not.toBe(EMPTY_PROGRESS.completedLessons);
+    expect(progress.completedDrills).not.toBe(EMPTY_PROGRESS.completedDrills);
+    expect(progress.correctAnswers).not.toBe(EMPTY_PROGRESS.correctAnswers);
+    expect(progress.mistakes).not.toBe(EMPTY_PROGRESS.mistakes);
+    expect(progress.notes).not.toBe(EMPTY_PROGRESS.notes);
+    expect(progress.activity).not.toBe(EMPTY_PROGRESS.activity);
+  });
+
+  it('does not share day activity lists with a supplied snapshot', () => {
+    const day = { minutes: 10, lessons: ['anatomy'], drills: [], answered: 0, reviewed: 0 };
+    const progress = parseLocalProgress({ activity: { '2026-09-28': day } });
+    expect(progress?.activity['2026-09-28']?.lessons).toEqual(['anatomy']);
+    expect(progress?.activity['2026-09-28']?.lessons).not.toBe(day.lessons);
+    expect(progress?.activity['2026-09-28']?.drills).not.toBe(day.drills);
+  });
+
+  it('restores valid profile, review, note and activity fields from device storage', () => {
+    rateCard('card-1', 'good', new Date('2026-09-28T08:00:00.000Z'));
+    const review = readProgress().reviews['card-1'];
+    localStorage.setItem(
+      'ml-progress-v1',
+      JSON.stringify({
+        profile: { year: 2, examDate: '2026-12-01', dailyMinutes: 30, adult: true },
+        reviews: { 'card-1': review },
+        notes: { anatomy: { text: 'C5 to T1', updatedAt: '2026-09-28T08:00:00.000Z' } },
+        activity: {
+          '2026-09-28': {
+            minutes: 10,
+            lessons: ['anatomy'],
+            drills: [],
+            answered: 1,
+            reviewed: 1,
+          },
+        },
+      }),
+    );
+    expect(readProgress().profile?.year).toBe(2);
+    expect(readProgress().reviews['card-1']).toEqual(review);
+    expect(readProgress().notes.anatomy?.text).toBe('C5 to T1');
+    expect(readProgress().activity['2026-09-28']?.minutes).toBe(10);
+  });
+
+  it('drops unknown storage fields before they can reach account sync', () => {
+    localStorage.setItem(
+      'ml-progress-v1',
+      JSON.stringify({
+        unknown: 'discard',
+        profile: {
+          year: 1,
+          examDate: null,
+          dailyMinutes: 20,
+          adult: true,
+          unknown: 'discard',
+        },
+        notes: {
+          anatomy: { text: 'C5 to T1', updatedAt: '2026-09-28T08:00:00.000Z', unknown: 'discard' },
+        },
+      }),
+    );
+    const progress = readProgress();
+    expect('unknown' in progress).toBe(false);
+    expect(progress.profile).toEqual({ year: 1, examDate: null, dailyMinutes: 20, adult: true });
+    expect(progress.notes.anatomy).toEqual({
+      text: 'C5 to T1',
+      updatedAt: '2026-09-28T08:00:00.000Z',
+    });
+  });
+
+  it('filters prototype keys in stored dictionaries without discarding valid progress', () => {
+    localStorage.setItem(
+      'ml-progress-v1',
+      '{"completedLessons":["old-lesson"],"reviews":{"__proto__":{"garbage":true}},"notes":{"__proto__":{"text":"unsafe","updatedAt":"2026-09-28T08:00:00.000Z"}}}',
+    );
     expect(readProgress().completedLessons).toEqual(['old-lesson']);
+    expect(readProgress().reviews).toEqual({});
     expect(readProgress().notes).toEqual({});
-    expect(readProgress().activity).toEqual({});
   });
 
   it('keeps work in memory when writes fail but storage reads still succeed', () => {

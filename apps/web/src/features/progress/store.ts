@@ -8,8 +8,9 @@ import {
   scheduleReview,
   type StudyProfile,
 } from '@medlearn/core';
-import { LearnerProgressInput } from '@medlearn/schemas';
 import { useSyncExternalStore } from 'react';
+
+import { parseLocalProgress } from './parseLocalProgress';
 
 const STORAGE_KEY = 'ml-progress-v1';
 const listeners = new Set<() => void>();
@@ -32,12 +33,7 @@ function read(): LearnerProgress {
   cachedRaw = raw;
   try {
     const value: unknown = raw ? JSON.parse(raw) : null;
-    const parsed = LearnerProgressInput.safeParse(
-      value && typeof value === 'object' && !Array.isArray(value)
-        ? { ...EMPTY_PROGRESS, ...value }
-        : null,
-    );
-    cached = parsed.success ? parsed.data : EMPTY_PROGRESS;
+    cached = parseLocalProgress(value) ?? EMPTY_PROGRESS;
   } catch {
     cached = EMPTY_PROGRESS;
   }
