@@ -228,6 +228,151 @@ const PARTS = {
     about:
       'Superficial vein on the medial side of the arm. Pierces the deep fascia and joins the brachial veins to form the axillary vein.',
   },
+  // Back, scapular region and arm (upper limb batch 2).
+  'thoracic-vertebrae': {
+    name: 'T2 to T12 vertebrae',
+    kind: 'bone',
+    about:
+      'Their spines give origin to trapezius (all twelve), the rhomboids (T2 to T5 for rhomboid major) and latissimus dorsi (T7 to T12).',
+  },
+  'lower-ribs': {
+    name: 'Ribs 7 to 12',
+    kind: 'bone',
+    about:
+      'Latissimus dorsi takes a few slips from the lowest three or four ribs. The triangle of auscultation lies over ribs 6 and 7.',
+  },
+  radius: {
+    name: 'Radius',
+    kind: 'bone',
+    about:
+      'Lateral bone of the forearm. Biceps inserts into its tuberosity, which is why biceps is the strongest supinator.',
+  },
+  ulna: {
+    name: 'Ulna',
+    kind: 'bone',
+    about:
+      'Medial bone of the forearm. Triceps inserts into its olecranon and brachialis into its coronoid process and tuberosity.',
+  },
+  trapezius: {
+    name: 'Trapezius',
+    kind: 'muscle',
+    about:
+      'Flat triangular muscle from the skull, ligamentum nuchae and spines of C7 to T12 to the lateral third of the clavicle, acromion and spine of the scapula. Shrugs, braces back and rotates the scapula upwards so the arm can go above the head. Spinal accessory nerve.',
+  },
+  'levator-scapulae': {
+    name: 'Levator scapulae',
+    kind: 'muscle',
+    about:
+      'From the transverse processes of C1 to C4 to the medial border of the scapula above the spine. Raises the scapula. Dorsal scapular nerve and C3, C4.',
+  },
+  'rhomboid-major': {
+    name: 'Rhomboid major',
+    kind: 'muscle',
+    about:
+      'From the spines of T2 to T5 to the medial border of the scapula below the spine. Pulls the scapula back towards the spine and holds it to the chest wall. Dorsal scapular nerve.',
+  },
+  'rhomboid-minor': {
+    name: 'Rhomboid minor',
+    kind: 'muscle',
+    about:
+      'From the lower ligamentum nuchae and the spines of C7 and T1 to the medial border at the root of the spine of the scapula. Works with rhomboid major. Dorsal scapular nerve.',
+  },
+  deltoid: {
+    name: 'Deltoid',
+    kind: 'muscle',
+    about:
+      'Gives the shoulder its round contour. From the lateral third of the clavicle, the acromion and the spine of the scapula to the deltoid tuberosity of the humerus. The middle fibres abduct the arm from about 15 to 90 degrees. Axillary nerve.',
+  },
+  supraspinatus: {
+    name: 'Supraspinatus',
+    kind: 'muscle',
+    about:
+      'Rotator cuff muscle from the supraspinous fossa to the top of the greater tubercle, passing under the acromion. Starts abduction. Suprascapular nerve. Its tendon is the one most often inflamed or torn.',
+  },
+  infraspinatus: {
+    name: 'Infraspinatus',
+    kind: 'muscle',
+    about:
+      'Rotator cuff muscle from the infraspinous fossa to the middle facet of the greater tubercle. Rotates the arm laterally. Suprascapular nerve.',
+  },
+  'teres-minor': {
+    name: 'Teres minor',
+    kind: 'muscle',
+    about:
+      'Rotator cuff muscle from the upper lateral border of the scapula to the lowest facet of the greater tubercle. Rotates the arm laterally. Axillary nerve. Forms the upper border of the quadrangular space.',
+  },
+  'biceps-long': {
+    name: 'Long head of biceps',
+    kind: 'muscle',
+    about:
+      'Arises from the supraglenoid tubercle; its tendon runs inside the shoulder joint and down the intertubercular groove. With the short head it inserts into the radial tuberosity: flexes the elbow and is the strongest supinator. Musculocutaneous nerve.',
+  },
+  brachialis: {
+    name: 'Brachialis',
+    kind: 'muscle',
+    about:
+      'From the lower half of the front of the humerus to the coronoid process and tuberosity of the ulna. The main flexor of the elbow in every position. Musculocutaneous nerve (with a small radial nerve supply).',
+  },
+  'triceps-long': {
+    name: 'Long head of triceps',
+    kind: 'muscle',
+    about:
+      'From the infraglenoid tubercle of the scapula, so it also crosses the shoulder. It runs between teres minor and teres major and bounds the quadrangular and triangular spaces. Radial nerve.',
+  },
+  'triceps-lateral': {
+    name: 'Lateral head of triceps',
+    kind: 'muscle',
+    about:
+      'From the back of the humerus above the radial groove. Joins the common tendon to the olecranon. Radial nerve.',
+  },
+  'triceps-medial': {
+    name: 'Medial head of triceps',
+    kind: 'muscle',
+    about:
+      'The deep head, from the back of the humerus below the radial groove. Joins the common tendon to the olecranon. Radial nerve.',
+  },
+  anconeus: {
+    name: 'Anconeus',
+    kind: 'muscle',
+    about:
+      'Small muscle from the back of the lateral epicondyle to the olecranon; helps triceps extend the elbow. Radial nerve (through the nerve to the medial head of triceps).',
+  },
+  brachioradialis: {
+    name: 'Brachioradialis',
+    kind: 'muscle',
+    about:
+      'From the lateral supracondylar ridge to the lower end of the radius. Flexes the elbow with the forearm midway between pronation and supination. Radial nerve, which lies between it and brachialis above the elbow.',
+  },
+  'deep-brachial-artery': {
+    name: 'Profunda brachii artery',
+    kind: 'artery',
+    about:
+      'The largest branch of the brachial artery. It runs with the radial nerve through the lower triangular space and the radial groove, and ends as the radial and middle collateral arteries.',
+  },
+  'radial-collateral-artery': {
+    name: 'Radial collateral artery',
+    kind: 'artery',
+    about:
+      'Terminal branch of the profunda brachii that follows the radial nerve through the lateral intermuscular septum to the anastomosis round the elbow.',
+  },
+  'middle-collateral-artery': {
+    name: 'Middle collateral artery',
+    kind: 'artery',
+    about:
+      'Terminal branch of the profunda brachii that descends in the medial head of triceps to the anastomosis behind the elbow.',
+  },
+  'suprascapular-artery': {
+    name: 'Suprascapular artery',
+    kind: 'artery',
+    about:
+      'From the thyrocervical trunk of the first part of the subclavian. It crosses above the superior transverse scapular ligament (the nerve passes below it) and supplies both fossae. Part of the scapular anastomosis.',
+  },
+  'dorsal-scapular-artery': {
+    name: 'Dorsal scapular artery',
+    kind: 'artery',
+    about:
+      'From the subclavian artery (or the transverse cervical artery). Runs down along the medial border of the scapula with the dorsal scapular nerve. Part of the scapular anastomosis.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type ShoulderPartId = keyof typeof PARTS;

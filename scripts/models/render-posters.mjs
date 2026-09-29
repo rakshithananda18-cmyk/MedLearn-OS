@@ -24,10 +24,16 @@ export const POSTERS = [
   { name: 'axillary-vessels', path: '/studio?topic=axillary-vessels' },
   { name: 'axillary-lymph-nodes', path: '/studio?topic=axillary-lymph-nodes' },
   { name: 'brachial-plexus', path: '/studio?topic=brachial-plexus' },
+  { name: 'back-muscles', path: '/studio?topic=back-muscles' },
+  { name: 'deltoid-rotator-cuff', path: '/studio?topic=deltoid-rotator-cuff' },
+  { name: 'scapular-spaces', path: '/studio?topic=scapular-spaces' },
+  { name: 'arm-front', path: '/studio?topic=arm-front' },
+  { name: 'arm-back-radial', path: '/studio?topic=arm-back-radial' },
 ];
 
-// Only the model: no app chrome and no backgrounds.
-const BARE = `nav, header, footer, section[aria-label] section, .bg-sky { display: none !important; }
+// Only the model: no app chrome, no studio controls or labels, and no backgrounds.
+const BARE = `nav, .bg-sky, section[aria-label="3D studio"] > :not(figure),
+  figure [aria-hidden="true"] { display: none !important; }
   html, body, main, section[aria-label="3D studio"] { background: transparent !important; border: 0 !important; }`;
 
 async function main() {

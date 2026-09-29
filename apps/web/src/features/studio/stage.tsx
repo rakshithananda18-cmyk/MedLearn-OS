@@ -243,7 +243,7 @@ export function PhoneHeader({
 export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: ReactNode }>) {
   return (
     <header className="flex items-center justify-between gap-4 px-2">
-      <h1 className="text-gold truncate font-display text-4xl tracking-display">{title}</h1>
+      <h1 className="text-gold line-clamp-2 font-display text-3xl tracking-display">{title}</h1>
       {tools}
     </header>
   );

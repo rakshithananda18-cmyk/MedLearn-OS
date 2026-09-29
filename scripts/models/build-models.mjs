@@ -35,7 +35,8 @@ const PEC_MINOR_X = { lateral: -137, medial: -107 };
 export const MODELS = [
   {
     name: 'shoulder-chest',
-    maxTriangles: 80_000,
+    // Shoulder, back and arm (upper limb batches 1 and 2): one file every upper limb topic shares.
+    maxTriangles: 150_000,
     error: 0.002,
     parts: [
       // Bones.
@@ -60,6 +61,31 @@ export const MODELS = [
       { id: 'vertebra-c6', files: ['FJ3170'], ratio: 1 },
       { id: 'vertebra-c7', files: ['FJ3172'], ratio: 1 },
       { id: 'vertebra-t1', files: ['FJ3158'], ratio: 1 },
+      {
+        id: 'thoracic-vertebrae',
+        files: [
+          'FJ3160',
+          'FJ3163',
+          'FJ3166',
+          'FJ3169',
+          'FJ3171',
+          'FJ3173',
+          'FJ3174',
+          'FJ3175',
+          'FJ3154',
+          'FJ3155',
+          'FJ3156',
+        ],
+        ratio: 0.15,
+      },
+      {
+        // Ribs 7 to 12, with the seventh costal cartilage.
+        id: 'lower-ribs',
+        files: ['FJ3346', 'FJ3347', 'FJ3348', 'FJ3330', 'FJ3331', 'FJ3332', 'FJ3345'],
+        ratio: 0.1,
+      },
+      { id: 'radius', files: ['FJ3349'], ratio: 0.3 },
+      { id: 'ulna', files: ['FJ3391'], ratio: 0.3 },
       // Muscles (BodyParts3D has no latissimus dorsi).
       { id: 'pec-major', files: ['FJ1447', 'FJ1464', 'FJ1446'], ratio: 0.4 },
       { id: 'pec-minor', files: ['FJ1456'], ratio: 0.25 },
@@ -69,6 +95,22 @@ export const MODELS = [
       { id: 'teres-major', files: ['FJ1507'], ratio: 1 },
       { id: 'coracobrachialis', files: ['FJ1488'], ratio: 1 },
       { id: 'biceps-short', files: ['FJ1512'], ratio: 1 },
+      // Back, scapular region and arm (batch 2).
+      { id: 'trapezius', files: ['FJ1521', 'FJ1554', 'FJ1520'], ratio: 0.15 },
+      { id: 'levator-scapulae', files: ['FJ1532'], ratio: 0.4 },
+      { id: 'rhomboid-major', files: ['FJ1536'], ratio: 0.4 },
+      { id: 'rhomboid-minor', files: ['FJ1537'], ratio: 0.5 },
+      { id: 'deltoid', files: ['FJ1468', 'FJ1467', 'FJ1513'], ratio: 0.2 },
+      { id: 'supraspinatus', files: ['FJ1506'], ratio: 0.4 },
+      { id: 'infraspinatus', files: ['FJ1500'], ratio: 0.3 },
+      { id: 'teres-minor', files: ['FJ1508'], ratio: 0.6 },
+      { id: 'biceps-long', files: ['FJ1478'], ratio: 0.5 },
+      { id: 'brachialis', files: ['FJ1486'], ratio: 0.4 },
+      { id: 'triceps-long', files: ['FJ1479'], ratio: 0.3 },
+      { id: 'triceps-lateral', files: ['FJ1477'], ratio: 0.3 },
+      { id: 'triceps-medial', files: ['FJ1480'], ratio: 0.3 },
+      { id: 'anconeus', files: ['FJ1485'], ratio: 0.6 },
+      { id: 'brachioradialis', files: ['FJ1487'], ratio: 0.3 },
       // Arteries. The thoracoacromial trunk is not in the source, only its branches.
       { id: 'subclavian-artery', files: ['FJ3579'], ratio: 1 },
       { id: 'axillary-artery', files: ['FJ2268'], ratio: 1 },
@@ -99,6 +141,11 @@ export const MODELS = [
       { id: 'anterior-circumflex-humeral-artery', files: ['FJ2264'], ratio: 0.5 },
       { id: 'posterior-circumflex-humeral-artery', files: ['FJ2291', 'FJ2292'], ratio: 0.6 },
       { id: 'internal-thoracic-artery', files: ['FJ1937'], ratio: 0.5 },
+      { id: 'deep-brachial-artery', files: ['FJ2277'], ratio: 1 },
+      { id: 'radial-collateral-artery', files: ['FJ2262'], ratio: 1 },
+      { id: 'middle-collateral-artery', files: ['FJ2362'], ratio: 1 },
+      { id: 'suprascapular-artery', files: ['FJ2303'], ratio: 1 },
+      { id: 'dorsal-scapular-artery', files: ['FJ2284'], ratio: 1 },
       // Veins.
       { id: 'subclavian-vein', files: ['FJ3587'], ratio: 1 },
       { id: 'axillary-vein', files: ['FJ2269'], ratio: 1 },

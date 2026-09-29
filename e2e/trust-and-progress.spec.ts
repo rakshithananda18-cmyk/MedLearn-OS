@@ -27,7 +27,8 @@ test('Progress shows mastery and turns a missed question into a weak spot', asyn
     updatedAt: now,
   });
   await page.goto('/progress');
-  await expect(page.getByText('1 of 6 lessons')).toBeVisible();
+  // One lesson done, however many topics there are.
+  await expect(page.getByText(/^1 of \d+ lessons$/)).toBeVisible();
   await expect(page.getByText('Brachial plexus: 1 missed question to recall')).toBeVisible();
   await expectAccessible(page);
 
