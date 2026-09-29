@@ -423,7 +423,7 @@ export function TimeRing({
 export function WeakSpots({
   spots,
   className,
-}: Readonly<{ spots: Array<{ title: string; count: number }>; className?: string }>) {
+}: Readonly<{ spots: Array<{ slug: string; title: string; count: number }>; className?: string }>) {
   if (spots.length === 0) return null;
   return (
     <section
@@ -437,7 +437,7 @@ export function WeakSpots({
         {spots.map((spot) => (
           <li key={spot.title}>
             <Link
-              href="/revise"
+              href={`/revise?topic=${spot.slug}`}
               className="flex min-h-12 items-center gap-3 rounded-md bg-surface px-3 py-2 hover:bg-surface-muted"
             >
               <span aria-hidden="true" className="size-2 rounded-full bg-gold" />

@@ -1,112 +1,389 @@
 // @vitest-environment jsdom
 import { EMPTY_PROGRESS, type LearnerProgress } from '@medlearn/core';
+import type { SavedProgress } from '@medlearn/schemas';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { completeLesson, readProgress, resetProgress } from '@/features/progress/store';
+import {
+  completeLesson,
+  readProgress,
+  replaceProgress,
+  resetProgress,
+  saveNote,
+} from '@/features/progress/store';
 
-import { adoptAccountProgress, newerCopy, restoreProgress, startProgressSync } from './sync';
+import {
+  adoptAccountProgress,
+  flushProgressSync,
+  newerCopy,
+  pauseProgressSync,
+  restoreProgress,
+  startProgressSync,
+} from './sync';
 
-// The app loads the schema library on demand; load it once up front so the waits below time the
-// screen, not the first import.
 beforeAll(() => import('@medlearn/schemas'));
 
-const copy = (updatedAt: string | null): LearnerProgress => ({ ...EMPTY_PROGRESS, updatedAt });
+const EARLY = '2026-09-27T09:00:00.000Z';
+const LATE = '2030-01-01T00:00:00.000Z';
+const adult = { year: 1 as const, examDate: null, dailyMinutes: 20, adult: true };
+const copy = (changes: Partial<LearnerProgress> = {}): LearnerProgress => ({
+  ...EMPTY_PROGRESS,
+  profile: adult,
+  updatedAt: EARLY,
+  ...changes,
+});
+const stored = (progress: LearnerProgress): SavedProgress => ({
+  progress,
+  updatedAt: progress.updatedAt ?? EARLY,
+});
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
 
 describe('newerCopy', () => {
-  it('keeps the newer copy and lets a fresh device take the server copy', () => {
-    const early = '2026-09-27T09:00:00.000Z';
-    const late = '2026-09-27T10:00:00.000Z';
-    expect(newerCopy(copy(late), copy(early))).toBe('local');
-    expect(newerCopy(copy(early), copy(late))).toBe('server');
-    expect(newerCopy(copy(early), copy(early))).toBe('same');
-    expect(newerCopy(copy(null), copy(early))).toBe('server');
-    expect(newerCopy(copy(early), null)).toBe('local');
-    expect(newerCopy(copy(null), null)).toBe('same');
+  it('selects the most recent profile and restores a fresh device', () => {
+    expect(newerCopy(copy({ updatedAt: LATE }), copy())).toBe('local');
+    expect(newerCopy(copy(), copy({ updatedAt: LATE }))).toBe('server');
+    expect(newerCopy(copy(), copy())).toBe('same');
+    expect(newerCopy(EMPTY_PROGRESS, copy())).toBe('server');
+    expect(newerCopy(copy(), null)).toBe('local');
+    expect(newerCopy(EMPTY_PROGRESS, null)).toBe('same');
   });
 });
 
-describe('startProgressSync', () => {
-  const serverCopy = {
-    ...EMPTY_PROGRESS,
-    profile: { year: 1 as const, examDate: null, dailyMinutes: 20, adult: true },
-    completedLessons: ['brachial-plexus'],
-    updatedAt: '2030-01-01T00:00:00.000Z',
-  };
-  const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
-    if (url === '/api/progress' && !init) {
-      return Response.json({ data: { progress: serverCopy, updatedAt: serverCopy.updatedAt } });
+describe('progress sync', () => {
+  let saved: SavedProgress | null;
+  let stop: (() => void) | undefined;
+  const fetchMock = vi.fn(async (url: string, init?: RequestInit): Promise<Response> => {
+    if (url === '/api/session') return Response.json({ data: { started: true } });
+    if (init?.method !== 'PUT') return Response.json({ data: saved });
+    const body = JSON.parse(String(init.body)) as {
+      progress: LearnerProgress;
+      expectedUpdatedAt: string | null;
+    };
+    if (body.expectedUpdatedAt !== (saved?.updatedAt ?? null)) {
+      return new Response(null, { status: 409 });
     }
-    return Response.json({ data: {} });
+    saved = stored(body.progress);
+    return Response.json({ data: { saved: true } });
   });
 
+  const defaultFetch = fetchMock.getMockImplementation();
+  if (!defaultFetch) throw new Error('Missing fetch implementation');
+
   beforeEach(() => {
+    fetchMock.mockReset().mockImplementation(defaultFetch);
     vi.useFakeTimers();
+    resetProgress();
+    replaceProgress(copy());
+    saved = stored(copy({ completedLessons: ['brachial-plexus'], updatedAt: LATE }));
     vi.stubGlobal('fetch', fetchMock);
   });
   afterEach(() => {
-    vi.useRealTimers();
+    stop?.();
+    stop = undefined;
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     fetchMock.mockClear();
     resetProgress();
+    vi.useRealTimers();
   });
 
-  it('starts a session, takes the newer server copy, then saves later changes', async () => {
-    const stop = startProgressSync();
-    await vi.waitFor(() => expect(readProgress().completedLessons).toEqual(['brachial-plexus']));
-    expect(fetchMock).toHaveBeenCalledWith('/api/session', { method: 'POST' });
+  const puts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+
+  it('restores saved work, uploads later learning, and does not churn identical snapshots', async () => {
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(readProgress().completedLessons).toEqual(['brachial-plexus']);
+    expect(puts()).toHaveLength(0);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/session',
+      expect.objectContaining({ method: 'POST' }),
+    );
 
     completeLesson('oxygen-haemoglobin-curve');
     await vi.advanceTimersByTimeAsync(1000);
-    const put = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT');
-    expect(JSON.parse(String(put?.[1]?.body)).progress.completedLessons).toEqual([
+    await flushProgressSync();
+    expect(saved?.progress.completedLessons.slice().sort()).toEqual([
       'brachial-plexus',
       'oxygen-haemoglobin-curve',
     ]);
-    stop();
+    expect(Date.parse(saved?.updatedAt ?? '')).toBeGreaterThan(Date.parse(LATE));
+    const count = puts().length;
+    globalThis.dispatchEvent(new Event('online'));
+    await flushProgressSync();
+    expect(puts()).toHaveLength(count);
   });
 
-  it('sends what was learned offline once the phone is back online', async () => {
-    const stop = startProgressSync();
-    await vi.waitFor(() => expect(readProgress().completedLessons).toEqual(['brachial-plexus']));
-    fetchMock.mockClear();
-    const puts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT');
+  it('joins distinct offline work, keeps newer notes, and preserves a cleared note', async () => {
+    const later = '2030-01-02T00:00:00.000Z';
+    replaceProgress(
+      copy({
+        completedLessons: ['oxygen-haemoglobin-curve'],
+        notes: { topic: { text: '', updatedAt: later } },
+        updatedAt: later,
+      }),
+    );
+    saved = stored(
+      copy({
+        completedLessons: ['brachial-plexus'],
+        notes: { topic: { text: 'old note', updatedAt: LATE } },
+        updatedAt: LATE,
+      }),
+    );
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(saved?.progress.completedLessons.slice().sort()).toEqual([
+      'brachial-plexus',
+      'oxygen-haemoglobin-curve',
+    ]);
+    expect(saved?.progress.notes.topic?.text).toBe('');
+    expect(readProgress()).toEqual(saved?.progress);
+  });
 
-    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
-    completeLesson('oxygen-haemoglobin-curve');
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(puts()).toHaveLength(1);
+  it('preserves activity from both devices and keeps reconnects idempotent', async () => {
+    const day = { minutes: 15, lessons: ['local'], drills: [], answered: 2, reviewed: 1 };
+    replaceProgress(
+      copy({
+        activity: { '2026-09-28': day },
+      }),
+    );
+    saved = stored(
+      copy({
+        activity: {
+          '2026-09-27': { ...day, lessons: ['earlier'] },
+          '2026-09-28': { ...day, lessons: ['remote'], drills: ['remote'], reviewed: 3 },
+        },
+        updatedAt: LATE,
+      }),
+    );
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(saved?.progress.activity['2026-09-27']?.lessons).toEqual(['earlier']);
+    expect(saved?.progress.activity['2026-09-28']).toEqual({
+      minutes: 15,
+      lessons: ['local', 'remote'],
+      drills: ['remote'],
+      answered: 2,
+      reviewed: 3,
+    });
+    const writes = puts().length;
+    globalThis.dispatchEvent(new Event('online'));
+    await flushProgressSync();
+    expect(puts()).toHaveLength(writes);
+  });
 
-    globalThis.dispatchEvent(new Event('online'));
-    await vi.waitFor(() => expect(puts()).toHaveLength(2));
-    // Nothing new since that save: coming online again sends nothing.
-    await vi.advanceTimersByTimeAsync(0);
-    globalThis.dispatchEvent(new Event('online'));
-    await vi.advanceTimersByTimeAsync(0);
+  it('does not write a new snapshot just because activity lists have a different order', async () => {
+    const day = { minutes: 15, lessons: ['first', 'second'], drills: [], answered: 2, reviewed: 1 };
+    replaceProgress(
+      copy({
+        activity: { '2026-09-28': { ...day, lessons: ['second', 'first'] } },
+      }),
+    );
+    saved = stored(copy({ activity: { '2026-09-28': day }, updatedAt: LATE }));
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(puts()).toHaveLength(0);
+  });
+
+  it('merges a competing save before retrying with the new database version', async () => {
+    replaceProgress(copy({ completedLessons: ['local-lesson'] }));
+    const normalFetch = defaultFetch;
+    let conflicted = false;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'PUT' && !conflicted) {
+        conflicted = true;
+        saved = stored(
+          copy({ completedLessons: ['remote-lesson'], updatedAt: '2031-01-01T00:00:00.000Z' }),
+        );
+        return new Response(null, { status: 409 });
+      }
+      return normalFetch(url, init);
+    });
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(saved?.progress.completedLessons.sort()).toEqual([
+      'brachial-plexus',
+      'local-lesson',
+      'remote-lesson',
+    ]);
     expect(puts()).toHaveLength(2);
-    stop();
+    expect(JSON.parse(String(puts()[1]?.[1]?.body)).expectedUpdatedAt).toBe(
+      '2031-01-01T00:00:00.000Z',
+    );
+    fetchMock.mockImplementation(normalFetch);
   });
 
-  it('restores the server copy on a phone that lost its local progress', async () => {
-    await restoreProgress();
+  it('sends the exact database version token, including fractional precision and offset', async () => {
+    saved = {
+      progress: copy({ completedLessons: ['remote-lesson'] }),
+      updatedAt: '2026-09-27T09:00:00.123456+00:00',
+    };
+    replaceProgress(copy({ completedLessons: ['local-lesson'] }));
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(JSON.parse(String(puts()[0]?.[1]?.body)).expectedUpdatedAt).toBe(
+      '2026-09-27T09:00:00.123456+00:00',
+    );
+    expect(saved?.progress.completedLessons.slice().sort()).toEqual([
+      'local-lesson',
+      'remote-lesson',
+    ]);
+  });
+
+  it('bounds conflict retries and leaves unsaved work on the phone', async () => {
+    replaceProgress(copy({ completedLessons: ['offline-lesson'] }));
+    const normalFetch = defaultFetch;
+    fetchMock.mockImplementation((url, init) =>
+      init?.method === 'PUT'
+        ? Promise.resolve(new Response(null, { status: 409 }))
+        : normalFetch(url, init),
+    );
+    stop = startProgressSync();
+    await expect(flushProgressSync()).rejects.toThrow('another device');
+    expect(puts()).toHaveLength(3);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(puts()).toHaveLength(3);
+    expect(readProgress().completedLessons).toContain('offline-lesson');
+    fetchMock.mockImplementation(normalFetch);
+  });
+
+  it('serializes uploads and flushes changes made during an earlier upload', async () => {
+    replaceProgress(copy({ completedLessons: ['first'] }));
+    const normalFetch = defaultFetch;
+    const pending = deferred<Response>();
+    let first = true;
+    fetchMock.mockImplementation(async (url, init) => {
+      const response = await normalFetch(url, init);
+      if (init?.method === 'PUT' && first) {
+        first = false;
+        return pending.promise;
+      }
+      return response;
+    });
+    stop = startProgressSync();
+    await vi.waitFor(() => expect(puts()).toHaveLength(1));
+    completeLesson('second');
+    const flushed = flushProgressSync();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(puts()).toHaveLength(1);
+    pending.resolve(Response.json({ data: { saved: true } }));
+    await flushed;
+    expect(saved?.progress.completedLessons).toContain('second');
+    expect(puts()).toHaveLength(2);
+    fetchMock.mockImplementation(normalFetch);
+  });
+
+  it('retries offline work after reconnecting', async () => {
+    stop = startProgressSync();
+    await flushProgressSync();
+    const normalFetch = defaultFetch;
+    fetchMock.mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')));
+    completeLesson('offline-lesson');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(readProgress().completedLessons).toContain('offline-lesson');
+    fetchMock.mockImplementation(normalFetch);
+    globalThis.dispatchEvent(new Event('online'));
+    await flushProgressSync();
+    expect(saved?.progress.completedLessons).toContain('offline-lesson');
+  });
+
+  it('ignores an old pull after stopping, even if the transport ignores abort', async () => {
+    const pending = deferred<Response>();
+    const normalFetch = defaultFetch;
+    fetchMock.mockImplementation((url, init) =>
+      url === '/api/progress' ? pending.promise : normalFetch(url, init),
+    );
+    stop = startProgressSync();
+    await vi.waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/progress', expect.anything()),
+    );
+    stop();
+    resetProgress();
+    pending.resolve(Response.json({ data: saved }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(readProgress()).toEqual(EMPTY_PROGRESS);
+    expect(puts()).toHaveLength(0);
+    fetchMock.mockImplementation(normalFetch);
+  });
+
+  it('does not overwrite a new local setup when a restore arrives late', async () => {
+    resetProgress();
+    const pending = deferred<Response>();
+    fetchMock.mockReturnValueOnce(pending.promise);
+    const restoring = restoreProgress();
+    replaceProgress(copy({ profile: { ...adult, adult: false } }));
+    pending.resolve(Response.json({ data: saved }));
+    await restoring;
+    expect(readProgress().profile?.adult).toBe(false);
+  });
+
+  it('does not restore progress after clearing the device', async () => {
+    resetProgress();
+    const pending = deferred<Response>();
+    fetchMock.mockReturnValueOnce(pending.promise);
+    const restoring = restoreProgress();
+    resetProgress();
+    pending.resolve(Response.json({ data: saved }));
+    await restoring;
+    expect(readProgress()).toEqual(EMPTY_PROGRESS);
+  });
+
+  it('never uploads when starting a session fails', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    stop = startProgressSync();
+    await expect(flushProgressSync()).rejects.toThrow('Starting session failed');
+    expect(puts()).toHaveLength(0);
+  });
+
+  it('does not overwrite invalid server progress', async () => {
+    const normalFetch = defaultFetch;
+    fetchMock.mockImplementation((url, init) =>
+      url === '/api/progress'
+        ? Promise.resolve(
+            Response.json({ data: { progress: { completedLessons: null }, updatedAt: LATE } }),
+          )
+        : normalFetch(url, init),
+    );
+    stop = startProgressSync();
+    await expect(flushProgressSync()).rejects.toThrow();
+    expect(puts()).toHaveLength(0);
+    fetchMock.mockImplementation(normalFetch);
+  });
+
+  it('keeps account transitions paused until all callers resume', async () => {
+    const resumeFirst = pauseProgressSync();
+    const resumeSecond = pauseProgressSync();
+    stop = startProgressSync();
+    expect(fetchMock).not.toHaveBeenCalled();
+    resumeFirst();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchMock).not.toHaveBeenCalled();
+    resumeSecond();
+    await flushProgressSync();
     expect(readProgress().completedLessons).toEqual(['brachial-plexus']);
   });
 
-  it('leaves the phone alone when there is no session', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response(null, { status: 401 })),
-    );
-    await restoreProgress();
-    expect(readProgress().completedLessons).toEqual([]);
+  it('joins the phone and account after sign-in', async () => {
+    completeLesson('offline-lesson');
+    saveNote('my-note', 'Remember this');
+    await adoptAccountProgress();
+    expect(readProgress().completedLessons.sort()).toEqual(['brachial-plexus', 'offline-lesson']);
+    expect(readProgress().notes['my-note']?.text).toBe('Remember this');
+    expect(readProgress().profile?.adult).toBe(true);
   });
 
-  it('joins this phone with the account after signing in, as an adult profile', async () => {
-    completeLesson('oxygen-haemoglobin-curve');
-    await adoptAccountProgress();
-    expect(readProgress().completedLessons.sort()).toEqual([
-      'brachial-plexus',
-      'oxygen-haemoglobin-curve',
-    ]);
-    expect(readProgress().profile?.adult).toBe(true);
+  it('restores a lost device copy, and leaves visitors without a session alone', async () => {
+    resetProgress();
+    await restoreProgress();
+    expect(readProgress().completedLessons).toEqual(['brachial-plexus']);
+    resetProgress();
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    await restoreProgress();
+    expect(readProgress()).toEqual(EMPTY_PROGRESS);
   });
 });

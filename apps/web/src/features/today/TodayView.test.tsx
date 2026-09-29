@@ -62,11 +62,14 @@ describe('TodayView', () => {
   it('adds reviews and practice once the lesson is done, within the daily minutes', () => {
     render(<TodayView topics={PLANNABLE_TOPICS} />);
     act(() => completeLesson('pectoral-region'));
-    expect(screen.getByRole('link', { name: /Review 5 cards/ })).toHaveAttribute('href', '/revise');
+    expect(screen.getByRole('link', { name: /Review 5 cards/ })).toHaveAttribute(
+      'href',
+      '/revise?limit=5',
+    );
     expect(screen.getByRole('link', { name: /Learn: Axilla/ })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /Practice: Pectoral region and breast/ }),
-    ).toBeInTheDocument();
+    ).toHaveAttribute('href', '/practice?topic=pectoral-region');
     expect(screen.getByText('19 of 20 min')).toBeInTheDocument();
   });
 

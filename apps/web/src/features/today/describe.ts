@@ -18,7 +18,7 @@ export function describe(item: TodayItem): {
       return {
         title: `Review ${item.count} ${item.count === 1 ? 'card' : 'cards'}`,
         meta: `${item.minutes} min · spaced recall`,
-        href: '/revise',
+        href: `/revise?limit=${item.count}`,
         icon: RotateCcw,
         kind: 'Recall',
         action: 'Start recall',
@@ -36,7 +36,7 @@ export function describe(item: TodayItem): {
       return {
         title: `Practice: ${item.title}`,
         meta: `${item.count} ${item.count === 1 ? 'question' : 'questions'} · ${item.minutes} min`,
-        href: '/practice',
+        href: `/practice?topic=${item.topicSlug}`,
         icon: ClipboardCheck,
         kind: 'Practice',
         action: 'Start practice',

@@ -41,3 +41,16 @@ export function loadBest(topicSlug: string): number {
 export function saveBest(topicSlug: string, best: number) {
   write(BEST_KEY, topicSlug, best);
 }
+
+/** Removes only this learner's local Studio work when they sign out on a shared device. */
+export function clearStudioData(): boolean {
+  let cleared = true;
+  for (const key of [DRAWINGS_KEY, BEST_KEY]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      cleared = false;
+    }
+  }
+  return cleared;
+}

@@ -3,20 +3,22 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { readProgress, resetProgress, saveProfile } from '@/features/progress/store';
+import { readProgress, resetProgress, saveNote, saveProfile } from '@/features/progress/store';
 
 import { AccountCard } from './AccountCard';
 import { AccountView } from './AccountView';
 
 const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+const refresh = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }));
 
 type Reply = { status?: number; body?: unknown };
 
 /** A fake server: each path answers with the next queued reply (or the last one again). */
 function server(routes: Record<string, Reply[]>) {
-  const fetchMock = vi.fn(async (path: string) => {
-    const queue = routes[path] ?? [{ status: 404, body: { error: { message: 'Not found' } } }];
+  const fetchMock = vi.fn(async (path: string, init?: RequestInit) => {
+    const queue = routes[(init?.method ?? 'GET') + ' ' + path] ??
+      routes[path] ?? [{ status: 404, body: { error: { message: 'Not found' } } }];
     const reply = queue.length > 1 ? (queue.shift() as Reply) : (queue[0] as Reply);
     if (reply.status === 204) return new Response(null, { status: 204 });
     return Response.json(reply.body ?? {}, { status: reply.status ?? 200 });
@@ -36,6 +38,8 @@ afterEach(() => {
   act(() => resetProgress());
   vi.unstubAllGlobals();
   push.mockClear();
+  refresh.mockClear();
+  localStorage.clear();
 });
 
 describe('AccountView', () => {
@@ -157,16 +161,79 @@ describe('AccountView', () => {
     expect(screen.queryByLabelText(/^Email/)).not.toBeInTheDocument();
   });
 
-  it('signs out and clears this phone', async () => {
+  it('saves the latest note before signing out and clearing this phone', async () => {
     act(adult);
-    server({
+    act(() => saveNote('topic', 'Just written'));
+    localStorage.setItem('ml-drawings-v1', '{"axilla":[{"points":[]}]}');
+    localStorage.setItem('ml-find-it-best-v1', '{"axilla":4}');
+    localStorage.setItem('ml-theme', 'dark');
+    const fetchMock = server({
       '/api/account': [{ body: signedIn }],
       '/api/account/sign-out': [{ status: 204 }],
+      '/api/progress': [{ body: { data: null } }],
     });
     render(<AccountView />);
     await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
     await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/'));
     expect(readProgress().profile).toBeNull();
+    const saveIndex = fetchMock.mock.calls.findIndex(
+      ([path, init]) => path === '/api/progress' && init?.method === 'PUT',
+    );
+    const signOutIndex = fetchMock.mock.calls.findIndex(
+      ([path]) => path === '/api/account/sign-out',
+    );
+    expect(saveIndex).toBeGreaterThan(-1);
+    expect(saveIndex).toBeLessThan(signOutIndex);
+    expect(
+      JSON.parse(String(fetchMock.mock.calls[saveIndex]?.[1]?.body)).progress.notes.topic.text,
+    ).toBe('Just written');
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(localStorage.getItem('ml-drawings-v1')).toBeNull();
+    expect(localStorage.getItem('ml-find-it-best-v1')).toBeNull();
+    expect(localStorage.getItem('ml-theme')).toBe('dark');
+  });
+
+  it('keeps progress, account UI and offline pages when sign-out fails', async () => {
+    act(adult);
+    act(() => saveNote('topic', 'Do not lose this'));
+    localStorage.setItem('ml-drawings-v1', '{"axilla":[{"points":[]}]}');
+    localStorage.setItem('ml-find-it-best-v1', '{"axilla":4}');
+    const deleteCache = vi.fn();
+    vi.stubGlobal('caches', { keys: vi.fn(async () => ['pages-v1']), delete: deleteCache });
+    server({
+      '/api/account': [{ body: signedIn }],
+      '/api/progress': [{ body: { data: null } }],
+      '/api/account/sign-out': [{ status: 503, body: { error: { message: 'Please try again.' } } }],
+    });
+    render(<AccountView />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByText('Please try again.')).toBeInTheDocument();
+    expect(screen.getByText('Signed in as asha@example.com')).toBeInTheDocument();
+    expect(readProgress().notes.topic?.text).toBe('Do not lose this');
+    expect(localStorage.getItem('ml-drawings-v1')).not.toBeNull();
+    expect(localStorage.getItem('ml-find-it-best-v1')).toBe('{"axilla":4}');
+    expect(push).not.toHaveBeenCalled();
+    expect(deleteCache).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeEnabled();
+  });
+
+  it('keeps unsaved progress when the final save fails and does not sign out', async () => {
+    act(adult);
+    act(() => saveNote('topic', 'Offline note'));
+    localStorage.setItem('ml-drawings-v1', '{"axilla":[{"points":[]}]}');
+    localStorage.setItem('ml-find-it-best-v1', '{"axilla":4}');
+    const fetchMock = server({
+      '/api/account': [{ body: signedIn }],
+      '/api/progress': [{ status: 503 }],
+    });
+    render(<AccountView />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByText(/Your latest progress could not be saved/)).toBeInTheDocument();
+    expect(readProgress().notes.topic?.text).toBe('Offline note');
+    expect(localStorage.getItem('ml-drawings-v1')).not.toBeNull();
+    expect(localStorage.getItem('ml-find-it-best-v1')).toBe('{"axilla":4}');
+    expect(fetchMock.mock.calls.some(([path]) => path === '/api/account/sign-out')).toBe(false);
+    expect(push).not.toHaveBeenCalled();
   });
 });
 

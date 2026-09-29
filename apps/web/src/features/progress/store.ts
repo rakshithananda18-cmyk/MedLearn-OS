@@ -8,17 +8,20 @@ import {
   scheduleReview,
   type StudyProfile,
 } from '@medlearn/core';
+import { LearnerProgressInput } from '@medlearn/schemas';
 import { useSyncExternalStore } from 'react';
 
-// ponytail: progress lives on this device for the prototype; M4 syncs it to the account.
 const STORAGE_KEY = 'ml-progress-v1';
 const listeners = new Set<() => void>();
 
 let cachedRaw: string | null | undefined;
 let cached: LearnerProgress = EMPTY_PROGRESS;
+let memoryOnly = false;
+let generation = 0;
 
 /** Returns the same object until storage changes, as useSyncExternalStore requires. */
 function read(): LearnerProgress {
+  if (memoryOnly) return cached;
   let raw: string | null = null;
   try {
     raw = localStorage.getItem(STORAGE_KEY);
@@ -28,9 +31,13 @@ function read(): LearnerProgress {
   if (raw === cachedRaw) return cached;
   cachedRaw = raw;
   try {
-    cached = raw
-      ? { ...EMPTY_PROGRESS, ...(JSON.parse(raw) as Partial<LearnerProgress>) }
-      : EMPTY_PROGRESS;
+    const value: unknown = raw ? JSON.parse(raw) : null;
+    const parsed = LearnerProgressInput.safeParse(
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? { ...EMPTY_PROGRESS, ...value }
+        : null,
+    );
+    cached = parsed.success ? parsed.data : EMPTY_PROGRESS;
   } catch {
     cached = EMPTY_PROGRESS;
   }
@@ -43,8 +50,10 @@ function write(next: LearnerProgress): void {
   cached = next;
   try {
     localStorage.setItem(STORAGE_KEY, raw);
+    memoryOnly = false;
   } catch {
-    // Storage can be blocked (private browsing); progress still works for this visit.
+    // Storage can be blocked or full; keep the in-memory copy for this visit.
+    memoryOnly = true;
   }
   for (const listener of listeners) listener();
 }
@@ -68,7 +77,11 @@ const addOnce = (list: string[], item: string) => (list.includes(item) ? list : 
 
 /** A change made on this device; stamped so syncing keeps the newest copy. */
 function commit(change: Partial<LearnerProgress>, now = new Date()): void {
-  write({ ...read(), ...change, updatedAt: now.toISOString() });
+  const previous = read();
+  const updatedAt = new Date(
+    Math.max(now.getTime(), (Date.parse(previous.updatedAt ?? '') || 0) + 1),
+  ).toISOString();
+  write({ ...previous, ...change, updatedAt });
 }
 
 /**
@@ -128,7 +141,11 @@ export function chooseBooks(bookIds: string[]): void {
 
 /** Saves the student's note on a topic (an empty note clears it). */
 export function saveNote(topicSlug: string, text: string, now = new Date()): void {
-  commit({ notes: { ...read().notes, [topicSlug]: { text, updatedAt: now.toISOString() } } }, now);
+  const notes = read().notes;
+  const updatedAt = new Date(
+    Math.max(now.getTime(), (Date.parse(notes[topicSlug]?.updatedAt ?? '') || 0) + 1),
+  ).toISOString();
+  commit({ notes: { ...notes, [topicSlug]: { text, updatedAt } } }, now);
 }
 
 export function acceptCatchUp(now = new Date()): void {
@@ -136,8 +153,12 @@ export function acceptCatchUp(now = new Date()): void {
 }
 
 export function resetProgress(): void {
+  generation += 1;
   write(EMPTY_PROGRESS);
 }
+
+/** Pending requests must not restore progress after this device has been cleared. */
+export const progressGeneration = () => generation;
 
 /** Replaces everything on this device as it is (facilitator screen, copies from the server). */
 export function replaceProgress(progress: LearnerProgress): void {

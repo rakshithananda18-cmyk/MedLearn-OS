@@ -22,11 +22,15 @@ export function ProgressSync() {
   useEffect(() => {
     if (adult) return startProgressSync();
     if (fresh && hasSession()) {
-      restoreProgress().catch((error: unknown) =>
-        clientLogger.warn('Restoring progress failed', {
-          message: error instanceof Error ? error.message : String(error),
-        }),
+      const controller = new AbortController();
+      restoreProgress(controller.signal).catch((error: unknown) =>
+        error instanceof Error && error.name === 'AbortError'
+          ? undefined
+          : clientLogger.warn('Restoring progress failed', {
+              message: error instanceof Error ? error.message : String(error),
+            }),
       );
+      return () => controller.abort();
     }
     return undefined;
   }, [adult, fresh]);

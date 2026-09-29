@@ -113,7 +113,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_learner_progress: {
+        Args: {
+          p_check_version?: boolean
+          p_expected_updated_at?: string
+          p_progress: Json
+          p_updated_at: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

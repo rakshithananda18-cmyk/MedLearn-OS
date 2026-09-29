@@ -2,10 +2,15 @@
 
 The daily learning system for MBBS students. Phase 1 is an installable web app (Next.js + Supabase).
 
+The current private prototype includes eleven sample topics, two Upper Limb batches, a shared 3D studio,
+and Today with activity summaries and topic mastery. The content remains marked as not medically
+reviewed. See the alignment review below for the current scope and remaining release gates.
+
 Product and design decisions live in `docs/`:
 
-- `MedLearn_OS_Product_Blueprint_v0_2.docx`: what we are building and why
-- `MedLearn_OS_Visual_UX_UI_Engineering_Plan_v0_1.docx`: how it looks and how it is built
+- [Product Blueprint v0.5](docs/MedLearn_OS_Product_Blueprint_v0_5.docx): private study group, textbook pipeline and product scope
+- [Visual, UX/UI & Engineering Plan v0.6](docs/MedLearn_OS_Visual_UX_UI_Engineering_Plan_v0_6.docx): design, architecture and quality requirements
+- [Codex alignment review](docs/CODEX_ALIGNMENT_REVIEW.md): implemented capabilities, current reliability work and remaining plan gaps
 
 ## Quick start on Windows
 

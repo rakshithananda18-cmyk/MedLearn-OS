@@ -24,30 +24,44 @@ import { TaskColumns } from '@/features/shell/Screen';
 interface PracticeViewProps {
   topics: TopicSummary[];
   questions: PracticeQuestion[];
+  topic?: Pick<TopicSummary, 'slug' | 'title'>;
 }
 
-export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>) {
+export function PracticeView({ topics, questions, topic }: Readonly<PracticeViewProps>) {
   const progress = useProgress();
   const [current, setCurrent] = useState<string | null>(null);
   const [done, setDone] = useState<string[]>([]);
 
   const nextOpen = topics
-    .flatMap((topic) => openQuestionIds(topic, progress))
+    .flatMap((item) => openQuestionIds(item, progress))
     .find((id) => !done.includes(id));
   const showingId = current ?? nextOpen;
   const showing = questions.find(({ question }) => question.id === showingId);
-  const finishedAnyLesson = progress.completedLessons.length > 0;
+  const finishedAnyLesson = topics.some((item) => progress.completedLessons.includes(item.slug));
+  const backHref = topic ? `/learn/${topic.slug}` : '/today';
+  const backLabel = topic ? `Back to ${topic.title}` : 'Back to Today';
 
   return (
     <TaskColumns
       intro={
         <>
           <div className="flex flex-col gap-3">
-            <Eyebrow>Practice</Eyebrow>
+            <Eyebrow>Practice{topic ? ` · ${topic.title}` : ''}</Eyebrow>
             <Display size="lg">
               Test <em>yourself</em>
             </Display>
-            <Text tone="muted">Questions from the lessons you have finished.</Text>
+            <Text tone="muted">
+              {topic
+                ? `Questions for ${topic.title}.`
+                : 'Questions from the lessons you have finished.'}
+            </Text>
+            {topic ? (
+              <div>
+                <Link href={backHref} className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+                  {backLabel}
+                </Link>
+              </div>
+            ) : null}
           </div>
           {showing ? <ContentTrust topic={showing.topic} /> : null}
         </>
@@ -88,11 +102,16 @@ export function PracticeView({ topics, questions }: Readonly<PracticeViewProps>)
             description={
               finishedAnyLesson
                 ? 'Questions you got wrong will come back in your next session.'
-                : 'Finish a lesson first; its questions will appear here.'
+                : topic
+                  ? `Finish the ${topic.title} lesson to unlock its questions.`
+                  : 'Finish a lesson first; its questions will appear here.'
             }
             action={
-              <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
-                Back to Today
+              <Link
+                href={topic && !finishedAnyLesson ? `/learn/${topic.slug}/lesson` : backHref}
+                className={buttonClasses({ variant: 'secondary' })}
+              >
+                {topic && !finishedAnyLesson ? 'Start this lesson' : backLabel}
               </Link>
             }
           />
