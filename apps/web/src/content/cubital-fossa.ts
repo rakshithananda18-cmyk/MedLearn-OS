@@ -23,7 +23,7 @@ export const cubitalFossa: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 8 Arm, pages 104 to 106'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, elbow, pages 758 to 760'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, elbow, pages 759 to 760'),
     {
       title: 'TeachMeAnatomy: The Cubital Fossa',
       url: 'https://teachmeanatomy.info/upper-limb/areas/cubital-fossa/',
@@ -355,6 +355,6 @@ export const cubitalFossa: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 8 Arm', pages: '104–106' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '758–760' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '759–760' },
   ],
 };

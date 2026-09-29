@@ -35,7 +35,7 @@ export const handMuscles: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 128 to 133'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 795 to 802'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 795 to 801'),
     {
       title: 'TeachMeAnatomy: The Intrinsic Muscles of the Hand',
       url: 'https://teachmeanatomy.info/upper-limb/muscles/hand/',
@@ -407,6 +407,6 @@ export const handMuscles: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '128–133' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '795–802' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '795–801' },
   ],
 };

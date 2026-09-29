@@ -29,7 +29,7 @@ export const forearmExtensors: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 147 to 151'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 776 to 783'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 775 to 782'),
     {
       title: 'TeachMeAnatomy: Muscles of the Posterior Forearm',
       url: 'https://teachmeanatomy.info/upper-limb/muscles/posterior-forearm/',
@@ -409,6 +409,6 @@ export const forearmExtensors: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '147–151' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '776–783' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '775–782' },
   ],
 };

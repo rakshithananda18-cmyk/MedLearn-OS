@@ -36,7 +36,7 @@ export const palmVesselsNerves: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 134 to 141'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 803 to 810'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 802 to 809'),
     {
       title: 'TeachMeAnatomy: The Ulnar Nerve',
       url: 'https://teachmeanatomy.info/upper-limb/nerves/ulnar-nerve/',
@@ -421,6 +421,6 @@ export const palmVesselsNerves: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '134–141' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '803–810' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '802–809' },
   ],
 };

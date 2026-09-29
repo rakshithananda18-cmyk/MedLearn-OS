@@ -38,7 +38,7 @@ export const palmSpaces: Topic = {
       'bd-chaurasia',
       'Volume 1, Chapter 9 Forearm and Hand, pages 126 to 127 and 142 to 144',
     ),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 789 to 794'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 791 to 792'),
     {
       title: 'TeachMeAnatomy: The Palm of the Hand',
       url: 'https://teachmeanatomy.info/upper-limb/areas/palm/',
@@ -409,6 +409,6 @@ export const palmSpaces: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '126–127, 142–144' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '789–794' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '791–792' },
   ],
 };

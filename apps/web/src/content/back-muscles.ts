@@ -29,7 +29,7 @@ export const backMuscles: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 5 Back, pages 68 to 71'),
-    bookSource('grays-anatomy', 'Chapter 2 Back, superficial back muscles, pages 86 to 89'),
+    bookSource('grays-anatomy', 'Chapter 2 Back, superficial back muscles, pages 86 to 91'),
     {
       title: 'TeachMeAnatomy: The Superficial Back Muscles',
       url: 'https://teachmeanatomy.info/back/muscles/superficial/',
@@ -402,6 +402,6 @@ export const backMuscles: Topic = {
   ],
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 5 Back', pages: '68–71' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 2 Back', pages: '86–89' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 2 Back', pages: '86–91' },
   ],
 };
