@@ -4,7 +4,7 @@ import type { ModelPart, Point3 } from '@medlearn/schemas';
 // frame: millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=4';
+export const SHOULDER_MODEL_SRC = '/models/upper-limb.glb?v=5';
 
 /** Credit for the model's bones, muscles and vessels, shown wherever the model is. */
 export const SHOULDER_MODEL_CREDIT =
@@ -688,6 +688,13 @@ const PARTS = {
     kind: 'vein',
     about:
       'The veins on the back of the hand. The cephalic vein leaves its lateral end and the basilic vein its medial end. A common site for a cannula.',
+  },
+  // Joints (upper limb batch 5).
+  'interosseous-membrane': {
+    name: 'Interosseous membrane',
+    kind: 'muscle',
+    about:
+      'Fibrous sheet between the radius and ulna, its fibres running down and medially from radius to ulna, so force from the hand passes to the ulna and on to the humerus. It forms the middle radioulnar joint. Shown with the muscles because it is soft tissue, not bone.',
   },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
