@@ -344,7 +344,7 @@ export function PracticeView({
 
   return (
     <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
-      <div className="flex flex-col gap-4 xl:col-span-2">
+      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
         <header className="flex flex-col gap-1">
           <Eyebrow>Practice</Eyebrow>
           <Display size="lg">
@@ -397,7 +397,7 @@ export function PracticeView({
           }
         />
       </div>
-      <aside aria-label="Plans" className="flex flex-col gap-4 xl:sticky xl:top-8">
+      <aside aria-label="Plans" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
         <Goals
           goals={progress.goals}
           sections={sections}
