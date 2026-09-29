@@ -31,7 +31,10 @@ export function Drawer({ title, open, onOpenChange, children, className }: Drawe
             className,
           )}
         >
-          <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
+          {/* Names the drawer without being a heading: its content shows its own. */}
+          <DialogPrimitive.Title asChild>
+            <span className="sr-only">{title}</span>
+          </DialogPrimitive.Title>
           <span
             aria-hidden="true"
             className="mx-auto mt-2 block h-1 w-12 rounded-full bg-border-strong md:hidden"

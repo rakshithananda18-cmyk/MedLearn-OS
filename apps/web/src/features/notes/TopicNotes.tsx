@@ -3,7 +3,7 @@
 import { NOTE_MAX_LENGTH } from '@medlearn/schemas/limits';
 import { Button, Card, TextArea } from '@medlearn/ui';
 import { Clock } from '@medlearn/ui/icons';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { saveNote, useProgress } from '@/features/progress/store';
 
@@ -37,6 +37,7 @@ export function TopicNotes({
   const pending = useRef<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const field = useRef<HTMLTextAreaElement>(null);
+  const caret = useRef<number | null>(null);
 
   const flush = useCallback(() => {
     clearTimeout(timer.current);
@@ -64,12 +65,17 @@ export function TopicNotes({
     const before = text.slice(0, at);
     const mark = `${before && !before.endsWith('\n') ? '\n' : ''}[${clockTime(seconds)}] `;
     change(before + mark + text.slice(at));
-    const caret = at + mark.length;
-    requestAnimationFrame(() => {
-      field.current?.focus();
-      field.current?.setSelectionRange(caret, caret);
-    });
+    // Focus now, so the very next key lands in the note; the caret moves once the mark is in.
+    caret.current = at + mark.length;
+    field.current?.focus();
   };
+
+  // Runs before the next key press is handled, straight after the marked note is drawn.
+  useLayoutEffect(() => {
+    if (caret.current === null) return;
+    field.current?.setSelectionRange(caret.current, caret.current);
+    caret.current = null;
+  });
 
   return (
     <Card tone="glass" as="section" aria-labelledby="notes-title" className="flex flex-col gap-3">

@@ -20,6 +20,8 @@ describe('Drawer', () => {
     render(<Harness />);
     const drawer = screen.getByRole('dialog', { name: 'Brachial plexus' });
     expect(drawer).toHaveTextContent('Roots, trunks');
+    // Named for screen readers without a second heading: the content brings its own.
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
     await expectNoA11yViolations(document.body);
 
     await userEvent.keyboard('{Escape}');
