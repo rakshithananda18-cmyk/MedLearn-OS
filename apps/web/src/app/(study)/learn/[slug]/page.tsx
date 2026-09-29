@@ -1,4 +1,4 @@
-import { cx, Display, Eyebrow, Text } from '@medlearn/ui';
+import { Display, Eyebrow, Text } from '@medlearn/ui';
 import { BookOpen, ClipboardCheck, PenLine, Rotate3d, RotateCcw } from '@medlearn/ui/icons';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -12,13 +12,14 @@ import {
   posterOf,
   TOPICS,
 } from '@/content/topics';
+import { videosOf } from '@/content/videos';
 import { WhereToRead } from '@/features/books/WhereToRead';
 import { ContentTrust } from '@/features/content/ContentTrust';
-import { TopicNotes } from '@/features/notes/TopicNotes';
 import { MasteryCard } from '@/features/progress/MasteryCard';
 import { BackLink } from '@/features/shell/BackLink';
 import { Screen } from '@/features/shell/Screen';
-import { ModeTile, type ModeTileProps, TopicHero } from '@/features/topic/TopicParts';
+import { ModeTile, type ModeTileProps } from '@/features/topic/TopicParts';
+import { TopicStudy } from '@/features/topic/TopicStudy';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -81,52 +82,54 @@ export default async function TopicPage({ params }: Props) {
       : []),
   ];
   const poster = posterOf(topic);
+  const readings = topic.readIn.flatMap((ref) => {
+    const book = getBook(ref.bookId);
+    return book ? [{ ...ref, shortTitle: book.shortTitle, title: book.title }] : [];
+  });
 
   return (
-    <Screen width={poster ? 'wide' : 'narrow'}>
-      {/* Back up to the library, with this topic still picked there. */}
-      <BackLink href={`/subjects?topic=${topic.slug}`} label="Back to the library" text="Library" />
-      <div
-        className={cx('grid gap-4 md:gap-6', poster && 'xl:grid-cols-2 xl:items-start xl:gap-8')}
-      >
-        {poster ? (
-          <div className="xl:sticky xl:top-8">
-            <TopicHero slug={topic.slug} poster={poster} />
-          </div>
-        ) : null}
-        <div className="flex min-w-0 flex-col gap-4">
-          <div
-            className={cx(
-              'flex flex-col gap-2',
-              poster && 'items-center text-center xl:items-start xl:text-left',
-            )}
-          >
+    <Screen width="wide">
+      <TopicStudy
+        slug={topic.slug}
+        title={topic.title}
+        poster={poster}
+        videos={videosOf(topic.slug)}
+        // Back up to the library, with this topic still picked there.
+        back={
+          <BackLink
+            href={`/subjects?topic=${topic.slug}`}
+            label="Back to the library"
+            text="Library"
+          />
+        }
+        intro={
+          <div className="flex flex-col gap-2">
             <Eyebrow>
               {topic.subjectSlug} · {topic.estimatedMinutes} min
             </Eyebrow>
-            <Display>{topic.title}</Display>
+            <Display size="lg">{topic.title}</Display>
             <Text tone="muted">{topic.summary}</Text>
-            <ContentTrust topic={topic} />
+            <ContentTrust topic={topic}>
+              <WhereToRead readings={readings} />
+            </ContentTrust>
           </div>
-          {summary ? <MasteryCard topic={summary} /> : null}
-          <ul aria-label="Ways to study this topic" className="grid grid-cols-2 gap-3">
-            {modes.map((mode, index) => (
-              <ModeTile
-                key={mode.href}
-                {...mode}
-                wide={modes.length % 2 === 1 && index === modes.length - 1}
-              />
-            ))}
-          </ul>
-          <WhereToRead
-            readings={topic.readIn.flatMap((ref) => {
-              const book = getBook(ref.bookId);
-              return book ? [{ ...ref, shortTitle: book.shortTitle, title: book.title }] : [];
-            })}
-          />
-          <TopicNotes topicSlug={topic.slug} />
-        </div>
-      </div>
+        }
+        study={
+          <>
+            <ul aria-label="Ways to study this topic" className="grid grid-cols-2 gap-3">
+              {modes.map((mode, index) => (
+                <ModeTile
+                  key={mode.href}
+                  {...mode}
+                  wide={modes.length % 2 === 1 && index === modes.length - 1}
+                />
+              ))}
+            </ul>
+            {summary ? <MasteryCard topic={summary} /> : null}
+          </>
+        }
+        keyFacts={topic.keyFacts.slice(0, 5)}
+      />
     </Screen>
   );
 }

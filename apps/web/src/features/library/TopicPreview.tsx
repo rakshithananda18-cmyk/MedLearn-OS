@@ -1,7 +1,7 @@
 'use client';
 
 import { buttonClasses, cx, Eyebrow, Icon, IconButton, Text } from '@medlearn/ui';
-import { BookOpen, Check, Play, Rotate3d, X } from '@medlearn/ui/icons';
+import { BookOpen, Check, ClipboardCheck, Play, Rotate3d, RotateCcw, X } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -29,12 +29,16 @@ const STATUS: Record<PreviewStatus, { label: string; tone: string }> = {
   new: { label: 'Not started', tone: 'bg-surface text-fg-muted' },
 };
 
-/** A number in gold with what it counts, like the tallies on Today. */
-function Tally({ value, label }: Readonly<{ value: number; label: string }>) {
+/** How much of one kind the topic holds, as a small chip: "6 lesson steps". */
+function Tally({
+  icon,
+  value,
+  label,
+}: Readonly<{ icon: typeof Play; value: number; label: string }>) {
   return (
-    <li className="flex flex-col gap-1 rounded-lg bg-surface-muted p-3">
-      <span className="text-gold font-display text-4xl">{value}</span>
-      <span className="text-xs font-semibold text-fg-muted">{label}</span>
+    <li className="flex items-center gap-1 rounded-full bg-surface-muted px-3 py-1 text-xs text-fg-muted">
+      <Icon icon={icon} size="sm" className="text-gold-ink" />
+      <span className="font-semibold text-ink">{value}</span> {label}
     </li>
   );
 }
@@ -60,10 +64,10 @@ export function TopicPreview({
   return (
     <article
       aria-labelledby="preview-title"
-      className="flex flex-col gap-6 rounded-xl border border-glass-border bg-glass p-6 shadow-glass backdrop-blur-md"
+      className="flex flex-col rounded-xl border border-glass-border bg-glass p-4 shadow-glass"
     >
       {/* A new key per topic replays the rise, so each pick arrives rather than swaps. */}
-      <div key={topic.slug} className="flex animate-rise flex-col gap-6">
+      <div key={topic.slug} className="flex animate-rise flex-col gap-4">
         <div className="relative flex h-preview items-end justify-center rounded-lg bg-gloss">
           <span
             aria-hidden="true"
@@ -93,13 +97,14 @@ export function TopicPreview({
             icon={X}
             label="Close the preview"
             variant="secondary"
+            size="sm"
             className="absolute top-3 right-3 shadow-raised"
             onClick={onClose}
           />
           {preview.hasModel ? (
             <Link
               href={`/studio?topic=${topic.slug}`}
-              className="absolute right-3 bottom-3 flex h-12 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-canvas shadow-float transition-transform duration-150 hover:-translate-y-px"
+              className="absolute right-3 bottom-3 flex h-8 items-center gap-2 rounded-full bg-ink px-3 text-xs font-semibold text-canvas shadow-float transition-transform duration-150 hover:-translate-y-px"
             >
               <Icon icon={Rotate3d} size="sm" />
               Turn it in 3D
@@ -107,31 +112,37 @@ export function TopicPreview({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <Eyebrow>
             {where} · {topic.estimatedMinutes} min
           </Eyebrow>
-          <h2 id="preview-title" className="text-gold font-display text-4xl tracking-display">
+          <h2 id="preview-title" className="text-gold font-display text-3xl tracking-display">
             {topic.title}
           </h2>
-          <Text tone="muted">{topic.summary}</Text>
+          <Text size="sm" tone="muted">
+            {topic.summary}
+          </Text>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Link href={`/learn/${topic.slug}/lesson`} className={buttonClasses()}>
+        <ul aria-label="In this topic" className="flex flex-wrap gap-2">
+          <Tally icon={Play} value={preview.lessonSteps} label="lesson steps" />
+          <Tally icon={ClipboardCheck} value={topic.questionIds.length} label="questions" />
+          <Tally icon={RotateCcw} value={topic.cardIds.length} label="recall cards" />
+        </ul>
+
+        <div className="flex items-center gap-2">
+          <Link href={`/learn/${topic.slug}/lesson`} className={buttonClasses({ fullWidth: true })}>
             <Icon icon={Play} size="sm" />
             {status === 'learnt' ? 'Go over the lesson' : 'Start lesson'}
           </Link>
-          <Link href={`/learn/${topic.slug}`} className={buttonClasses({ variant: 'secondary' })}>
+          <Link
+            href={`/learn/${topic.slug}`}
+            className={buttonClasses({ variant: 'secondary', fullWidth: true })}
+          >
             Open topic
           </Link>
+          <WhereToRead readings={preview.readings} />
         </div>
-
-        <ul aria-label="In this topic" className="grid grid-cols-3 gap-2">
-          <Tally value={preview.lessonSteps} label="lesson steps" />
-          <Tally value={topic.questionIds.length} label="questions" />
-          <Tally value={topic.cardIds.length} label="recall cards" />
-        </ul>
 
         <MasteryCard topic={topic} />
 
@@ -150,8 +161,6 @@ export function TopicPreview({
             </ul>
           </div>
         ) : null}
-
-        <WhereToRead readings={preview.readings} />
       </div>
     </article>
   );

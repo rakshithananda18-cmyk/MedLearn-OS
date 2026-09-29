@@ -2,13 +2,15 @@
 
 import { topicMastery } from '@medlearn/core';
 import type { BodyRegion, PartKind } from '@medlearn/schemas';
-import { cx, Icon, IconButton, Switch, Text, ToggleChip } from '@medlearn/ui';
-import { Eye, Search, X } from '@medlearn/ui/icons';
+import { cx, Icon, IconButton, Switch, Text } from '@medlearn/ui';
+import { Eye, PersonStanding, Search, X } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
+import { type LibraryNode, topicsUnder } from '@/content/library';
+import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
 
 import type { StructureInfo, StudioTopic } from './knowledge';
@@ -29,6 +31,7 @@ function Sheet({
   side,
   place,
   compact = false,
+  action,
   onClose,
   children,
 }: Readonly<{
@@ -37,6 +40,8 @@ function Sheet({
   place: Place;
   /** A floating sheet only as tall as its content, rather than down to the bottom bar. */
   compact?: boolean;
+  /** A button beside the title where docked, such as folding the panel away. */
+  action?: ReactNode;
   onClose: () => void;
   children: ReactNode;
 }>) {
@@ -52,14 +57,16 @@ function Sheet({
             compact ? 'max-h-sheet' : 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
-        place === 'dock' && cx(GLASS, 'w-dock shrink-0 overflow-y-auto p-4'),
+        place === 'dock' && cx(GLASS, 'w-dock shrink-0 overflow-x-hidden overflow-y-auto p-4'),
       )}
     >
       <div className="flex min-h-8 items-center justify-between gap-2">
         <h2 className={LABEL}>{label}</h2>
         {place === 'float' ? (
           <IconButton icon={X} label={`Close ${label.toLowerCase()}`} size="sm" onClick={onClose} />
-        ) : null}
+        ) : (
+          action
+        )}
       </div>
       {children}
     </section>
@@ -158,103 +165,197 @@ function TopicCard({
   );
 }
 
+/** The branches of the tree that lead to a topic, by id: its region and its book section. */
+function trailTo(nodes: LibraryNode[], slug: string | null): string[] {
+  for (const node of nodes) {
+    if (node.kind === 'topic') continue;
+    if (topicsUnder(node).some((topic) => topic.slug === slug)) {
+      return [node.id, ...trailTo(node.children, slug)];
+    }
+  }
+  return [];
+}
+
+/** A branch of the topic tree: its name and count, folding open onto what it holds. */
+function Branch({
+  label,
+  learnt,
+  total,
+  top,
+  open,
+  onToggle,
+  children,
+}: Readonly<{
+  label: string;
+  learnt: number;
+  total: number;
+  /** A body region, set larger than the book sections inside it. */
+  top: boolean;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}>) {
+  return (
+    <li className="flex flex-col">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="flex min-h-12 w-full items-center gap-2 rounded-md px-2 text-left transition-colors duration-150 hover:bg-surface-muted"
+      >
+        <span
+          className={cx(
+            'min-w-0 flex-1',
+            top ? 'font-display text-2xl text-ink' : 'text-sm font-semibold text-ink',
+          )}
+        >
+          {label}
+        </span>
+        <span className="shrink-0 text-xs text-fg-muted" suppressHydrationWarning>
+          {learnt}/{total}
+        </span>
+        <Chevron open={open} />
+      </button>
+      <div className={cx('fold', open && 'fold-open')}>
+        <div className="min-h-0 overflow-hidden" inert={!open}>
+          {children}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The topics as the library's tree: body regions, then book sections, then a card for each
+ * topic. Every branch folds; the ones leading to the open (or next) topic start open.
+ */
+function TopicTree({
+  tree,
+  topics,
+  current,
+  onRegion,
+  onTopic,
+}: Readonly<{
+  tree: LibraryNode[];
+  topics: StudioTopic[];
+  current: string | null;
+  onRegion: (region: BodyRegion) => void;
+  onTopic: (slug: string) => void;
+}>) {
+  const learnt = new Set(useProgress().completedLessons);
+  const noteOf = useCardNotes(topics, current);
+  const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
+  const focus = current ?? topics.find((topic) => !learnt.has(topic.slug))?.slug ?? null;
+  const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(trailTo(tree, focus)));
+  // Opening another topic unfolds the branches that lead to it.
+  const [seen, setSeen] = useState(current);
+  if (seen !== current) {
+    setSeen(current);
+    setOpen(new Set([...open, ...trailTo(tree, current)]));
+  }
+
+  const render = (node: LibraryNode, top: boolean): ReactNode => {
+    if (node.kind === 'topic') {
+      const topic = bySlug.get(node.slug);
+      return topic ? (
+        <li key={node.slug}>
+          <TopicCard
+            topic={topic}
+            note={noteOf(topic)}
+            current={node.slug === current}
+            onOpen={onTopic}
+          />
+        </li>
+      ) : null;
+    }
+    const under = topicsUnder(node);
+    const isOpen = open.has(node.id);
+    return (
+      <Branch
+        key={node.id}
+        label={node.label}
+        learnt={under.filter((topic) => learnt.has(topic.slug)).length}
+        total={under.length}
+        top={top}
+        open={isOpen}
+        onToggle={() => {
+          const next = new Set(open);
+          if (isOpen) next.delete(node.id);
+          else next.add(node.id);
+          setOpen(next);
+          // A region opening also turns the body towards it.
+          if (top && !isOpen) onRegion(node.id as BodyRegion);
+        }}
+      >
+        <ul className="flex flex-col gap-2 pt-1 pb-2 pl-2">
+          {node.children.map((child) => render(child, false))}
+        </ul>
+      </Branch>
+    );
+  };
+
+  return (
+    <ul aria-label="Regions and topics" className="flex flex-col gap-1">
+      {tree.map((node) => render(node, true))}
+    </ul>
+  );
+}
+
 export function TopicsPanel({
   place,
+  tree,
   topics,
   regions,
-  region,
   current,
   search,
-  guide,
-  best,
+  action,
   onRegion,
   onTopic,
   onClose,
 }: Readonly<{
   place: Place;
+  /** The anatomy topics as the library's tree. */
+  tree: LibraryNode[];
   topics: StudioTopic[];
   regions: BodyRegionInfo[];
-  region: BodyRegion;
   current: string | null;
   /** The structure search, where the topics are docked. */
   search?: ReactNode;
-  /** The open model's guided views. */
-  guide: ReactNode;
-  /** Best "Find it" streak on the open topic, or null on the whole body. */
-  best: number | null;
+  /** Folds the docked panel away. */
+  action?: ReactNode;
   onRegion: (region: BodyRegion) => void;
   onTopic: (slug: string | null) => void;
   onClose: () => void;
 }>) {
-  const inRegion = topics.filter((topic) => topic.regions.includes(region));
-  const noteOf = useCardNotes(inRegion, current);
-  const regionName = regions.find((item) => item.id === region)?.name ?? 'Topics';
-  const row =
-    'flex min-h-12 w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm font-semibold text-ink transition-colors duration-150';
-  const now = 'border-gold bg-surface shadow-raised';
-  const other = 'border-transparent hover:border-border-strong';
+  const soon = regions.filter(
+    (region) => !tree.some((node) => node.kind === 'branch' && node.id === region.id),
+  );
   return (
-    <Sheet label="Topics" side="left" place={place} onClose={onClose}>
-      {search}
-      <button
-        type="button"
-        aria-current={current === null ? 'true' : undefined}
-        onClick={() => onTopic(null)}
-        className={cx(row, current === null ? now : other)}
-      >
-        <span>Whole body</span>
-        <span className="text-xs font-semibold text-fg-muted">Regions</span>
-      </button>
-      {/* Docked beside an open topic, the list stays on that topic's region. */}
-      {place === 'dock' && current !== null ? null : (
-        <fieldset className="flex flex-wrap gap-2">
-          <legend className={cx(LABEL, 'pb-2')}>Regions</legend>
-          {regions.map((item) => (
-            <ToggleChip
-              key={item.id}
-              pressed={item.id === region}
-              onClick={() => onRegion(item.id)}
-            >
-              {item.name}
-            </ToggleChip>
-          ))}
-        </fieldset>
-      )}
-      {/* The open model's views come before the region's topics, which can run to dozens. */}
-      <div className="flex flex-col gap-1">
-        <h3 className={LABEL}>Guided views</h3>
-        {guide}
+    <Sheet label="Topics" side="left" place={place} action={action} onClose={onClose}>
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">{search}</div>
+        <IconButton
+          icon={PersonStanding}
+          label="Whole body"
+          title="Whole body"
+          variant="secondary"
+          aria-pressed={current === null}
+          className={cx(current === null && 'border-gold bg-primary-subtle text-primary-strong')}
+          onClick={() => onTopic(null)}
+        />
       </div>
-      {best === null ? null : (
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-muted p-3">
-          <span className="text-gold font-display text-4xl">{best}</span>
-          <span className="flex flex-col">
-            <span className="text-sm font-semibold text-ink">Best “Find it” streak</span>
-            <span className="text-xs text-fg-muted">Play to beat it</span>
-          </span>
-        </div>
-      )}
-      <div className="flex flex-col gap-1">
-        <h3 className={LABEL}>{regionName}</h3>
-        {inRegion.length === 0 ? (
-          <Text size="sm" tone="muted">
-            Topics coming soon.
-          </Text>
-        ) : (
-          <ul aria-label="Topics in this region" className="flex flex-col gap-2">
-            {inRegion.map((topic) => (
-              <li key={topic.slug}>
-                <TopicCard
-                  topic={topic}
-                  note={noteOf(topic)}
-                  current={topic.slug === current}
-                  onOpen={onTopic}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <TopicTree
+        tree={tree}
+        topics={topics}
+        current={current}
+        onRegion={onRegion}
+        onTopic={onTopic}
+      />
+      {soon.length > 0 ? (
+        <Text size="xs" tone="muted" className="px-2">
+          Coming soon: {soon.map((region) => region.name).join(' · ')}
+        </Text>
+      ) : null}
     </Sheet>
   );
 }
@@ -480,13 +581,37 @@ function AlsoIn({
 }: Readonly<{ info: StructureInfo; onTopic: (slug: string) => void }>) {
   if (info.alsoIn.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs text-fg-muted">Also in</span>
-      {info.alsoIn.map((topic) => (
-        <ToggleChip key={topic.slug} pressed={false} onClick={() => onTopic(topic.slug)}>
-          {topic.title}
-        </ToggleChip>
-      ))}
+    <div className="flex w-full min-w-0 items-center gap-2">
+      <span className="shrink-0 text-xs text-fg-muted">
+        Also in <span className="font-semibold">{info.alsoIn.length}</span>
+      </span>
+      {/* One row of tags that scrolls sideways, however many topics share the structure; only
+          the row moves, and a mouse wheel over it scrolls it along. */}
+      <ul
+        aria-label="Also in"
+        onWheel={(event) => {
+          const row = event.currentTarget;
+          if (
+            row.scrollWidth > row.clientWidth &&
+            Math.abs(event.deltaY) > Math.abs(event.deltaX)
+          ) {
+            row.scrollLeft += event.deltaY;
+          }
+        }}
+        className="scroll-row flex min-w-0 flex-1 gap-1 overscroll-x-contain pb-1"
+      >
+        {info.alsoIn.map((topic) => (
+          <li key={topic.slug} className="shrink-0">
+            <button
+              type="button"
+              onClick={() => onTopic(topic.slug)}
+              className="h-8 rounded-full border border-border-strong bg-surface px-3 text-xs font-semibold whitespace-nowrap text-ink transition-colors duration-150 hover:border-gold"
+            >
+              {topic.title}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -529,7 +654,7 @@ export function InfoCard({
   return (
     <section
       aria-label={info.name}
-      className="pointer-events-auto flex animate-rise flex-col gap-3"
+      className="pointer-events-auto flex min-w-0 animate-rise flex-col gap-3"
     >
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -682,17 +807,28 @@ function Setting({
 export function SettingsPanel({
   settings,
   reducedMotion,
+  canFlat,
   onChange,
   onClose,
 }: Readonly<{
   settings: StudioSettings;
   /** The device asks for less motion; smooth moves follow it until the student chooses. */
   reducedMotion: boolean;
+  /** The open topic has a labelled diagram to show instead of the model. */
+  canFlat: boolean;
   onChange: (settings: StudioSettings) => void;
   onClose: () => void;
 }>) {
   return (
     <Sheet label="Settings" side="right" place="float" compact onClose={onClose}>
+      {canFlat ? (
+        <Setting
+          label="Flat diagram (2D)"
+          hint="The topic as a labelled diagram to trace, in place of the 3D model."
+          checked={settings.flat}
+          onChange={(flat) => onChange({ ...settings, flat })}
+        />
+      ) : null}
       <Setting
         label="Names on the model"
         hint="Region counts on the body, and the picked structure with its path on a topic."

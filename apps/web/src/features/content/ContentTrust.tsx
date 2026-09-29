@@ -2,6 +2,7 @@
 
 import { BottomSheet, Button, Icon, Text } from '@medlearn/ui';
 import { BookMarked, ExternalLink } from '@medlearn/ui/icons';
+import type { ReactNode } from 'react';
 
 import type { TopicTrust } from '@/content/topics';
 
@@ -10,9 +11,13 @@ import { SampleContentBanner } from './SampleContentBanner';
 
 /**
  * Trust around every piece of content: the review label, and one tap to the source drawer
- * (sources, review status, version) with "report an issue".
+ * (sources, review status, version) with "report an issue". Anything passed in (such as where
+ * to read it) sits at the end of the same row.
  */
-export function ContentTrust({ topic }: Readonly<{ topic: TopicTrust }>) {
+export function ContentTrust({
+  topic,
+  children,
+}: Readonly<{ topic: TopicTrust; children?: ReactNode }>) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <SampleContentBanner reviewed={topic.reviewed} />
@@ -61,6 +66,7 @@ export function ContentTrust({ topic }: Readonly<{ topic: TopicTrust }>) {
           <ReportIssueForm topicSlug={topic.slug} contentVersion={topic.version} />
         </BottomSheet>
       </div>
+      {children}
     </div>
   );
 }

@@ -2,11 +2,20 @@ import { cx, Icon, type IconGlyph } from '@medlearn/ui';
 import { Rotate3d } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
-/** The topic's 3D model standing on its pedestal, with the way into the studio beside it. */
-export function TopicHero({ slug, poster }: Readonly<{ slug: string; poster: string }>) {
+/**
+ * The topic's 3D model standing on its pedestal, with the way back in its top corner and the way
+ * into the studio in the bottom one.
+ */
+export function TopicHero({
+  slug,
+  poster,
+  back,
+}: Readonly<{ slug: string; poster: string; back: ReactNode }>) {
   return (
-    <div className="relative flex h-hero animate-rise items-end justify-center xl:h-stage xl:rounded-xl xl:border xl:border-glass-border xl:bg-glass xl:p-8 xl:shadow-glass">
+    <div className="relative flex h-hero animate-rise items-end justify-center xl:h-stage-topic xl:rounded-xl xl:border xl:border-glass-border xl:bg-glass xl:p-8 xl:shadow-glass">
+      <div className="absolute top-0 left-0 z-10 xl:top-4 xl:left-4">{back}</div>
       <span
         aria-hidden="true"
         className="pedestal absolute bottom-2 left-1/2 h-12 w-3/5 -translate-x-1/2 xl:bottom-8"
@@ -42,7 +51,7 @@ export interface ModeTileProps {
   wide?: boolean;
 }
 
-/** One way to study the topic, as a tile: icon at the top, name and detail at the bottom. */
+/** One way to study the topic, as a tile: the icon, then its name over a line of detail. */
 export function ModeTile({
   href,
   icon,
@@ -56,14 +65,14 @@ export function ModeTile({
       <Link
         href={href}
         className={cx(
-          'flex h-full min-h-24 flex-col justify-between gap-3 rounded-lg border p-4 transition-colors duration-150',
+          'flex h-full min-h-16 items-center gap-3 rounded-lg border px-4 py-3 transition-colors duration-150',
           primary
             ? 'border-primary bg-primary text-on-primary hover:bg-primary-hover'
             : 'border-glass-border bg-glass text-ink shadow-glass hover:border-gold',
         )}
       >
-        <Icon icon={icon} className={primary ? undefined : 'text-gold-ink'} />
-        <span className="flex flex-col">
+        <Icon icon={icon} className={cx('shrink-0', !primary && 'text-gold-ink')} />
+        <span className="flex min-w-0 flex-col">
           <span className="font-semibold">{title}</span>
           <span className={cx('text-sm', !primary && 'text-fg-muted')}>{meta}</span>
         </span>

@@ -1,13 +1,12 @@
 'use client';
 
-import { cx, Display, Drawer, Eyebrow, Icon, type IconGlyph } from '@medlearn/ui';
+import { cx, Display, Drawer, Eyebrow, Icon, type IconGlyph, Tooltip } from '@medlearn/ui';
 import { Activity, BookMarked, BookOpen, Droplet, PersonStanding } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { topicsUnder, topicTrails } from '@/content/library';
 import { useProgress } from '@/features/progress/store';
-import { BodyCard } from '@/features/shell/BodyCard';
 import { useHydrated, useWide } from '@/features/shell/media';
 import { SearchPill } from '@/features/shell/SearchPill';
 
@@ -20,27 +19,18 @@ const SUBJECT_ICON: Record<string, IconGlyph> = {
   biochemistry: Droplet,
 };
 
-/** The student's books by short title, or a nudge to choose them. */
-function BooksCard({ books }: Readonly<{ books: string[] }>) {
+/** A round way in beside the search: an icon, named for screen readers and in a tooltip. */
+function WayIn({ href, icon, label }: Readonly<{ href: string; icon: IconGlyph; label: string }>) {
   return (
-    <Link
-      href="/books"
-      className="relative flex min-h-24 flex-col justify-between gap-3 overflow-hidden rounded-xl border border-glass-border bg-glass p-4 shadow-glass backdrop-blur-md transition-transform duration-150 hover:-translate-y-px md:p-6"
-    >
-      <span className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
-        Your books
-        <Icon icon={BookMarked} className="text-gold-ink" />
-      </span>
-      <span className="font-display text-2xl text-ink md:text-3xl" suppressHydrationWarning>
-        {books.length > 0 ? (
-          books.join(' · ')
-        ) : (
-          <>
-            Choose the books <em>you follow</em>
-          </>
-        )}
-      </span>
-    </Link>
+    <Tooltip content={label}>
+      <Link
+        href={href}
+        aria-label={label}
+        className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gloss text-gold-ink shadow-glass transition-transform duration-150 hover:-translate-y-px"
+      >
+        <Icon icon={icon} />
+      </Link>
+    </Tooltip>
   );
 }
 
@@ -146,24 +136,27 @@ export function Library({
 
   return (
     <div className="flex items-start">
-      <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-col gap-2">
-            <Eyebrow>First year · {all.length} topics</Eyebrow>
-            <Display>
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <Eyebrow suppressHydrationWarning>
+              First year · {all.filter((topic) => learnt.has(topic.slug)).length} of {all.length}{' '}
+              learnt
+            </Eyebrow>
+            <Display size="lg">
               Your <em>library</em>
             </Display>
           </div>
-          <SearchPill className="xl:w-full xl:max-w-sm" />
+          <div className="flex w-full max-w-md items-center gap-2">
+            <SearchPill className="min-w-0 flex-1" />
+            <WayIn href="/studio" icon={PersonStanding} label="Pick from the body" />
+            <WayIn
+              href="/books"
+              icon={BookMarked}
+              label={myBooks.length > 0 ? `Your books: ${myBooks.join(', ')}` : 'Choose your books'}
+            />
+          </div>
         </header>
-        <div className="grid gap-3 md:grid-cols-2">
-          <BodyCard
-            learnt={all.filter((topic) => learnt.has(topic.slug)).length}
-            total={all.length}
-            className="transition-transform duration-150 hover:-translate-y-px"
-          />
-          <BooksCard books={myBooks} />
-        </div>
         {current ? (
           <>
             <SubjectTabs subjects={subjects} current={current.slug} onPick={setTab} />

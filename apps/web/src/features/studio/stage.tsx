@@ -1,10 +1,12 @@
 'use client';
 
-import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
+import type { BodyRegion, CameraStop, Model3D, PartKind } from '@medlearn/schemas';
 import { cx, Icon, IconButton, Skeleton } from '@medlearn/ui';
 import {
   ArrowLeft,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Crosshair,
   Layers,
   RotateCcw,
@@ -44,6 +46,8 @@ export interface ModelViewProps {
   resetToken: number;
   /** A sharp picture (up to twice the pixels) or a lighter one. */
   sharp: boolean;
+  /** The topic's flat diagram in place of the model, when it has one. */
+  flat: boolean;
   onPick: (id: string | null) => void;
   onRegion: (id: BodyRegion) => void;
   onStroke: (stroke: Stroke) => void;
@@ -53,7 +57,7 @@ export interface ModelViewProps {
 export function ModelView(props: Readonly<ModelViewProps>) {
   const { capable, model, topic } = props;
   if (capable === null) return <Skeleton className="size-full" />;
-  if (capable) {
+  if (capable && !(props.flat && topic?.diagram)) {
     return (
       <Viewer3D
         model={model}
@@ -256,13 +260,78 @@ export function PhoneHeader({
   );
 }
 
-/** The top of the studio where the panels are docked: the title in gold, the view tools. */
+/**
+ * The top of the studio where the panels are docked: the title in gold, then the cards beside the
+ * view tools (the best "Find it" streak and the guided views), wrapping under it when narrow.
+ */
 export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: ReactNode }>) {
   return (
-    <header className="flex items-center justify-between gap-4 px-2">
+    <header className="flex flex-wrap items-center justify-between gap-3 px-2">
       <h1 className="text-gold line-clamp-2 font-display text-3xl tracking-display">{title}</h1>
-      {tools}
+      <div className="flex flex-wrap items-center justify-end gap-2">{tools}</div>
     </header>
+  );
+}
+
+/** The model's guided views as a card by the tools: back, where it is, and on. */
+export function GuideCard({
+  stops,
+  index,
+  onIndex,
+}: Readonly<{ stops: CameraStop[]; index: number; onIndex: (index: number) => void }>) {
+  const stop = stops[index];
+  if (!stop) return null;
+  return (
+    <div
+      role="group"
+      aria-label="Guided views"
+      title={stop.description}
+      className={cx(GLASS, 'pointer-events-auto flex items-center gap-1 rounded-full p-1')}
+    >
+      <IconButton
+        icon={ChevronLeft}
+        label="Previous view"
+        size="sm"
+        disabled={index === 0}
+        onClick={() => onIndex(index - 1)}
+      />
+      <span className="flex min-w-0 flex-col px-1 text-center leading-tight">
+        <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
+          Guided view
+        </span>
+        <span className="truncate text-sm font-semibold text-ink">
+          {stop.title}{' '}
+          <span className="font-normal text-fg-muted">
+            {index + 1}/{stops.length}
+          </span>
+        </span>
+      </span>
+      <IconButton
+        icon={ChevronRight}
+        label="Next view"
+        size="sm"
+        disabled={index >= stops.length - 1}
+        onClick={() => onIndex(index + 1)}
+      />
+    </div>
+  );
+}
+
+/** The best "Find it" streak on the open topic, as a card by the guided views. */
+export function BestCard({ best }: Readonly<{ best: number }>) {
+  return (
+    <p
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink',
+      )}
+    >
+      <span className="text-gold font-display text-2xl">{best}</span>
+      <span className="flex flex-col leading-tight">
+        Best streak
+        <span className="text-xs font-normal text-fg-muted">in Find it</span>
+      </span>
+    </p>
   );
 }
 

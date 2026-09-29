@@ -1,5 +1,5 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -61,24 +61,28 @@ describe('WhereToRead', () => {
   it('puts the student’s own books first and marks them', async () => {
     act(plan);
     act(() => chooseBooks(['bd-chaurasia']));
-    const { container } = render(<WhereToRead readings={readings} />);
-    const items = screen.getAllByRole('listitem');
+    render(<WhereToRead readings={readings} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Where to read this' }));
+    const sheet = screen.getByRole('dialog', { name: 'Where to read this' });
+    const items = within(sheet).getAllByRole('listitem');
     expect(items[0]).toHaveTextContent('BD Chaurasia');
     expect(items[0]).toHaveTextContent('Your book');
     expect(items[0]).toHaveTextContent('Chapter 4 Axilla, pages 60–64');
     expect(items[1]).not.toHaveTextContent('Your book');
-    await expectNoA11yViolations(container);
+    await expectNoA11yViolations(document.body);
   });
 
-  it('invites a student who has not chosen books, and says when references are still coming', () => {
+  it('invites a student who has not chosen books, and says when references are still coming', async () => {
     act(plan);
     const { unmount } = render(<WhereToRead readings={readings} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Where to read this' }));
     expect(screen.getByRole('link', { name: 'Choose your books' })).toHaveAttribute(
       'href',
       '/books',
     );
     unmount();
     render(<WhereToRead readings={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Where to read this' }));
     expect(screen.getByText(/on their way from the standard books/)).toBeInTheDocument();
   });
 });

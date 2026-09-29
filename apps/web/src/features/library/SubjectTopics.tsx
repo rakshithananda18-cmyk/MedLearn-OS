@@ -87,7 +87,7 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
 }
 
 /** One chevron for every fold: down when shut, up when open. */
-function Chevron({ open }: Readonly<{ open: boolean }>) {
+export function Chevron({ open }: Readonly<{ open: boolean }>) {
   return (
     <Icon
       icon={ChevronDown}

@@ -51,9 +51,16 @@ export interface StudioSettings {
   smooth: boolean | null;
   /** A picture as sharp as the screen allows, or a lighter one that saves battery. */
   sharp: boolean;
+  /** The open topic as its flat labelled diagram instead of the 3D model. */
+  flat: boolean;
 }
 
-export const DEFAULT_SETTINGS: StudioSettings = { labels: true, smooth: null, sharp: true };
+export const DEFAULT_SETTINGS: StudioSettings = {
+  labels: true,
+  smooth: null,
+  sharp: true,
+  flat: false,
+};
 
 export function loadSettings(): StudioSettings {
   const saved = read<unknown>(SETTINGS_KEY);
@@ -64,6 +71,7 @@ export function loadSettings(): StudioSettings {
     labels: pick('labels', isBoolean),
     smooth: pick('smooth', (value) => value === null || isBoolean(value)),
     sharp: pick('sharp', isBoolean),
+    flat: pick('flat', isBoolean),
   };
 }
 

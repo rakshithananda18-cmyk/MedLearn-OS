@@ -333,6 +333,26 @@
 @custom-variant short (@media (max-height: 30rem));
 
 /*
+ * Laptop density: with a mouse on a wide screen there is no thumb to fit, so controls, gaps,
+ * padding, corners and the largest headings each step down a notch. Every utility reads these
+ * variables, so the whole app tightens from here.
+ */
+@media (pointer: fine) and (min-width: 64rem) {
+  :root {
+    --spacing-6: 1.25rem;
+    --spacing-8: 1.5rem;
+    --spacing-12: 2.5rem;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --text-4xl: 2.125rem;
+    --text-4xl--line-height: 2.5rem;
+    --text-5xl: 2.625rem;
+    --text-5xl--line-height: 3rem;
+  }
+}
+
+/*
  * The sky behind every study screen: blue at the top fading to warm cream (night sky in the
  * dark theme). Pure gradients, so it costs no image download.
  */
@@ -434,7 +454,27 @@
 
 /* The model's still in the library preview: smaller than a hero, scaled to the screen. */
 @utility h-preview {
-  height: clamp(10rem, 24dvh, 14rem);
+  height: clamp(8rem, 20dvh, 11rem);
+}
+
+/*
+ * A topic's two columns: the model beside the ways to study it, half and half. During a lecture
+ * the video takes the larger share and the notes column narrows, sliding rather than jumping.
+ */
+@utility grid-topic {
+  grid-template-columns: minmax(0, var(--topic-stage, 1fr)) minmax(0, 1fr);
+  transition: grid-template-columns 300ms var(--ease-standard);
+}
+
+@utility grid-lecture {
+  --topic-stage: 1.6fr;
+}
+
+/* A row that scrolls sideways (tags, chips): a hairline scrollbar that does not crowd it. */
+@utility scroll-row {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
 }
 
 /* A panel that folds open and shut smoothly: its one child needs min-h-0 and overflow-hidden. */
@@ -451,6 +491,11 @@
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
 @utility h-stage {
   height: calc(100dvh - var(--spacing-16));
+}
+
+/* The topic's model beside its ways in on laptops: the window's height, less the page margins. */
+@utility h-stage-topic {
+  height: min(calc(100dvh - var(--spacing-16)), 44rem);
 }
 
 /*
