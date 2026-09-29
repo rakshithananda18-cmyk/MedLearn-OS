@@ -6,6 +6,7 @@ import {
   logActivity,
   type ReviewRating,
   scheduleReview,
+  type StudyGoal,
   type StudyProfile,
 } from '@medlearn/core';
 import { useSyncExternalStore } from 'react';
@@ -129,6 +130,34 @@ export function chooseBooks(bookIds: string[]): void {
 /** Saves the student's note on a topic (an empty note clears it). */
 export function saveNote(topicSlug: string, text: string, now = new Date()): void {
   commit({ notes: { ...read().notes, [topicSlug]: { text, updatedAt: now.toISOString() } } }, now);
+}
+
+/** Plans a class test or a revisit: Today spreads its topics over the days until its date. */
+export function addGoal(
+  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date'>,
+  now = new Date(),
+): StudyGoal {
+  const added: StudyGoal = {
+    ...goal,
+    id: `goal-${now.getTime().toString(36)}`,
+    done: [],
+    createdAt: now.toISOString(),
+  };
+  commit({ goals: [...read().goals, added] }, now);
+  return added;
+}
+
+export function removeGoal(goalId: string): void {
+  commit({ goals: read().goals.filter((goal) => goal.id !== goalId) });
+}
+
+/** Counts a topic as gone over for a goal, after a practice session on it. */
+export function markGoalTopic(goalId: string, topicSlug: string): void {
+  commit({
+    goals: read().goals.map((goal) =>
+      goal.id === goalId ? { ...goal, done: addOnce(goal.done, topicSlug) } : goal,
+    ),
+  });
 }
 
 export function acceptCatchUp(now = new Date()): void {

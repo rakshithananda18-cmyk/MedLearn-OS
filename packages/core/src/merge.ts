@@ -1,6 +1,6 @@
 import { mergeActivity } from './activity';
 import type { ReviewState } from './review';
-import type { LearnerProgress } from './today';
+import type { LearnerProgress, StudyGoal } from './today';
 
 const union = (a: string[], b: string[]) => [...new Set([...a, ...b])];
 
@@ -27,6 +27,12 @@ export function mergeProgress(
     const mine = reviews[id];
     if (!mine || reviewedAt(review) > reviewedAt(mine)) reviews[id] = review;
   }
+  // Goals are joined by id; a topic gone over on either side counts as done.
+  const goals = new Map<string, StudyGoal>(local.goals.map((goal) => [goal.id, goal]));
+  for (const goal of account.goals) {
+    const mine = goals.get(goal.id);
+    goals.set(goal.id, mine ? { ...goal, done: union(goal.done, mine.done) } : goal);
+  }
   const notes = { ...local.notes };
   for (const [slug, note] of Object.entries(account.notes)) {
     const mine = notes[slug];
@@ -43,6 +49,7 @@ export function mergeProgress(
     catchUpAcceptedOn: account.catchUpAcceptedOn ?? local.catchUpAcceptedOn,
     notes,
     activity: mergeActivity(local.activity, account.activity),
+    goals: [...goals.values()],
     updatedAt: now.toISOString(),
   };
 }
