@@ -29,6 +29,11 @@ export const POSTERS = [
   { name: 'scapular-spaces', path: '/studio?topic=scapular-spaces' },
   { name: 'arm-front', path: '/studio?topic=arm-front' },
   { name: 'arm-back-radial', path: '/studio?topic=arm-back-radial' },
+  { name: 'skin-veins-lymph', path: '/studio?topic=skin-veins-lymph' },
+  { name: 'cubital-fossa', path: '/studio?topic=cubital-fossa' },
+  { name: 'forearm-flexors', path: '/studio?topic=forearm-flexors' },
+  { name: 'forearm-vessels-nerves', path: '/studio?topic=forearm-vessels-nerves' },
+  { name: 'carpal-tunnel', path: '/studio?topic=carpal-tunnel' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
