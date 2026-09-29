@@ -29,7 +29,7 @@ export const carpalTunnel: Topic = {
     },
     bookSource(
       'bd-chaurasia',
-      'Volume 1, Chapter 9 Forearm and Hand, pages 125 to 126, and carpal tunnel syndrome, pages 139 to 141',
+      'Volume 1, Chapter 9 Forearm and Hand, pages 124 to 125, and carpal tunnel syndrome, pages 138 to 140',
     ),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 789 to 790'),
     {
@@ -408,7 +408,7 @@ export const carpalTunnel: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '125–126, 139–141' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '124–125, 138–140' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '789–790' },
   ],
 };

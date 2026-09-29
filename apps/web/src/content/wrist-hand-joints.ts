@@ -27,7 +27,7 @@ export const wristHandJoints: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 172 to 178'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 170 to 176'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 783 to 787'),
     {
       title: 'TeachMeAnatomy: The Wrist Joint',
@@ -388,7 +388,7 @@ export const wristHandJoints: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '172–178' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '170–176' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '783–787' },
   ],
 };

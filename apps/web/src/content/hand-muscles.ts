@@ -34,7 +34,7 @@ export const handMuscles: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 128 to 133'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 127 to 132'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, hand, pages 795 to 801'),
     {
       title: 'TeachMeAnatomy: The Intrinsic Muscles of the Hand',
@@ -406,7 +406,7 @@ export const handMuscles: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '128–133' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '127–132' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '795–801' },
   ],
 };

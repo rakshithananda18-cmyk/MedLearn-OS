@@ -30,7 +30,7 @@ export const wristBack: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 144 to 147'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 9 Forearm and Hand, pages 143 to 146'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, pages 776, 793 to 794 and 805'),
     {
       title: 'TeachMeAnatomy: The Anatomical Snuffbox',
@@ -431,7 +431,7 @@ export const wristBack: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '144–147' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 9 Forearm and Hand', pages: '143–146' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '776, 793–794, 805' },
   ],
 };

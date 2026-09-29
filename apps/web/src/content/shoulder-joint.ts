@@ -23,7 +23,7 @@ export const shoulderJoint: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 159 to 164'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 158 to 163'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, shoulder, pages 695 to 702'),
     {
       title: 'TeachMeAnatomy: The Shoulder Joint',
@@ -369,7 +369,7 @@ export const shoulderJoint: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '159–164' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '158–163' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '695–702' },
   ],
 };

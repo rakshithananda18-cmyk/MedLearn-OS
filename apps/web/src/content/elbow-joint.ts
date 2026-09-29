@@ -28,7 +28,7 @@ export const elbowJoint: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 165 to 169'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 164 to 167'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, elbow joint, pages 753 to 757'),
     {
       title: 'TeachMeAnatomy: The Elbow Joint',
@@ -349,7 +349,7 @@ export const elbowJoint: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '165–169' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '164–167' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '753–757' },
   ],
 };

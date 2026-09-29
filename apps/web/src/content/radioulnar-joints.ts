@@ -27,7 +27,7 @@ export const radioulnarJoints: Topic = {
       detail: 'In our own words from the standard books and open references; awaiting review',
       licence: 'All rights reserved',
     },
-    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 169 to 172'),
+    bookSource('bd-chaurasia', 'Volume 1, Chapter 10 Joints of Upper Limb, pages 168 to 170'),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, forearm, pages 764 to 766'),
     {
       title: 'TeachMeAnatomy: The Radioulnar Joints',
@@ -345,7 +345,7 @@ export const radioulnarJoints: Topic = {
     },
   ],
   readIn: [
-    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '169–172' },
+    { bookId: 'bd-chaurasia', chapter: 'Chapter 10 Joints of Upper Limb', pages: '168–170' },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '764–766' },
   ],
 };
