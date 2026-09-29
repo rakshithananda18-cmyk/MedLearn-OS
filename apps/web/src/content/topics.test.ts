@@ -35,7 +35,7 @@ describe('bundled content', () => {
 
   it('offers the exam diagram drill only for topics with a diagram to build', () => {
     const drills = TOPICS.map(hasDrill);
-    expect(drills).toEqual([true, false, true, true, true, false]);
+    expect(drills).toEqual([true, false, true, true, true, true, true, true, true, true, false]);
     expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual(
       drills.map((drill) => (drill ? DRILL_MINUTES : null)),
     );
