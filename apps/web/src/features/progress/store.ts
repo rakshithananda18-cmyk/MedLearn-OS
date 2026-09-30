@@ -3,7 +3,9 @@ import {
   dayKey,
   EMPTY_PROGRESS,
   type LearnerProgress,
+  firstRevisit,
   logActivity,
+  nextRevisit,
   type ReviewRating,
   scheduleReview,
   type StudyGoal,
@@ -89,12 +91,36 @@ export function saveProfile(profile: StudyProfile): void {
   commit({ profile });
 }
 
-/** Marks a lesson done; `minutes` is its length, counted towards today's study time. */
-export function completeLesson(topicSlug: string, minutes = 0): void {
+/**
+ * Marks a lesson done; `minutes` is its length, counted towards today's study time. The first
+ * time, the topic's spaced revisits start: the first is due tomorrow.
+ */
+export function completeLesson(topicSlug: string, minutes = 0, now = new Date()): void {
+  const { completedLessons, revisits } = read();
   recordActivity(
-    { completedLessons: addOnce(read().completedLessons, topicSlug) },
+    {
+      completedLessons: addOnce(completedLessons, topicSlug),
+      revisits:
+        topicSlug in revisits
+          ? revisits
+          : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
+    },
     { kind: 'lesson', topicSlug, minutes },
+    now,
   );
+}
+
+/**
+ * Records a spaced revisit: `share` is the part answered right. Enough right moves the topic on to
+ * its next, longer gap (the last one done ends them); too few brings it back tomorrow.
+ */
+export function completeRevisit(topicSlug: string, share: number, now = new Date()): void {
+  const { revisits } = read();
+  const current = revisits[topicSlug];
+  if (!current) return;
+  const next = nextRevisit(current, share, dayKey(now));
+  const rest = Object.fromEntries(Object.entries(revisits).filter(([slug]) => slug !== topicSlug));
+  commit({ revisits: next ? { ...rest, [topicSlug]: next } : rest }, now);
 }
 
 export function completeDrill(topicSlug: string, minutes = 0): void {

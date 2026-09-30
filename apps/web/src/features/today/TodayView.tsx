@@ -3,6 +3,7 @@
 import {
   bestStreak,
   buildTodayPlan,
+  type ExamPhase,
   currentStreak,
   dayKey,
   dayOf,
@@ -48,6 +49,14 @@ const HEADLINE = {
     </>
   ),
 } as const;
+
+/** What each stretch before the exam is for, as Today orders it. */
+const PHASE_TIP: Record<ExamPhase, string> = {
+  cover: 'A month out: exam diagrams first, then keep covering new topics.',
+  consolidate: 'Two weeks out: diagrams, revisits and recall before anything new.',
+  sharpen: 'The last week: diagrams and practice only, no new topics.',
+  light: 'Light recall only. Rest well for the exam.',
+};
 
 // "Monday, 28 September" from two lists: building an Intl date formatter blocks a phone for tens
 // of milliseconds, the largest single cost of opening Today.
@@ -213,6 +222,11 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
           {/* The server renders in its own time zone; the browser's date wins. */}
           <Eyebrow suppressHydrationWarning>{longDate(now)}</Eyebrow>
           <Display size="lg">{HEADLINE[plan.mode]}</Display>
+          {plan.examPhase ? (
+            <Text size="sm" tone="muted">
+              {PHASE_TIP[plan.examPhase]}
+            </Text>
+          ) : null}
         </div>
         <div className="relative flex items-center gap-2 max-md:w-full">
           {plan.examInDays === null ? null : (

@@ -1,6 +1,12 @@
 'use client';
 
-import { dayKey, dueCardIds, goalToday, type StudyGoal } from '@medlearn/core';
+import {
+  dayKey,
+  dueCardIds,
+  goalToday,
+  REVISIT_QUESTIONS,
+  type StudyGoal,
+} from '@medlearn/core';
 import { cx, Display, Eyebrow, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
 import { Dumbbell, Play, RotateCcw, Shuffle, Target, Timer, Trash2 } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -8,7 +14,12 @@ import { useState } from 'react';
 
 import type { LibraryNode } from '@/content/library';
 import type { PracticeQuestion, TopicSummary } from '@/content/topics';
-import { markGoalTopic, removeGoal, useProgress } from '@/features/progress/store';
+import {
+  completeRevisit,
+  markGoalTopic,
+  removeGoal,
+  useProgress,
+} from '@/features/progress/store';
 import { useHydrated } from '@/features/shell/media';
 
 import { GoalPlanner } from './GoalPlanner';
@@ -28,6 +39,8 @@ interface Running {
   ids: string[];
   seconds: number | null;
   goal?: { id: string; topic: string };
+  /** A spaced revisit of this topic: its score sets the next one. */
+  revisit?: string;
 }
 
 const STRENGTH: Record<Strength, { label: string; tone: string; bar: string }> = {
@@ -269,11 +282,14 @@ function Goals({
 export interface PracticeStart {
   topic?: string;
   goal?: string;
+  /** A spaced revisit of this topic, from Today's plan. */
+  revisit?: string;
 }
 
 /**
  * The session a step of Today's plan asks for: a practice step holds the questions still to get
- * right, as the plan counted them; a goal's step goes over the whole topic.
+ * right, as the plan counted them; a goal's step goes over the whole topic; a revisit takes five
+ * of its questions, those still to get right first.
  */
 function fromPlan(
   start: PracticeStart | undefined,
@@ -281,9 +297,17 @@ function fromPlan(
   all: string[],
   correct: string[],
 ): Running | null {
-  const slug = start?.topic;
+  const slug = start?.revisit ?? start?.topic;
   const title = slug ? titles[slug] : undefined;
-  if (!slug || !title) return null;
+  if (!start || !slug || !title) return null;
+  if (start.revisit) {
+    return {
+      title: `Revisit: ${title}`,
+      ids: all.slice(0, REVISIT_QUESTIONS),
+      seconds: null,
+      revisit: slug,
+    };
+  }
   const open = all.filter((id) => !correct.includes(id));
   return {
     title,
@@ -329,7 +353,7 @@ export function PracticeView({
       fromPlan(
         start,
         titles,
-        session('topics', start?.topic ? [start.topic] : []),
+        session('topics', [start?.revisit ?? start?.topic ?? '']),
         progress.correctAnswers,
       ),
     );
@@ -351,8 +375,12 @@ export function PracticeView({
           title={running.title}
           questions={running.ids.flatMap((id) => byId.get(id) ?? [])}
           seconds={running.seconds}
-          onFinish={() => {
+          onFinish={(results) => {
             if (running.goal) markGoalTopic(running.goal.id, running.goal.topic);
+            if (running.revisit) {
+              const right = results.filter((result) => result.correct === true).length;
+              completeRevisit(running.revisit, right / Math.max(1, results.length));
+            }
           }}
           onExit={exit}
         />
