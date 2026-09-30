@@ -276,16 +276,17 @@ export function LiveSearch({
       </label>
       <div
         hidden={!open}
-        // Keeps the focus in the box while a suggestion is pressed.
-        onMouseDown={(event) => event.preventDefault()}
+        // Focusable, so a press anywhere in the panel keeps the focus inside the search (and the
+        // panel open) until the click lands, in every browser.
+        tabIndex={-1}
         className="absolute inset-x-0 top-full z-40 mt-2 flex max-h-dialog min-w-full flex-col gap-2 overflow-y-auto rounded-xl border border-glass-border bg-surface p-2 shadow-overlay md:min-w-sm"
       >
-        <p role="status" className="px-3 text-sm text-fg-muted empty:hidden">
+        <output aria-live="polite" className="px-3 text-sm text-fg-muted empty:hidden">
           {typed && found?.query !== query ? 'Searching…' : null}
           {typed && found?.query === query && options.length === 1
             ? 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.'
             : null}
-        </p>
+        </output>
         <div id={listId} role="listbox" aria-label="Suggestions" className="flex flex-col gap-2">
           {shown.map((group) => (
             <div key={group.title} role="group" aria-label={group.title} className="flex flex-col">
