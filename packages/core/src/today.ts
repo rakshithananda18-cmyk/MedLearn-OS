@@ -393,9 +393,12 @@ export function buildTodayPlan(
   const examPhase = mode === 'exam' && examInDays !== null ? phaseFor(examInDays) : null;
   let ordered: TodayItem[];
   if (examPhase === 'light') ordered = [...review, ...goals];
-  else if (examPhase === 'sharpen') ordered = [...drills, ...goals, ...practice, ...review, ...revisits];
-  else if (mode === 'exam') ordered = [...drills, ...goals, ...revisits, ...review, ...practice, ...learn];
-  else if (mode === 'catch-up') ordered = [...review, ...goals, ...revisits, ...practice, ...learn, ...drills];
+  else if (examPhase === 'sharpen')
+    ordered = [...drills, ...goals, ...practice, ...review, ...revisits];
+  else if (mode === 'exam')
+    ordered = [...drills, ...goals, ...revisits, ...review, ...practice, ...learn];
+  else if (mode === 'catch-up')
+    ordered = [...review, ...goals, ...revisits, ...practice, ...learn, ...drills];
   else ordered = [...review, ...goals, ...revisits, ...learn, ...practice, ...drills];
 
   return {

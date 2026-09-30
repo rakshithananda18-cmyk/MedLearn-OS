@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: StudioSettings = {
   flat: false,
 };
 
-const QUALITIES: Quality[] = ['auto', 'sharp', 'saver'];
+const QUALITIES = new Set<unknown>(['auto', 'sharp', 'saver']);
 
 export function loadSettings(): StudioSettings {
   const saved = read<unknown>(SETTINGS_KEY);
@@ -82,7 +82,7 @@ export function loadSettings(): StudioSettings {
     labels: pick('labels', isBoolean),
     smooth: pick('smooth', (value) => value === null || isBoolean(value)),
     // Saved before there were three qualities, "not sharp" becomes the battery saver.
-    quality: pick('quality', (value) => QUALITIES.includes(value as Quality)),
+    quality: pick('quality', (value) => QUALITIES.has(value)),
     narrate: pick('narrate', isBoolean),
     flat: pick('flat', isBoolean),
   };

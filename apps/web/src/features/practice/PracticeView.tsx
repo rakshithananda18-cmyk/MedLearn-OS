@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  dayKey,
-  dueCardIds,
-  goalToday,
-  REVISIT_QUESTIONS,
-  type StudyGoal,
-} from '@medlearn/core';
+import { dayKey, dueCardIds, goalToday, REVISIT_QUESTIONS, type StudyGoal } from '@medlearn/core';
 import { cx, Display, Eyebrow, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
 import { Dumbbell, Play, RotateCcw, Shuffle, Target, Timer, Trash2 } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -14,12 +8,7 @@ import { useState } from 'react';
 
 import type { LibraryNode } from '@/content/library';
 import type { PracticeQuestion, TopicSummary } from '@/content/topics';
-import {
-  completeRevisit,
-  markGoalTopic,
-  removeGoal,
-  useProgress,
-} from '@/features/progress/store';
+import { completeRevisit, markGoalTopic, removeGoal, useProgress } from '@/features/progress/store';
 import { useHydrated } from '@/features/shell/media';
 
 import { GoalPlanner } from './GoalPlanner';

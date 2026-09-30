@@ -157,9 +157,8 @@ describe('TodayView', () => {
     act(() => completeLesson('brachial-plexus', 15, yesterday));
     render(<TodayView topics={PLANNABLE_TOPICS} />);
     const plan = screen.getByRole('list', { name: "Today's plan" });
-    expect(within(plan).getByRole('link', { name: /Revisit: Brachial plexus.*next-day revisit/ })).toHaveAttribute(
-      'href',
-      '/practice?revisit=brachial-plexus',
-    );
+    expect(
+      within(plan).getByRole('link', { name: /Revisit: Brachial plexus.*next-day revisit/ }),
+    ).toHaveAttribute('href', '/practice?revisit=brachial-plexus');
   });
 });

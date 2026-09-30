@@ -122,7 +122,10 @@ describe('PracticeView', () => {
     act(() => completeLesson('axilla', 12, yesterday));
     renderPractice({ revisit: 'axilla' });
     const session = screen.getByRole('region', { name: 'Revisit: Axilla: walls and contents' });
-    const count = Math.min(5, TOPICS.find((topic) => topic.slug === 'axilla')?.questions.length ?? 0);
+    const count = Math.min(
+      5,
+      TOPICS.find((topic) => topic.slug === 'axilla')?.questions.length ?? 0,
+    );
     for (let index = 0; index < count; index++) {
       await answerRight();
       await userEvent.click(
