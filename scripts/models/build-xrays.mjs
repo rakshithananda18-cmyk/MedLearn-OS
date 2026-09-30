@@ -30,10 +30,13 @@ export const FILMS = {
 
 const source = process.argv[2] ?? 'models-src/xrays';
 mkdirSync(OUT, { recursive: true });
-for (const [id, file] of Object.entries(FILMS)) {
-  const { width, height, size } = await sharp(join(source, file))
-    .resize({ width: LONG_SIDE, height: LONG_SIDE, fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 80 })
-    .toFile(join(OUT, `${id}.webp`));
-  console.log(`${id}.webp ${width}x${height} ${Math.round(size / 1024)} KB`);
-}
+// Every film is converted at once; each prints its size when done.
+await Promise.all(
+  Object.entries(FILMS).map(async ([id, file]) => {
+    const { width, height, size } = await sharp(join(source, file))
+      .resize({ width: LONG_SIDE, height: LONG_SIDE, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toFile(join(OUT, `${id}.webp`));
+    console.log(`${id}.webp ${width}x${height} ${Math.round(size / 1024)} KB`);
+  }),
+);

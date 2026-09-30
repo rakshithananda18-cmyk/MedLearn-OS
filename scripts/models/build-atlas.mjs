@@ -32,13 +32,16 @@ export const PLATES = {
 
 const source = process.argv[2] ?? 'models-src/atlas';
 mkdirSync(OUT, { recursive: true });
-for (const [id, file] of Object.entries(PLATES)) {
-  // SVGs are rendered big enough to stay sharp once scaled down; a white page behind them all.
-  const input = sharp(join(source, file), { density: file.endsWith('.svg') ? 300 : 72 });
-  const { width, height, size } = await input
-    .resize({ width: LONG_SIDE, height: LONG_SIDE, fit: 'inside', withoutEnlargement: false })
-    .flatten({ background: '#ffffff' })
-    .webp({ quality: 82 })
-    .toFile(join(OUT, `${id}.webp`));
-  console.log(`${id}.webp ${width}x${height} ${Math.round(size / 1024)} KB`);
-}
+// Every plate is converted at once; each prints its size when done.
+await Promise.all(
+  Object.entries(PLATES).map(async ([id, file]) => {
+    // SVGs are rendered big enough to stay sharp once scaled down; a white page behind them all.
+    const input = sharp(join(source, file), { density: file.endsWith('.svg') ? 300 : 72 });
+    const { width, height, size } = await input
+      .resize({ width: LONG_SIDE, height: LONG_SIDE, fit: 'inside', withoutEnlargement: false })
+      .flatten({ background: '#ffffff' })
+      .webp({ quality: 82 })
+      .toFile(join(OUT, `${id}.webp`));
+    console.log(`${id}.webp ${width}x${height} ${Math.round(size / 1024)} KB`);
+  }),
+);
