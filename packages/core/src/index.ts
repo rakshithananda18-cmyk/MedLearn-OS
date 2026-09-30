@@ -40,6 +40,6 @@ export {
   type TodayItem,
   type TodayMode,
   type TodayPlan,
-  type TopicRevisit,
   topicCardIds,
+  type TopicRevisit,
 } from './today';

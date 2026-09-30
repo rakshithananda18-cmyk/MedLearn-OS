@@ -1,8 +1,9 @@
 'use client';
 
 import { cx, Icon, IconButton } from '@medlearn/ui';
-import { ArrowLeft, Check, Play } from '@medlearn/ui/icons';
+import { ArrowLeft, Check, Play, Rotate3d } from '@medlearn/ui/icons';
 import Image from 'next/image';
+import Link from 'next/link';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { type TopicVideo, videoMinutes } from '@/content/videos';
@@ -107,11 +108,16 @@ function VideoRow({
   );
 }
 
-/** The topic's lectures, above the ways to study it. */
+/** The topic's lectures, and its narrated 3D tour, above the ways to study it. */
 function Lectures({
   videos,
+  tourHref,
   onPlay,
-}: Readonly<{ videos: TopicVideo[]; onPlay: (video: TopicVideo) => void }>) {
+}: Readonly<{
+  videos: TopicVideo[];
+  tourHref: string | null;
+  onPlay: (video: TopicVideo) => void;
+}>) {
   return (
     <section
       aria-labelledby="lectures-title"
@@ -121,9 +127,27 @@ function Lectures({
         id="lectures-title"
         className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink px-2 pt-1"
       >
-        Watch the lecture
+        Watch
       </h2>
       <ul className="flex flex-col">
+        {tourHref ? (
+          <li>
+            <Link
+              href={tourHref}
+              className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-2 transition-colors duration-150 hover:bg-surface"
+            >
+              <span className="flex aspect-video w-1/4 shrink-0 items-center justify-center rounded-md bg-ink text-gold">
+                <Icon icon={Rotate3d} />
+              </span>
+              <span className="flex min-w-0 flex-col gap-1">
+                <span className="text-sm font-semibold text-ink">Watch the 3D tour</span>
+                <span className="text-xs text-fg-muted">
+                  The model turns through each guided view, captioned, and read aloud if you like
+                </span>
+              </span>
+            </Link>
+          </li>
+        ) : null}
         {videos.map((video) => (
           <li key={video.id}>
             <VideoRow video={video} onPlay={() => onPlay(video)} />
@@ -248,7 +272,13 @@ export function TopicStudy({
     <div className="flex min-w-0 flex-col gap-4">
       {poster ? null : back}
       {intro}
-      {videos.length > 0 ? <Lectures videos={videos} onPlay={play} /> : null}
+      {videos.length > 0 || poster ? (
+        <Lectures
+          videos={videos}
+          tourHref={poster ? `/studio?topic=${slug}&tour=1` : null}
+          onPlay={play}
+        />
+      ) : null}
       {study}
       <TopicNotes topicSlug={slug} />
     </div>

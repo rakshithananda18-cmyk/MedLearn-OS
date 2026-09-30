@@ -5,7 +5,7 @@ import { cx, IconButton, Text } from '@medlearn/ui';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
@@ -52,9 +52,11 @@ import {
   GuideCard,
   ModelView,
   PhoneHeader,
+  TourButton,
+  TourCaption,
   ViewTools,
 } from './stage';
-import { useCan3D, useDocked, useReducedMotion } from './viewer';
+import { pixelRatio, useCan3D, useDocked, useReducedMotion } from './viewer';
 
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
 const BODY_KEY = 'body';
@@ -67,6 +69,8 @@ export interface StudioProps {
   /** The whole body, shown when no topic is open. */
   body: Model3D;
   initialTopic: string | null;
+  /** Start the open topic's guided tour straight away (from "Watch the 3D tour"). */
+  initialTour?: boolean;
 }
 
 /** The topic with this slug, when it has a model to open in the studio. */
@@ -87,12 +91,19 @@ function firstSession(
 }
 
 /** The studio's state and every action on it; the side effects (saving, the address) live here. */
-function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps>) {
+function useStudio({
+  topics,
+  regions,
+  body,
+  initialTopic,
+  initialTour = false,
+}: Readonly<StudioProps>) {
   const router = useRouter();
   const [session, setSession] = useState<Session>(() =>
     firstSession(topics, regions, initialTopic),
   );
   const [settings, setSettings] = useState<StudioSettings>(loadSettings);
+  const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
   const context = { topic, regions, pool: structures.map((structure) => structure.id) };
@@ -105,6 +116,8 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
     session,
     setSession,
     update,
+    touring,
+    setTouring,
     settings,
     changeSettings: (next: StudioSettings) => {
       setSettings(next);
@@ -116,6 +129,7 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
     context,
     nameOf,
     openTopic: (next: string | null) => {
+      setTouring(false);
       const opened = withModel(topics, next);
       setSession(openTopicIn(session, opened, loadStrokes(opened?.slug ?? BODY_KEY)));
       // The address follows the open topic, so it can be shared or reopened.
@@ -149,6 +163,46 @@ function useStudio({ topics, regions, body, initialTopic }: Readonly<StudioProps
 }
 
 type StudioState = ReturnType<typeof useStudio>;
+
+/** Characters read in a second, for how long a caption stays when it is not read aloud. */
+const READ_PER_SECOND = 15;
+const MIN_STOP_MS = 5000;
+/** A breath after a view is read aloud, before the camera moves on. */
+const PAUSE_MS = 1200;
+
+/**
+ * Plays the guided views as a tour: each view stays long enough to read its caption (or until it
+ * has been read aloud), then the camera moves to the next; the tour stops after the last.
+ */
+function useTour(studio: StudioState) {
+  const { touring, setTouring, setSession, session, model, settings } = studio;
+  const stop = model.stops[session.stopIndex];
+  const last = session.stopIndex >= model.stops.length - 1;
+  useEffect(() => {
+    if (!touring || !stop) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const next = () => {
+      if (last) setTouring(false);
+      else setSession((current) => ({ ...current, stopIndex: current.stopIndex + 1 }));
+    };
+    const text = `${stop.title}. ${stop.description}`;
+    const speech = settings.narrate && 'speechSynthesis' in window ? window.speechSynthesis : null;
+    if (speech) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => {
+        timer = setTimeout(next, PAUSE_MS);
+      };
+      speech.cancel();
+      speech.speak(utterance);
+    } else {
+      timer = setTimeout(next, Math.max(MIN_STOP_MS, (text.length / READ_PER_SECOND) * 1000));
+    }
+    return () => {
+      clearTimeout(timer);
+      speech?.cancel();
+    };
+  }, [touring, stop, last, settings.narrate, setSession, setTouring]);
+}
 
 interface OverlayProps {
   studio: StudioState;
@@ -231,7 +285,7 @@ function StudioModel({
         strokes={session.strokes}
         labels={labels}
         resetToken={session.reset}
-        sharp={settings.sharp}
+        dpr={pixelRatio(settings.quality)}
         flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -268,7 +322,9 @@ function Guide({ studio }: Readonly<{ studio: StudioState }>) {
     <GuideCard
       stops={studio.model.stops}
       index={studio.session.stopIndex}
+      touring={studio.touring}
       onIndex={(stopIndex) => studio.update({ stopIndex })}
+      onTour={() => studio.setTouring(!studio.touring)}
     />
   );
 }
@@ -414,6 +470,13 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
           stops={studio.model.stops}
           index={session.stopIndex}
           onIndex={(stopIndex) => studio.update({ stopIndex })}
+          tour={
+            <TourButton
+              touring={studio.touring}
+              size="md"
+              onTour={() => studio.setTouring(!studio.touring)}
+            />
+          }
         />
       ) : null}
       <Credit studio={studio} capable={capable} />
@@ -482,6 +545,13 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
   const { mode } = studio.session;
   return (
     <footer className="flex flex-col gap-2">
+      {studio.touring ? (
+        <TourCaption
+          stops={studio.model.stops}
+          index={studio.session.stopIndex}
+          onPause={() => studio.setTouring(false)}
+        />
+      ) : null}
       {mode === 'draw' ? (
         <div className={cx(GLASS, 'pointer-events-auto p-3')}>
           <Draw studio={studio} />
@@ -633,6 +703,7 @@ export function Studio(props: Readonly<StudioProps>) {
   const capable = useCan3D();
   const docked = useDocked();
   const studio = useStudio(props);
+  useTour(studio);
   const Overlay = docked ? DockedOverlay : PhoneOverlay;
   return (
     <section

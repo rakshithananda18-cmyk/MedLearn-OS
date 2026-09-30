@@ -25,5 +25,21 @@ export function useCan3D(): boolean | null {
 
 export const useReducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
 
+/**
+ * Whether this device can draw the sharpest picture without strain: 4 GB of memory and 4 cores or
+ * more (browsers that do not say are taken to have them).
+ */
+export function strongDevice(): boolean {
+  const device = navigator as Navigator & { deviceMemory?: number };
+  return (device.deviceMemory ?? 4) >= 4 && (navigator.hardwareConcurrency || 4) >= 4;
+}
+
+/** Pixels drawn per screen pixel for a quality: up to double where sharp, one to save battery. */
+export function pixelRatio(quality: 'auto' | 'sharp' | 'saver'): number | [number, number] {
+  if (quality === 'saver') return 1;
+  if (quality === 'sharp') return [1, 2];
+  return strongDevice() ? [1, 2] : [1, 1.5];
+}
+
 /** Tablets held sideways and laptops (the xl breakpoint): the side panels stay open. */
 export { useWide as useDocked } from '@/features/shell/media';

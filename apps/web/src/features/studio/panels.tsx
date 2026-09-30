@@ -14,7 +14,7 @@ import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
 
 import type { StructureInfo, StudioTopic } from './knowledge';
-import type { StudioSettings } from './saved';
+import type { Quality, StudioSettings } from './saved';
 import type { Detail } from './session';
 
 export const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-md';
@@ -786,6 +786,18 @@ export function BodyBrowser({
   );
 }
 
+const QUALITY_CHOICES: Array<[Quality, string]> = [
+  ['auto', 'Auto'],
+  ['saver', 'Battery saver'],
+  ['sharp', 'Sharp'],
+];
+
+const QUALITY_HINT: Record<Quality, string> = {
+  auto: 'Matched to this device: sharp where it has the power, lighter where it does not.',
+  saver: 'Fewer pixels: smoother on older phones and easier on the battery.',
+  sharp: 'Full screen resolution, whatever the device.',
+};
+
 /** One setting: its switch, and a line on what it does. */
 function Setting({
   label,
@@ -842,11 +854,33 @@ export function SettingsPanel({
         onChange={(smooth) => onChange({ ...settings, smooth })}
       />
       <Setting
-        label="Sharper picture"
-        hint="Draws the model at full screen resolution; off saves battery."
-        checked={settings.sharp}
-        onChange={(sharp) => onChange({ ...settings, sharp })}
+        label="Read tours aloud"
+        hint="The guided tour speaks each view as well as showing it."
+        checked={settings.narrate}
+        onChange={(narrate) => onChange({ ...settings, narrate })}
       />
+      <fieldset className="flex flex-col gap-2">
+        <legend className="pb-1 text-sm font-medium text-fg">Picture</legend>
+        <div className="grid grid-cols-3 gap-1 rounded-full bg-surface-muted p-1">
+          {QUALITY_CHOICES.map(([quality, label]) => (
+            <button
+              key={quality}
+              type="button"
+              aria-pressed={settings.quality === quality}
+              onClick={() => onChange({ ...settings, quality })}
+              className={cx(
+                'h-8 rounded-full text-sm font-semibold transition-colors duration-150',
+                settings.quality === quality ? 'bg-ink text-canvas' : 'text-ink hover:bg-surface',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <Text size="sm" tone="muted">
+          {QUALITY_HINT[settings.quality]}
+        </Text>
+      </fieldset>
     </Sheet>
   );
 }

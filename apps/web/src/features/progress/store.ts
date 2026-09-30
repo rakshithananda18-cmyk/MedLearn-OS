@@ -2,8 +2,8 @@ import {
   type ActivityEvent,
   dayKey,
   EMPTY_PROGRESS,
-  type LearnerProgress,
   firstRevisit,
+  type LearnerProgress,
   logActivity,
   nextRevisit,
   type ReviewRating,
@@ -101,9 +101,7 @@ export function completeLesson(topicSlug: string, minutes = 0, now = new Date())
     {
       completedLessons: addOnce(completedLessons, topicSlug),
       revisits:
-        topicSlug in revisits
-          ? revisits
-          : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
+        topicSlug in revisits ? revisits : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
     },
     { kind: 'lesson', topicSlug, minutes },
     now,
