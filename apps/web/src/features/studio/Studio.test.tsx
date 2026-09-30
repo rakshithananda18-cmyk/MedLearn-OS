@@ -166,7 +166,7 @@ describe('Studio on a phone', () => {
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
     const layers = screen.getByRole('region', { name: 'Layers' });
-    await userEvent.click(within(layers).getByRole('button', { name: 'Muscles', pressed: true }));
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles', checked: true }));
     expect(viewer.props?.hiddenKinds.has('muscle')).toBe(true);
 
     tap('axillary-vein');
@@ -264,7 +264,11 @@ describe('Studio on a wide screen', () => {
     await userEvent.click(within(guide).getByRole('button', { name: 'Next view' }));
     expect(guide).toHaveTextContent('2/');
     const side = screen.getByRole('complementary', { name: 'About the model' });
-    expect(within(side).getByRole('region', { name: 'Layers' })).toBeInTheDocument();
+    // The layers open from beside the settings, not in the side panel.
+    expect(within(side).queryByRole('region', { name: 'Layers' })).not.toBeInTheDocument();
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
+    expect(screen.getByRole('switch', { name: 'Muscles', checked: true })).toBeInTheDocument();
 
     await userEvent.type(
       within(topics).getByRole('searchbox', { name: 'Find a structure' }),
@@ -323,16 +327,22 @@ describe('Studio on a wide screen', () => {
     );
     vi.stubGlobal('fetch', search);
     const { container } = await renderStudio();
-    const side = screen.getByRole('complementary', { name: "The body's systems" });
+    // No side panel until a structure is picked; the systems are the layers, by the settings.
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
+    const layers = screen.getByRole('region', { name: 'Layers' });
     // It opens on the skin over the skeleton; the other systems load when switched on.
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
-    await userEvent.click(within(side).getByRole('switch', { name: 'Muscles' }));
-    await userEvent.click(within(side).getByRole('switch', { name: 'Skin' }));
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Skin' }));
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton', 'muscles']);
     expect(viewer.props?.hiddenIds).toContain('skin');
     await expectNoA11yViolations(container);
 
+    await userEvent.click(within(layers).getByRole('button', { name: 'Close layers' }));
     tap('skeleton/left-humerus');
+    const side = screen.getByRole('complementary', { name: 'About the model' });
     const card = await within(side).findByRole('region', { name: 'Left humerus' });
     expect(card).toHaveTextContent('Skeleton');
     expect(viewer.props?.highlight).toContain('skeleton/left-humerus');
@@ -342,7 +352,7 @@ describe('Studio on a wide screen', () => {
       '/learn/humerus',
     );
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
-    expect(within(side).queryByRole('region', { name: 'Left humerus' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 
   it('folds either panel away and brings it back', async () => {

@@ -40,14 +40,15 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   ).toBeVisible();
   await expect(page).toHaveURL(/\/studio\?topic=axilla$/);
 
-  // Layers: peel the muscles away.
-  await clickIfShown(page, 'Layers');
+  // Layers, beside the settings: peel the muscles away.
+  await page.getByRole('button', { name: 'Layers', exact: true }).click();
   const layers = page.getByRole('region', { name: 'Layers' });
-  await layers.getByRole('button', { name: 'Muscles', exact: true }).click();
-  await expect(layers.getByRole('button', { name: 'Muscles', exact: true })).toHaveAttribute(
-    'aria-pressed',
+  await layers.getByRole('switch', { name: 'Muscles' }).click();
+  await expect(layers.getByRole('switch', { name: 'Muscles' })).toHaveAttribute(
+    'aria-checked',
     'false',
   );
+  await layers.getByRole('button', { name: 'Close layers' }).click();
 
   // Find one structure by name, and read about it.
   await findStructure(page, 'serratus', 'Serratus anterior');

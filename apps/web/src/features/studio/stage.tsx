@@ -107,9 +107,9 @@ const pressed = (on: boolean) =>
   cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
 
 /**
- * Round buttons for the view: layers (on phones), see-through, only the picked structure, the
- * topic's X-ray films, back to the guided view, and the settings. A column down the left on
- * phones, a row beside the title where docked.
+ * Round buttons for the view: see-through, only the picked structure, the topic's X-ray films,
+ * back to the guided view, then the layers beside the settings. A column down the left on phones,
+ * a row beside the title where docked.
  */
 export function ViewTools({
   row,
@@ -127,8 +127,8 @@ export function ViewTools({
   onSettings,
 }: Readonly<{
   row: boolean;
-  /** Whether the layers sheet is open, or null where the layers are docked. */
-  layers: boolean | null;
+  /** Whether the layers sheet is open. */
+  layers: boolean;
   xray: boolean | null;
   /** Whether the topic's X-ray films are showing, or null when it has none. */
   films: boolean | null;
@@ -154,15 +154,6 @@ export function ViewTools({
         row ? 'flex-row' : 'flex-col',
       )}
     >
-      {layers === null ? null : (
-        <IconButton
-          icon={Layers}
-          label="Layers"
-          aria-pressed={layers}
-          className={pressed(layers)}
-          onClick={onLayers}
-        />
-      )}
       {xray === null ? null : (
         <>
           <IconButton
@@ -198,6 +189,14 @@ export function ViewTools({
         label="Reset the view"
         className={pressed(false)}
         onClick={onReset}
+      />
+      <IconButton
+        icon={Layers}
+        label="Layers"
+        title="Layers"
+        aria-pressed={layers}
+        className={pressed(layers)}
+        onClick={onLayers}
       />
       <IconButton
         icon={Settings}

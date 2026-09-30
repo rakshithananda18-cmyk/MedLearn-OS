@@ -1,9 +1,10 @@
 'use client';
 
 import { topicMastery } from '@medlearn/core';
-import type { BodyRegion, PartKind } from '@medlearn/schemas';
+import type { BodyRegion } from '@medlearn/schemas';
 import { cx, Icon, IconButton, Switch, Text } from '@medlearn/ui';
 import { Eye, PersonStanding, Search, X } from '@medlearn/ui/icons';
+import type { LayerKind } from '@medlearn/visuals/viewer3d';
 import Image from 'next/image';
 import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
@@ -421,69 +422,75 @@ export function StructureSearch({
   );
 }
 
-/** A floating sheet from the left on phones and tablets held upright: the search, or the systems. */
+/** A floating sheet holding the search, on phones and tablets held upright. */
 export function SearchSheet({
   label,
-  compact = false,
   onClose,
   children,
-}: Readonly<{ label: string; compact?: boolean; onClose: () => void; children: ReactNode }>) {
+}: Readonly<{ label: string; onClose: () => void; children: ReactNode }>) {
   return (
-    <Sheet label={label} side="left" place="float" compact={compact} onClose={onClose}>
+    <Sheet label={label} side="left" place="float" onClose={onClose}>
       {children}
     </Sheet>
   );
 }
 
-const LAYERS: Array<{ kind: PartKind; title: string }> = [
-  { kind: 'bone', title: 'Bones' },
-  { kind: 'muscle', title: 'Muscles' },
-  { kind: 'artery', title: 'Arteries' },
-  { kind: 'vein', title: 'Veins' },
-];
+/** One layer of the model: a system of the body, or a kind of structure in a topic. */
+export interface LayerItem<Id extends string> {
+  id: Id;
+  name: string;
+  kind: LayerKind;
+  on: boolean;
+}
 
-/** Layers on and off, two by two, and the structures the student has hidden one by one. */
-export function LayersPanel({
-  place,
-  kinds,
-  hiddenKinds,
-  hidden,
-  onKind,
+/** Each layer's colour, as on the model. */
+export const LAYER_DOT: Record<LayerKind, string> = {
+  skin: 'bg-anat-skin',
+  bone: 'bg-anat-bone',
+  muscle: 'bg-anat-muscle',
+  artery: 'bg-anat-artery',
+  vein: 'bg-anat-vein',
+  nerve: 'bg-anat-nerve',
+  organ: 'bg-anat-organ',
+};
+
+/**
+ * The layers, from the view tools: a switch for each (the body's systems, or a topic's muscles,
+ * vessels and bones), and the structures the student has hidden one by one.
+ */
+export function LayersPanel<Id extends string>({
+  layers,
+  hidden = [],
+  onToggle,
   onShow,
   onClose,
 }: Readonly<{
-  place: Place;
-  kinds: PartKind[];
-  hiddenKinds: ReadonlySet<PartKind>;
+  layers: Array<LayerItem<Id>>;
   /** Structures hidden one by one, to show again. */
-  hidden: Array<{ id: string; name: string }>;
-  onKind: (kind: PartKind) => void;
-  onShow: (id: string) => void;
+  hidden?: Array<{ id: string; name: string }>;
+  onToggle: (id: Id) => void;
+  onShow?: (id: string) => void;
   onClose: () => void;
 }>) {
   return (
-    <Sheet label="Layers" side="right" place={place} onClose={onClose}>
-      <div className="grid grid-cols-2 gap-2">
-        {LAYERS.filter((layer) => kinds.includes(layer.kind)).map((layer) => {
-          const on = !hiddenKinds.has(layer.kind);
-          return (
-            <button
-              key={layer.kind}
-              type="button"
-              aria-pressed={on}
-              onClick={() => onKind(layer.kind)}
-              className={cx(
-                'h-12 rounded-md text-sm font-semibold transition-colors duration-150',
-                on
-                  ? 'bg-ink text-canvas'
-                  : 'border border-border-strong text-ink hover:bg-surface-muted',
-              )}
-            >
-              {layer.title}
-            </button>
-          );
-        })}
-      </div>
+    <Sheet label="Layers" side="right" place="float" compact onClose={onClose}>
+      <ul className="flex flex-col gap-1">
+        {layers.map((layer) => (
+          <li key={layer.id} className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={cx('size-3 shrink-0 rounded-full', LAYER_DOT[layer.kind])}
+            />
+            <div className="min-w-0 flex-1">
+              <Switch
+                label={layer.name}
+                checked={layer.on}
+                onCheckedChange={() => onToggle(layer.id)}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
       {hidden.length > 0 ? (
         <div className="flex flex-col gap-1">
           <h3 className={LABEL}>Hidden</h3>
@@ -495,7 +502,7 @@ export function LayersPanel({
                   icon={Eye}
                   label={`Show ${structure.name}`}
                   size="sm"
-                  onClick={() => onShow(structure.id)}
+                  onClick={() => onShow?.(structure.id)}
                 />
               </li>
             ))}

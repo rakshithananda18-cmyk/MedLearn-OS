@@ -1,58 +1,16 @@
 'use client';
 
-import { cx, IconButton, Switch, Text } from '@medlearn/ui';
+import { cx, IconButton, Text } from '@medlearn/ui';
 import { X } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { BODY_SYSTEMS, bodyStructure, type BodySystemId } from '@/content/body';
+import { bodyStructure } from '@/content/body';
 import type { SearchResult } from '@/content/search';
 
-const SYSTEM_DOT: Record<BodySystemId, string> = {
-  skin: 'bg-anat-skin',
-  skeleton: 'bg-anat-bone',
-  muscles: 'bg-anat-muscle',
-  arteries: 'bg-anat-artery',
-  veins: 'bg-anat-vein',
-  nerves: 'bg-anat-nerve',
-  organs: 'bg-anat-organ',
-};
+import { LAYER_DOT } from './panels';
 
 const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
-
-/**
- * The one body's systems, from the surface in, each a switch: turn the skin off to see the
- * muscles, the muscles off to see the skeleton, the vessels, nerves and organs on to add them.
- */
-export function SystemsList({
-  systems,
-  onToggle,
-}: Readonly<{ systems: ReadonlySet<BodySystemId>; onToggle: (id: BodySystemId) => void }>) {
-  return (
-    <section aria-labelledby="systems-title" className="flex flex-col gap-2">
-      <h2 id="systems-title" className={LABEL}>
-        Systems
-      </h2>
-      <ul className="flex flex-col gap-1">
-        {BODY_SYSTEMS.map((system) => (
-          <li key={system.id} className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className={cx('size-3 shrink-0 rounded-full', SYSTEM_DOT[system.id])}
-            />
-            <div className="min-w-0 flex-1">
-              <Switch
-                label={system.name}
-                checked={systems.has(system.id)}
-                onCheckedChange={() => onToggle(system.id)}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 /**
  * A structure picked on the body: its name and system, and the topics that teach it, found by
@@ -89,7 +47,7 @@ export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: ()
             <span className={cx(LABEL, 'flex items-center gap-2')}>
               <span
                 aria-hidden="true"
-                className={cx('size-2 rounded-full', SYSTEM_DOT[system.id])}
+                className={cx('size-2 rounded-full', LAYER_DOT[system.kind])}
               />
               {system.name}
             </span>

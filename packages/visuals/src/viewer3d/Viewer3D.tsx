@@ -254,6 +254,12 @@ function Parts({
     const id = event.object.userData.partId as string | undefined;
     // Hidden parts are still in the way of the ray: let the tap through to what is behind.
     if (!id || !shown(event.object)) return;
+    // The see-through skin lets a tap through to whatever shows under it.
+    const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
+    const under = event.intersections.some(
+      (hit) => hit.object !== event.object && hit.object.userData.partId && shown(hit.object),
+    );
+    if (skin && under) return;
     event.stopPropagation();
     onSelect(id);
   };
