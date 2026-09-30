@@ -26,6 +26,7 @@ const viewer = vi.hoisted(() => ({
     resetToken: number;
     reducedMotion: boolean;
     dpr: number | [number, number];
+    stopId: string;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -52,7 +53,7 @@ const STROKE: Stroke = {
   ],
 };
 
-async function renderStudio(initialTopic: string | null = null) {
+async function renderStudio(initialTopic: string | null = null, initialTour = false) {
   // Fresh module each time: the device check is cached per page load.
   vi.resetModules();
   const { Studio } = await import('./Studio');
@@ -63,6 +64,7 @@ async function renderStudio(initialTopic: string | null = null) {
       regions={BODY_REGIONS}
       body={BODY_MODEL}
       initialTopic={initialTopic}
+      initialTour={initialTour}
     />,
   );
 }
@@ -333,7 +335,7 @@ describe('Studio on a wide screen', () => {
     await expectNoA11yViolations(container);
     await userEvent.click(within(settings).getByRole('switch', { name: 'Names on the model' }));
     await userEvent.click(within(settings).getByRole('switch', { name: 'Smooth camera moves' }));
-    await userEvent.click(within(settings).getByRole('switch', { name: 'Sharper picture' }));
+    await userEvent.click(within(settings).getByRole('button', { name: 'Battery saver' }));
     expect(viewer.props?.labels).toEqual([]);
     expect(viewer.props?.reducedMotion).toBe(true);
     expect(viewer.props?.dpr).toBe(1);
@@ -342,5 +344,28 @@ describe('Studio on a wide screen', () => {
     await renderStudio();
     expect(viewer.props?.labels).toEqual([]);
     expect(viewer.props?.dpr).toBe(1);
+  });
+
+  it('plays the guided views as a captioned tour, moving on by itself and stopping at the end', async () => {
+    wideScreen();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderStudio('axilla', true);
+      const stops = studioTopics().find((topic) => topic.slug === 'axilla')?.model?.stops;
+      const count = stops?.length ?? 0;
+      const caption = screen.getByRole('region', { name: 'Tour caption' });
+      expect(caption).toHaveTextContent(`Tour · 1 of ${count}`);
+      expect(viewer.props?.stopId).toBe(stops?.[0]?.id);
+
+      act(() => vi.advanceTimersByTime(30_000));
+      expect(caption).toHaveTextContent(`Tour · 2 of ${count}`);
+      expect(viewer.props?.stopId).toBe(stops?.[1]?.id);
+
+      for (let stop = 2; stop <= count; stop++) act(() => vi.advanceTimersByTime(30_000));
+      expect(screen.queryByRole('region', { name: 'Tour caption' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Play the tour' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

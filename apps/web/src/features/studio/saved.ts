@@ -43,14 +43,21 @@ export function saveBest(topicSlug: string, best: number) {
   write(BEST_KEY, topicSlug, best);
 }
 
+export type Quality = 'auto' | 'sharp' | 'saver';
+
 /** How the student likes the 3D view, on this phone. */
 export interface StudioSettings {
   /** Names on the model: region counts on the body, the picked structure on a topic. */
   labels: boolean;
   /** Eased camera moves between views, or null to follow the device's reduced motion setting. */
   smooth: boolean | null;
-  /** A picture as sharp as the screen allows, or a lighter one that saves battery. */
-  sharp: boolean;
+  /**
+   * How sharp the picture is: matched to the device (auto), as sharp as the screen allows, or
+   * lighter to save battery.
+   */
+  quality: Quality;
+  /** Guided tours read aloud as well as captioned. */
+  narrate: boolean;
   /** The open topic as its flat labelled diagram instead of the 3D model. */
   flat: boolean;
 }
@@ -58,19 +65,25 @@ export interface StudioSettings {
 export const DEFAULT_SETTINGS: StudioSettings = {
   labels: true,
   smooth: null,
-  sharp: true,
+  quality: 'auto',
+  narrate: false,
   flat: false,
 };
 
+const QUALITIES = new Set<unknown>(['auto', 'sharp', 'saver']);
+
 export function loadSettings(): StudioSettings {
   const saved = read<unknown>(SETTINGS_KEY);
+  if (saved.sharp === false && saved.quality === undefined) saved.quality = 'saver';
   const pick = <K extends keyof StudioSettings>(key: K, valid: (value: unknown) => boolean) =>
     valid(saved[key]) ? (saved[key] as StudioSettings[K]) : DEFAULT_SETTINGS[key];
   const isBoolean = (value: unknown) => typeof value === 'boolean';
   return {
     labels: pick('labels', isBoolean),
     smooth: pick('smooth', (value) => value === null || isBoolean(value)),
-    sharp: pick('sharp', isBoolean),
+    // Saved before there were three qualities, "not sharp" becomes the battery saver.
+    quality: pick('quality', (value) => QUALITIES.has(value)),
+    narrate: pick('narrate', isBoolean),
     flat: pick('flat', isBoolean),
   };
 }

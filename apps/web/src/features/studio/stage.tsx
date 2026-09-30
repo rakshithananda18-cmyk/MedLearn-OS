@@ -9,6 +9,8 @@ import {
   ChevronRight,
   Crosshair,
   Layers,
+  Pause,
+  Play,
   RotateCcw,
   ScanEye,
   Search,
@@ -44,8 +46,8 @@ export interface ModelViewProps {
   strokes: Stroke[];
   labels: Viewer3DLabel[];
   resetToken: number;
-  /** A sharp picture (up to twice the pixels) or a lighter one. */
-  sharp: boolean;
+  /** Pixels drawn per screen pixel, or a range the viewer picks within. */
+  dpr: number | [number, number];
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
   onPick: (id: string | null) => void;
@@ -74,7 +76,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         strokes={props.strokes}
         labels={props.labels}
         resetToken={props.resetToken}
-        dpr={props.sharp ? [1, 2] : 1}
+        dpr={props.dpr}
       />
     );
   }
@@ -273,12 +275,68 @@ export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: 
   );
 }
 
-/** The model's guided views as a card by the tools: back, where it is, and on. */
+/** Plays the guided views as a tour, or pauses it. */
+export function TourButton({
+  touring,
+  onTour,
+  size = 'sm',
+}: Readonly<{ touring: boolean; onTour: () => void; size?: 'sm' | 'md' }>) {
+  return (
+    <IconButton
+      icon={touring ? Pause : Play}
+      label={touring ? 'Pause the tour' : 'Play the tour'}
+      title={touring ? 'Pause the tour' : 'Play the tour'}
+      size={size}
+      aria-pressed={touring}
+      className={cx(touring && 'bg-primary-subtle text-primary-strong')}
+      onClick={onTour}
+    />
+  );
+}
+
+/** While a tour plays: the view's title and what to see there, as a caption over the model. */
+export function TourCaption({
+  stops,
+  index,
+  onPause,
+}: Readonly<{ stops: CameraStop[]; index: number; onPause: () => void }>) {
+  const stop = stops[index];
+  if (!stop) return null;
+  return (
+    <section
+      aria-label="Tour caption"
+      aria-live="polite"
+      className={cx(
+        GLASS,
+        'pointer-events-auto mx-auto flex w-full max-w-2xl animate-rise items-start gap-3 p-4',
+      )}
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
+          Tour · {index + 1} of {stops.length}
+        </span>
+        <h2 className="text-gold font-display text-2xl tracking-display">{stop.title}</h2>
+        <p className="text-sm text-fg">{stop.description}</p>
+      </div>
+      <TourButton touring onTour={onPause} />
+    </section>
+  );
+}
+
+/** The model's guided views as a card by the tools: back, where it is, on, and the tour. */
 export function GuideCard({
   stops,
   index,
+  touring,
   onIndex,
-}: Readonly<{ stops: CameraStop[]; index: number; onIndex: (index: number) => void }>) {
+  onTour,
+}: Readonly<{
+  stops: CameraStop[];
+  index: number;
+  touring: boolean;
+  onIndex: (index: number) => void;
+  onTour: () => void;
+}>) {
   const stop = stops[index];
   if (!stop) return null;
   return (
@@ -312,6 +370,7 @@ export function GuideCard({
         disabled={index >= stops.length - 1}
         onClick={() => onIndex(index + 1)}
       />
+      <TourButton touring={touring} onTour={onTour} />
     </fieldset>
   );
 }

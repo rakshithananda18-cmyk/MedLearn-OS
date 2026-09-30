@@ -45,6 +45,7 @@ export {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
+  Pause,
   PenLine,
   PersonStanding,
   Play,

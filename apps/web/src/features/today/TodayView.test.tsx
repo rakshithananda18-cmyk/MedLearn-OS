@@ -83,6 +83,7 @@ describe('TodayView', () => {
       completeLesson('brachial-plexus');
     });
     expect(screen.getByText('Exam in 12 days')).toBeInTheDocument();
+    expect(screen.getByText(/^Two weeks out: diagrams, revisits and recall/)).toBeInTheDocument();
     // The drill leads: it is the hero and the first step of the plan.
     expect(screen.getByRole('heading', { name: 'Draw: Brachial plexus' })).toBeInTheDocument();
     const plan = screen.getByRole('list', { name: "Today's plan" });
@@ -149,5 +150,15 @@ describe('TodayView', () => {
     const goals = screen.getByRole('region', { name: 'Tests and revisits' });
     expect(within(goals).getByText('Axilla test')).toBeInTheDocument();
     expect(within(goals).getByText(/Test in 3 days/)).toBeInTheDocument();
+  });
+
+  it('brings a learnt topic back as a spaced revisit the next day', () => {
+    const yesterday = new Date(Date.now() - DAY_MS);
+    act(() => completeLesson('brachial-plexus', 15, yesterday));
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
+    const plan = screen.getByRole('list', { name: "Today's plan" });
+    expect(
+      within(plan).getByRole('link', { name: /Revisit: Brachial plexus.*next-day revisit/ }),
+    ).toHaveAttribute('href', '/practice?revisit=brachial-plexus');
   });
 });

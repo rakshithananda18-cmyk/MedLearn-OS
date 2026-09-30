@@ -3,6 +3,7 @@
 import type { CameraStop } from '@medlearn/schemas';
 import { Badge, Button, cx, Icon, IconButton, Text } from '@medlearn/ui';
 import { ChevronLeft, ChevronRight, Flame, Trash2, Undo2, X } from '@medlearn/ui/icons';
+import type { ReactNode } from 'react';
 
 import { type QuizState, ROUND, roundOver } from './quiz';
 import type { Mode } from './session';
@@ -59,10 +60,18 @@ export function TourBar({
   stops,
   index,
   onIndex,
-}: Readonly<{ stops: CameraStop[]; index: number; onIndex: (index: number) => void }>) {
+  tour,
+}: Readonly<{
+  stops: CameraStop[];
+  index: number;
+  onIndex: (index: number) => void;
+  /** The play or pause button for the guided tour. */
+  tour?: ReactNode;
+}>) {
   const stop = stops[index];
   return (
     <div className="flex items-center gap-2">
+      {tour}
       <IconButton
         icon={ChevronLeft}
         label="Previous view"

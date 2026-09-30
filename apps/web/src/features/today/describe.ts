@@ -1,6 +1,16 @@
 import type { TodayItem } from '@medlearn/core';
 import type { IconGlyph } from '@medlearn/ui';
-import { BookOpen, CalendarDays, ClipboardCheck, PenLine, RotateCcw } from '@medlearn/ui/icons';
+import {
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  PenLine,
+  RefreshCw,
+  RotateCcw,
+} from '@medlearn/ui/icons';
+
+/** Which spaced revisit it is, by the gap since the one before. */
+const REVISIT_NAME = ['next-day', 'one-week', 'one-month'];
 
 /** What a plan item says and where it leads. */
 export function describe(item: TodayItem): {
@@ -50,6 +60,15 @@ export function describe(item: TodayItem): {
         icon: PenLine,
         kind: 'Draw',
         action: 'Start drawing',
+      };
+    case 'revisit':
+      return {
+        title: `Revisit: ${item.title}`,
+        meta: `${item.minutes} min · ${REVISIT_NAME[item.step] ?? 'spaced'} revisit`,
+        href: `/practice?revisit=${item.topicSlug}`,
+        icon: RefreshCw,
+        kind: 'Revisit',
+        action: 'Start revisit',
       };
     case 'goal':
       return {

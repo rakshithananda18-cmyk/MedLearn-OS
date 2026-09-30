@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import { scheduleReview } from './review';
 import {
+  addDays,
   buildTodayPlan,
   dayKey,
   daysBetween,
   dueCardIds,
   EMPTY_PROGRESS,
+  firstRevisit,
   goalToday,
   type LearnerProgress,
+  nextRevisit,
   openQuestionIds,
   type PlannableTopic,
   type StudyGoal,
@@ -242,5 +245,71 @@ describe('goals: class tests and revisits', () => {
       topicSlug: 'plexus',
       minutes: 3,
     });
+  });
+});
+
+describe('spaced revisits of learnt topics', () => {
+  it('start the day after the lesson, then stretch to a week and a month while they go well', () => {
+    expect(firstRevisit('2026-09-26')).toEqual({ step: 0, due: '2026-09-27' });
+    expect(nextRevisit({ step: 0, due: '2026-09-27' }, 0.8, '2026-09-27')).toEqual({
+      step: 1,
+      due: '2026-10-04',
+    });
+    expect(nextRevisit({ step: 1, due: '2026-10-04' }, 1, '2026-10-04')).toEqual({
+      step: 2,
+      due: '2026-11-03',
+    });
+    // The last one done well ends them; a poor one comes back tomorrow at the same step.
+    expect(nextRevisit({ step: 2, due: '2026-11-03' }, 0.9, '2026-11-03')).toBeNull();
+    expect(nextRevisit({ step: 1, due: '2026-10-04' }, 0.4, '2026-10-04')).toEqual({
+      step: 1,
+      due: '2026-10-05',
+    });
+    expect(addDays('2026-03-28', 2)).toBe('2026-03-30');
+  });
+
+  it('come into Today when due, two at most, after reviews', () => {
+    const progress = after({
+      completedLessons: ['plexus', 'axilla'],
+      correctAnswers: ['q1', 'q2', 'q3'],
+      reviews: Object.fromEntries(
+        ['c1', 'c2', 'c3'].map((id) => [id, scheduleReview(undefined, 'easy', NOW)]),
+      ),
+      revisits: {
+        plexus: { step: 0, due: TODAY },
+        axilla: { step: 1, due: addDays(TODAY, 3) },
+      },
+    });
+    const plan = buildTodayPlan(topics, progress, NOW);
+    expect(plan.items.filter((item) => item.kind === 'revisit')).toEqual([
+      { kind: 'revisit', topicSlug: 'plexus', title: 'Brachial plexus', minutes: 3, step: 0 },
+    ]);
+  });
+});
+
+describe('exam phases', () => {
+  const inDays = (days: number) =>
+    buildTodayPlan(
+      topics,
+      after({
+        profile: profile({ examDate: addDays(TODAY, days) }),
+        completedLessons: ['plexus'],
+      }),
+      NOW,
+    );
+
+  it('name the stretch before the exam, and stop new topics in the last week', () => {
+    expect([20, 10, 5, 1, 0].map((days) => inDays(days).examPhase)).toEqual([
+      'cover',
+      'consolidate',
+      'sharpen',
+      'light',
+      'light',
+    ]);
+    expect(inDays(5).items.some((item) => item.kind === 'learn')).toBe(false);
+    expect(inDays(1).items.every((item) => item.kind === 'review' || item.kind === 'goal')).toBe(
+      true,
+    );
+    expect(inDays(40).examPhase).toBeNull();
   });
 });
