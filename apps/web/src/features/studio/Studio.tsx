@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
+import { filmsFor } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
@@ -57,6 +58,7 @@ import {
   ViewTools,
 } from './stage';
 import { pixelRatio, useCan3D, useDocked, useReducedMotion } from './viewer';
+import { XrayViewer } from './XrayViewer';
 
 const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
 const BODY_KEY = 'body';
@@ -104,6 +106,8 @@ function useStudio({
   );
   const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
+  // The X-ray film showing in place of the model, by its place in the topic's films.
+  const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
   const context = { topic, regions, pool: structures.map((structure) => structure.id) };
@@ -118,6 +122,9 @@ function useStudio({
     update,
     touring,
     setTouring,
+    film,
+    setFilm,
+    films: topic ? filmsFor(topic.slug) : [],
     settings,
     changeSettings: (next: StudioSettings) => {
       setSettings(next);
@@ -130,6 +137,7 @@ function useStudio({
     nameOf,
     openTopic: (next: string | null) => {
       setTouring(false);
+      setFilm(null);
       const opened = withModel(topics, next);
       setSession(openTopicIn(session, opened, loadStrokes(opened?.slug ?? BODY_KEY)));
       // The address follows the open topic, so it can be shared or reopened.
@@ -305,11 +313,13 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       // Docked panels already show the layers, and the whole body has none.
       layers={topic && !row ? session.panel === 'layers' : null}
       xray={topic ? session.xray : null}
+      films={studio.films.length > 0 ? studio.film !== null : null}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
+      onFilms={() => studio.setFilm(studio.film === null ? 0 : null)}
       onIsolate={() => update({ isolate: !session.isolate })}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
@@ -392,6 +402,20 @@ function Settings({ studio }: Readonly<{ studio: StudioState }>) {
       canFlat={Boolean(studio.topic?.diagram)}
       onChange={studio.changeSettings}
       onClose={() => studio.update({ panel: null })}
+    />
+  );
+}
+
+/** The topic's X-ray films, over the model, while they are open. */
+function Films({ studio }: Readonly<{ studio: StudioState }>) {
+  if (studio.film === null) return null;
+  return (
+    <XrayViewer
+      films={studio.films}
+      index={studio.film}
+      labels={studio.settings.labels}
+      onIndex={studio.setFilm}
+      onClose={() => studio.setFilm(null)}
     />
   );
 }
@@ -529,6 +553,11 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           onClose={() => studio.update({ panel: null })}
         />
       ) : null}
+      {studio.film === null ? null : (
+        <div className="absolute inset-x-3 top-20 bottom-3 z-20 flex">
+          <Films studio={studio} />
+        </div>
+      )}
       {topic && session.panel === 'layers' ? <Layers studio={studio} place="float" /> : null}
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
@@ -661,6 +690,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
             </div>
           ) : null}
         </div>
+        <Films studio={studio} />
         <DockedFooter studio={studio} capable={capable} />
       </div>
       {topic && right ? (
