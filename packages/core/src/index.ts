@@ -15,6 +15,7 @@ export { type TopicMastery, topicMastery } from './mastery';
 export { mergeProgress } from './merge';
 export { isDue, type ReviewRating, type ReviewState, scheduleReview } from './review';
 export {
+  addDays,
   buildTodayPlan,
   CATCH_UP_AFTER_MISSED_DAYS,
   dayKey,
@@ -23,14 +24,22 @@ export {
   dueCardIds,
   EMPTY_PROGRESS,
   EXAM_WINDOW_DAYS,
+  type ExamPhase,
+  firstRevisit,
+  goalToday,
   type LearnerProgress,
   type MbbsYear,
   mistakeCardId,
+  nextRevisit,
   openQuestionIds,
   type PlannableTopic,
+  REVISIT_DAYS,
+  REVISIT_QUESTIONS,
+  type StudyGoal,
   type StudyProfile,
   type TodayItem,
   type TodayMode,
   type TodayPlan,
   topicCardIds,
+  type TopicRevisit,
 } from './today';

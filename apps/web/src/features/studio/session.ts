@@ -2,6 +2,8 @@ import type { BodyRegion, PartKind } from '@medlearn/schemas';
 import { pathThrough } from '@medlearn/visuals';
 import type { Stroke } from '@medlearn/visuals/viewer3d';
 
+import { type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
+
 import type { StudioTopic } from './knowledge';
 import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 
@@ -9,7 +11,7 @@ import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 // component keeps only the side effects (saving, the address bar) and the layout.
 
 export type Mode = 'explore' | 'draw' | 'quiz';
-export type Panel = 'topics' | 'layers' | 'search' | null;
+export type Panel = 'topics' | 'layers' | 'search' | 'settings' | null;
 /** The extra a picked structure's card shows under its summary. */
 export type Detail = 'clinical' | 'lesson' | null;
 
@@ -30,6 +32,8 @@ export interface Session {
   pen: string;
   strokes: Stroke[];
   quiz: QuizState | null;
+  /** The body's systems switched on, on the whole body. */
+  systems: ReadonlySet<BodySystemId>;
 }
 
 /** What the changes need to know about the topic that is open. */
@@ -62,6 +66,7 @@ export function startSession(
     pen,
     strokes,
     quiz: null,
+    systems: FIRST_SYSTEMS,
   };
 }
 
@@ -80,6 +85,7 @@ export function openTopicIn(
     region,
     hiddenKinds: session.hiddenKinds,
     xray: session.xray,
+    systems: session.systems,
   };
 }
 
@@ -87,7 +93,9 @@ export function openTopicIn(
 export function pickIn(session: Session, id: string | null, context: SessionContext): Session {
   if (!context.topic) {
     const region = context.regions.find((item) => item.id === id);
-    return region ? { ...session, region: region.id, panel: 'topics' } : session;
+    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
+    // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
+    return { ...session, selected: id?.includes('/') ? id : null };
   }
   if (session.mode === 'quiz') {
     // Taps after the round is over do nothing until the student plays again.
@@ -118,7 +126,9 @@ export function changeModeIn(
 
 /** What glows: the picked region on the body, else the picked structure and its whole path. */
 export function litIn(session: Session, topic: StudioTopic | null): ReadonlySet<string> {
-  if (!topic) return new Set([session.region]);
+  // The whole body: the region picked, and a structure picked on one of its systems.
+  if (!topic)
+    return new Set(session.selected ? [session.region, session.selected] : [session.region]);
   // No hints while playing "Find it".
   if (session.mode === 'quiz' || !session.selected) return new Set();
   const onDiagram = topic.diagram?.nodes.some((node) => node.id === session.selected);

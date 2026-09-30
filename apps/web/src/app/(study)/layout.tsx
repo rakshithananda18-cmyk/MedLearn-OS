@@ -6,8 +6,8 @@ import { AppNav } from '@/features/shell/AppNav';
 
 export default function StudyLayout({ children }: { children: ReactNode }) {
   return (
-    // Phones keep content clear of the bottom tab bar; tablets and up clear the side rail.
-    <div className="min-h-dvh pb-tabbar md:pb-0 md:pl-20">
+    // Phones keep content clear of the bottom tab bar; tablets and up clear the floating rail.
+    <div className="min-h-dvh pb-tabbar md:pb-0 md:pl-24">
       <SkyBackdrop />
       <AppNav />
       {/* Each screen sets its own gutters, so the 3D studio can fill the window edge to edge. */}

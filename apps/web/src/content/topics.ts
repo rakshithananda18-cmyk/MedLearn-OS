@@ -11,12 +11,27 @@ import { brachialPlexus } from './brachial-plexus';
 import { carpalTunnel } from './carpal-tunnel';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
+import { elbowAnastomosis } from './elbow-anastomosis';
+import { elbowJoint } from './elbow-joint';
+import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
+import { handMuscles } from './hand-muscles';
+import { nerveInjuries } from './nerve-injuries';
 import { oxygenCurve } from './oxygen-curve';
+import { palmSpaces } from './palm-spaces';
+import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
+import { radioulnarJoints } from './radioulnar-joints';
 import { scapularSpaces } from './scapular-spaces';
+import { shoulderGirdle } from './shoulder-girdle';
+import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
+import { surfaceMarking } from './surface-marking';
+import { upperLimbDevelopment } from './upper-limb-development';
+import { upperLimbXrays } from './upper-limb-xrays';
+import { wristBack } from './wrist-back';
+import { wristHandJoints } from './wrist-hand-joints';
 
 // Content is imported only by server components (pages, routes); each page hands its screen just
 // what that screen shows, so adding topics never grows the JavaScript every page downloads.
@@ -39,6 +54,21 @@ export const TOPICS: Topic[] = [
   forearmFlexors,
   forearmVesselsNerves,
   carpalTunnel,
+  handMuscles,
+  palmVesselsNerves,
+  palmSpaces,
+  wristBack,
+  forearmExtensors,
+  shoulderGirdle,
+  shoulderJoint,
+  elbowJoint,
+  radioulnarJoints,
+  wristHandJoints,
+  surfaceMarking,
+  upperLimbXrays,
+  nerveInjuries,
+  elbowAnastomosis,
+  upperLimbDevelopment,
   oxygenCurve,
 ];
 

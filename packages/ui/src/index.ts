@@ -19,6 +19,7 @@ export {
   type MultiChoiceGroupProps,
 } from './ChoiceGroup';
 export { cx } from './cx';
+export { Drawer, type DrawerProps } from './Drawer';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';
 export { Icon, type IconGlyph, type IconProps, type IconSize } from './Icon';

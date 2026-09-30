@@ -1,5 +1,4 @@
 import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import PracticePage from '@/app/(study)/practice/page';
@@ -9,6 +8,9 @@ import { completeLesson, resetProgress } from '@/features/progress/store';
 
 afterEach(() => act(() => resetProgress()));
 
+const showing = (topic: { questions: Array<{ prompt: string }> }) =>
+  topic.questions.some((question) => screen.queryByText(question.prompt));
+
 describe('topic practice navigation', () => {
   it('keeps a chosen topic separate even when both lessons are complete', async () => {
     act(() => {
@@ -16,31 +18,15 @@ describe('topic practice navigation', () => {
       completeLesson(oxygenCurve.slug);
     });
     render(await PracticePage({ searchParams: Promise.resolve({ topic: oxygenCurve.slug }) }));
-    expect(screen.getByText(oxygenCurve.questions[0]?.prompt ?? '')).toBeInTheDocument();
-    expect(screen.queryByText(brachialPlexus.questions[0]?.prompt ?? '')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: `Back to ${oxygenCurve.title}` })).toHaveAttribute(
-      'href',
-      `/learn/${oxygenCurve.slug}`,
-    );
+    expect(screen.getByRole('region', { name: oxygenCurve.title })).toBeInTheDocument();
+    expect(showing(oxygenCurve)).toBe(true);
+    expect(showing(brachialPlexus)).toBe(false);
   });
 
-  it('shows the chosen lesson as locked even if another lesson is complete', async () => {
-    act(() => completeLesson(brachialPlexus.slug));
-    render(await PracticePage({ searchParams: Promise.resolve({ topic: oxygenCurve.slug }) }));
-    expect(screen.getByText('Nothing to practise yet')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Start this lesson' })).toHaveAttribute(
-      'href',
-      `/learn/${oxygenCurve.slug}/lesson`,
-    );
-  });
-
-  it('keeps the unfiltered practice queue', async () => {
-    act(() => {
-      completeLesson(brachialPlexus.slug);
-      completeLesson(oxygenCurve.slug);
-    });
+  it('opens the hub of ways in when no topic is chosen', async () => {
     render(await PracticePage({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByText(brachialPlexus.questions[0]?.prompt ?? '')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Quick mix/ })).toBeInTheDocument();
+    expect(showing(oxygenCurve)).toBe(false);
   });
 
   it.each(['not-a-topic', '', ['brachial-plexus', 'oxygen-haemoglobin-curve']])(
@@ -52,20 +38,19 @@ describe('topic practice navigation', () => {
     },
   );
 
-  it('resets the answered question when navigation changes the topic filter', async () => {
-    act(() => {
-      completeLesson(brachialPlexus.slug);
-      completeLesson(oxygenCurve.slug);
-    });
+  it('returns not found for a revisit of an unknown topic', async () => {
+    await expect(
+      PracticePage({ searchParams: Promise.resolve({ revisit: 'not-a-topic' }) }),
+    ).rejects.toThrow('NEXT_HTTP_ERROR_FALLBACK;404');
+  });
+
+  it('starts afresh when navigation changes the topic', async () => {
     const { rerender } = render(
       await PracticePage({ searchParams: Promise.resolve({ topic: brachialPlexus.slug }) }),
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Medial cord' }));
-    expect(screen.getByRole('button', { name: 'Next question' })).toBeInTheDocument();
-
+    expect(showing(brachialPlexus)).toBe(true);
     rerender(await PracticePage({ searchParams: Promise.resolve({ topic: oxygenCurve.slug }) }));
-    expect(screen.getByText(oxygenCurve.questions[0]?.prompt ?? '')).toBeInTheDocument();
-    expect(screen.queryByText(brachialPlexus.questions[0]?.prompt ?? '')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Next question' })).not.toBeInTheDocument();
+    expect(showing(oxygenCurve)).toBe(true);
+    expect(showing(brachialPlexus)).toBe(false);
   });
 });

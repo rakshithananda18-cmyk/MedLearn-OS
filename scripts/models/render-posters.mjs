@@ -34,6 +34,21 @@ export const POSTERS = [
   { name: 'forearm-flexors', path: '/studio?topic=forearm-flexors' },
   { name: 'forearm-vessels-nerves', path: '/studio?topic=forearm-vessels-nerves' },
   { name: 'carpal-tunnel', path: '/studio?topic=carpal-tunnel' },
+  { name: 'hand-muscles', path: '/studio?topic=hand-muscles' },
+  { name: 'palm-vessels-nerves', path: '/studio?topic=palm-vessels-nerves' },
+  { name: 'palm-spaces', path: '/studio?topic=palm-spaces' },
+  { name: 'wrist-back', path: '/studio?topic=wrist-back' },
+  { name: 'forearm-extensors', path: '/studio?topic=forearm-extensors' },
+  { name: 'shoulder-girdle', path: '/studio?topic=shoulder-girdle' },
+  { name: 'shoulder-joint', path: '/studio?topic=shoulder-joint' },
+  { name: 'elbow-joint', path: '/studio?topic=elbow-joint' },
+  { name: 'radioulnar-joints', path: '/studio?topic=radioulnar-joints' },
+  { name: 'wrist-hand-joints', path: '/studio?topic=wrist-hand-joints' },
+  { name: 'surface-marking', path: '/studio?topic=surface-marking' },
+  { name: 'upper-limb-xrays', path: '/studio?topic=upper-limb-xrays' },
+  { name: 'nerve-injuries', path: '/studio?topic=nerve-injuries' },
+  { name: 'elbow-anastomosis', path: '/studio?topic=elbow-anastomosis' },
+  { name: 'upper-limb-development', path: '/studio?topic=upper-limb-development' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

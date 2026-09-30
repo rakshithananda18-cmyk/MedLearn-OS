@@ -1,6 +1,16 @@
 import type { TodayItem } from '@medlearn/core';
 import type { IconGlyph } from '@medlearn/ui';
-import { BookOpen, ClipboardCheck, PenLine, RotateCcw } from '@medlearn/ui/icons';
+import {
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  PenLine,
+  RefreshCw,
+  RotateCcw,
+} from '@medlearn/ui/icons';
+
+/** Which spaced revisit it is, by the gap since the one before. */
+const REVISIT_NAME = ['next-day', 'one-week', 'one-month'];
 
 /** What a plan item says and where it leads. */
 export function describe(item: TodayItem): {
@@ -36,6 +46,7 @@ export function describe(item: TodayItem): {
       return {
         title: `Practice: ${item.title}`,
         meta: `${item.count} ${item.count === 1 ? 'question' : 'questions'} · ${item.minutes} min`,
+        // Straight into that topic's questions; each item has its own address (and list key).
         href: `/practice?topic=${item.topicSlug}`,
         icon: ClipboardCheck,
         kind: 'Practice',
@@ -49,6 +60,24 @@ export function describe(item: TodayItem): {
         icon: PenLine,
         kind: 'Draw',
         action: 'Start drawing',
+      };
+    case 'revisit':
+      return {
+        title: `Revisit: ${item.title}`,
+        meta: `${item.minutes} min · ${REVISIT_NAME[item.step] ?? 'spaced'} revisit`,
+        href: `/practice?revisit=${item.topicSlug}`,
+        icon: RefreshCw,
+        kind: 'Revisit',
+        action: 'Start revisit',
+      };
+    case 'goal':
+      return {
+        title: `Revise: ${item.title}`,
+        meta: `${item.minutes} min · for ${item.goalTitle}`,
+        href: `/practice?goal=${item.goalId}&topic=${item.topicSlug}`,
+        icon: CalendarDays,
+        kind: 'Revise',
+        action: 'Start revising',
       };
   }
 }

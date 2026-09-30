@@ -26,7 +26,9 @@ test('Progress shows mastery and turns a missed question into a weak spot', asyn
     lastActiveAt: now,
     updatedAt: now,
   });
+  // The old address lands on the library's Progress view.
   await page.goto('/progress');
+  await expect(page).toHaveURL(/\/subjects\?view=progress$/);
   // One lesson done, however many topics there are.
   await expect(page.getByText(/^1 of \d+ lessons$/)).toBeVisible();
   await expect(page.getByText('Brachial plexus: 1 missed question to recall')).toBeVisible();

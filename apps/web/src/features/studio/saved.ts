@@ -4,6 +4,7 @@ import type { Stroke } from '@medlearn/visuals/viewer3d';
 // full (private windows, blocked site data), so every read and write is allowed to fail quietly.
 const DRAWINGS_KEY = 'ml-drawings-v1';
 const BEST_KEY = 'ml-find-it-best-v1';
+const SETTINGS_KEY = 'ml-studio-settings-v1';
 
 function read<T>(key: string): Record<string, T> {
   try {
@@ -40,6 +41,59 @@ export function loadBest(topicSlug: string): number {
 
 export function saveBest(topicSlug: string, best: number) {
   write(BEST_KEY, topicSlug, best);
+}
+
+export type Quality = 'auto' | 'sharp' | 'saver';
+
+/** How the student likes the 3D view, on this phone. */
+export interface StudioSettings {
+  /** Names on the model: region counts on the body, the picked structure on a topic. */
+  labels: boolean;
+  /** Eased camera moves between views, or null to follow the device's reduced motion setting. */
+  smooth: boolean | null;
+  /**
+   * How sharp the picture is: matched to the device (auto), as sharp as the screen allows, or
+   * lighter to save battery.
+   */
+  quality: Quality;
+  /** Guided tours read aloud as well as captioned. */
+  narrate: boolean;
+  /** The open topic as its flat labelled diagram instead of the 3D model. */
+  flat: boolean;
+}
+
+export const DEFAULT_SETTINGS: StudioSettings = {
+  labels: true,
+  smooth: null,
+  quality: 'auto',
+  narrate: false,
+  flat: false,
+};
+
+const QUALITIES = new Set<unknown>(['auto', 'sharp', 'saver']);
+
+export function loadSettings(): StudioSettings {
+  const saved = read<unknown>(SETTINGS_KEY);
+  if (saved.sharp === false && saved.quality === undefined) saved.quality = 'saver';
+  const pick = <K extends keyof StudioSettings>(key: K, valid: (value: unknown) => boolean) =>
+    valid(saved[key]) ? (saved[key] as StudioSettings[K]) : DEFAULT_SETTINGS[key];
+  const isBoolean = (value: unknown) => typeof value === 'boolean';
+  return {
+    labels: pick('labels', isBoolean),
+    smooth: pick('smooth', (value) => value === null || isBoolean(value)),
+    // Saved before there were three qualities, "not sharp" becomes the battery saver.
+    quality: pick('quality', (value) => QUALITIES.has(value)),
+    narrate: pick('narrate', isBoolean),
+    flat: pick('flat', isBoolean),
+  };
+}
+
+export function saveSettings(settings: StudioSettings) {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // Not saved; the settings still apply until the page closes.
+  }
 }
 
 /** Removes only this learner's local Studio work when they sign out on a shared device. */

@@ -3,7 +3,9 @@ import {
   EMPTY_PROGRESS,
   type LearnerProgress,
   type ReviewState,
+  type StudyGoal,
   type StudyProfile,
+  type TopicRevisit,
 } from '@medlearn/core';
 import { NOTE_MAX_LENGTH } from '@medlearn/schemas/limits';
 
@@ -110,44 +112,87 @@ function isDayActivity(value: unknown): value is DayActivity {
   );
 }
 
-/** Accepts older saved progress with missing notes/activity; rejects malformed consumed fields. */
+function isGoal(value: unknown): value is StudyGoal {
+  return (
+    isObject(value) &&
+    isId(value.id) &&
+    (value.kind === 'test' || value.kind === 'revisit') &&
+    typeof value.title === 'string' &&
+    value.title.length >= 1 &&
+    value.title.length <= 80 &&
+    isIdList(value.topics, 200) &&
+    value.topics.length >= 1 &&
+    isDate(value.date) &&
+    isIdList(value.done, 200) &&
+    isIsoTime(value.createdAt)
+  );
+}
+
+function isRevisit(value: unknown): value is TopicRevisit {
+  return isObject(value) && count(value.step) && value.step <= 10 && isDate(value.due);
+}
+
+/**
+ * Reads progress saved on this device. Older saves lack newer fields; a field that fails its check
+ * falls back to its empty value while the rest is kept, because the next change on this device
+ * overwrites what is stored. Only something that is not progress at all gives null.
+ */
 export function parseLocalProgress(value: unknown): LearnerProgress | null {
   if (!isObject(value)) return null;
   const data = { ...EMPTY_PROGRESS, ...value };
-  if (
-    !nullable(data.profile, isProfile) ||
-    !isIdList(data.completedLessons) ||
-    !isIdList(data.completedDrills) ||
-    !isIdList(data.correctAnswers) ||
-    !isIdList(data.mistakes) ||
-    !isRecordOf(data.reviews, MAX_ITEMS, isId, isReview) ||
-    !nullable(data.lastActiveAt, isIsoTime) ||
-    !nullable(data.catchUpAcceptedOn, isDate) ||
-    !isRecordOf(data.notes, MAX_ITEMS, isId, isNote) ||
-    !isRecordOf(data.activity, 400, isDate, isDayActivity) ||
-    !nullable(data.updatedAt, isIsoTime)
-  ) {
-    return null;
-  }
+  const or = <T>(field: unknown, valid: boolean, fallback: T): T =>
+    valid ? (field as T) : fallback;
+  // Saved before the age question: not known to be an adult, so progress stays on the phone.
+  const rawProfile =
+    isObject(data.profile) && data.profile.adult === undefined
+      ? { ...data.profile, adult: false }
+      : data.profile;
+  const profile = or<StudyProfile | null>(rawProfile, nullable(rawProfile, isProfile), null);
+  const ids = (field: unknown) => or<string[]>(field, isIdList(field), []);
+  const reviews = or<Record<string, ReviewState>>(
+    data.reviews,
+    isRecordOf(data.reviews, MAX_ITEMS, isId, isReview),
+    {},
+  );
+  const notes = or<Record<string, { text: string; updatedAt: string }>>(
+    data.notes,
+    isRecordOf(data.notes, MAX_ITEMS, isId, isNote),
+    {},
+  );
+  const activity = or<Record<string, DayActivity>>(
+    data.activity,
+    isRecordOf(data.activity, 400, isDate, isDayActivity),
+    {},
+  );
+  const goals = or<StudyGoal[]>(
+    data.goals,
+    Array.isArray(data.goals) && data.goals.length <= 100 && data.goals.every(isGoal),
+    [],
+  );
+  const revisits = or<Record<string, TopicRevisit>>(
+    data.revisits,
+    isRecordOf(data.revisits, MAX_ITEMS, isId, isRevisit),
+    {},
+  );
   // As with the API schema, discard unknown fields instead of carrying arbitrary storage data
   // into later sync requests. Keep optional legacy fields optional.
   return {
     profile:
-      data.profile === null
+      profile === null
         ? null
         : {
-            year: data.profile.year,
-            examDate: data.profile.examDate,
-            dailyMinutes: data.profile.dailyMinutes,
-            adult: data.profile.adult,
-            ...(data.profile.books === undefined ? {} : { books: [...data.profile.books] }),
+            year: profile.year,
+            examDate: profile.examDate,
+            dailyMinutes: profile.dailyMinutes,
+            adult: profile.adult,
+            ...(profile.books === undefined ? {} : { books: [...profile.books] }),
           },
-    completedLessons: [...data.completedLessons],
-    completedDrills: [...data.completedDrills],
-    correctAnswers: [...data.correctAnswers],
-    mistakes: [...data.mistakes],
+    completedLessons: [...ids(data.completedLessons)],
+    completedDrills: [...ids(data.completedDrills)],
+    correctAnswers: [...ids(data.correctAnswers)],
+    mistakes: [...ids(data.mistakes)],
     reviews: Object.fromEntries(
-      safeEntries(data.reviews).map(([id, review]) => [
+      safeEntries(reviews).map(([id, review]) => [
         id,
         {
           due: review.due,
@@ -163,16 +208,21 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         },
       ]),
     ),
-    lastActiveAt: data.lastActiveAt,
-    catchUpAcceptedOn: data.catchUpAcceptedOn,
+    lastActiveAt: or<string | null>(
+      data.lastActiveAt,
+      nullable(data.lastActiveAt, isIsoTime),
+      null,
+    ),
+    catchUpAcceptedOn: or<string | null>(
+      data.catchUpAcceptedOn,
+      nullable(data.catchUpAcceptedOn, isDate),
+      null,
+    ),
     notes: Object.fromEntries(
-      safeEntries(data.notes).map(([id, note]) => [
-        id,
-        { text: note.text, updatedAt: note.updatedAt },
-      ]),
+      safeEntries(notes).map(([id, note]) => [id, { text: note.text, updatedAt: note.updatedAt }]),
     ),
     activity: Object.fromEntries(
-      safeEntries(data.activity).map(([date, day]) => [
+      safeEntries(activity).map(([date, day]) => [
         date,
         {
           minutes: day.minutes,
@@ -183,6 +233,21 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         },
       ]),
     ),
-    updatedAt: data.updatedAt,
+    goals: goals.map((goal) => ({
+      id: goal.id,
+      kind: goal.kind,
+      title: goal.title,
+      topics: [...goal.topics],
+      date: goal.date,
+      done: [...goal.done],
+      createdAt: goal.createdAt,
+    })),
+    revisits: Object.fromEntries(
+      safeEntries(revisits).map(([slug, revisit]) => [
+        slug,
+        { step: revisit.step, due: revisit.due },
+      ]),
+    ),
+    updatedAt: or<string | null>(data.updatedAt, nullable(data.updatedAt, isIsoTime), null),
   };
 }

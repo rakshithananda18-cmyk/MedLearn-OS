@@ -2,10 +2,13 @@ import {
   type ActivityEvent,
   dayKey,
   EMPTY_PROGRESS,
+  firstRevisit,
   type LearnerProgress,
   logActivity,
+  nextRevisit,
   type ReviewRating,
   scheduleReview,
+  type StudyGoal,
   type StudyProfile,
 } from '@medlearn/core';
 import { useSyncExternalStore } from 'react';
@@ -97,12 +100,34 @@ export function saveProfile(profile: StudyProfile): void {
   commit({ profile });
 }
 
-/** Marks a lesson done; `minutes` is its length, counted towards today's study time. */
-export function completeLesson(topicSlug: string, minutes = 0): void {
+/**
+ * Marks a lesson done; `minutes` is its length, counted towards today's study time. The first
+ * time, the topic's spaced revisits start: the first is due tomorrow.
+ */
+export function completeLesson(topicSlug: string, minutes = 0, now = new Date()): void {
+  const { completedLessons, revisits } = read();
   recordActivity(
-    { completedLessons: addOnce(read().completedLessons, topicSlug) },
+    {
+      completedLessons: addOnce(completedLessons, topicSlug),
+      revisits:
+        topicSlug in revisits ? revisits : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
+    },
     { kind: 'lesson', topicSlug, minutes },
+    now,
   );
+}
+
+/**
+ * Records a spaced revisit: `share` is the part answered right. Enough right moves the topic on to
+ * its next, longer gap (the last one done ends them); too few brings it back tomorrow.
+ */
+export function completeRevisit(topicSlug: string, share: number, now = new Date()): void {
+  const { revisits } = read();
+  const current = revisits[topicSlug];
+  if (!current) return;
+  const next = nextRevisit(current, share, dayKey(now));
+  const rest = Object.fromEntries(Object.entries(revisits).filter(([slug]) => slug !== topicSlug));
+  commit({ revisits: next ? { ...rest, [topicSlug]: next } : rest }, now);
 }
 
 export function completeDrill(topicSlug: string, minutes = 0): void {
@@ -142,6 +167,34 @@ export function saveNote(topicSlug: string, text: string, now = new Date()): voi
     Math.max(now.getTime(), (Date.parse(notes[topicSlug]?.updatedAt ?? '') || 0) + 1),
   ).toISOString();
   commit({ notes: { ...notes, [topicSlug]: { text, updatedAt } } }, now);
+}
+
+/** Plans a class test or a revisit: Today spreads its topics over the days until its date. */
+export function addGoal(
+  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date'>,
+  now = new Date(),
+): StudyGoal {
+  const added: StudyGoal = {
+    ...goal,
+    id: `goal-${now.getTime().toString(36)}`,
+    done: [],
+    createdAt: now.toISOString(),
+  };
+  commit({ goals: [...read().goals, added] }, now);
+  return added;
+}
+
+export function removeGoal(goalId: string): void {
+  commit({ goals: read().goals.filter((goal) => goal.id !== goalId) });
+}
+
+/** Counts a topic as gone over for a goal, after a practice session on it. */
+export function markGoalTopic(goalId: string, topicSlug: string): void {
+  commit({
+    goals: read().goals.map((goal) =>
+      goal.id === goalId ? { ...goal, done: addOnce(goal.done, topicSlug) } : goal,
+    ),
+  });
 }
 
 export function acceptCatchUp(now = new Date()): void {

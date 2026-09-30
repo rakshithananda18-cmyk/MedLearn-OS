@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, Pill, Text } from '@medlearn/ui';
-import { BookOpen } from '@medlearn/ui/icons';
+import { BottomSheet, IconButton, Pill, Text } from '@medlearn/ui';
+import { BookOpen, Library } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
 import { useProgress } from '@/features/progress/store';
@@ -14,7 +14,10 @@ export interface Reading {
   pages?: string;
 }
 
-/** Where each standard book covers this topic, the student's own books first. */
+/**
+ * Where each standard book covers this topic, the student's own books first: a books button
+ * beside the sources, opening the chapters and pages.
+ */
 export function WhereToRead({ readings }: Readonly<{ readings: Reading[] }>) {
   const { profile } = useProgress();
   const mine = new Set(profile?.books ?? []);
@@ -23,10 +26,19 @@ export function WhereToRead({ readings }: Readonly<{ readings: Reading[] }>) {
   );
 
   return (
-    <Card tone="glass" as="section" aria-labelledby="read-title" className="flex flex-col gap-3">
-      <h2 id="read-title" className="font-semibold text-ink">
-        Where to read this
-      </h2>
+    <BottomSheet
+      title="Where to read this"
+      trigger={
+        // The browser's own tooltip names it on hover; screen readers get the label.
+        <IconButton
+          icon={Library}
+          label="Where to read this"
+          title="Where to read this"
+          size="sm"
+          className="text-gold-ink"
+        />
+      }
+    >
       {ordered.length === 0 ? (
         <Text size="sm" tone="muted">
           Chapter and page references for this topic are on their way from the standard books.
@@ -60,6 +72,6 @@ export function WhereToRead({ readings }: Readonly<{ readings: Reading[] }>) {
           to see yours first.
         </Text>
       ) : null}
-    </Card>
+    </BottomSheet>
   );
 }

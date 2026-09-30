@@ -26,7 +26,7 @@ export const axillaryVessels: Topic = {
       licence: 'All rights reserved',
     },
     bookSource('bd-chaurasia', 'Volume 1, Chapter 4 Axilla'),
-    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, axilla'),
+    bookSource('grays-anatomy', 'Chapter 7 Upper Limb, axilla, pages 722 to 726'),
     {
       title: 'TeachMeAnatomy: Arterial Supply to the Upper Limb',
       url: 'https://teachmeanatomy.info/upper-limb/vessels/arteries/',
@@ -392,6 +392,6 @@ export const axillaryVessels: Topic = {
   // Chapter-level until a reviewer adds the pages for this section.
   readIn: [
     { bookId: 'bd-chaurasia', chapter: 'Chapter 4 Axilla' },
-    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '722–726' },
   ],
 };

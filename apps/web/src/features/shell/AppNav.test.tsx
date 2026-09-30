@@ -13,8 +13,9 @@ describe('AppNav', () => {
     const { container } = render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Practice' })).not.toHaveAttribute('aria-current');
-    expect(screen.getByRole('link', { name: 'Progress' })).toHaveAttribute('href', '/progress');
     expect(screen.getByRole('link', { name: '3D' })).toHaveAttribute('href', '/studio');
+    // Progress lives in the library now.
+    expect(screen.queryByRole('link', { name: 'Progress' })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -23,6 +24,10 @@ describe('AppNav', () => {
     const { unmount } = render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute('aria-current', 'page');
     unmount();
+    pathname.current = '/progress';
+    const again = render(<AppNav />);
+    expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute('aria-current', 'page');
+    again.unmount();
     pathname.current = '/revise';
     render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');

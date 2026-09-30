@@ -6,10 +6,10 @@ import {
   currentStreak,
   dayKey,
   dayOf,
-  dueCardIds,
+  type ExamPhase,
+  goalToday,
   lastDays,
   type LearnerProgress,
-  openQuestionIds,
   type TodayPlan,
 } from '@medlearn/core';
 import {
@@ -28,20 +28,9 @@ import Link from 'next/link';
 
 import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
+import { LiveSearch } from '@/features/search/LiveSearch';
 
-import {
-  BodyCard,
-  PlanCard,
-  SearchPill,
-  StreakCard,
-  StreakPill,
-  Tallies,
-  type Tally,
-  TimeRing,
-  UpNext,
-  WeakSpots,
-  WeekCard,
-} from './parts';
+import { GoalsCard, PlanCard, StreakCard, StreakPill, TimeRing, UpNext, WeakSpots } from './parts';
 
 const HEADLINE = {
   normal: (
@@ -60,6 +49,14 @@ const HEADLINE = {
     </>
   ),
 } as const;
+
+/** What each stretch before the exam is for, as Today orders it. */
+const PHASE_TIP: Record<ExamPhase, string> = {
+  cover: 'A month out: exam diagrams first, then keep covering new topics.',
+  consolidate: 'Two weeks out: diagrams, revisits and recall before anything new.',
+  sharpen: 'The last week: diagrams and practice only, no new topics.',
+  light: 'Light recall only. Rest well for the exam.',
+};
 
 // "Monday, 28 September" from two lists: building an Intl date formatter blocks a phone for tens
 // of milliseconds, the largest single cost of opening Today.
@@ -171,34 +168,6 @@ function doneToday(progress: LearnerProgress, topics: TopicSummary[], now: Date)
   ];
 }
 
-function talliesFor(progress: LearnerProgress, topics: TopicSummary[], now: Date): Tally[] {
-  const questions = topics.reduce(
-    (total, topic) => total + openQuestionIds(topic, progress).length,
-    0,
-  );
-  const drills = topics.filter(
-    (topic) =>
-      topic.drillMinutes !== null &&
-      progress.completedLessons.includes(topic.slug) &&
-      !progress.completedDrills.includes(topic.slug),
-  );
-  return [
-    {
-      label: 'Recall',
-      detail: 'cards due',
-      count: dueCardIds(topics, progress, now).length,
-      href: '/revise',
-    },
-    { label: 'Practice', detail: 'questions', count: questions, href: '/practice' },
-    {
-      label: 'Draw',
-      detail: 'exam diagrams',
-      count: drills.length,
-      href: drills[0] ? `/learn/${drills[0].slug}/draw` : '/subjects',
-    },
-  ];
-}
-
 /** Topics with missed questions, most first. */
 function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
   return topics
@@ -212,10 +181,26 @@ function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
     .slice(0, 3);
 }
 
+/** The planned tests and revisits still ahead, soonest first. */
+function upcomingGoals(progress: LearnerProgress, now: Date) {
+  const today = dayKey(now);
+  return progress.goals
+    .map((goal) => ({
+      id: goal.id,
+      title: goal.title,
+      kind: goal.kind,
+      daysLeft: goalToday(goal, today).daysLeft,
+      done: goal.done.length,
+      total: goal.topics.length,
+    }))
+    .filter((goal) => goal.daysLeft >= 0)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
 /**
- * The Today screen: the next thing to do as the hero, today's plan ticking itself off, and the
- * streak and time that keep a student coming back. One column on phones, two on tablets, and a
- * side column for the streak, time, plan and weak spots on wide screens.
+ * The Today screen, built for focus: the next step and the day's plan fill the main column; the
+ * streak, the minutes, planned tests and weak spots sit to the side on wide screens and follow
+ * below on phones. Prompts to set up (the plan, the books) or to ease back in come first.
  */
 export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
@@ -228,64 +213,63 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
       ? topics.find((topic) => topic.slug === first.topicSlug)
       : null;
   const done = doneToday(progress, topics, now);
-  const date = longDate(now);
-
   const week = lastDays(progress.activity, now);
   const streak = currentStreak(progress.activity, now);
 
   return (
-    <div className="@container">
-      <div className="grid-today grid gap-4 @2xl:grid-today-2 @5xl:grid-today-3 @5xl:gap-6">
-        <div className="area-head flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              {/* The server renders in its own time zone; the browser's date wins. */}
-              <Eyebrow suppressHydrationWarning>{date}</Eyebrow>
-              <Display>{HEADLINE[plan.mode]}</Display>
-              {plan.examInDays === null ? null : (
-                <div>
-                  <Pill icon={Hourglass}>{examLabel(plan.examInDays)}</Pill>
-                </div>
-              )}
-            </div>
-            <StreakPill streak={streak} className="@5xl:hidden" />
-            <SearchPill className="hidden w-full max-w-sm @6xl:block" />
-          </div>
-
-          {progress.profile ? null : (
-            <Prompt
-              id="setup-title"
-              icon={GraduationCap}
-              title="Make this plan yours"
-              text="Tell us your age, year, next exam and daily time. Four quick questions."
-              href="/welcome"
-              action="Set up my plan"
-            />
-          )}
-          {plan.mode === 'catch-up' ? (
-            <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
-          ) : null}
-          {progress.profile && !progress.profile.books ? (
-            <Prompt
-              id="books-title"
-              icon={Library}
-              title="Which books do you follow?"
-              text="Pick them once. Every topic then shows where to read it in your books."
-              href="/books"
-              action="Choose my books"
-            />
+    <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
+      <header className="flex flex-wrap items-end justify-between gap-3 xl:col-span-3">
+        <div className="flex flex-col gap-1">
+          {/* The server renders in its own time zone; the browser's date wins. */}
+          <Eyebrow suppressHydrationWarning>{longDate(now)}</Eyebrow>
+          <Display size="lg">{HEADLINE[plan.mode]}</Display>
+          {plan.examPhase ? (
+            <Text size="sm" tone="muted">
+              {PHASE_TIP[plan.examPhase]}
+            </Text>
           ) : null}
         </div>
+        <div className="relative flex items-center gap-2 max-md:w-full">
+          {plan.examInDays === null ? null : (
+            <Pill icon={Hourglass}>{examLabel(plan.examInDays)}</Pill>
+          )}
+          <StreakPill streak={streak} className="xl:hidden" />
+          <LiveSearch topics={topics} className="min-w-0 flex-1 md:w-sm md:flex-none" />
+        </div>
+      </header>
 
+      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
+        {progress.profile ? null : (
+          <Prompt
+            id="setup-title"
+            icon={GraduationCap}
+            title="Make this plan yours"
+            text="Tell us your age, year, next exam and daily time. Four quick questions."
+            href="/welcome"
+            action="Set up my plan"
+          />
+        )}
+        {plan.mode === 'catch-up' ? (
+          <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
+        ) : null}
+        {progress.profile && !progress.profile.books ? (
+          <Prompt
+            id="books-title"
+            icon={Library}
+            title="Which books do you follow?"
+            text="Pick them once. Every topic then shows where to read it in your books."
+            href="/books"
+            action="Choose my books"
+          />
+        ) : null}
         {first ? (
           <UpNext
             item={first}
             poster={firstTopic?.poster ?? null}
             summary={firstTopic?.summary ?? null}
-            className="area-hero"
           />
         ) : (
-          <Card tone="glass" className="area-hero">
+          <Card tone="glass">
             <EmptyState
               icon={CircleCheck}
               title="All done for today"
@@ -298,39 +282,17 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
             />
           </Card>
         )}
-        <Tallies tallies={talliesFor(progress, topics, now)} className="area-tallies" />
-        <BodyCard
-          learnt={topics.filter((topic) => progress.completedLessons.includes(topic.slug)).length}
-          total={topics.length}
-          className="area-body"
-        />
-        <WeekCard week={week} className="area-week" />
-
-        {/* A side column on wide screens; elsewhere its cards take their own places in the grid. */}
-        <div className="contents @5xl:area-side @5xl:flex @5xl:flex-col @5xl:gap-4">
-          <StreakCard
-            streak={streak}
-            best={bestStreak(progress.activity)}
-            week={week}
-            className="hidden @5xl:flex"
-          />
-          <TimeRing
-            minutes={dayOf(progress.activity, now).minutes}
-            goal={plan.dailyMinutes}
-            className="area-ring"
-          />
-          {first || done.length > 0 ? (
-            <PlanCard
-              done={done}
-              items={plan.items}
-              planned={planned}
-              goal={plan.dailyMinutes}
-              className="area-plan"
-            />
-          ) : null}
-          <WeakSpots spots={weakSpots(progress, topics)} className="area-weak" />
-        </div>
+        {first || done.length > 0 ? (
+          <PlanCard done={done} items={plan.items} planned={planned} goal={plan.dailyMinutes} />
+        ) : null}
       </div>
+
+      <aside aria-label="Your progress" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
+        <StreakCard streak={streak} best={bestStreak(progress.activity)} week={week} />
+        <TimeRing minutes={dayOf(progress.activity, now).minutes} goal={plan.dailyMinutes} />
+        <GoalsCard goals={upcomingGoals(progress, now)} />
+        <WeakSpots spots={weakSpots(progress, topics)} />
+      </aside>
     </div>
   );
 }

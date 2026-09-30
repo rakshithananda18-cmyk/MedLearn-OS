@@ -15,6 +15,30 @@ export interface StudyProfile {
   books?: string[];
 }
 
+/**
+ * A plan the student asked for between the daily ones: a class test to prepare for, or topics to
+ * revisit by a date. Today spreads its topics over the days left.
+ */
+export interface StudyGoal {
+  id: string;
+  kind: 'test' | 'revisit';
+  title: string;
+  /** Topic slugs, in the order to go over them. */
+  topics: string[];
+  /** The test day, or the day to have revisited them by (YYYY-MM-DD). */
+  date: string;
+  /** Topics already gone over for this goal. */
+  done: string[];
+  /** When it was asked for (ISO time). */
+  createdAt: string;
+}
+
+/** Which of a topic's spaced revisits comes next, and the day it is due (YYYY-MM-DD). */
+export interface TopicRevisit {
+  step: number;
+  due: string;
+}
+
 /** A student's own note on a topic. A cleared note stays, empty, so clearing it syncs too. */
 export interface TopicNote {
   text: string;
@@ -39,6 +63,10 @@ export interface LearnerProgress {
   notes: Record<string, TopicNote>;
   /** What was studied on each recent day: streaks, the daily ring and the plan's ticks. */
   activity: Activity;
+  /** Class tests and revisits the student asked for. */
+  goals: StudyGoal[];
+  /** Each learnt topic's next spaced revisit, by slug; gone once the last one is done. */
+  revisits: Record<string, TopicRevisit>;
   /** Last change (ISO time); the newer copy wins when the device and the server differ. */
   updatedAt: string | null;
 }
@@ -54,6 +82,8 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   catchUpAcceptedOn: null,
   notes: {},
   activity: {},
+  goals: [],
+  revisits: {},
   updatedAt: null,
 };
 
@@ -72,10 +102,26 @@ export type TodayItem =
   | { kind: 'review'; count: number; minutes: number }
   | { kind: 'learn'; topicSlug: string; title: string; minutes: number }
   | { kind: 'practice'; topicSlug: string; title: string; count: number; minutes: number }
-  | { kind: 'drill'; topicSlug: string; title: string; minutes: number };
+  | { kind: 'drill'; topicSlug: string; title: string; minutes: number }
+  | { kind: 'revisit'; topicSlug: string; title: string; minutes: number; step: number }
+  | {
+      kind: 'goal';
+      goalId: string;
+      goalTitle: string;
+      topicSlug: string;
+      title: string;
+      minutes: number;
+    };
 
 /** Normal days; catch-up after missed days; exam mode as the exam approaches. */
 export type TodayMode = 'normal' | 'catch-up' | 'exam';
+
+/**
+ * The stretch of the last month before an exam: cover what is left (30 to 15 days), consolidate
+ * (14 to 8), sharpen with drills and practice and no new topics (7 to 2), then light recall only
+ * (the day before and the day itself).
+ */
+export type ExamPhase = 'cover' | 'consolidate' | 'sharpen' | 'light';
 
 export interface TodayPlan {
   mode: TodayMode;
@@ -83,6 +129,8 @@ export interface TodayPlan {
   dailyMinutes: number;
   /** Whole days until the exam when one is set and still ahead (0 means today). */
   examInDays: number | null;
+  /** Where the student is in the month before the exam, in exam mode. */
+  examPhase: ExamPhase | null;
   /** Full days without any study before today. */
   missedDays: number;
   /** Due cards held back so today never shows more than one day's load. */
@@ -96,6 +144,14 @@ export const CATCH_UP_AFTER_MISSED_DAYS = 3;
 export const EXAM_WINDOW_DAYS = 30;
 
 const MAX_ITEMS = 5;
+/** Revisits on one day at most, so a busy week of lessons does not flood the next one. */
+const MAX_REVISITS = 2;
+/** Questions in one revisit. */
+export const REVISIT_QUESTIONS = 5;
+/** Days until each spaced revisit: the day after the lesson, a week on, then a month on. */
+export const REVISIT_DAYS = [1, 7, 30] as const;
+/** The share right in a revisit that moves on to the next, longer gap. */
+export const REVISIT_PASS = 0.7;
 const MIN_REVIEW_CAP = 5;
 // Reviews may take up to half of the daily minutes; the rest goes to learning and practice.
 const REVIEW_SHARE = 0.5;
@@ -113,6 +169,54 @@ export function dayKey(date: Date): string {
 /** Whole calendar days between two YYYY-MM-DD dates; unaffected by daylight saving. */
 export function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
+}
+
+/**
+ * A goal's pace: whole days until its date, and the topics to go over today to finish in time.
+ * A test is prepared on the days before it (on the day itself only when it is today); a revisit
+ * may use its last day too. Nothing is due once the date has passed or every topic is done.
+ */
+export function goalToday(goal: StudyGoal, today: string): { daysLeft: number; topics: string[] } {
+  const daysLeft = daysBetween(today, goal.date);
+  const remaining = goal.topics.filter((slug) => !goal.done.includes(slug));
+  if (daysLeft < 0 || remaining.length === 0) return { daysLeft, topics: [] };
+  const studyDays = goal.kind === 'test' ? Math.max(1, daysLeft) : daysLeft + 1;
+  return { daysLeft, topics: remaining.slice(0, Math.ceil(remaining.length / studyDays)) };
+}
+
+/** Minutes to go over a topic again: its questions, then its recall cards. */
+function revisitMinutes(topic: PlannableTopic): number {
+  return Math.max(
+    3,
+    topic.questionIds.length * MINUTES_PER_QUESTION +
+      Math.ceil((topic.cardIds.length * SECONDS_PER_CARD) / 60),
+  );
+}
+
+/** The local date some whole days after another (YYYY-MM-DD). */
+export function addDays(day: string, days: number): string {
+  // Noon, so a daylight-saving change never tips the date over.
+  return dayKey(new Date(Date.parse(`${day}T12:00:00`) + days * DAY_MS));
+}
+
+/** A topic's first revisit, due the day after its lesson. */
+export function firstRevisit(today: string): TopicRevisit {
+  return { step: 0, due: addDays(today, REVISIT_DAYS[0]) };
+}
+
+/**
+ * The revisit after this one: with 70% right or more, the next and longer gap (none after the
+ * last); with less, the same revisit again tomorrow.
+ */
+export function nextRevisit(
+  current: TopicRevisit,
+  share: number,
+  today: string,
+): TopicRevisit | null {
+  if (share < REVISIT_PASS) return { step: current.step, due: addDays(today, 1) };
+  const step = current.step + 1;
+  const gap = REVISIT_DAYS[step];
+  return gap === undefined ? null : { step, due: addDays(today, gap) };
 }
 
 /** The recall card made from a question the student got wrong. */
@@ -144,19 +248,29 @@ export function openQuestionIds(topic: PlannableTopic, progress: LearnerProgress
   return topic.questionIds.filter((id) => !progress.correctAnswers.includes(id));
 }
 
+function phaseFor(examInDays: number): ExamPhase {
+  if (examInDays <= 1) return 'light';
+  if (examInDays <= 7) return 'sharpen';
+  if (examInDays <= 14) return 'consolidate';
+  return 'cover';
+}
+
 function modeFor(examInDays: number | null, missedDays: number): TodayMode {
   if (examInDays !== null && examInDays <= EXAM_WINDOW_DAYS) return 'exam';
   if (missedDays >= CATCH_UP_AFTER_MISSED_DAYS) return 'catch-up';
   return 'normal';
 }
 
-/** Keeps the plan to one day: at most five items within the daily minutes. The first always fits. */
+/**
+ * Keeps the plan to one day: at most five items within the daily minutes. The first always fits,
+ * and so does what a goal needs today: the student asked for it, with a date to meet.
+ */
 function fitToDay(items: TodayItem[], dailyMinutes: number): TodayItem[] {
   const plan: TodayItem[] = [];
   let minutes = 0;
   for (const item of items) {
     if (plan.length === MAX_ITEMS) break;
-    if (plan.length > 0 && minutes + item.minutes > dailyMinutes) continue;
+    if (plan.length > 0 && item.kind !== 'goal' && minutes + item.minutes > dailyMinutes) continue;
     plan.push(item);
     minutes += item.minutes;
   }
@@ -164,7 +278,8 @@ function fitToDay(items: TodayItem[], dailyMinutes: number): TodayItem[] {
 }
 
 /**
- * The Today engine. Normal days: due reviews, the next new topic, then practice. After three or
+ * The Today engine. Normal days: due reviews, today's share of any class test or revisit the
+ * student asked for, due spaced revisits of learnt topics, the next new topic, then practice. After three or
  * more missed days the plan protects what was learned first (reviews and practice before new
  * topics). Within 30 days of an exam, diagram drills lead. Reviews are always capped, so a long
  * gap never produces a huge overdue pile.
@@ -238,18 +353,60 @@ export function buildTodayPlan(
       : [],
   );
 
-  const ordered =
-    mode === 'exam'
-      ? [...drills, ...review, ...practice, ...learn]
-      : mode === 'catch-up'
-        ? [...review, ...practice, ...learn, ...drills]
-        : [...review, ...learn, ...practice, ...drills];
+  const goals: TodayItem[] = progress.goals.flatMap((goal) =>
+    goalToday(goal, today).topics.flatMap((slug) => {
+      const topic = topics.find((item) => item.slug === slug);
+      return topic
+        ? [
+            {
+              kind: 'goal' as const,
+              goalId: goal.id,
+              goalTitle: goal.title,
+              topicSlug: slug,
+              title: topic.title,
+              minutes: revisitMinutes(topic),
+            },
+          ]
+        : [];
+    }),
+  );
+
+  const revisits: TodayItem[] = Object.entries(progress.revisits)
+    .filter(([, revisit]) => revisit.due <= today)
+    .toSorted(([, a], [, b]) => a.due.localeCompare(b.due))
+    .flatMap(([slug, revisit]) => {
+      const topic = topics.find((item) => item.slug === slug);
+      if (!topic || topic.questionIds.length === 0) return [];
+      const count = Math.min(REVISIT_QUESTIONS, topic.questionIds.length);
+      return [
+        {
+          kind: 'revisit' as const,
+          topicSlug: slug,
+          title: topic.title,
+          minutes: Math.max(3, count * MINUTES_PER_QUESTION),
+          step: revisit.step,
+        },
+      ];
+    })
+    .slice(0, MAX_REVISITS);
+
+  const examPhase = mode === 'exam' && examInDays !== null ? phaseFor(examInDays) : null;
+  let ordered: TodayItem[];
+  if (examPhase === 'light') ordered = [...review, ...goals];
+  else if (examPhase === 'sharpen')
+    ordered = [...drills, ...goals, ...practice, ...review, ...revisits];
+  else if (mode === 'exam')
+    ordered = [...drills, ...goals, ...revisits, ...review, ...practice, ...learn];
+  else if (mode === 'catch-up')
+    ordered = [...review, ...goals, ...revisits, ...practice, ...learn, ...drills];
+  else ordered = [...review, ...goals, ...revisits, ...learn, ...practice, ...drills];
 
   return {
     mode,
     items: fitToDay(ordered, dailyMinutes),
     dailyMinutes,
     examInDays,
+    examPhase,
     missedDays,
     heldBackReviews,
     catchUpDays: Math.ceil(heldBackReviews / reviewCap),

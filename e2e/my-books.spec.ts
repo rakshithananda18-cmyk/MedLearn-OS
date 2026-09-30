@@ -20,10 +20,13 @@ test('a student picks the books they follow from Today, and the choice sticks', 
   await page.reload();
   await expect(page.getByRole('checkbox', { name: /Guyton and Hall/ })).toBeChecked();
 
-  // Today no longer asks, and each topic has its reading card.
+  // Today no longer asks, and each topic says where to read it, behind its books button.
   await page.goto('/today');
   await expect(page.getByRole('heading', { name: 'Small steps, every day' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Choose my books' })).toHaveCount(0);
   await page.goto('/learn/brachial-plexus');
-  await expect(page.getByRole('heading', { name: 'Where to read this' })).toBeVisible();
+  await page.getByRole('button', { name: 'Where to read this' }).click();
+  await expect(page.getByRole('dialog', { name: 'Where to read this' })).toContainText(
+    'BD Chaurasia',
+  );
 });

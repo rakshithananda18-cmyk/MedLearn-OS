@@ -31,20 +31,24 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   await expect(page.getByRole('heading', { level: 1, name: 'Whole body' })).toBeAttached();
   await expectAccessible(page);
 
+  // Laptops list the topics as a tree whose Axilla section starts folded; phones show cards.
+  const section = page.getByRole('button', { name: /^Axilla\s?\d/, expanded: false });
+  if (await section.isVisible()) await section.click();
   await page.getByRole('button', { name: /Axilla: walls/ }).click();
   await expect(
     page.getByRole('heading', { level: 1, name: 'Axilla: walls and contents' }),
   ).toBeVisible();
   await expect(page).toHaveURL(/\/studio\?topic=axilla$/);
 
-  // Layers: peel the muscles away.
-  await clickIfShown(page, 'Layers');
+  // Layers, beside the settings: peel the muscles away.
+  await page.getByRole('button', { name: 'Layers', exact: true }).click();
   const layers = page.getByRole('region', { name: 'Layers' });
-  await layers.getByRole('button', { name: 'Muscles', exact: true }).click();
-  await expect(layers.getByRole('button', { name: 'Muscles', exact: true })).toHaveAttribute(
-    'aria-pressed',
+  await layers.getByRole('switch', { name: 'Muscles' }).click();
+  await expect(layers.getByRole('switch', { name: 'Muscles' })).toHaveAttribute(
+    'aria-checked',
     'false',
   );
+  await layers.getByRole('button', { name: 'Close layers' }).click();
 
   // Find one structure by name, and read about it.
   await findStructure(page, 'serratus', 'Serratus anterior');

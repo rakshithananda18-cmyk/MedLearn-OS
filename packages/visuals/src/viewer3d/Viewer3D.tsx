@@ -3,7 +3,7 @@
 import type { Model3D, ModelTrace, PartKind, Point3 } from '@medlearn/schemas';
 import { Line, OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber';
-import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { type RefObject, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box3,
   CatmullRomCurve3,
@@ -31,6 +31,19 @@ export interface Viewer3DLabel {
   text: string;
   /** The picked one: filled in the accent colour. */
   active?: boolean;
+}
+
+/** What a whole-body system layer is made of, which sets its colour. */
+export type LayerKind = PartKind | 'nerve' | 'organ';
+
+/**
+ * One body system drawn from its own file (skeleton, muscles, vessels, nerves, organs) on the same
+ * body. Every mesh in it is a named structure; a tap reports `<layer id>/<structure id>`.
+ */
+export interface Viewer3DLayer {
+  id: string;
+  kind: LayerKind;
+  src: string;
 }
 
 /** A line a student drew on the model's surface, in the model's frame. */
@@ -62,6 +75,10 @@ export interface Viewer3DProps {
   labels?: Viewer3DLabel[];
   /** Changing it sends the camera back to the current stop. */
   resetToken?: number;
+  /** Pixel ratio: the device's up to 2 for a sharp picture, or 1 to save battery. */
+  dpr?: number | [number, number];
+  /** Body systems shown on the model, each loaded when it first appears. */
+  layers?: Viewer3DLayer[];
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -97,6 +114,12 @@ const PART_OPACITY: Record<PartKind, number> = {
   artery: 1,
   vein: 1,
   skin: 0.35,
+};
+
+const LAYER_COLOUR: Record<LayerKind, string> = {
+  ...PART_COLOUR,
+  nerve: '--color-anat-nerve',
+  organ: '--color-anat-organ',
 };
 
 /** Anatomical colours come from the design tokens, so 2D and 3D always match. */
@@ -182,6 +205,12 @@ function strokeKey(stroke: Stroke): string {
   return `${stroke.colour}:${stroke.points[0]?.join(',') ?? ''}:${stroke.points.length}`;
 }
 
+/** Whether an object is drawn: it and every object above it are visible. */
+function shown(object: Object3D | null): boolean {
+  for (let node = object; node; node = node.parent) if (!node.visible) return false;
+  return true;
+}
+
 function Parts({
   model,
   highlight,
@@ -223,11 +252,68 @@ function Parts({
 
   const select = (event: ThreeEvent<MouseEvent>) => {
     const id = event.object.userData.partId as string | undefined;
-    if (!id) return;
+    // Hidden parts are still in the way of the ray: let the tap through to what is behind.
+    if (!id || !shown(event.object)) return;
+    // The see-through skin lets a tap through to whatever shows under it.
+    const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
+    const under = event.intersections.some(
+      (hit) => hit.object !== event.object && hit.object.userData.partId && shown(hit.object),
+    );
+    if (skin && under) return;
     event.stopPropagation();
     onSelect(id);
   };
   return <primitive object={scene} onClick={select} />;
+}
+
+/**
+ * A body system from its own file. Its structures share three materials (as it is, picked, and
+ * dimmed while something else is picked), so hundreds of structures stay cheap to draw; see-through
+ * (x-ray) fades them all.
+ */
+function SystemLayer({
+  layer,
+  highlight,
+  selecting,
+  xray,
+  onSelect,
+}: Readonly<{
+  layer: Viewer3DLayer;
+  highlight: ReadonlySet<string>;
+  selecting: boolean;
+  xray: boolean;
+  onSelect: (id: string) => void;
+}>) {
+  const { scene } = useGLTF(layer.src, false, true);
+  const { invalidate } = useThree();
+
+  useEffect(() => {
+    const colour = tokenColour(LAYER_COLOUR[layer.kind]);
+    const opacity = xray ? XRAY : 1;
+    const plain = material(colour, false, selecting ? opacity * DIMMED : opacity);
+    const picked = material(colour, true, 1);
+    scene.traverse((child) => {
+      const mesh = child as Mesh;
+      if (!mesh.isMesh) return;
+      if (!mesh.geometry.getAttribute('normal')) mesh.geometry.computeVertexNormals();
+      const id = `${layer.id}/${mesh.name}`;
+      mesh.userData.partId = id;
+      mesh.material = highlight.has(id) ? picked : plain;
+    });
+    invalidate();
+  }, [scene, layer, highlight, selecting, xray, invalidate]);
+
+  return (
+    <primitive
+      object={scene} // NOSONAR: a React Three Fiber prop, not a DOM attribute
+      onClick={(event: ThreeEvent<MouseEvent>) => {
+        const id = event.object.userData.partId as string | undefined;
+        if (!id) return;
+        event.stopPropagation();
+        onSelect(id);
+      }}
+    />
+  );
 }
 
 /**
@@ -419,9 +505,13 @@ export default function Viewer3D({
   strokes = [],
   labels = [],
   resetToken = 0,
+  dpr = [1, 2],
+  layers = [],
 }: Readonly<Viewer3DProps>) {
-  // Only a lit part or trace dims the rest; a lit marker leaves the model as it is.
-  const selecting = [...model.parts, ...model.traces].some((item) => highlight.has(item.id));
+  // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
+  const selecting =
+    [...model.parts, ...model.traces].some((item) => highlight.has(item.id)) ||
+    [...highlight].some((id) => id.includes('/'));
   const group = useRef<Group>(null);
   const [draft, setDraft] = useState<Point3[]>([]);
   const drawing = useRef<Point3[] | null>(null);
@@ -458,7 +548,7 @@ export default function Viewer3D({
     <div className="relative size-full">
       <Canvas
         frameloop="demand"
-        dpr={[1, 2]}
+        dpr={dpr}
         camera={{ fov: 35, near: 0.005, far: 10, position: [0.3, 0.2, 0.6] }}
         onPointerMissed={() => {
           if (!pen) onSelect(null);
@@ -486,6 +576,18 @@ export default function Viewer3D({
             hiddenIds={hiddenIds}
             xray={xray}
           />
+          {layers.map((layer) => (
+            // Each system arrives on its own; the body is usable while the rest load.
+            <Suspense key={layer.id} fallback={null}>
+              <SystemLayer
+                layer={layer}
+                highlight={highlight}
+                selecting={selecting}
+                xray={xray}
+                onSelect={pen ? () => {} : onSelect}
+              />
+            </Suspense>
+          ))}
           {model.traces
             .filter((trace) => !hiddenIds.has(trace.id))
             .map((trace) => (

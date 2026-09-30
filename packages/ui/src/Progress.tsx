@@ -36,7 +36,11 @@ export function ProgressBar({ value, max = 100, label, showValue = false }: Prog
   );
 }
 
-const RING = { md: { box: 48, stroke: 4 }, lg: { box: 64, stroke: 6 } } as const;
+const RING = {
+  sm: { box: 28, stroke: 3 },
+  md: { box: 48, stroke: 4 },
+  lg: { box: 64, stroke: 6 },
+} as const;
 
 export interface ProgressRingProps {
   value: number;
@@ -45,7 +49,10 @@ export interface ProgressRingProps {
   size?: keyof typeof RING;
 }
 
-/** Circular progress (e.g. topic mastery). The percentage is shown in the centre. */
+/**
+ * Circular progress (e.g. topic mastery). The percentage is shown in the centre, except on the
+ * small ring, which sits beside its own label.
+ */
 export function ProgressRing({ value, max = 100, label, size = 'md' }: ProgressRingProps) {
   const percent = percentOf(value, max);
   const { box, stroke } = RING[size];
@@ -88,7 +95,9 @@ export function ProgressRing({ value, max = 100, label, size = 'md' }: ProgressR
           className="stroke-primary transition-all duration-250 ease-standard"
         />
       </svg>
-      <span className="absolute text-xs font-semibold text-fg">{percent}%</span>
+      {size === 'sm' ? null : (
+        <span className="absolute text-xs font-semibold text-fg">{percent}%</span>
+      )}
     </div>
   );
 }

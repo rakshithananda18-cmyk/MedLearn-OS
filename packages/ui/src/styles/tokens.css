@@ -100,11 +100,43 @@
   --animate-glow: glow 0.6s var(--ease-arrive);
   --animate-draw: draw 0.6s var(--ease-arrive) both;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-slide-in: slide-in 0.32s var(--ease-arrive) both;
 
   @keyframes rise {
     from {
       opacity: 0;
       transform: translateY(8px);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--spacing-12));
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
     }
   }
 
@@ -167,6 +199,7 @@
   --color-anat-muscle: #a0463c;
   --color-anat-bone: #e8dcc4;
   --color-anat-skin: #d9b59a;
+  --color-anat-organ: #c97b84;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;
@@ -301,6 +334,26 @@
 @custom-variant short (@media (max-height: 30rem));
 
 /*
+ * Laptop density: with a mouse on a wide screen there is no thumb to fit, so controls, gaps,
+ * padding, corners and the largest headings each step down a notch. Every utility reads these
+ * variables, so the whole app tightens from here.
+ */
+@media (pointer: fine) and (min-width: 64rem) {
+  :root {
+    --spacing-6: 1.25rem;
+    --spacing-8: 1.5rem;
+    --spacing-12: 2.5rem;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --text-4xl: 2.125rem;
+    --text-4xl--line-height: 2.5rem;
+    --text-5xl: 2.625rem;
+    --text-5xl--line-height: 3rem;
+  }
+}
+
+/*
  * The sky behind every study screen: blue at the top fading to warm cream (night sky in the
  * dark theme). Pure gradients, so it costs no image download.
  */
@@ -400,59 +453,65 @@
   height: clamp(15rem, 34dvh, 28rem);
 }
 
+/* Today's next step: tall enough for its model to stand beside the title. */
+@utility min-h-hero-card {
+  min-height: clamp(13rem, 30dvh, 18rem);
+}
+
+/* The model's still in the library preview: smaller than a hero, scaled to the screen. */
+@utility h-preview {
+  height: clamp(8rem, 20dvh, 11rem);
+}
+
+/*
+ * A topic's two columns: the model beside the ways to study it, half and half. During a lecture
+ * the video takes the larger share and the notes column narrows, sliding rather than jumping.
+ */
+@utility grid-topic {
+  grid-template-columns: minmax(0, var(--topic-stage, 1fr)) minmax(0, 1fr);
+  transition: grid-template-columns 300ms var(--ease-standard);
+}
+
+@utility grid-lecture {
+  --topic-stage: 1.6fr;
+}
+
+/* The scrolling body of a dialog holding a long form, clear of the title and the buttons. */
+@utility max-h-dialog {
+  max-height: min(60dvh, 36rem);
+}
+
+/* A row that scrolls sideways (tags, chips): a hairline scrollbar that does not crowd it. */
+@utility scroll-row {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+/* A panel that folds open and shut smoothly: its one child needs min-h-0 and overflow-hidden. */
+@utility fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms var(--ease-standard);
+}
+
+@utility fold-open {
+  grid-template-rows: 1fr;
+}
+
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */
 @utility h-stage {
   height: calc(100dvh - var(--spacing-16));
 }
 
-/*
- * Today: one column on phones; two on tablets (the plan beside the counts); on wide screens a
- * main column and a side column for the streak, the time, the plan and weak spots.
- */
-@utility grid-today {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'head' 'hero' 'tallies' 'plan' 'body' 'week' 'ring' 'weak';
-}
-
-@utility grid-today-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas: 'head head' 'hero hero' 'plan tallies' 'plan body' 'week weak' 'ring weak';
-}
-
-@utility grid-today-3 {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) 20rem;
-  grid-template-rows: auto auto auto 1fr;
-  grid-template-areas: 'head head side' 'hero hero side' 'tallies tallies side' 'body week side';
+/* The topic's model beside its ways in on laptops: the window's height, less the page margins. */
+@utility h-stage-topic {
+  height: min(calc(100dvh - var(--spacing-16)), 44rem);
 }
 
 @utility area-head {
   grid-area: head;
 }
-@utility area-hero {
-  grid-area: hero;
-}
-@utility area-tallies {
-  grid-area: tallies;
-}
-@utility area-plan {
-  grid-area: plan;
-}
-@utility area-body {
-  grid-area: body;
-}
-@utility area-week {
-  grid-area: week;
-}
-@utility area-ring {
-  grid-area: ring;
-}
-@utility area-weak {
-  grid-area: weak;
-}
-@utility area-side {
-  grid-area: side;
-}
-
 /*
  * Lessons and drills on wide screens: the header across the top, the diagram's stage on the
  * left, the step on the right with its controls under it.
@@ -478,6 +537,32 @@
  * pseudo-elements, one per browser engine.
  */
 @layer components {
+  /* A drawer rising from the bottom and its scrim, animated in and out as Radix opens and closes
+     them (it waits for the closing animation before removing them). Transform and opacity only,
+     so the phone's graphics chip does the work. */
+  .drawer[data-state='open'] {
+    animation: sheet-in 0.32s var(--ease-arrive) both;
+  }
+
+  .drawer[data-state='closed'] {
+    animation: sheet-out 0.22s var(--ease-standard) both;
+  }
+
+  .drawer-scrim[data-state='open'] {
+    animation: fade-in 0.22s var(--ease-standard) both;
+  }
+
+  .drawer-scrim[data-state='closed'] {
+    animation: fade-out 0.22s var(--ease-standard) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer,
+    .drawer-scrim {
+      animation-duration: 0s !important;
+    }
+  }
+
   .progress-bar {
     appearance: none;
     display: block;
@@ -520,6 +605,11 @@
 /* Panels floating over the 3D studio: never wider than the phone, less the side gutters. */
 @utility w-sheet {
   width: min(20rem, calc(100% - var(--spacing-6)));
+}
+
+/* The library's topic preview, sliding in beside the list on wide screens. */
+@utility w-preview {
+  width: min(34rem, 42vw);
 }
 
 @utility max-h-sheet {

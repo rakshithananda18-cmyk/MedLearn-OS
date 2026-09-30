@@ -274,7 +274,7 @@ export const brachialPlexus: Topic = {
     {
       bookId: 'grays-anatomy',
       chapter: 'Chapter 7 Upper Limb',
-      pages: '727–738',
+      pages: '727–736',
     },
   ],
 };

@@ -58,16 +58,20 @@ test('Today → lesson → practice → revise, then the next topic', async ({ p
   const practice = page.getByRole('link', { name: /Practice: Pectoral region and breast/ });
   await expect(practice).toBeVisible();
 
-  // Practice: the two questions not already answered in the wrap-up.
+  // Practice: straight into the two questions not already answered in the wrap-up, in either
+  // order, then the score.
   await practice.click();
-  const answers = ['Blocked skin lymphatics', 'Lateral lip of the intertubercular groove'];
-  for (const [index, answer] of answers.entries()) {
-    await page.getByRole('button', { name: answer, exact: true }).click();
+  await expect(page).toHaveURL(/\/practice\?topic=pectoral-region$/);
+  const answer = page.getByRole('button', {
+    name: /^(Blocked skin lymphatics|Lateral lip of the intertubercular groove)$/,
+  });
+  for (const next of ['Next question', 'See how you did']) {
+    await answer.click();
     await expect(page.getByRole('status').filter({ hasText: 'Correct' })).toBeVisible();
-    if (index === 0) await expectAccessible(page);
-    await page.getByRole('button', { name: 'Next question' }).click();
+    if (next === 'Next question') await expectAccessible(page);
+    await page.getByRole('button', { name: next }).click();
   }
-  await expect(page.getByText('All questions done')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '2/2' })).toBeVisible();
 
   // Recall: back on Today, the plan leads to the five cards; recall and rate them all.
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();

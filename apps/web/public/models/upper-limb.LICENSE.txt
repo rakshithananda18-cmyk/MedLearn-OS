@@ -3,13 +3,15 @@ upper-limb.glb
 Bones, muscles, arteries and veins of the right upper limb and chest, shared by the upper limb
 topics (each topic shows its own parts). Bones: clavicle, scapula, humerus, radius, ulna, the
 eight carpal bones, metacarpals, phalanges, ribs, sternum and thoracic and lower cervical
-vertebrae. Muscles: pectoral, scapular and back muscles, deltoid and the rotator cuff, the front
-and back of the arm, the front of the forearm, flexor retinaculum, thenar and hypothenar
-muscles. Arteries: subclavian, axillary (whole, and split into its three parts where pectoralis
-minor crosses it) and their branches, brachial, profunda brachii and collaterals, radial, ulnar,
-their recurrent and interosseous branches, and the palmar arches. Veins: subclavian, axillary,
-cephalic, basilic, median cubital and median vein of the forearm. The full list is the MODELS
-table in scripts/models/build-models.mjs.
+vertebrae. Muscles: pectoral, scapular and back muscles, deltoid and the rotator cuff, the
+front and back of the arm, the front and back of the forearm, flexor retinaculum, and the
+small muscles of the hand. Arteries: subclavian, axillary (whole, and split into its three
+parts where pectoralis minor crosses it) and their branches, brachial, profunda brachii and
+collaterals, radial, ulnar, their recurrent and interosseous branches, the palmar arches with
+their metacarpal and digital branches, and the dorsal carpal and metacarpal arteries. Veins:
+subclavian, axillary, cephalic, basilic, median cubital, median vein of the forearm and the
+dorsal venous network of the hand. The full list is the MODELS table in
+scripts/models/build-models.mjs.
 
 Source: BodyParts3D 4.0, (c) The Database Center for Life Science (DBCLS).
 https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html (isa_BP3D_4.0_obj_99.zip)

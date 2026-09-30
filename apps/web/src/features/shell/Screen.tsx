@@ -16,7 +16,7 @@ export function TaskColumns({
   children,
 }: Readonly<{ intro: ReactNode; children: ReactNode }>) {
   return (
-    <div className="grid gap-4 md:gap-6 xl:grid-cols-5 xl:items-start xl:gap-8">
+    <div className="grid gap-4 md:gap-6 xl:grid-cols-5 xl:items-start">
       <div className="flex flex-col gap-4 xl:sticky xl:top-8 xl:col-span-2">{intro}</div>
       <div className="flex flex-col gap-4 xl:col-span-3">{children}</div>
     </div>
@@ -29,7 +29,7 @@ export function Screen({ children, width = 'narrow' }: ScreenProps) {
     <ViewTransition enter="screen-enter" exit="screen-exit" default="none">
       <div
         className={cx(
-          'mx-auto flex w-full flex-col gap-4 px-4 pt-6 pb-8 md:gap-6 md:px-6 md:pt-8 xl:px-8',
+          'mx-auto flex w-full flex-col gap-4 px-4 pt-6 pb-8 md:px-6 md:pt-8 xl:px-8',
           width === 'narrow' ? 'max-w-3xl' : 'max-w-7xl',
         )}
       >

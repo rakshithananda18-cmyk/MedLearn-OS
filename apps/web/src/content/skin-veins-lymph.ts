@@ -35,7 +35,7 @@ export const skinVeinsLymph: Topic = {
     },
     bookSource(
       'bd-chaurasia',
-      'Volume 1, Chapter 7 Cutaneous Nerves, Superficial Veins and Lymphatic Drainage, pages 83 to 93',
+      'Volume 1, Chapter 7 Cutaneous Nerves, Superficial Veins and Lymphatic Drainage, pages 83 to 92',
     ),
     bookSource('grays-anatomy', 'Chapter 7 Upper Limb, regional anatomy, pages 684 to 688'),
     {
@@ -441,7 +441,7 @@ export const skinVeinsLymph: Topic = {
     {
       bookId: 'bd-chaurasia',
       chapter: 'Chapter 7 Cutaneous Nerves, Superficial Veins and Lymphatic Drainage',
-      pages: '83–93',
+      pages: '83–92',
     },
     { bookId: 'grays-anatomy', chapter: 'Chapter 7 Upper Limb', pages: '684–688' },
   ],

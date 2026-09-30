@@ -2,10 +2,11 @@ import { expect, test } from '@playwright/test';
 
 import { expectAccessible } from './support';
 
-test('search from Subjects finds material inside a topic and opens it', async ({ page }) => {
+test('search from the library finds material inside a topic and opens it', async ({ page }) => {
   await page.goto('/subjects');
-  await page.getByLabel('Search topics, facts and questions').fill('klumpke');
-  await page.getByRole('button', { name: 'Search' }).click();
+  const search = page.getByRole('combobox', { name: 'Search topics, structures and notes' });
+  await search.fill('klumpke');
+  await search.press('Enter');
 
   await expect(page).toHaveURL(/\/search\?q=klumpke$/);
   const results = page.getByRole('list', { name: /Results for/ });

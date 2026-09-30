@@ -34,6 +34,8 @@ const progress = (updatedAt: string): LearnerProgressInput => ({
       reviewed: 0,
     },
   },
+  goals: [],
+  revisits: {},
   updatedAt,
 });
 

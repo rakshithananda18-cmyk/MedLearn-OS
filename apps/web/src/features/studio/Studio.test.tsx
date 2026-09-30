@@ -1,13 +1,15 @@
 import type { PartKind } from '@medlearn/schemas';
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
-import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
+import type { Stroke, Viewer3DLabel, Viewer3DLayer } from '@medlearn/visuals/viewer3d';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BODY_MODEL, BODY_REGIONS } from '@/content/body';
+import { libraryTree } from '@/content/library';
 import { studioTopics } from '@/content/studio';
+import { TOPICS } from '@/content/topics';
 
 const capability = vi.hoisted(() => ({ supported: true }));
 // What the 3D view last received, so a test can tap the model or draw as a finger would.
@@ -22,6 +24,10 @@ const viewer = vi.hoisted(() => ({
     highlight: ReadonlySet<string>;
     labels: Viewer3DLabel[];
     resetToken: number;
+    reducedMotion: boolean;
+    dpr: number | [number, number];
+    stopId: string;
+    layers: Viewer3DLayer[];
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -48,16 +54,18 @@ const STROKE: Stroke = {
   ],
 };
 
-async function renderStudio(initialTopic: string | null = null) {
+async function renderStudio(initialTopic: string | null = null, initialTour = false) {
   // Fresh module each time: the device check is cached per page load.
   vi.resetModules();
   const { Studio } = await import('./Studio');
   return render(
     <Studio
       topics={studioTopics()}
+      tree={libraryTree(TOPICS.filter((topic) => topic.subjectSlug === 'anatomy'))}
       regions={BODY_REGIONS}
       body={BODY_MODEL}
       initialTopic={initialTopic}
+      initialTour={initialTour}
     />,
   );
 }
@@ -113,7 +121,7 @@ describe('Studio on a phone', () => {
     );
   });
 
-  it('opens a topic in place, with its guided views, and goes back', async () => {
+  it('opens a topic in place, walks its guided views, and goes back', async () => {
     await renderStudio();
     await userEvent.click(screen.getByRole('button', { name: /Axilla: walls/ }));
     expect(
@@ -124,10 +132,9 @@ describe('Studio on a phone', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next view' }));
     expect(screen.getByText(/^Apex/)).toBeInTheDocument();
 
-    // The topic's name opens the topics, with the guided views.
+    // The topic's name opens the topics as the library's tree, the open one marked.
     await userEvent.click(screen.getByRole('button', { name: 'Axilla: walls and contents' }));
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(within(topics).getByRole('list', { name: 'Guided views' })).toBeInTheDocument();
     expect(within(topics).getByRole('button', { name: /Axilla: walls.*Open/ })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Go back' }));
@@ -159,7 +166,7 @@ describe('Studio on a phone', () => {
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
     const layers = screen.getByRole('region', { name: 'Layers' });
-    await userEvent.click(within(layers).getByRole('button', { name: 'Muscles', pressed: true }));
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles', checked: true }));
     expect(viewer.props?.hiddenKinds.has('muscle')).toBe(true);
 
     tap('axillary-vein');
@@ -168,7 +175,7 @@ describe('Studio on a phone', () => {
     await userEvent.click(within(layers).getByRole('button', { name: 'Show Axillary vein' }));
     expect(viewer.props?.hiddenIds.has('axillary-vein')).toBe(false);
 
-    await userEvent.click(within(tools).getByRole('button', { name: 'X-ray' }));
+    await userEvent.click(within(tools).getByRole('button', { name: 'See-through' }));
     expect(viewer.props?.xray).toBe(true);
     await userEvent.click(within(tools).getByRole('button', { name: 'Reset the view' }));
     expect(viewer.props?.resetToken).toBe(1);
@@ -246,14 +253,22 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
-  it('docks the topics with search and guided views, and the structure and layers', async () => {
+  it('docks the topics and search, the guided views by the tools, and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');
     expect(screen.queryByRole('button', { name: 'Search structures' })).not.toBeInTheDocument();
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(within(topics).getByText('Best “Find it” streak')).toBeInTheDocument();
+    expect(screen.getByText('Best streak')).toBeInTheDocument();
+    const guide = screen.getByRole('group', { name: 'Guided views' });
+    expect(guide).toHaveTextContent('1/');
+    await userEvent.click(within(guide).getByRole('button', { name: 'Next view' }));
+    expect(guide).toHaveTextContent('2/');
     const side = screen.getByRole('complementary', { name: 'About the model' });
-    expect(within(side).getByRole('region', { name: 'Layers' })).toBeInTheDocument();
+    // The layers open from beside the settings, not in the side panel.
+    expect(within(side).queryByRole('region', { name: 'Layers' })).not.toBeInTheDocument();
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
+    expect(screen.getByRole('switch', { name: 'Muscles', checked: true })).toBeInTheDocument();
 
     await userEvent.type(
       within(topics).getByRole('searchbox', { name: 'Find a structure' }),
@@ -267,5 +282,169 @@ describe('Studio on a wide screen', () => {
 
     await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+  });
+
+  it('lists regions and book sections as a tree of topic cards, each branch folding', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    const tree = screen.getByRole('list', { name: 'Regions and topics' });
+    const open = within(tree).getByRole('button', { name: /Axilla: walls.*Open/ });
+    expect(open).toHaveAttribute('aria-current', 'true');
+    // The branches leading to the open topic start open; the others are folded.
+    expect(within(tree).getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
+    const pectoral = within(tree).getByRole('button', {
+      name: /^Pectoral region/,
+      expanded: false,
+    });
+    await userEvent.click(pectoral);
+    expect(pectoral).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      within(tree).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
+    ).toBeInTheDocument();
+
+    // The whole body sits beside the search.
+    await userEvent.click(screen.getByRole('button', { name: 'Whole body', pressed: false }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Whole body' })).toBeInTheDocument();
+  });
+
+  it('builds one body from its systems: switch them on and off, tap any structure', async () => {
+    wideScreen();
+    const search = vi.fn(async () =>
+      Response.json({
+        data: {
+          results: [
+            { kind: 'Topic', topicSlug: 'humerus', topicTitle: 'Humerus', excerpt: '', href: '' },
+            {
+              kind: 'Structure',
+              topicSlug: 'humerus',
+              topicTitle: 'Humerus',
+              excerpt: '',
+              href: '',
+            },
+          ],
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', search);
+    const { container } = await renderStudio();
+    // No side panel until a structure is picked; the systems are the layers, by the settings.
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
+    const layers = screen.getByRole('region', { name: 'Layers' });
+    // It opens on the skin over the skeleton; the other systems load when switched on.
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
+    await userEvent.click(within(layers).getByRole('switch', { name: 'Skin' }));
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton', 'muscles']);
+    expect(viewer.props?.hiddenIds).toContain('skin');
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(within(layers).getByRole('button', { name: 'Close layers' }));
+    tap('skeleton/left-humerus');
+    const side = screen.getByRole('complementary', { name: 'About the model' });
+    const card = await within(side).findByRole('region', { name: 'Left humerus' });
+    expect(card).toHaveTextContent('Skeleton');
+    expect(viewer.props?.highlight).toContain('skeleton/left-humerus');
+    expect(search).toHaveBeenCalledWith('/api/search?q=humerus', expect.anything());
+    expect(await within(card).findByRole('link', { name: 'Humerus' })).toHaveAttribute(
+      'href',
+      '/learn/humerus',
+    );
+    await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  });
+
+  it('folds either panel away and brings it back', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Hide the topics' }));
+    expect(screen.queryByRole('region', { name: 'Topics' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Hide the model panel' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Show the topics' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Show the model panel' }));
+    expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'About the model' })).toBeInTheDocument();
+  });
+
+  it('shows the topic as its flat diagram when the student picks 2D in the settings', async () => {
+    wideScreen();
+    await renderStudio('brachial-plexus');
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    await userEvent.click(screen.getByRole('switch', { name: 'Flat diagram (2D)' }));
+    expect(screen.queryByTestId('viewer')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Median nerve' })).toBeInTheDocument();
+  });
+
+  it('changes names, camera moves and sharpness in the settings, and keeps them', async () => {
+    wideScreen();
+    const { container, unmount } = await renderStudio();
+    expect(viewer.props?.labels.length).toBeGreaterThan(0);
+    expect(viewer.props?.dpr).toEqual([1, 2]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const settings = screen.getByRole('region', { name: 'Settings' });
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Names on the model' }));
+    await userEvent.click(within(settings).getByRole('switch', { name: 'Smooth camera moves' }));
+    await userEvent.click(within(settings).getByRole('button', { name: 'Battery saver' }));
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.reducedMotion).toBe(true);
+    expect(viewer.props?.dpr).toBe(1);
+
+    unmount();
+    await renderStudio();
+    expect(viewer.props?.labels).toEqual([]);
+    expect(viewer.props?.dpr).toBe(1);
+  });
+
+  it('plays the guided views as a captioned tour, moving on by itself and stopping at the end', async () => {
+    wideScreen();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderStudio('axilla', true);
+      const stops = studioTopics().find((topic) => topic.slug === 'axilla')?.model?.stops;
+      const count = stops?.length ?? 0;
+      const caption = screen.getByRole('region', { name: 'Tour caption' });
+      expect(caption).toHaveTextContent(`Tour · 1 of ${count}`);
+      expect(viewer.props?.stopId).toBe(stops?.[0]?.id);
+
+      act(() => vi.advanceTimersByTime(30_000));
+      expect(caption).toHaveTextContent(`Tour · 2 of ${count}`);
+      expect(viewer.props?.stopId).toBe(stops?.[1]?.id);
+
+      for (let stop = 2; stop <= count; stop++) act(() => vi.advanceTimersByTime(30_000));
+      expect(screen.queryByRole('region', { name: 'Tour caption' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Play the tour' })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows the topic’s X-ray films in place of the model, marked and switchable', async () => {
+    wideScreen();
+    const { unmount } = await renderStudio('elbow-joint');
+    await userEvent.click(screen.getByRole('button', { name: 'X-ray images', pressed: false }));
+    const films = screen.getByRole('region', { name: 'X-ray: Elbow, AP' });
+    expect(within(films).getByRole('img', { name: 'Elbow, AP radiograph' })).toBeInTheDocument();
+    const key = within(films).getByRole('list', { name: 'Marked on the film' });
+    expect(within(key).getByRole('button', { name: /Medial epicondyle/ })).toBeInTheDocument();
+    expect(within(films).getByText(/Mikael Häggström, CC0/)).toBeInTheDocument();
+
+    await userEvent.click(within(films).getByRole('button', { name: 'Elbow, lateral' }));
+    expect(screen.getByRole('region', { name: 'X-ray: Elbow, lateral' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Invert the film' }));
+    expect(screen.getByRole('button', { name: 'Invert the film' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close the X-rays' }));
+    expect(screen.queryByRole('region', { name: /^X-ray:/ })).not.toBeInTheDocument();
+    // A topic with no films has no button for them.
+    unmount();
+    await renderStudio('brachial-plexus');
+    expect(screen.queryByRole('button', { name: 'X-ray images' })).not.toBeInTheDocument();
   });
 });

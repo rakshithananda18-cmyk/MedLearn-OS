@@ -37,6 +37,15 @@ describe('ProgressRing', () => {
     expect(screen.getByText('45%')).toBeInTheDocument();
   });
 
+  it('leaves the percentage off the small ring, which sits beside its label', () => {
+    render(<ProgressRing label="Axilla" value={1} max={4} size="sm" />);
+    expect(screen.getByRole('progressbar', { name: 'Axilla' })).toHaveAttribute(
+      'aria-valuenow',
+      '25',
+    );
+    expect(screen.queryByText('25%')).not.toBeInTheDocument();
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(<ProgressRing label="Mastery" value={70} size="lg" />);
     await expectNoA11yViolations(container);

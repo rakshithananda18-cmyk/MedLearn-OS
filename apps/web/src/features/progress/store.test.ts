@@ -164,6 +164,40 @@ describe('storage recovery', () => {
     expect(progress?.activity['2026-09-28']?.drills).not.toBe(day.drills);
   });
 
+  it('keeps planned class tests and spaced revisits, and drops malformed ones', () => {
+    const goal = {
+      id: 'goal-1',
+      kind: 'test',
+      title: 'Upper limb test',
+      topics: ['axilla'],
+      date: '2026-10-20',
+      done: [],
+      createdAt: '2026-10-01T08:00:00.000Z',
+    };
+    const revisits = { axilla: { step: 1, due: '2026-10-04' } };
+    const progress = parseLocalProgress({ goals: [goal], revisits });
+    expect(progress?.goals).toEqual([goal]);
+    expect(progress?.revisits).toEqual(revisits);
+    expect(parseLocalProgress({})?.goals).toEqual([]);
+    expect(parseLocalProgress({ goals: [{ ...goal, topics: [] }] })?.goals).toEqual([]);
+    expect(
+      parseLocalProgress({ revisits: { axilla: { step: 1, due: 'soon' } } })?.revisits,
+    ).toEqual({});
+  });
+
+  it('keeps the rest of the student’s work when one saved field is malformed', () => {
+    const progress = parseLocalProgress({
+      completedLessons: ['axilla'],
+      mistakes: 'not a list',
+      // Saved before the age question existed.
+      profile: { year: 1, examDate: null, dailyMinutes: 20 },
+    });
+    expect(progress?.completedLessons).toEqual(['axilla']);
+    expect(progress?.mistakes).toEqual([]);
+    expect(progress?.profile).toEqual({ year: 1, examDate: null, dailyMinutes: 20, adult: false });
+    expect(parseLocalProgress('not progress')).toBeNull();
+  });
+
   it('restores valid profile, review, note and activity fields from device storage', () => {
     rateCard('card-1', 'good', new Date('2026-09-28T08:00:00.000Z'));
     const review = readProgress().reviews['card-1'];
