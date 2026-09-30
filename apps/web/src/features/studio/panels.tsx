@@ -421,14 +421,15 @@ export function StructureSearch({
   );
 }
 
-/** A floating sheet holding the search, on phones and tablets held upright. */
+/** A floating sheet from the left on phones and tablets held upright: the search, or the systems. */
 export function SearchSheet({
   label,
+  compact = false,
   onClose,
   children,
-}: Readonly<{ label: string; onClose: () => void; children: ReactNode }>) {
+}: Readonly<{ label: string; compact?: boolean; onClose: () => void; children: ReactNode }>) {
   return (
-    <Sheet label={label} side="left" place="float" onClose={onClose}>
+    <Sheet label={label} side="left" place="float" compact={compact} onClose={onClose}>
       {children}
     </Sheet>
   );
@@ -744,7 +745,7 @@ export function BodyBrowser({
   const name = regions.find((item) => item.id === region)?.name ?? '';
   return (
     <section aria-label="Regions and topics" className="pointer-events-auto flex flex-col gap-3">
-      <fieldset className="flex gap-2 overflow-x-auto pb-1">
+      <fieldset className="flex min-w-0 gap-2 overflow-x-auto pb-1">
         <legend className="sr-only">Regions</legend>
         {regions.map((item) => (
           <button

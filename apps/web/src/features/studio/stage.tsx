@@ -18,7 +18,7 @@ import {
   Settings,
 } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
-import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
+import type { Stroke, Viewer3DLabel, Viewer3DLayer } from '@medlearn/visuals/viewer3d';
 import type { ReactNode } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
@@ -49,6 +49,8 @@ export interface ModelViewProps {
   resetToken: number;
   /** Pixels drawn per screen pixel, or a range the viewer picks within. */
   dpr: number | [number, number];
+  /** The body's systems switched on (whole body only). */
+  layers: Viewer3DLayer[];
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
   onPick: (id: string | null) => void;
@@ -78,6 +80,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         labels={props.labels}
         resetToken={props.resetToken}
         dpr={props.dpr}
+        layers={props.layers}
       />
     );
   }
@@ -209,20 +212,17 @@ export function ViewTools({
 
 /**
  * The top of the studio on phones and tablets held upright. On a topic: back, the topic (tap to
- * change it) and search. On the whole body: a search field and the view reset.
+ * change it) and search. On the whole body: a search field.
  */
 export function PhoneHeader({
   title,
   topicOpen,
-  tools,
   onBack,
   onTopics,
   onSearch,
 }: Readonly<{
   title: string;
   topicOpen: boolean;
-  /** Shown beside the search on the whole body. */
-  tools: ReactNode;
   onBack: () => void;
   onTopics: () => void;
   onSearch: () => void;
@@ -242,7 +242,6 @@ export function PhoneHeader({
           <Icon icon={Search} size="sm" />
           Find a structure or topic
         </button>
-        {tools}
       </header>
     );
   }

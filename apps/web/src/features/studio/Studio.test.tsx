@@ -1,7 +1,7 @@
 import type { PartKind } from '@medlearn/schemas';
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
-import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
+import type { Stroke, Viewer3DLabel, Viewer3DLayer } from '@medlearn/visuals/viewer3d';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -27,6 +27,7 @@ const viewer = vi.hoisted(() => ({
     reducedMotion: boolean;
     dpr: number | [number, number];
     stopId: string;
+    layers: Viewer3DLayer[];
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -300,6 +301,48 @@ describe('Studio on a wide screen', () => {
     // The whole body sits beside the search.
     await userEvent.click(screen.getByRole('button', { name: 'Whole body', pressed: false }));
     expect(screen.getByRole('heading', { level: 1, name: 'Whole body' })).toBeInTheDocument();
+  });
+
+  it('builds one body from its systems: switch them on and off, tap any structure', async () => {
+    wideScreen();
+    const search = vi.fn(async () =>
+      Response.json({
+        data: {
+          results: [
+            { kind: 'Topic', topicSlug: 'humerus', topicTitle: 'Humerus', excerpt: '', href: '' },
+            {
+              kind: 'Structure',
+              topicSlug: 'humerus',
+              topicTitle: 'Humerus',
+              excerpt: '',
+              href: '',
+            },
+          ],
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', search);
+    const { container } = await renderStudio();
+    const side = screen.getByRole('complementary', { name: "The body's systems" });
+    // It opens on the skin over the skeleton; the other systems load when switched on.
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
+    await userEvent.click(within(side).getByRole('switch', { name: 'Muscles' }));
+    await userEvent.click(within(side).getByRole('switch', { name: 'Skin' }));
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton', 'muscles']);
+    expect(viewer.props?.hiddenIds).toContain('skin');
+    await expectNoA11yViolations(container);
+
+    tap('skeleton/left-humerus');
+    const card = await within(side).findByRole('region', { name: 'Left humerus' });
+    expect(card).toHaveTextContent('Skeleton');
+    expect(viewer.props?.highlight).toContain('skeleton/left-humerus');
+    expect(search).toHaveBeenCalledWith('/api/search?q=humerus', expect.anything());
+    expect(await within(card).findByRole('link', { name: 'Humerus' })).toHaveAttribute(
+      'href',
+      '/learn/humerus',
+    );
+    await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
+    expect(within(side).queryByRole('region', { name: 'Left humerus' })).not.toBeInTheDocument();
   });
 
   it('folds either panel away and brings it back', async () => {

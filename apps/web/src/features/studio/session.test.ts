@@ -40,7 +40,10 @@ describe('studio session', () => {
     const body = startSession(null, 'upper-limb', 'ink', []);
     const bodyContext = { ...context, topic: null };
     expect(pickIn(body, 'thorax', bodyContext)).toMatchObject({ region: 'thorax' });
-    expect(pickIn(body, 'skin', bodyContext)).toBe(body);
+    // A structure of one of the body's systems is picked; the skin picks nothing.
+    const humerus = pickIn(body, 'skeleton/left-humerus', bodyContext);
+    expect(humerus).toMatchObject({ region: 'upper-limb', selected: 'skeleton/left-humerus' });
+    expect(pickIn(humerus, 'skin', bodyContext)).toMatchObject({ selected: null });
 
     const open = startSession(vessels, 'upper-limb', 'ink', []);
     expect(pickIn(open, 'subscapular-artery', context).selected).toBe('subscapular-artery');
