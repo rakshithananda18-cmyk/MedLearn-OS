@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crosshair,
+  FileImage,
   Layers,
   Pause,
   Play,
@@ -103,19 +104,21 @@ const pressed = (on: boolean) =>
   cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
 
 /**
- * Round buttons for the view: layers (on phones), x-ray, only the picked structure, back to the
- * guided view, and the settings. A column down the left on phones, a row beside the title where
- * docked.
+ * Round buttons for the view: layers (on phones), see-through, only the picked structure, the
+ * topic's X-ray films, back to the guided view, and the settings. A column down the left on
+ * phones, a row beside the title where docked.
  */
 export function ViewTools({
   row,
   layers,
   xray,
+  films,
   isolate,
   canIsolate,
   settings,
   onLayers,
   onXray,
+  onFilms,
   onIsolate,
   onReset,
   onSettings,
@@ -124,12 +127,15 @@ export function ViewTools({
   /** Whether the layers sheet is open, or null where the layers are docked. */
   layers: boolean | null;
   xray: boolean | null;
+  /** Whether the topic's X-ray films are showing, or null when it has none. */
+  films: boolean | null;
   isolate: boolean;
   canIsolate: boolean;
   /** Whether the settings sheet is open. */
   settings: boolean;
   onLayers: () => void;
   onXray: () => void;
+  onFilms: () => void;
   onIsolate: () => void;
   onReset: () => void;
   onSettings: () => void;
@@ -158,7 +164,8 @@ export function ViewTools({
         <>
           <IconButton
             icon={ScanEye}
-            label="X-ray"
+            label="See-through"
+            title="See-through"
             aria-pressed={xray}
             className={pressed(xray)}
             onClick={onXray}
@@ -172,6 +179,16 @@ export function ViewTools({
             onClick={onIsolate}
           />
         </>
+      )}
+      {films === null ? null : (
+        <IconButton
+          icon={FileImage}
+          label="X-ray images"
+          title="X-ray images"
+          aria-pressed={films}
+          className={pressed(films)}
+          onClick={onFilms}
+        />
       )}
       <IconButton
         icon={RotateCcw}

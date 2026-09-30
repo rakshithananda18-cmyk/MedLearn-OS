@@ -174,7 +174,7 @@ describe('Studio on a phone', () => {
     await userEvent.click(within(layers).getByRole('button', { name: 'Show Axillary vein' }));
     expect(viewer.props?.hiddenIds.has('axillary-vein')).toBe(false);
 
-    await userEvent.click(within(tools).getByRole('button', { name: 'X-ray' }));
+    await userEvent.click(within(tools).getByRole('button', { name: 'See-through' }));
     expect(viewer.props?.xray).toBe(true);
     await userEvent.click(within(tools).getByRole('button', { name: 'Reset the view' }));
     expect(viewer.props?.resetToken).toBe(1);
@@ -367,5 +367,31 @@ describe('Studio on a wide screen', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('shows the topic’s X-ray films in place of the model, marked and switchable', async () => {
+    wideScreen();
+    const { unmount } = await renderStudio('elbow-joint');
+    await userEvent.click(screen.getByRole('button', { name: 'X-ray images', pressed: false }));
+    const films = screen.getByRole('region', { name: 'X-ray: Elbow, AP' });
+    expect(within(films).getByRole('img', { name: 'Elbow, AP radiograph' })).toBeInTheDocument();
+    const key = within(films).getByRole('list', { name: 'Marked on the film' });
+    expect(within(key).getByRole('button', { name: /Medial epicondyle/ })).toBeInTheDocument();
+    expect(within(films).getByText(/Mikael Häggström, CC0/)).toBeInTheDocument();
+
+    await userEvent.click(within(films).getByRole('button', { name: 'Elbow, lateral' }));
+    expect(screen.getByRole('region', { name: 'X-ray: Elbow, lateral' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Invert the film' }));
+    expect(screen.getByRole('button', { name: 'Invert the film' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close the X-rays' }));
+    expect(screen.queryByRole('region', { name: /^X-ray:/ })).not.toBeInTheDocument();
+    // A topic with no films has no button for them.
+    unmount();
+    await renderStudio('brachial-plexus');
+    expect(screen.queryByRole('button', { name: 'X-ray images' })).not.toBeInTheDocument();
   });
 });
