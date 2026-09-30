@@ -49,13 +49,13 @@ export default async function TopicPage({ params }: Props) {
       primary: true,
     },
     {
-      href: '/practice',
+      href: `/practice?topic=${topic.slug}`,
       icon: ClipboardCheck,
       title: 'Practice',
       meta: `${topic.questions.length} questions`,
     },
     {
-      href: '/revise',
+      href: `/revise?topic=${topic.slug}`,
       icon: RotateCcw,
       title: 'Recall',
       meta: `${topic.cards.length} cards, spaced`,

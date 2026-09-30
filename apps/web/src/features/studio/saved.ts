@@ -95,3 +95,16 @@ export function saveSettings(settings: StudioSettings) {
     // Not saved; the settings still apply until the page closes.
   }
 }
+
+/** Removes only this learner's local Studio work when they sign out on a shared device. */
+export function clearStudioData(): boolean {
+  let cleared = true;
+  for (const key of [DRAWINGS_KEY, BEST_KEY]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      cleared = false;
+    }
+  }
+  return cleared;
+}

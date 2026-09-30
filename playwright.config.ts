@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 3100;
+// Separate local checkouts can run browser tests without reusing another server.
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? '3100');
 
 export default defineConfig({
   testDir: 'e2e',

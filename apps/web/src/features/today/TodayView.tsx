@@ -98,7 +98,7 @@ function CatchUpCard({ plan, accepted }: Readonly<{ plan: TodayPlan; accepted: b
         </h2>
         <Text size="sm" tone="muted">
           {plan.heldBackReviews > 0 && reviews?.kind === 'review'
-            ? `Today has ${reviews.count} of ${reviews.count + plan.heldBackReviews} reviews. The other ${plan.heldBackReviews} are spread over the next ${plural(plan.catchUpDays, 'day')}.`
+            ? `Start with ${reviews.count} of ${reviews.count + plan.heldBackReviews} reviews. The other ${plan.heldBackReviews} stay saved for a later session.`
             : 'Today’s plan is short so you can ease back in. What you learned comes first.'}
         </Text>
         <div role="status">
@@ -172,6 +172,7 @@ function doneToday(progress: LearnerProgress, topics: TopicSummary[], now: Date)
 function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
   return topics
     .map((topic) => ({
+      slug: topic.slug,
       title: topic.title,
       count: topic.questionIds.filter((id) => progress.mistakes.includes(id)).length,
     }))

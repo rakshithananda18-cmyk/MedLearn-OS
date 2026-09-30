@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Banner,
   Button,
   buttonClasses,
   Card,
@@ -18,6 +19,9 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { resetProgress, useProgress } from '@/features/progress/store';
+import { clearStudioData } from '@/features/studio/saved';
+import { flushProgressSync, pauseProgressSync } from '@/features/sync/sync';
+import { clientLogger } from '@/lib/client-logger';
 
 import { AccountForm, type Mode, Notice, ResetPassword, send } from './AccountForms';
 import { useAccount } from './useAccount';
@@ -38,17 +42,42 @@ function ThemeCard() {
 function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | null }>) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const signOut = async () => {
     setBusy(true);
-    await send('/api/account/sign-out');
-    // The progress belongs to the account; nothing of it stays on a shared phone, nor do the
-    // pages kept for offline use.
-    resetProgress();
-    if ('caches' in globalThis) {
-      await Promise.all((await caches.keys()).map((key) => caches.delete(key)));
+    setError(null);
+    try {
+      await flushProgressSync();
+      const resume = pauseProgressSync();
+      try {
+        const result = await send('/api/account/sign-out');
+        if (!result.ok) {
+          setError(result.message || 'Could not sign out. Please try again.');
+          return;
+        }
+        resetProgress();
+        if (!clearStudioData())
+          clientLogger.warn('Could not clear local Studio work after sign-out');
+        try {
+          if ('caches' in globalThis) {
+            await Promise.all((await caches.keys()).map((key) => caches.delete(key)));
+          }
+        } catch {
+          clientLogger.warn('Could not clear offline pages after sign-out');
+        }
+        router.push('/');
+        router.refresh();
+      } finally {
+        resume();
+      }
+    } catch {
+      setError(
+        'Your latest progress could not be saved. It is still on this phone. Check your connection and try again.',
+      );
+    } finally {
+      setBusy(false);
     }
-    router.push('/');
   };
 
   return (
@@ -67,8 +96,15 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
             Your progress is saved to this account. Sign in on any phone to carry on.
           </Text>
           <Notice>{notice}</Notice>
+          {error ? (
+            <Banner tone="danger" title="Not signed out">
+              {error}
+            </Banner>
+          ) : null}
           <Text size="sm" tone="muted">
-            Signing out removes your progress from this phone; it stays in your account.
+            Signing out saves your learning progress to your account and removes it from this phone.
+            Studio drawings and Find it scores are saved only on this phone and are deleted when you
+            sign out.
           </Text>
           <div>
             <Button variant="secondary" size="sm" loading={busy} onClick={signOut}>

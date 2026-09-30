@@ -4,7 +4,7 @@ import { Banner, Button, Card, Text, TextField } from '@medlearn/ui';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 
-import { adoptAccountProgress } from '@/features/sync/sync';
+import { adoptAccountProgress, pauseProgressSync } from '@/features/sync/sync';
 
 export type Mode = 'create' | 'sign-in' | 'reset';
 
@@ -42,7 +42,11 @@ function useRequest() {
     setError(result.message || 'Something went wrong. Please try again.');
     return null;
   };
-  return { busy, error, run };
+  const fail = () =>
+    setError(
+      'Could not load your saved progress. Your work is still on this phone. Check your connection and try again.',
+    );
+  return { busy, error, run, fail };
 }
 
 /** A short confirmation, announced by screen readers (an <output> is a live status region). */
@@ -86,11 +90,18 @@ interface ConfirmEmailProps {
 /** The second step of a new account: the 6-digit code emailed to the student. */
 function ConfirmEmail({ email, onConfirmed }: Readonly<ConfirmEmailProps>) {
   const [code, setCode] = useState('');
-  const { busy, error, run } = useRequest();
+  const { busy, error, run, fail } = useRequest();
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (await run('/api/account/confirm', { email, code })) await onConfirmed();
+    const resume = pauseProgressSync();
+    try {
+      if (await run('/api/account/confirm', { email, code })) await onConfirmed();
+    } catch {
+      fail();
+    } finally {
+      resume();
+    }
   };
 
   return (
@@ -125,7 +136,7 @@ export function AccountForm({ mode, onCreated, onForgot }: Readonly<AccountFormP
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirming, setConfirming] = useState(false);
-  const { busy, error, run } = useRequest();
+  const { busy, error, run, fail } = useRequest();
   const creating = mode === 'create';
 
   const finish = async () => {
@@ -138,11 +149,18 @@ export function AccountForm({ mode, onCreated, onForgot }: Readonly<AccountFormP
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const path = creating ? '/api/account/sign-up' : '/api/account/sign-in';
-    const result = await run(path, { email, password });
-    if (!result) return;
-    if ((result.data as { confirmEmail?: boolean }).confirmEmail === true) setConfirming(true);
-    else await finish();
+    const resume = pauseProgressSync();
+    try {
+      const path = creating ? '/api/account/sign-up' : '/api/account/sign-in';
+      const result = await run(path, { email, password });
+      if (!result) return;
+      if ((result.data as { confirmEmail?: boolean }).confirmEmail === true) setConfirming(true);
+      else await finish();
+    } catch {
+      fail();
+    } finally {
+      resume();
+    }
   };
 
   if (confirming) return <ConfirmEmail email={email} onConfirmed={finish} />;
@@ -195,7 +213,7 @@ export function ResetPassword({ initialEmail }: Readonly<{ initialEmail: string 
   const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
-  const { busy, error, run } = useRequest();
+  const { busy, error, run, fail } = useRequest();
 
   const sendCode = async (event: FormEvent) => {
     event.preventDefault();
@@ -204,8 +222,15 @@ export function ResetPassword({ initialEmail }: Readonly<{ initialEmail: string 
 
   const setNewPassword = async (event: FormEvent) => {
     event.preventDefault();
-    if (!(await run('/api/account/new-password', { email, code, password }))) return;
-    router.push((await adoptAccountProgress()) ? '/today' : '/welcome');
+    const resume = pauseProgressSync();
+    try {
+      if (!(await run('/api/account/new-password', { email, code, password }))) return;
+      router.push((await adoptAccountProgress()) ? '/today' : '/welcome');
+    } catch {
+      fail();
+    } finally {
+      resume();
+    }
   };
 
   if (!codeSent) {
