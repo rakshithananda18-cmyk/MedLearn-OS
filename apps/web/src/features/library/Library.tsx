@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { topicsUnder, topicTrails } from '@/content/library';
+import { ProgressView } from '@/features/progress/ProgressView';
 import { useProgress } from '@/features/progress/store';
+import { LiveSearch } from '@/features/search/LiveSearch';
 import { useHydrated, useWide } from '@/features/shell/media';
-import { SearchPill } from '@/features/shell/SearchPill';
 
 import { type LibrarySubject, nextTopic, SubjectTopics } from './SubjectTopics';
 import { type PreviewStatus, TopicPreview, type TopicPreviewData } from './TopicPreview';
@@ -70,6 +71,40 @@ function SubjectTabs({
   );
 }
 
+export type LibraryView = 'topics' | 'progress';
+
+/** Topics or Progress: the library's two views, as a pair of pills. */
+function ViewSwitch({
+  view,
+  onView,
+}: Readonly<{ view: LibraryView; onView: (view: LibraryView) => void }>) {
+  const views: Array<[LibraryView, string]> = [
+    ['topics', 'Topics'],
+    ['progress', 'Progress'],
+  ];
+  return (
+    <fieldset
+      aria-label="View"
+      className="flex shrink-0 gap-1 rounded-full border border-glass-border bg-glass p-1 shadow-glass"
+    >
+      {views.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={view === id}
+          onClick={() => onView(id)}
+          className={cx(
+            'h-8 rounded-full px-4 text-sm font-semibold transition-colors duration-150',
+            view === id ? 'bg-ink text-canvas' : 'text-ink hover:bg-surface',
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
+
 /**
  * The library: search, the ways in (the body, the books), the subjects as tabs and each one's
  * regions and book sections, across the whole page. Picking a topic previews it: beside the
@@ -81,6 +116,7 @@ export function Library({
   previews,
   books,
   initialTopic,
+  initialView = 'topics',
 }: Readonly<{
   subjects: LibrarySubject[];
   previews: Record<string, TopicPreviewData>;
@@ -88,6 +124,8 @@ export function Library({
   books: Record<string, string>;
   /** The topic picked when the page opened (from the address), if any. */
   initialTopic: string | null;
+  /** Topics, or how each is going (from the address). */
+  initialView?: LibraryView;
 }>) {
   const progress = useProgress();
   const wide = useWide();
@@ -97,6 +135,16 @@ export function Library({
   // The last topic shown stays in the drawer while it slides shut.
   const [shown, setShown] = useState<string | null>(initialTopic);
   const [tab, setTab] = useState<string | null>(null);
+  const [view, setView] = useState<LibraryView>(initialView);
+  const changeView = (next: LibraryView) => {
+    setView(next);
+    setChosen(null);
+    window.history.replaceState(
+      null,
+      '',
+      next === 'progress' ? '/subjects?view=progress' : '/subjects',
+    );
+  };
   const pick = (slug: string | null) => {
     setChosen(slug);
     if (slug) setShown(slug);
@@ -120,7 +168,7 @@ export function Library({
   let status: PreviewStatus = 'new';
   if (shown && learnt.has(shown)) status = 'learnt';
   else if (shown === next) status = 'next';
-  const view =
+  const previewCard =
     preview && shown ? (
       <TopicPreview
         preview={preview}
@@ -147,8 +195,11 @@ export function Library({
               Your <em>library</em>
             </Display>
           </div>
-          <div className="flex w-full max-w-md items-center gap-2">
-            <SearchPill className="min-w-0 flex-1" />
+          <div className="relative flex w-full max-w-md items-center gap-2">
+            <LiveSearch
+              topics={all.flatMap((topic) => previews[topic.slug]?.topic ?? [])}
+              className="min-w-0 flex-1"
+            />
             <WayIn href="/studio" icon={PersonStanding} label="Pick from the body" />
             <WayIn
               href="/books"
@@ -157,9 +208,20 @@ export function Library({
             />
           </div>
         </header>
-        {current ? (
+        {view === 'progress' ? (
           <>
-            <SubjectTabs subjects={subjects} current={current.slug} onPick={setTab} />
+            <div className="flex justify-end">
+              <ViewSwitch view={view} onView={changeView} />
+            </div>
+            <ProgressView topics={all.flatMap((topic) => previews[topic.slug]?.topic ?? [])} />
+          </>
+        ) : null}
+        {view === 'topics' && current ? (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <SubjectTabs subjects={subjects} current={current.slug} onPick={setTab} />
+              <ViewSwitch view={view} onView={changeView} />
+            </div>
             <SubjectTopics
               key={current.slug}
               subject={current}
@@ -175,7 +237,7 @@ export function Library({
           aria-label="Topic preview"
           className="sticky top-8 ml-8 w-preview shrink-0 animate-slide-in motion-reduce:animate-none"
         >
-          {view}
+          {previewCard}
         </aside>
       ) : null}
       {/* Phones and tablets: the same preview in a drawer from the bottom. */}
@@ -187,7 +249,7 @@ export function Library({
             if (!open) pick(null);
           }}
         >
-          {view}
+          {previewCard}
         </Drawer>
       )}
     </div>

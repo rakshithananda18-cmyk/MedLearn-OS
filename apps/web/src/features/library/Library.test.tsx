@@ -152,4 +152,19 @@ describe('Library', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(window.location.search).toBe('');
   });
+
+  it('shows how each topic is going in its Progress view, kept in the address', async () => {
+    screenWidth(true);
+    renderLibrary();
+    await userEvent.click(screen.getByRole('button', { name: 'Progress', pressed: false }));
+    expect(window.location.search).toBe('?view=progress');
+    expect(
+      screen.getByRole('progressbar', { name: 'Brachial plexus mastery' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/^0 of \d+ lessons$/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Topics', pressed: false }));
+    expect(window.location.search).toBe('');
+    expect(screen.getByRole('heading', { level: 2, name: /^Upper limb/ })).toBeInTheDocument();
+  });
 });

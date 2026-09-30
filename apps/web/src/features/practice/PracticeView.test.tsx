@@ -64,10 +64,13 @@ describe('PracticeView', () => {
     try {
       renderPractice();
       await userEvent.click(screen.getByRole('button', { name: /Timed test/ }));
-      expect(screen.getByRole('timer', { name: 'Time left' })).toHaveTextContent('20:00');
-      for (let second = 0; second < 20 * 60; second++) {
-        act(() => vi.advanceTimersByTime(1000));
-      }
+      const timer = screen.getByRole('timer', { name: 'Time left' });
+      expect(timer).toHaveTextContent('20:00');
+      act(() => vi.advanceTimersByTime(1000));
+      expect(timer).toHaveTextContent('19:59');
+      // Twenty minutes pass (say, with the tab in the background): the next tick ends it.
+      act(() => vi.setSystemTime(Date.now() + 20 * 60 * 1000));
+      act(() => vi.advanceTimersByTime(1000));
       expect(screen.getByRole('heading', { name: '0/20' })).toBeInTheDocument();
     } finally {
       vi.useRealTimers();

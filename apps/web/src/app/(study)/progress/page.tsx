@@ -1,15 +1,6 @@
-import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
-import { PLANNABLE_TOPICS } from '@/content/topics';
-import { ProgressView } from '@/features/progress/ProgressView';
-import { Screen } from '@/features/shell/Screen';
-
-export const metadata: Metadata = { title: 'Progress | MedLearn OS' };
-
+/** Progress lives in the library now; old links and bookmarks land on its Progress view. */
 export default function ProgressPage() {
-  return (
-    <Screen width="wide">
-      <ProgressView topics={PLANNABLE_TOPICS} />
-    </Screen>
-  );
+  redirect('/subjects?view=progress');
 }

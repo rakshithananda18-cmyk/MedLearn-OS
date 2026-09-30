@@ -117,8 +117,14 @@ export function PracticeSession({
   const [questions, setQuestions] = useState(first);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
-  const [left, setLeft] = useState(seconds);
+  // A timed test runs to a deadline on the clock, so time keeps passing even while the tab is in
+  // the background (where the browser slows timers down).
+  const [deadline, setDeadline] = useState(() =>
+    seconds === null ? null : Date.now() + seconds * 1000,
+  );
+  const [now, setNow] = useState(() => Date.now());
   const [finished, setFinished] = useState(false);
+  const left = deadline === null ? null : Math.max(0, Math.ceil((deadline - now) / 1000));
   const showing = questions[index];
   const answered = showing ? answers[showing.question.id] : undefined;
   let streak = 0;
@@ -136,12 +142,13 @@ export function PracticeSession({
     onFinish?.(results);
   };
 
-  // A timed test counts down a second at a time and ends itself when the time is up.
+  // The countdown redraws each second and ends the test when the deadline passes.
   useEffect(() => {
-    if (left === null || finished) return;
+    if (deadline === null || finished) return;
     const tick = setTimeout(() => {
-      setLeft(left - 1);
-      if (left <= 1) finish();
+      const time = Date.now();
+      setNow(time);
+      if (time >= deadline) finish();
     }, 1000);
     return () => clearTimeout(tick);
   });
@@ -155,7 +162,10 @@ export function PracticeSession({
           setQuestions(again);
           setIndex(0);
           setAnswers({});
-          setLeft(seconds === null ? null : again.length * SECONDS_PER_TIMED_QUESTION);
+          setNow(Date.now());
+          setDeadline(
+            seconds === null ? null : Date.now() + again.length * SECONDS_PER_TIMED_QUESTION * 1000,
+          );
           setFinished(false);
         }}
         onDone={onExit}

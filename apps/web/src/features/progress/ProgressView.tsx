@@ -1,17 +1,7 @@
 'use client';
 
 import { type TopicMastery, topicMastery } from '@medlearn/core';
-import {
-  buttonClasses,
-  Card,
-  Display,
-  Eyebrow,
-  Icon,
-  Medallion,
-  Pill,
-  ProgressRing,
-  Text,
-} from '@medlearn/ui';
+import { buttonClasses, Card, Icon, Medallion, Pill, ProgressRing, Text } from '@medlearn/ui';
 import { BookOpen, ChevronRight, RotateCcw, Target } from '@medlearn/ui/icons';
 import Link from 'next/link';
 
@@ -30,7 +20,10 @@ function describe(mastery: TopicMastery): string {
   ].join(' · ');
 }
 
-/** Mastery by topic, weak spots to fix and the review backlog. Calm numbers, no streaks. */
+/**
+ * The library's Progress view: mastery by topic, weak spots to fix, the review backlog and the
+ * account that keeps it all. Calm numbers, no streaks.
+ */
 export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
   const now = new Date();
@@ -41,19 +34,15 @@ export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const subjects = [...new Set(topics.map((topic) => topic.subjectSlug))];
 
   return (
-    <>
-      <div className="flex flex-col gap-3">
-        <Eyebrow>Progress</Eyebrow>
-        <Display>
-          How it is <em>going</em>
-        </Display>
-        <Text tone="muted">Mastery counts the lesson, practice and recall equally.</Text>
-        <div className="flex flex-wrap gap-2">
-          <Pill icon={BookOpen}>
-            {lessonsDone} of {mastery.length} lessons
-          </Pill>
-          <Pill icon={RotateCcw}>{plural(due, 'review')} due</Pill>
-        </div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Pill icon={BookOpen}>
+          {lessonsDone} of {mastery.length} lessons
+        </Pill>
+        <Pill icon={RotateCcw}>{plural(due, 'review')} due</Pill>
+        <Text size="sm" tone="muted">
+          Mastery counts the lesson, practice and recall equally.
+        </Text>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
@@ -125,6 +114,6 @@ export function ProgressView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
           </ul>
         </section>
       ))}
-    </>
+    </div>
   );
 }

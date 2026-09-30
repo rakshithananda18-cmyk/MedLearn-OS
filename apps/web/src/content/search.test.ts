@@ -29,4 +29,24 @@ describe('searchTopics', () => {
     expect(lesson?.excerpt.length).toBeLessThanOrEqual(162);
     expect(lesson?.excerpt.toLowerCase()).toContain('bohr');
   });
+
+  it('finds a topic while its name is still being typed, or with one letter wrong', () => {
+    expect(searchTopics('brach')[0]).toMatchObject({ kind: 'Topic', topicSlug: 'brachial-plexus' });
+    expect(searchTopics('brachal plexus')[0]).toMatchObject({
+      kind: 'Topic',
+      topicSlug: 'brachial-plexus',
+    });
+    // Short words must be right: a two-letter slip would match almost anything.
+    expect(searchTopics('arn')[0]?.kind).not.toBe('Topic');
+  });
+
+  it('finds structures from the diagrams and 3D models, leading into the studio', () => {
+    const structures = searchTopics('serratus anterior').filter(
+      (result) => result.kind === 'Structure',
+    );
+    expect(structures[0]).toMatchObject({
+      excerpt: 'Serratus anterior',
+      href: expect.stringMatching(/^\/studio\?topic=/),
+    });
+  });
 });
