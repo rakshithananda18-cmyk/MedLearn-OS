@@ -4,6 +4,7 @@ import type { BodyRegion, CameraStop, Model3D, PartKind } from '@medlearn/schema
 import { cx, Icon, IconButton, Skeleton } from '@medlearn/ui';
 import {
   ArrowLeft,
+  BookImage,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -113,12 +114,14 @@ export function ViewTools({
   layers,
   xray,
   films,
+  atlas,
   isolate,
   canIsolate,
   settings,
   onLayers,
   onXray,
   onFilms,
+  onAtlas,
   onIsolate,
   onReset,
   onSettings,
@@ -129,6 +132,8 @@ export function ViewTools({
   xray: boolean | null;
   /** Whether the topic's X-ray films are showing, or null when it has none. */
   films: boolean | null;
+  /** Whether the body atlas is showing. */
+  atlas: boolean;
   isolate: boolean;
   canIsolate: boolean;
   /** Whether the settings sheet is open. */
@@ -136,6 +141,7 @@ export function ViewTools({
   onLayers: () => void;
   onXray: () => void;
   onFilms: () => void;
+  onAtlas: () => void;
   onIsolate: () => void;
   onReset: () => void;
   onSettings: () => void;
@@ -190,6 +196,14 @@ export function ViewTools({
           onClick={onFilms}
         />
       )}
+      <IconButton
+        icon={BookImage}
+        label="Body atlas"
+        title="Body atlas"
+        aria-pressed={atlas}
+        className={pressed(atlas)}
+        onClick={onAtlas}
+      />
       <IconButton
         icon={RotateCcw}
         label="Reset the view"

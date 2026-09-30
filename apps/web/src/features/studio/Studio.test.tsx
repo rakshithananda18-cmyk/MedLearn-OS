@@ -394,4 +394,41 @@ describe('Studio on a wide screen', () => {
     await renderStudio('brachial-plexus');
     expect(screen.queryByRole('button', { name: 'X-ray images' })).not.toBeInTheDocument();
   });
+
+  it('opens the body atlas: systems, the female body, and a play-through of the systems', async () => {
+    wideScreen();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await renderStudio();
+      await userEvent.click(screen.getByRole('button', { name: 'Body atlas', pressed: false }));
+      const atlas = screen.getByRole('region', { name: 'Body atlas' });
+      expect(within(atlas).getByRole('img', { name: /^Skeleton, front/ })).toBeInTheDocument();
+      // Names on the model are hidden while the atlas covers it.
+      expect(viewer.props?.labels).toEqual([]);
+
+      await userEvent.click(within(atlas).getByRole('button', { name: 'Lymph' }));
+      expect(
+        within(atlas).getByText(/A male plate for this system is still to come/),
+      ).toBeInTheDocument();
+      await userEvent.click(within(atlas).getByRole('button', { name: 'female' }));
+      expect(within(atlas).queryByText(/still to come/)).not.toBeInTheDocument();
+      expect(within(atlas).getByRole('link', { name: 'Axillary lymph nodes' })).toHaveAttribute(
+        'href',
+        '/learn/axillary-lymph-nodes',
+      );
+
+      await userEvent.click(
+        within(atlas).getByRole('button', { name: 'Play through the systems' }),
+      );
+      act(() => vi.advanceTimersByTime(4000));
+      expect(
+        within(atlas).getByRole('button', { name: 'Digestion', pressed: true }),
+      ).toBeInTheDocument();
+
+      await userEvent.click(within(atlas).getByRole('button', { name: 'Close the atlas' }));
+      expect(screen.queryByRole('region', { name: 'Body atlas' })).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

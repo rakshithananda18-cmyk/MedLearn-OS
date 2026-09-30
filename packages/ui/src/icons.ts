@@ -5,6 +5,7 @@ export {
   Activity,
   ArrowLeft,
   ArrowRight,
+  BookImage,
   BookMarked,
   BookOpen,
   Box,
@@ -70,4 +71,6 @@ export {
   User,
   WifiOff,
   X,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';

@@ -11,6 +11,7 @@ import type { BodyRegionInfo } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { filmsFor } from '@/content/xrays';
 
+import { AtlasViewer } from './AtlasViewer';
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
@@ -108,6 +109,8 @@ function useStudio({
   const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
   // The X-ray film showing in place of the model, by its place in the topic's films.
   const [film, setFilm] = useState<number | null>(null);
+  // The body atlas, in place of the model; it and the films take turns.
+  const [atlas, setAtlas] = useState(false);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
   const context = { topic, regions, pool: structures.map((structure) => structure.id) };
@@ -123,7 +126,15 @@ function useStudio({
     touring,
     setTouring,
     film,
-    setFilm,
+    setFilm: (next: number | null) => {
+      setFilm(next);
+      if (next !== null) setAtlas(false);
+    },
+    atlas,
+    setAtlas: (open: boolean) => {
+      setAtlas(open);
+      if (open) setFilm(null);
+    },
     films: topic ? filmsFor(topic.slug) : [],
     settings,
     changeSettings: (next: StudioSettings) => {
@@ -231,7 +242,8 @@ function labelsFor(
   regions: BodyRegionInfo[],
 ): Viewer3DLabel[] {
   const { session, topic } = studio;
-  if (!studio.settings.labels) return [];
+  // No names while the atlas or films cover the model, or when the student has turned them off.
+  if (!studio.settings.labels || studio.atlas || studio.film !== null) return [];
   if (!topic) {
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
@@ -275,7 +287,15 @@ function StudioModel({
   const reducedMotion = settings.smooth === null ? systemReducedMotion : !settings.smooth;
   const lit = useMemo(() => litIn(session, topic), [session, topic]);
   return (
-    <figure className="absolute inset-0">
+    // Its own stacking layer, so the viewer's floating labels stay under the panels; hidden while
+    // the atlas or films cover it (a WebGL canvas can show through what is drawn over it, and a
+    // hidden one costs no battery).
+    <figure
+      className={cx(
+        'absolute inset-0 isolate',
+        (studio.atlas || studio.film !== null) && 'invisible',
+      )}
+    >
       <ModelView
         capable={capable}
         model={model}
@@ -314,12 +334,14 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       layers={topic && !row ? session.panel === 'layers' : null}
       xray={topic ? session.xray : null}
       films={studio.films.length > 0 ? studio.film !== null : null}
+      atlas={studio.atlas}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
       onFilms={() => studio.setFilm(studio.film === null ? 0 : null)}
+      onAtlas={() => studio.setAtlas(!studio.atlas)}
       onIsolate={() => update({ isolate: !session.isolate })}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
@@ -406,8 +428,16 @@ function Settings({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
-/** The topic's X-ray films, over the model, while they are open. */
-function Films({ studio }: Readonly<{ studio: StudioState }>) {
+/** The body atlas or the topic's X-ray films, over the model, while one is open. */
+function Films({ studio, topics }: Readonly<{ studio: StudioState; topics: StudioTopic[] }>) {
+  if (studio.atlas) {
+    return (
+      <AtlasViewer
+        titles={Object.fromEntries(topics.map((topic) => [topic.slug, topic.title]))}
+        onClose={() => studio.setAtlas(false)}
+      />
+    );
+  }
   if (studio.film === null) return null;
   return (
     <XrayViewer
@@ -553,9 +583,9 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           onClose={() => studio.update({ panel: null })}
         />
       ) : null}
-      {studio.film === null ? null : (
+      {studio.film === null && !studio.atlas ? null : (
         <div className="absolute inset-x-3 top-20 bottom-3 z-20 flex">
-          <Films studio={studio} />
+          <Films studio={studio} topics={topics} />
         </div>
       )}
       {topic && session.panel === 'layers' ? <Layers studio={studio} place="float" /> : null}
@@ -690,7 +720,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
             </div>
           ) : null}
         </div>
-        <Films studio={studio} />
+        <Films studio={studio} topics={topics} />
         <DockedFooter studio={studio} capable={capable} />
       </div>
       {topic && right ? (
