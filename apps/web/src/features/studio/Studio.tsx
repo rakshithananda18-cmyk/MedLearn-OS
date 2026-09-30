@@ -7,18 +7,18 @@ import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import type { BodyRegionInfo } from '@/content/body';
+import { BODY_SYSTEMS, type BodyRegionInfo, type BodySystemId } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { filmsFor } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
+import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
   BodyBrowser,
   GLASS,
   InfoCard,
   LayersPanel,
-  type Place,
   SearchSheet,
   SettingsPanel,
   StructureSearch,
@@ -60,7 +60,13 @@ import {
 import { pixelRatio, useCan3D, useDocked, useReducedMotion } from './viewer';
 import { XrayViewer } from './XrayViewer';
 
-const PART_KINDS: PartKind[] = ['bone', 'muscle', 'artery', 'vein'];
+// A topic's layers, from the surface in.
+const PART_LAYERS: Array<{ kind: PartKind; name: string }> = [
+  { kind: 'muscle', name: 'Muscles' },
+  { kind: 'artery', name: 'Arteries' },
+  { kind: 'vein', name: 'Veins' },
+  { kind: 'bone', name: 'Bones' },
+];
 const BODY_KEY = 'body';
 
 export interface StudioProps {
@@ -258,6 +264,20 @@ function labelsFor(
     .slice(0, 4);
 }
 
+/** The body's systems switched on, as layers of the viewer (the skin is in the body file). */
+function bodyLayers(systems: ReadonlySet<BodySystemId>) {
+  return BODY_SYSTEMS.flatMap((system) =>
+    system.src && systems.has(system.id)
+      ? [{ id: system.id, kind: system.kind, src: system.src }]
+      : [],
+  );
+}
+
+/** The body file's parts left out: its low-detail skeleton always, the skin when switched off. */
+function bodyHidden(systems: ReadonlySet<BodySystemId>): ReadonlySet<string> {
+  return new Set(systems.has('skin') ? ['skeleton'] : ['skeleton', 'skin']);
+}
+
 /** The model filling the studio, with a caption for screen readers. */
 function StudioModel({
   studio,
@@ -286,7 +306,7 @@ function StudioModel({
         lit={lit}
         stopId={model.stops[session.stopIndex]?.id ?? ''}
         hiddenKinds={session.hiddenKinds}
-        hidden={hiddenIn(session, lit, studio.context.pool)}
+        hidden={topic ? hiddenIn(session, lit, studio.context.pool) : bodyHidden(session.systems)}
         xray={session.xray}
         reducedMotion={reducedMotion}
         pen={session.mode === 'draw' ? session.pen : null}
@@ -294,6 +314,7 @@ function StudioModel({
         labels={labels}
         resetToken={session.reset}
         dpr={pixelRatio(settings.quality)}
+        layers={topic ? [] : bodyLayers(session.systems)}
         flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -304,18 +325,17 @@ function StudioModel({
   );
 }
 
-/** The view tools, for the open topic or (just the reset) for the whole body. */
+/** The view tools: a column on phones, a row beside the title where docked. */
 function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>) {
   const { session, topic, update } = studio;
   return (
     <ViewTools
       row={row}
-      // Docked panels already show the layers, and the whole body has none.
-      layers={topic && !row ? session.panel === 'layers' : null}
-      xray={topic ? session.xray : null}
+      layers={session.panel === 'layers'}
+      xray={session.xray}
       films={studio.films.length > 0 ? studio.film !== null : null}
       isolate={session.isolate}
-      canIsolate={session.selected !== null}
+      canIsolate={topic !== null && session.selected !== null}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
@@ -377,17 +397,34 @@ function Info({ studio, topics, docked }: Readonly<OverlayProps & { docked: bool
   );
 }
 
-function Layers({ studio, place }: Readonly<{ studio: StudioState; place: Place }>) {
-  const { session, update, model } = studio;
+/** The layers sheet: the body's systems, or the kinds of structure in the open topic. */
+function Layers({ studio }: Readonly<{ studio: StudioState }>) {
+  const { session, update, model, topic } = studio;
+  if (session.panel !== 'layers') return null;
+  const close = () => update({ panel: null });
+  if (!topic) {
+    return (
+      <LayersPanel
+        layers={BODY_SYSTEMS.map((system) => ({
+          id: system.id,
+          name: system.name,
+          kind: system.kind,
+          on: session.systems.has(system.id),
+        }))}
+        onToggle={(id) => update({ systems: toggled(session.systems, id) })}
+        onClose={close}
+      />
+    );
+  }
   return (
     <LayersPanel
-      place={place}
-      kinds={PART_KINDS.filter((kind) => model.parts.some((part) => part.kind === kind))}
-      hiddenKinds={session.hiddenKinds}
+      layers={PART_LAYERS.filter(({ kind }) => model.parts.some((part) => part.kind === kind)).map(
+        ({ kind, name }) => ({ id: kind, name, kind, on: !session.hiddenKinds.has(kind) }),
+      )}
       hidden={[...session.hiddenIds].map((id) => ({ id, name: studio.nameOf(id) }))}
-      onKind={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
+      onToggle={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
       onShow={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
-      onClose={() => update({ panel: null })}
+      onClose={close}
     />
   );
 }
@@ -462,6 +499,13 @@ function Quiz({ studio }: Readonly<{ studio: StudioState }>) {
 function PhoneFooter(props: Readonly<OverlayProps>) {
   const { studio, topics, regions, capable } = props;
   const { session, topic } = studio;
+  if (!topic && session.selected?.includes('/')) {
+    return (
+      <BottomSheet>
+        <BodyPartCard id={session.selected} onClose={() => studio.pick(null)} />
+      </BottomSheet>
+    );
+  }
   if (!topic) {
     return (
       <div className="flex flex-col gap-2 p-3">
@@ -527,18 +571,17 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           <PhoneHeader
             title={title}
             topicOpen={topic !== null}
-            tools={<Tools studio={studio} row />}
             onBack={studio.back}
             onTopics={() => studio.togglePanel('topics')}
             onSearch={() => studio.togglePanel('search')}
           />
         )}
       </div>
-      {topic && !quiz ? (
+      {quiz ? null : (
         <div className="absolute top-20 left-3">
           <Tools studio={studio} row={false} />
         </div>
-      ) : null}
+      )}
       <PhoneFooter {...props} />
 
       {topic && session.panel === 'topics' ? (
@@ -558,7 +601,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           <Films studio={studio} />
         </div>
       )}
-      {topic && session.panel === 'layers' ? <Layers studio={studio} place="float" /> : null}
+      <Layers studio={studio} />
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
           <Search studio={studio} topics={topics} autoFocus />
@@ -591,7 +634,7 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
         <Text size="xs" tone="muted" className="px-2">
           {studio.topic
             ? 'Drag to turn · scroll to zoom · click a structure'
-            : 'Drag to turn · click a marker to pick a region'}
+            : 'Drag to turn · click a structure or a region marker'}
         </Text>
       ) : null}
       <div className="px-2">
@@ -637,15 +680,16 @@ function HeaderTools({
       {topic ? <BestCard best={loadBest(topic.slug)} /> : null}
       <Guide studio={studio} />
       <Tools studio={studio} row />
-      {topic && folded ? <Fold side="right" open={false} onToggle={onUnfold} /> : null}
+      {folded ? <Fold side="right" open={false} onToggle={onUnfold} /> : null}
     </>
   );
 }
 
 /**
- * Tablets held sideways and laptops: the topics docked on the left, the picked structure and
- * the layers on the right, the model in between. Either side folds away to give the model room.
- * By the view tools sit the best "Find it" streak and the guided views.
+ * Tablets held sideways and laptops: the topics docked on the left, the model in the middle, and
+ * on the right what the student is looking at (a topic's modes and picked structure, or a
+ * structure picked on the body). Either side folds away to give the model room. By the view tools
+ * sit the best "Find it" streak and the guided views; layers and settings open from the tools.
  */
 function DockedOverlay(props: Readonly<OverlayProps>) {
   const { studio, topics, tree, regions, capable } = props;
@@ -653,6 +697,9 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
   const [left, setLeft] = useState(true);
   const [right, setRight] = useState(true);
   const quiz = session.mode === 'quiz' ? session.quiz : null;
+  // On the whole body the right panel opens only for a structure picked on it.
+  const picked = !topic && session.selected?.includes('/') ? session.selected : null;
+  const side = topic !== null || picked !== null;
   return (
     <div className="pointer-events-none absolute inset-0 flex gap-4 p-4">
       {left ? (
@@ -679,7 +726,11 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
             title={topic?.title ?? 'Whole body'}
             tools={
               quiz ? null : (
-                <HeaderTools studio={studio} folded={!right} onUnfold={() => setRight(true)} />
+                <HeaderTools
+                  studio={studio}
+                  folded={side && !right}
+                  onUnfold={() => setRight(true)}
+                />
               )
             }
           />
@@ -693,7 +744,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
         <Films studio={studio} />
         <DockedFooter studio={studio} capable={capable} />
       </div>
-      {topic && right ? (
+      {side && right ? (
         <aside
           aria-label="About the model"
           className={cx(
@@ -703,19 +754,25 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
         >
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
-              {capable ? <ModeSwitch mode={session.mode} onMode={studio.changeMode} /> : null}
+              {topic && capable ? (
+                <ModeSwitch mode={session.mode} onMode={studio.changeMode} />
+              ) : null}
             </div>
             <Fold side="right" open onToggle={() => setRight(false)} />
           </div>
-          {session.mode === 'explore' && !session.selected ? (
+          {topic && session.mode === 'explore' && !session.selected ? (
             <Text size="sm" tone="muted">
               Tap a structure on the model, or find it by name, to see what it is.
             </Text>
           ) : null}
-          <Info {...props} docked />
-          <Layers studio={studio} place="inline" />
+          {picked ? (
+            <BodyPartCard id={picked} onClose={() => studio.pick(null)} />
+          ) : (
+            <Info {...props} docked />
+          )}
         </aside>
       ) : null}
+      <Layers studio={studio} />
       <Settings studio={studio} />
     </div>
   );

@@ -199,6 +199,7 @@
   --color-anat-muscle: #a0463c;
   --color-anat-bone: #e8dcc4;
   --color-anat-skin: #d9b59a;
+  --color-anat-organ: #c97b84;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;
