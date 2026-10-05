@@ -532,6 +532,45 @@ describe('Studio on a wide screen', () => {
     }
   });
 
+  it('opens every X-ray on the whole body beside the bones it shows', async () => {
+    wideScreen();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.includes('body-index')
+          ? Response.json({
+              structures: [
+                ['skeleton/right-humerus', -190, -76, 1183, 164],
+                ['skeleton/right-scapula', -112, -49, 1267, 113],
+                ['skeleton/right-clavicle', -77, -101, 1332, 85],
+              ],
+            })
+          : Response.json({ data: { results: [] } }),
+      ),
+    );
+    await renderStudio();
+    await userEvent.click(screen.getByRole('button', { name: 'Layers' }));
+    await userEvent.click(screen.getByRole('switch', { name: 'Skeleton' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Close layers' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'X-ray images', pressed: false }));
+    expect(
+      screen.getByRole('region', { name: 'X-ray: Shoulder, true AP (Grashey)' }),
+    ).toBeVisible();
+    // The skeleton comes back on, with the shoulder's bones lit and the camera turned to them.
+    expect(viewer.props?.layers.map((layer) => layer.id)).toContain('skeleton');
+    expect([...(viewer.props?.highlight ?? [])]).toEqual(
+      expect.arrayContaining([
+        'skeleton/right-humerus',
+        'skeleton/right-scapula',
+        'skeleton/right-clavicle',
+      ]),
+    );
+    await vi.waitFor(() => expect(viewer.props?.focus?.point[2]).toBeCloseTo(1260.7, 0));
+    // Every film is at hand, the hand's included.
+    expect(screen.getByRole('button', { name: 'Hand, PA' })).toBeInTheDocument();
+  });
+
   it('shows the topic’s X-ray films in place of the model, marked and switchable', async () => {
     wideScreen();
     const { unmount } = await renderStudio('elbow-joint');

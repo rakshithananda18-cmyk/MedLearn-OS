@@ -9,10 +9,10 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
-import { filmsFor } from '@/content/xrays';
+import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
-import { bodyQuizPool, useBodyIndex } from './bodyIndex';
+import { bodyQuizPool, focusOn, useBodyIndex } from './bodyIndex';
 import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
@@ -116,7 +116,7 @@ function useStudio({
   );
   const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
-  // The X-ray film showing in place of the model, by its place in the topic's films.
+  // The X-ray film showing over or beside the model, by its place in the films at hand.
   const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
@@ -145,8 +145,15 @@ function useStudio({
     touring,
     setTouring,
     film,
-    setFilm,
-    films: topic ? filmsFor(topic.slug) : [],
+    setFilm: (next: number | null) => {
+      setFilm(next);
+      // On the whole body a film lights its bones, so the skeleton has to be showing.
+      if (next !== null && !topic && !session.systems.has('skeleton')) {
+        update({ systems: new Set([...session.systems, 'skeleton']), focus: null });
+      }
+    },
+    // A topic's films, or on the whole body every film, each beside the bones it shows.
+    films: topic ? filmsFor(topic.slug) : XRAYS,
     settings,
     changeSettings: (next: StudioSettings) => {
       setSettings(next);
@@ -257,8 +264,10 @@ function labelsFor(
   if (!studio.settings.labels) return [];
   if (!topic) {
     // Like their markers, the region names step aside while a structure of the body is picked,
-    // and while playing "Find it".
-    if (session.selected?.includes('/') || session.mode === 'quiz') return [];
+    // while playing "Find it", and beside a film.
+    if (session.selected?.includes('/') || session.mode === 'quiz' || studio.film !== null) {
+      return [];
+    }
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
       return count > 0
@@ -333,20 +342,28 @@ function StudioModel({
   const { session, topic, model, update, settings } = studio;
   const systemReducedMotion = useReducedMotion();
   const reducedMotion = settings.smooth === null ? systemReducedMotion : !settings.smooth;
-  const lit = useMemo(() => litIn(session, topic), [session, topic]);
   const index = useBodyIndex(topic === null);
+  // A film open on the whole body: its bones lit, and the camera turned to them.
+  const film = topic || studio.film === null ? undefined : studio.films[studio.film];
+  const filmBones = useMemo(() => (film ? FILM_BONES[film.region] : []), [film]);
+  const lit = useMemo(
+    () => new Set([...litIn(session, topic), ...filmBones]),
+    [session, topic, filmBones],
+  );
   const focus = useMemo(() => {
+    if (filmBones.length > 0) return focusOn(filmBones, index ?? []);
     const entry = index?.find((item) => item.id === session.focus);
     return entry ? { point: entry.centre, radius: entry.radius } : null;
-  }, [index, session.focus]);
+  }, [index, session.focus, filmBones]);
   return (
     <figure className="absolute inset-0">
       <ModelView
         capable={capable}
         model={model}
         topic={topic}
-        // While playing "Find it" on the body, its region markers would only be wrong answers.
-        regions={session.mode === 'quiz' ? [] : regions}
+        // While playing "Find it" on the body its region markers would only be wrong answers, and
+        // beside a film they would hide the bones it shows.
+        regions={session.mode === 'quiz' || film ? [] : regions}
         region={session.region}
         selected={session.selected}
         lit={lit}
@@ -542,7 +559,7 @@ function Settings({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
-/** The topic's X-ray films, over the model, while they are open. */
+/** The X-ray films while they are open: beside the model where there is room, over it on phones. */
 function Films({ studio }: Readonly<{ studio: StudioState }>) {
   if (studio.film === null) return null;
   return (
@@ -856,7 +873,13 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
             </div>
           ) : null}
         </div>
-        <Films studio={studio} />
+        {studio.film === null ? null : (
+          // The right half of the middle on wide screens: the camera centres the model, which
+          // stays in view beside the film.
+          <div className="flex min-h-0 flex-1 xl:w-1/2 xl:self-end">
+            <Films studio={studio} />
+          </div>
+        )}
         <DockedFooter studio={studio} capable={capable} />
       </div>
       {side && right ? (
