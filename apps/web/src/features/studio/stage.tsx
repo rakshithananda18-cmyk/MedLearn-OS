@@ -21,6 +21,7 @@ import {
 import { PathTracer } from '@medlearn/visuals';
 import type {
   Stroke,
+  Viewer3DFocus,
   Viewer3DLabel,
   Viewer3DLayer,
   Viewer3DSection,
@@ -59,6 +60,8 @@ export interface ModelViewProps {
   layers: Viewer3DLayer[];
   /** A cut through the model, or null. */
   section: Viewer3DSection | null;
+  /** A structure to turn the camera to, or null. */
+  focus: Viewer3DFocus | null;
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
   onPick: (id: string | null) => void;
@@ -81,7 +84,12 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         hiddenIds={props.hidden}
         xray={props.xray}
         reducedMotion={props.reducedMotion}
-        markers={topic ? [] : props.regions.map((item) => ({ id: item.id, position: item.marker }))}
+        // Region markers are for choosing a region; they step aside while a structure is picked.
+        markers={
+          topic || props.selected?.includes('/')
+            ? []
+            : props.regions.map((item) => ({ id: item.id, position: item.marker }))
+        }
         maxDistance={topic ? 1.5 : 5}
         pen={props.pen ? { colour: props.pen, onStroke: props.onStroke } : null}
         strokes={props.strokes}
@@ -90,6 +98,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         dpr={props.dpr}
         layers={props.layers}
         section={props.section}
+        focus={props.focus}
       />
     );
   }

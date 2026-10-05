@@ -8,3 +8,5 @@ packages/db/src/database.types.ts
 docs/
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
+# Built by scripts/models; kept compact for download
+apps/web/public/models/*.json

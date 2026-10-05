@@ -3,6 +3,7 @@ import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
 import type {
   Stroke,
+  Viewer3DFocus,
   Viewer3DLabel,
   Viewer3DLayer,
   Viewer3DSection,
@@ -34,6 +35,7 @@ const viewer = vi.hoisted(() => ({
     stopId: string;
     layers: Viewer3DLayer[];
     section: Viewer3DSection | null;
+    focus: Viewer3DFocus | null;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -359,6 +361,32 @@ describe('Studio on a wide screen', () => {
     );
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  });
+
+  it('finds any structure of the body by name, switches its system on and turns to it', async () => {
+    wideScreen();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.includes('body-index')
+          ? Response.json({ structures: [['skeleton/left-femur', 91, -81, 601, 243]] })
+          : Response.json({ data: { results: [] } }),
+      ),
+    );
+    await renderStudio();
+    await userEvent.click(screen.getByRole('button', { name: 'Layers' }));
+    await userEvent.click(screen.getByRole('switch', { name: 'Skeleton' }));
+    expect(viewer.props?.layers).toEqual([]);
+
+    const search = screen.getByRole('searchbox', { name: 'Find a structure or topic' });
+    await userEvent.type(search, 'femur');
+    await userEvent.click(await screen.findByRole('button', { name: /^Left femur.*Skeleton$/ }));
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
+    expect(viewer.props?.highlight).toContain('skeleton/left-femur');
+    expect(viewer.props?.focus).toEqual({ point: [91, -81, 601], radius: 243 });
+    expect(screen.getByRole('complementary', { name: 'About the model' })).toHaveTextContent(
+      'Left femur',
+    );
   });
 
   it('isolates a structure picked on the body, alone from its own system', async () => {

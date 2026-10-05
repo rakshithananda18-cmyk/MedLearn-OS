@@ -7,11 +7,12 @@ import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { BODY_SYSTEMS, type BodyRegionInfo } from '@/content/body';
+import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { filmsFor } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
+import { useBodyIndex } from './bodyIndex';
 import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
@@ -37,6 +38,7 @@ import {
 } from './saved';
 import {
   changeModeIn,
+  findOnBody,
   hiddenIn,
   litIn,
   type Mode,
@@ -158,6 +160,8 @@ function useStudio({
     },
     /** Picks a structure from a list, closing the sheet the list was in. */
     choose: (id: string) => setSession({ ...pickIn(session, id, context), panel: null }),
+    /** Picks a structure of the body found by name, and turns the camera to it. */
+    find: (id: string) => setSession(findOnBody(session, id)),
     togglePanel: (panel: Exclude<Panel, null>) =>
       update({ panel: session.panel === panel ? null : panel }),
     changeMode: (mode: Mode) =>
@@ -240,6 +244,8 @@ function labelsFor(
   const { session, topic } = studio;
   if (!studio.settings.labels) return [];
   if (!topic) {
+    // Like their markers, the region names step aside while a structure of the body is picked.
+    if (session.selected?.includes('/')) return [];
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
       return count > 0
@@ -315,6 +321,11 @@ function StudioModel({
   const systemReducedMotion = useReducedMotion();
   const reducedMotion = settings.smooth === null ? systemReducedMotion : !settings.smooth;
   const lit = useMemo(() => litIn(session, topic), [session, topic]);
+  const index = useBodyIndex(topic === null);
+  const focus = useMemo(() => {
+    const entry = index?.find((item) => item.id === session.focus);
+    return entry ? { point: entry.centre, radius: entry.radius } : null;
+  }, [index, session.focus]);
   return (
     <figure className="absolute inset-0">
       <ModelView
@@ -337,6 +348,7 @@ function StudioModel({
         dpr={pixelRatio(settings.quality)}
         layers={topic ? [] : bodyLayers(session)}
         section={session.section}
+        focus={topic ? null : focus}
         flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -383,21 +395,44 @@ function Guide({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
-/** Search the open topic's structures, or the topics with a model on the whole body. */
+/**
+ * Search the open topic's structures; on the whole body, the topics with a model and then every
+ * structure of the body, each with its system.
+ */
 function Search({
   studio,
   topics,
   autoFocus = false,
 }: Readonly<{ studio: StudioState; topics: StudioTopic[]; autoFocus?: boolean }>) {
-  const items = studio.topic
-    ? studio.structures
-    : topics.filter((topic) => topic.model).map((topic) => ({ id: topic.slug, name: topic.title }));
+  const index = useBodyIndex(studio.topic === null);
+  const bodyItems = useMemo(
+    () => [
+      ...topics
+        .filter((topic) => topic.model)
+        .map((topic) => ({ id: topic.slug, name: topic.title })),
+      ...(index ?? []).map((entry) => {
+        const { name, system } = bodyStructure(entry.id);
+        return { id: entry.id, name, detail: system?.name };
+      }),
+    ],
+    [topics, index],
+  );
+  if (studio.topic) {
+    return (
+      <StructureSearch
+        items={studio.structures}
+        label="Find a structure"
+        autoFocus={autoFocus}
+        onPick={studio.choose}
+      />
+    );
+  }
   return (
     <StructureSearch
-      items={items}
-      label={studio.topic ? 'Find a structure' : 'Find a topic'}
+      items={bodyItems}
+      label="Find a structure or topic"
       autoFocus={autoFocus}
-      onPick={studio.topic ? studio.choose : studio.openTopic}
+      onPick={(id) => (id.includes('/') ? studio.find(id) : studio.openTopic(id))}
     />
   );
 }

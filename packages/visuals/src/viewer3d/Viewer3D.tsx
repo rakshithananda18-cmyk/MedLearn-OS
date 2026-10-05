@@ -51,6 +51,12 @@ export interface Viewer3DLayer {
   only?: string;
 }
 
+/** A structure to turn the camera to: its middle and its radius, in the model frame. */
+export interface Viewer3DFocus {
+  point: Point3;
+  radius: number;
+}
+
 /** The three anatomical planes a section can cut along. */
 export type SectionPlane = 'transverse' | 'coronal' | 'sagittal';
 
@@ -99,6 +105,8 @@ export interface Viewer3DProps {
   layers?: Viewer3DLayer[];
   /** A cut through the model to see inside it. */
   section?: Viewer3DSection | null;
+  /** Turns the camera to this structure whenever it changes. */
+  focus?: Viewer3DFocus | null;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -507,7 +515,12 @@ function CameraRig({
   stopId,
   reducedMotion,
   resetToken,
-}: Readonly<Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'>>) {
+  focus,
+}: Readonly<
+  Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'> & {
+    focus: Viewer3DFocus | null;
+  }
+>) {
   const { camera, invalidate } = useThree();
   const controls = useThree((state) => state.controls) as unknown as {
     target: Vector3;
@@ -531,6 +544,23 @@ function CameraRig({
     invalidate();
     // resetToken is read only to rerun this: a new token returns the camera to the stop.
   }, [model.stops, stopId, reducedMotion, camera, controls, invalidate, resetToken]);
+
+  // A structure found by name: face it from the front, far enough back to see all of it.
+  useEffect(() => {
+    if (!focus || !controls) return;
+    const target = new Vector3(...toScene(focus.point));
+    const distance = Math.min(1.2, Math.max(0.35, (focus.radius / 1000) * 5));
+    const position = target.clone().add(new Vector3(0, distance * 0.15, distance));
+    if (reducedMotion) {
+      camera.position.copy(position);
+      controls.target.copy(target);
+      controls.update();
+      goal.current = null;
+    } else {
+      goal.current = { position, target };
+    }
+    invalidate();
+  }, [focus, reducedMotion, camera, controls, invalidate]);
 
   useFrame((_, delta) => {
     if (!goal.current || !controls) return;
@@ -582,6 +612,7 @@ export default function Viewer3D({
   dpr = [1, 2],
   layers = [],
   section = null,
+  focus = null,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
   const selecting =
@@ -717,6 +748,7 @@ export default function Viewer3D({
           stopId={stopId}
           reducedMotion={reducedMotion}
           resetToken={resetToken}
+          focus={focus}
         />
       </Canvas>
       <LabelLayer labels={labels} nodesRef={labelNodes} redrawRef={redraw} />

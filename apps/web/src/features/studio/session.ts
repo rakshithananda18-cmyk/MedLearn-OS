@@ -2,7 +2,7 @@ import type { BodyRegion, PartKind } from '@medlearn/schemas';
 import { pathThrough } from '@medlearn/visuals';
 import type { Stroke, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 
-import { type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
+import { BODY_SYSTEMS, type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
 
 import type { StudioTopic } from './knowledge';
 import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
@@ -25,6 +25,8 @@ export interface Session {
   stopIndex: number;
   /** Counts "reset the view" taps; each new count sends the camera back. */
   reset: number;
+  /** A structure of the body found by name, for the camera to turn to. */
+  focus: string | null;
   hiddenKinds: ReadonlySet<PartKind>;
   hiddenIds: ReadonlySet<string>;
   xray: boolean;
@@ -61,6 +63,7 @@ export function startSession(
     detail: null,
     stopIndex: 0,
     reset: 0,
+    focus: null,
     hiddenKinds: new Set(),
     hiddenIds: new Set(),
     xray: false,
@@ -91,6 +94,13 @@ export function openTopicIn(
     section: session.section,
     systems: session.systems,
   };
+}
+
+/** A structure found by name on the body: picked, its system switched on, the camera turned to it. */
+export function findOnBody(session: Session, id: string): Session {
+  const system = BODY_SYSTEMS.find((item) => id.startsWith(`${item.id}/`));
+  const systems = system ? new Set([...session.systems, system.id]) : session.systems;
+  return { ...session, selected: id, systems, focus: id, panel: null };
 }
 
 /** A tap on the model: picks a region on the body, answers "Find it", or selects a structure. */
