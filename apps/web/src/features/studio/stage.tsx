@@ -17,6 +17,7 @@ import {
   Search,
   Settings,
   Slice,
+  Target,
 } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
 import type {
@@ -422,6 +423,33 @@ export function GuideCard({
 }
 
 /** The best "Find it" streak on the open topic, as a card by the guided views. */
+/** Starts "Find it" on the whole body, in the region chosen, with the systems switched on. */
+export function FindItButton({
+  region,
+  best,
+  disabled,
+  onStart,
+}: Readonly<{ region: string; best: number; disabled: boolean; onStart: () => void }>) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      title={disabled ? 'Switch on a system with structures in this region' : undefined}
+      onClick={onStart}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-50',
+      )}
+    >
+      <Icon icon={Target} size="sm" />
+      <span className="flex flex-col text-left leading-tight">
+        <span>Find it: {region}</span>
+        <span className="text-xs font-normal text-fg-muted">Best streak {best}</span>
+      </span>
+    </button>
+  );
+}
+
 export function BestCard({ best }: Readonly<{ best: number }>) {
   return (
     <p

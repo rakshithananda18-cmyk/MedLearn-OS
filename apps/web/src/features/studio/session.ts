@@ -105,17 +105,17 @@ export function findOnBody(session: Session, id: string): Session {
 
 /** A tap on the model: picks a region on the body, answers "Find it", or selects a structure. */
 export function pickIn(session: Session, id: string | null, context: SessionContext): Session {
-  if (!context.topic) {
-    const region = context.regions.find((item) => item.id === id);
-    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
-    // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
-    return { ...session, selected: id?.includes('/') ? id : null };
-  }
   if (session.mode === 'quiz') {
     // Taps after the round is over do nothing until the student plays again.
     return session.quiz && id && !roundOver(session.quiz)
       ? { ...session, quiz: answerQuiz(session.quiz, id, context.pool) }
       : session;
+  }
+  if (!context.topic) {
+    const region = context.regions.find((item) => item.id === id);
+    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
+    // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
+    return { ...session, selected: id?.includes('/') ? id : null };
   }
   return { ...session, selected: id, detail: null };
 }
@@ -128,7 +128,9 @@ export function changeModeIn(
   best: number,
 ): Session {
   const leaving = session.mode === mode;
-  const playing = !leaving && mode === 'quiz' && context.topic !== null;
+  // Nothing to find (the body with no system switched on in this region): stay as it is.
+  if (!leaving && mode === 'quiz' && context.pool.length === 0) return session;
+  const playing = !leaving && mode === 'quiz';
   return {
     ...session,
     mode: leaving ? 'explore' : mode,
