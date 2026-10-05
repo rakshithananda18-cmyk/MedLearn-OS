@@ -6,6 +6,7 @@ import type {
   Viewer3DFocus,
   Viewer3DLabel,
   Viewer3DLayer,
+  Viewer3DPose,
   Viewer3DSection,
 } from '@medlearn/visuals/viewer3d';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
@@ -36,6 +37,7 @@ const viewer = vi.hoisted(() => ({
     layers: Viewer3DLayer[];
     section: Viewer3DSection | null;
     focus: Viewer3DFocus | null;
+    pose: Viewer3DPose | null;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -530,6 +532,48 @@ describe('Studio on a wide screen', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('moves a joint of the body: what turns, how far, and played there and back', async () => {
+    wideScreen();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.includes('body-index')
+          ? Response.json({
+              structures: [
+                ['skeleton/right-humerus', -190, -76, 1183, 164],
+                ['skeleton/right-radius', -250, -94, 920, 123],
+                ['skeleton/right-ulna', -222, -84, 929, 132],
+              ],
+            })
+          : Response.json({ data: { results: [] } }),
+      ),
+    );
+    const { container } = await renderStudio();
+    await userEvent.click(screen.getByRole('button', { name: 'Movement' }));
+    const sheet = screen.getByRole('region', { name: 'Movement' });
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Move a joint' }));
+    await vi.waitFor(() => expect(viewer.props?.pose).not.toBeNull());
+    expect([...(viewer.props?.pose?.ids ?? [])]).toEqual([
+      'skeleton/right-radius',
+      'skeleton/right-ulna',
+    ]);
+    expect(viewer.props?.pose?.angle).toBeCloseTo((73 * Math.PI) / 180);
+    // The skin cannot bend, so it steps aside.
+    expect(viewer.props?.hiddenIds).toContain('skin');
+    await expectNoA11yViolations(container);
+
+    fireEvent.change(within(sheet).getByRole('slider', { name: /Angle/ }), {
+      target: { value: '120' },
+    });
+    expect(viewer.props?.pose?.angle).toBeCloseTo((120 * Math.PI) / 180);
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Play the movement' }));
+    expect(viewer.props?.pose?.playing).toBe(true);
+    await userEvent.click(within(sheet).getByRole('button', { name: /Knee flexion/ }));
+    expect(viewer.props?.pose?.ids.size).toBe(0);
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Move a joint' }));
+    expect(viewer.props?.pose).toBeNull();
   });
 
   it('opens every X-ray on the whole body beside the bones it shows', async () => {

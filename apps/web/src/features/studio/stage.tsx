@@ -4,6 +4,7 @@ import type { BodyRegion, CameraStop, Model3D, PartKind } from '@medlearn/schema
 import { cx, Icon, IconButton, Skeleton } from '@medlearn/ui';
 import {
   ArrowLeft,
+  BicepsFlexed,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -25,6 +26,7 @@ import type {
   Viewer3DFocus,
   Viewer3DLabel,
   Viewer3DLayer,
+  Viewer3DPose,
   Viewer3DSection,
 } from '@medlearn/visuals/viewer3d';
 import type { ReactNode } from 'react';
@@ -63,6 +65,8 @@ export interface ModelViewProps {
   section: Viewer3DSection | null;
   /** A structure to turn the camera to, or null. */
   focus: Viewer3DFocus | null;
+  /** A joint movement shown on the body, or null. */
+  pose: Viewer3DPose | null;
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
   onPick: (id: string | null) => void;
@@ -100,6 +104,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         layers={props.layers}
         section={props.section}
         focus={props.focus}
+        pose={props.pose}
       />
     );
   }
@@ -138,12 +143,14 @@ export function ViewTools({
   isolate,
   canIsolate,
   section,
+  movement,
   settings,
   onLayers,
   onXray,
   onFilms,
   onIsolate,
   onSection,
+  onMovement,
   onReset,
   onSettings,
 }: Readonly<{
@@ -157,6 +164,8 @@ export function ViewTools({
   canIsolate: boolean;
   /** Whether the model is cut, or the section sheet open. */
   section: boolean;
+  /** Whether a joint is moving or the movement sheet open, or null where there are none. */
+  movement: boolean | null;
   /** Whether the settings sheet is open. */
   settings: boolean;
   onLayers: () => void;
@@ -164,6 +173,7 @@ export function ViewTools({
   onFilms: () => void;
   onIsolate: () => void;
   onSection: () => void;
+  onMovement: () => void;
   onReset: () => void;
   onSettings: () => void;
 }>) {
@@ -205,6 +215,16 @@ export function ViewTools({
             onClick={onSection}
           />
         </>
+      )}
+      {movement === null ? null : (
+        <IconButton
+          icon={BicepsFlexed}
+          label="Movement"
+          title="Movement"
+          aria-pressed={movement}
+          className={pressed(movement)}
+          onClick={onMovement}
+        />
       )}
       {films === null ? null : (
         <IconButton

@@ -3,7 +3,7 @@
 import { topicMastery } from '@medlearn/core';
 import type { BodyRegion } from '@medlearn/schemas';
 import { cx, Icon, IconButton, Switch, Text } from '@medlearn/ui';
-import { Eye, PersonStanding, Search, X } from '@medlearn/ui/icons';
+import { Eye, Pause, PersonStanding, Play, Search, X } from '@medlearn/ui/icons';
 import type { LayerKind, SectionPlane, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { type ReactNode, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 import { type LibraryNode, topicsUnder } from '@/content/library';
+import type { MovementId } from '@/content/movements';
 import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
 
@@ -443,6 +444,102 @@ const PLANES: Record<SectionPlane, { name: string; hint: string; along: string }
   sagittal: { name: 'Sagittal', hint: 'One side from the other', along: 'Side to side' },
 };
 const PLANE_ORDER: SectionPlane[] = ['transverse', 'coronal', 'sagittal'];
+
+/** A joint movement as the studio holds it: which, at what angle in degrees, and whether playing. */
+export interface MovementState {
+  id: MovementId;
+  angle: number;
+  playing: boolean;
+}
+
+/**
+ * A joint movement on the body, from the view tools: which joint, how far it turns, or played
+ * there and back.
+ */
+export function MovementPanel({
+  movements,
+  movement,
+  onChange,
+  onClose,
+}: Readonly<{
+  movements: Array<{ id: MovementId; name: string; joint: string; range: number }>;
+  movement: MovementState | null;
+  onChange: (movement: MovementState | null) => void;
+  onClose: () => void;
+}>) {
+  const shown = movements.find((item) => item.id === movement?.id) ?? movements[0];
+  if (!shown) return null;
+  const halfway = (range: number) => Math.round(range / 2);
+  return (
+    <Sheet label="Movement" side="right" place="float" compact onClose={onClose}>
+      <Switch
+        label="Move a joint"
+        checked={movement !== null}
+        onCheckedChange={(on) =>
+          onChange(on ? { id: shown.id, angle: halfway(shown.range), playing: false } : null)
+        }
+      />
+      {movement ? (
+        <>
+          <fieldset className="grid grid-cols-2 gap-1 rounded-md bg-surface-muted p-1">
+            <legend className="sr-only">Joint</legend>
+            {movements.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={item.id === movement.id}
+                onClick={() => onChange({ ...movement, id: item.id, angle: halfway(item.range) })}
+                className={cx(
+                  'flex min-h-12 flex-col justify-center rounded-sm px-2 text-left text-sm font-semibold leading-tight transition-colors duration-150',
+                  item.id === movement.id
+                    ? 'bg-surface text-ink shadow-raised'
+                    : 'text-fg-muted hover:text-fg',
+                )}
+              >
+                {item.name}
+                <span className="text-xs font-normal text-fg-muted">{item.joint}</span>
+              </button>
+            ))}
+          </fieldset>
+          <label className="flex flex-col gap-1">
+            <span className="flex justify-between text-sm">
+              <span className="font-semibold text-ink">Angle</span>
+              <span className="text-fg-muted">
+                {movement.playing ? 'Playing' : `${movement.angle}°`} of {shown.range}°
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={shown.range}
+              value={movement.angle}
+              disabled={movement.playing}
+              onChange={(event) => onChange({ ...movement, angle: Number(event.target.value) })}
+              className="h-12 w-full cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </label>
+          <button
+            type="button"
+            aria-pressed={movement.playing}
+            onClick={() => onChange({ ...movement, playing: !movement.playing })}
+            className="flex h-12 items-center justify-center gap-2 rounded-md border border-border-strong text-sm font-semibold text-ink hover:bg-surface-muted"
+          >
+            <Icon icon={movement.playing ? Pause : Play} size="sm" />
+            {movement.playing ? 'Pause' : 'Play the movement'}
+          </button>
+          <Text size="xs" tone="muted">
+            The bones turn as rigid parts: muscles that cross the joint stay where they are.
+          </Text>
+        </>
+      ) : (
+        <Text size="sm" tone="muted">
+          See a joint move: bend the elbow, turn the forearm over, lift the arm out to the side or
+          bend the knee.
+        </Text>
+      )}
+    </Sheet>
+  );
+}
 
 /**
  * A section through the model, from the view tools: on or off, along which anatomical plane, and

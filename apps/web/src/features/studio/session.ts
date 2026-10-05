@@ -3,6 +3,7 @@ import { pathThrough } from '@medlearn/visuals';
 import type { Stroke, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 
 import { BODY_SYSTEMS, type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
+import type { MovementId } from '@/content/movements';
 
 import type { StudioTopic } from './knowledge';
 import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
@@ -11,7 +12,7 @@ import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 // component keeps only the side effects (saving, the address bar) and the layout.
 
 export type Mode = 'explore' | 'draw' | 'quiz';
-export type Panel = 'topics' | 'layers' | 'section' | 'search' | 'settings' | null;
+export type Panel = 'topics' | 'layers' | 'section' | 'movement' | 'search' | 'settings' | null;
 /** The extra a picked structure's card shows under its summary. */
 export type Detail = 'clinical' | 'lesson' | null;
 
@@ -32,6 +33,8 @@ export interface Session {
   xray: boolean;
   /** A cut through the model, kept while moving between topics. */
   section: Viewer3DSection | null;
+  /** A joint movement on the whole body: which, at what angle (degrees), and whether playing. */
+  movement: { id: MovementId; angle: number; playing: boolean } | null;
   isolate: boolean;
   pen: string;
   strokes: Stroke[];
@@ -68,6 +71,7 @@ export function startSession(
     hiddenIds: new Set(),
     xray: false,
     section: null,
+    movement: null,
     isolate: false,
     pen,
     strokes,

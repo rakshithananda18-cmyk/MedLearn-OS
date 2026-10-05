@@ -9,6 +9,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
+import { MOVEMENTS } from '@/content/movements';
 import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
@@ -20,6 +21,7 @@ import {
   GLASS,
   InfoCard,
   LayersPanel,
+  MovementPanel,
   SearchSheet,
   SectionPanel,
   SettingsPanel,
@@ -265,7 +267,8 @@ function labelsFor(
   if (!topic) {
     // Like their markers, the region names step aside while a structure of the body is picked,
     // while playing "Find it", and beside a film.
-    if (session.selected?.includes('/') || session.mode === 'quiz' || studio.film !== null) {
+    const busy = session.mode === 'quiz' || studio.film !== null || session.movement !== null;
+    if (session.selected?.includes('/') || busy) {
       return [];
     }
     return regions.flatMap((region) => {
@@ -323,7 +326,8 @@ function bodyLayers(session: Session) {
  * while a structure is isolated.
  */
 function bodyHidden(session: Session): ReadonlySet<string> {
-  const skin = session.systems.has('skin') && !isolatedOnBody(session);
+  // The skin cannot bend, so it steps aside while a joint moves too.
+  const skin = session.systems.has('skin') && !isolatedOnBody(session) && !session.movement;
   return new Set(skin ? ['skeleton'] : ['skeleton', 'skin']);
 }
 
@@ -350,11 +354,28 @@ function StudioModel({
     () => new Set([...litIn(session, topic), ...filmBones]),
     [session, topic, filmBones],
   );
+  // A joint moving on the whole body: what turns, about its axis, by its angle.
+  const moving = topic ? null : session.movement;
+  const movement = MOVEMENTS.find((item) => item.id === moving?.id);
+  const pose = useMemo(() => {
+    if (!moving || !movement || !index) return null;
+    const ids = index.filter((entry) => movement.moves(entry.id, entry.centre));
+    return {
+      ids: new Set(ids.map((entry) => entry.id)),
+      pivot: movement.pivot,
+      axis: movement.axis,
+      angle: (moving.angle * Math.PI) / 180,
+      range: (movement.range * Math.PI) / 180,
+      playing: moving.playing,
+    };
+  }, [moving, movement, index]);
   const focus = useMemo(() => {
     if (filmBones.length > 0) return focusOn(filmBones, index ?? []);
+    // Choosing a joint turns the camera to it (moving it does not).
+    if (movement) return { point: movement.pivot, radius: 120 };
     const entry = index?.find((item) => item.id === session.focus);
     return entry ? { point: entry.centre, radius: entry.radius } : null;
-  }, [index, session.focus, filmBones]);
+  }, [index, session.focus, filmBones, movement]);
   return (
     <figure className="absolute inset-0">
       <ModelView
@@ -363,7 +384,7 @@ function StudioModel({
         topic={topic}
         // While playing "Find it" on the body its region markers would only be wrong answers, and
         // beside a film they would hide the bones it shows.
-        regions={session.mode === 'quiz' || film ? [] : regions}
+        regions={session.mode === 'quiz' || film || moving ? [] : regions}
         region={session.region}
         selected={session.selected}
         lit={lit}
@@ -380,6 +401,7 @@ function StudioModel({
         layers={topic ? [] : bodyLayers(session)}
         section={session.section}
         focus={topic ? null : focus}
+        pose={pose}
         flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -408,6 +430,9 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       onFilms={() => studio.setFilm(studio.film === null ? 0 : null)}
       onIsolate={() => update({ isolate: !session.isolate })}
       onSection={() => studio.togglePanel('section')}
+      // Movements are measured on the whole body's skeleton.
+      movement={studio.topic ? null : session.movement !== null || session.panel === 'movement'}
+      onMovement={() => studio.togglePanel('movement')}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
     />
@@ -540,6 +565,20 @@ function Section({ studio }: Readonly<{ studio: StudioState }>) {
     <SectionPanel
       section={session.section}
       onChange={(section) => update({ section })}
+      onClose={() => update({ panel: null })}
+    />
+  );
+}
+
+/** The movement sheet, while open. */
+function Moves({ studio }: Readonly<{ studio: StudioState }>) {
+  const { session, update } = studio;
+  if (session.panel !== 'movement') return null;
+  return (
+    <MovementPanel
+      movements={MOVEMENTS}
+      movement={session.movement}
+      onChange={(movement) => update({ movement })}
       onClose={() => update({ panel: null })}
     />
   );
@@ -724,6 +763,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
       )}
       <Layers studio={studio} />
       <Section studio={studio} />
+      <Moves studio={studio} />
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
           <Search studio={studio} topics={topics} autoFocus />
@@ -912,6 +952,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
       ) : null}
       <Layers studio={studio} />
       <Section studio={studio} />
+      <Moves studio={studio} />
       <Settings studio={studio} />
     </div>
   );

@@ -5,6 +5,7 @@ export {
   Activity,
   ArrowLeft,
   ArrowRight,
+  BicepsFlexed,
   BookMarked,
   BookOpen,
   Box,
