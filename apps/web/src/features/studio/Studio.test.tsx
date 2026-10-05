@@ -1,8 +1,13 @@
 import type { PartKind } from '@medlearn/schemas';
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
-import type { Stroke, Viewer3DLabel, Viewer3DLayer } from '@medlearn/visuals/viewer3d';
-import { act, render, screen, within } from '@testing-library/react';
+import type {
+  Stroke,
+  Viewer3DLabel,
+  Viewer3DLayer,
+  Viewer3DSection,
+} from '@medlearn/visuals/viewer3d';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -28,6 +33,7 @@ const viewer = vi.hoisted(() => ({
     dpr: number | [number, number];
     stopId: string;
     layers: Viewer3DLayer[];
+    section: Viewer3DSection | null;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -353,6 +359,52 @@ describe('Studio on a wide screen', () => {
     );
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  });
+
+  it('isolates a structure picked on the body, alone from its own system', async () => {
+    wideScreen();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ data: { results: [] } })),
+    );
+    await renderStudio();
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    const only = within(tools).getByRole('button', { name: 'Only the picked structure' });
+    expect(only).toBeDisabled();
+    tap('skeleton/left-humerus');
+    await userEvent.click(only);
+    expect(viewer.props?.layers).toEqual([
+      expect.objectContaining({ id: 'skeleton', only: 'left-humerus' }),
+    ]);
+    expect(viewer.props?.hiddenIds).toContain('skin');
+    // Picking nothing shows the whole body again.
+    tap(null);
+    expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
+    expect(viewer.props?.layers[0]?.only).toBeUndefined();
+  });
+
+  it('cuts through the model along a plane, and keeps the cut when the sheet closes', async () => {
+    wideScreen();
+    const { container } = await renderStudio('axilla');
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    await userEvent.click(within(tools).getByRole('button', { name: 'Section' }));
+    const sheet = screen.getByRole('region', { name: 'Section' });
+    expect(viewer.props?.section).toBeNull();
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Cut through the model' }));
+    expect(viewer.props?.section).toEqual({ plane: 'transverse', at: 0.5 });
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Coronal', pressed: false }));
+    fireEvent.change(within(sheet).getByRole('slider', { name: /Where to cut/ }), {
+      target: { value: '30' },
+    });
+    expect(viewer.props?.section).toEqual({ plane: 'coronal', at: 0.3 });
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Close section' }));
+    expect(viewer.props?.section).toEqual({ plane: 'coronal', at: 0.3 });
+    expect(within(tools).getByRole('button', { name: 'Section' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('folds either panel away and brings it back', async () => {

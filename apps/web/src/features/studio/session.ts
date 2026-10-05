@@ -1,6 +1,6 @@
 import type { BodyRegion, PartKind } from '@medlearn/schemas';
 import { pathThrough } from '@medlearn/visuals';
-import type { Stroke } from '@medlearn/visuals/viewer3d';
+import type { Stroke, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 
 import { type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
 
@@ -11,7 +11,7 @@ import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
 // component keeps only the side effects (saving, the address bar) and the layout.
 
 export type Mode = 'explore' | 'draw' | 'quiz';
-export type Panel = 'topics' | 'layers' | 'search' | 'settings' | null;
+export type Panel = 'topics' | 'layers' | 'section' | 'search' | 'settings' | null;
 /** The extra a picked structure's card shows under its summary. */
 export type Detail = 'clinical' | 'lesson' | null;
 
@@ -28,6 +28,8 @@ export interface Session {
   hiddenKinds: ReadonlySet<PartKind>;
   hiddenIds: ReadonlySet<string>;
   xray: boolean;
+  /** A cut through the model, kept while moving between topics. */
+  section: Viewer3DSection | null;
   isolate: boolean;
   pen: string;
   strokes: Stroke[];
@@ -62,6 +64,7 @@ export function startSession(
     hiddenKinds: new Set(),
     hiddenIds: new Set(),
     xray: false,
+    section: null,
     isolate: false,
     pen,
     strokes,
@@ -85,6 +88,7 @@ export function openTopicIn(
     region,
     hiddenKinds: session.hiddenKinds,
     xray: session.xray,
+    section: session.section,
     systems: session.systems,
   };
 }

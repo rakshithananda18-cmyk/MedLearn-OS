@@ -16,9 +16,15 @@ import {
   ScanEye,
   Search,
   Settings,
+  Slice,
 } from '@medlearn/ui/icons';
 import { PathTracer } from '@medlearn/visuals';
-import type { Stroke, Viewer3DLabel, Viewer3DLayer } from '@medlearn/visuals/viewer3d';
+import type {
+  Stroke,
+  Viewer3DLabel,
+  Viewer3DLayer,
+  Viewer3DSection,
+} from '@medlearn/visuals/viewer3d';
 import type { ReactNode } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
@@ -51,6 +57,8 @@ export interface ModelViewProps {
   dpr: number | [number, number];
   /** The body's systems switched on (whole body only). */
   layers: Viewer3DLayer[];
+  /** A cut through the model, or null. */
+  section: Viewer3DSection | null;
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
   onPick: (id: string | null) => void;
@@ -81,6 +89,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         resetToken={props.resetToken}
         dpr={props.dpr}
         layers={props.layers}
+        section={props.section}
       />
     );
   }
@@ -107,8 +116,8 @@ const pressed = (on: boolean) =>
   cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
 
 /**
- * Round buttons for the view: see-through, only the picked structure, the topic's X-ray films,
- * back to the guided view, then the layers beside the settings. A column down the left on phones,
+ * Round buttons for the view: see-through, only the picked structure, a section through the
+ * model, the topic's X-ray films, back to the guided view, then the layers beside the settings. A column down the left on phones,
  * a row beside the title where docked.
  */
 export function ViewTools({
@@ -118,11 +127,13 @@ export function ViewTools({
   films,
   isolate,
   canIsolate,
+  section,
   settings,
   onLayers,
   onXray,
   onFilms,
   onIsolate,
+  onSection,
   onReset,
   onSettings,
 }: Readonly<{
@@ -134,12 +145,15 @@ export function ViewTools({
   films: boolean | null;
   isolate: boolean;
   canIsolate: boolean;
+  /** Whether the model is cut, or the section sheet open. */
+  section: boolean;
   /** Whether the settings sheet is open. */
   settings: boolean;
   onLayers: () => void;
   onXray: () => void;
   onFilms: () => void;
   onIsolate: () => void;
+  onSection: () => void;
   onReset: () => void;
   onSettings: () => void;
 }>) {
@@ -171,6 +185,14 @@ export function ViewTools({
             disabled={!canIsolate}
             className={pressed(isolate)}
             onClick={onIsolate}
+          />
+          <IconButton
+            icon={Slice}
+            label="Section"
+            title="Section"
+            aria-pressed={section}
+            className={pressed(section)}
+            onClick={onSection}
           />
         </>
       )}

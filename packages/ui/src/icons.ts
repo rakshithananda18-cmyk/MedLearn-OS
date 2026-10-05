@@ -58,6 +58,7 @@ export {
   Search,
   Settings,
   Shuffle,
+  Slice,
   SlidersHorizontal,
   Stethoscope,
   Sun,
