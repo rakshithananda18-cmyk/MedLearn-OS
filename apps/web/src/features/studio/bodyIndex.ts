@@ -1,5 +1,7 @@
-import type { Point3 } from '@medlearn/schemas';
+import type { BodyRegion, Point3 } from '@medlearn/schemas';
 import { useEffect, useState } from 'react';
+
+import { bodyStructure } from '@/content/body';
 
 /** Where a structure of the body sits: its middle and its radius, in BodyParts3D millimetres. */
 export interface BodyIndexEntry {
@@ -45,4 +47,58 @@ export function useBodyIndex(active: boolean): BodyIndexEntry[] | null {
     };
   }, [active]);
   return entries;
+}
+
+// "Find it" asks for structures big enough to tap and named plainly ("Left femur", not "Insular
+// part of right middle cerebral artery").
+const QUIZ_MIN_RADIUS = 15;
+const QUIZ_MAX_WORDS = 4;
+
+// The arms hang out to the side: every arm bone lies at least 190 mm from the midline, every leg
+// bone at most 165 mm.
+const ARM_FROM_MIDLINE = 178;
+
+/**
+ * The region a structure belongs to: the upper limb when it lies out beside the body, otherwise
+ * the nearest other region's marker, measured with left and right alike.
+ */
+export function regionOf(
+  centre: Point3,
+  regions: ReadonlyArray<{ id: BodyRegion; marker: Point3 }>,
+): BodyRegion | undefined {
+  const arm = Math.abs(centre[0]) >= ARM_FROM_MIDLINE;
+  if (arm && regions.some((region) => region.id === 'upper-limb')) return 'upper-limb';
+  let nearest: BodyRegion | undefined;
+  let shortest = Infinity;
+  for (const { id, marker } of regions) {
+    if (id === 'upper-limb') continue;
+    const distance = Math.hypot(
+      Math.abs(centre[0]) - Math.abs(marker[0]),
+      centre[1] - marker[1],
+      centre[2] - marker[2],
+    );
+    if (distance < shortest) {
+      nearest = id;
+      shortest = distance;
+    }
+  }
+  return nearest;
+}
+
+/** "Find it" on the whole body: the region's structures in the systems switched on. */
+export function bodyQuizPool(
+  index: BodyIndexEntry[],
+  systems: ReadonlySet<string>,
+  region: BodyRegion,
+  regions: ReadonlyArray<{ id: BodyRegion; marker: Point3 }>,
+): string[] {
+  return index
+    .filter(
+      (entry) =>
+        systems.has(entry.id.split('/')[0] ?? '') &&
+        entry.radius >= QUIZ_MIN_RADIUS &&
+        bodyStructure(entry.id).name.split(' ').length <= QUIZ_MAX_WORDS &&
+        regionOf(entry.centre, regions) === region,
+    )
+    .map((entry) => entry.id);
 }

@@ -363,6 +363,36 @@ describe('Studio on a wide screen', () => {
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 
+  it('plays "Find it" on the whole body, over the region and the systems switched on', async () => {
+    wideScreen();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.includes('body-index')
+          ? Response.json({
+              structures: [
+                ['skeleton/left-humerus', 180, -80, 1150, 150],
+                ['skeleton/right-humerus', -180, -80, 1150, 150],
+                ['organs/left-kidney', 60, -40, 1050, 60],
+              ],
+            })
+          : Response.json({ data: { results: [] } }),
+      ),
+    );
+    await renderStudio();
+    const start = await screen.findByRole('button', { name: /Find it: Upper limb/ });
+    await userEvent.click(start);
+    expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+    // Region names and markers step aside: tapping them would only be a wrong answer.
+    expect(viewer.props?.labels).toEqual([]);
+    // Math.random is held at 0, so the first of the region's structures is asked first.
+    expect(screen.getByText('Left humerus')).toBeInTheDocument();
+    tap('skeleton/left-humerus');
+    expect(screen.getByText('Right humerus')).toBeInTheDocument();
+    tap('skeleton/left-humerus');
+    expect(screen.getByText(/Left humerus/, { selector: 'p, span' })).toBeInTheDocument();
+  });
+
   it('finds any structure of the body by name, switches its system on and turns to it', async () => {
     wideScreen();
     vi.stubGlobal(
