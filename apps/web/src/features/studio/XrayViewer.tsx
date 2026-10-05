@@ -100,7 +100,8 @@ export function XrayViewer({
             : null}
         </svg>
 
-        <div className="flex max-h-full min-h-0 flex-col gap-3 overflow-y-auto md:w-2/5">
+        {/* Stacked on phones, film and notes share the height; side by side, the notes take 2/5. */}
+        <div className="flex max-h-full min-h-0 flex-1 flex-col gap-3 overflow-y-auto md:w-2/5 md:flex-none">
           {labels && film.marks.length > 0 ? (
             <ol aria-label="Marked on the film" className="flex flex-col gap-1 text-sm">
               {film.marks.map((mark, number) => (
