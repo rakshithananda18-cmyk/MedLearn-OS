@@ -9,11 +9,12 @@ test('topic practice and recall retain the selected topic through navigation', a
   await page.goto('/learn/oxygen-haemoglobin-curve');
   await page.getByRole('link', { name: /^Practice / }).click();
   await expect(page).toHaveURL(/\/practice\?topic=oxygen-haemoglobin-curve$/);
+  // Only this topic's four questions, though another lesson is complete too.
   await expect(
-    page.getByText('Which change shifts the oxygen–haemoglobin curve to the right?'),
+    page.getByRole('region', { name: 'Oxygen–haemoglobin curve' }).filter({ hasText: '1 of 4' }),
   ).toBeVisible();
   await expectAccessible(page);
-  await page.getByRole('link', { name: 'Back to Oxygen–haemoglobin curve' }).click();
+  await page.goBack();
   await page.getByRole('link', { name: /^Recall / }).click();
   await expect(page).toHaveURL(/\/revise\?topic=oxygen-haemoglobin-curve$/);
   await expect(page.getByText('Why is the oxygen–haemoglobin curve S-shaped?')).toBeVisible();
@@ -39,12 +40,12 @@ test('Today finishes its bounded review session and leaves the rest available', 
   await expect(page.getByRole('button', { name: 'Show answer' })).toHaveCount(0);
   await expectAccessible(page);
   await page.getByRole('link', { name: 'Back to Today' }).last().click();
-  await page
-    .getByRole('list', { name: 'Waiting for you' })
-    .getByRole('link', { name: /Recall/ })
-    .click();
-  await expect(page).toHaveURL(/\/revise$/);
-  await expect(page.getByText('3 cards due. Answer in your head, then check.')).toBeVisible();
+  // The other three wait as the plan's next step.
+  await page.getByRole('link', { name: 'Start recall' }).click();
+  await expect(page).toHaveURL(/\/revise\?limit=3$/);
+  await expect(
+    page.getByText('3 cards left in this session. Answer in your head, then check.'),
+  ).toBeVisible();
 });
 
 test('unknown topic filters return not found instead of another topic', async ({ page }) => {
