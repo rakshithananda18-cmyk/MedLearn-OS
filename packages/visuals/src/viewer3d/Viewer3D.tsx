@@ -37,10 +37,10 @@ export interface Viewer3DLabel {
 }
 
 /** What a whole-body system layer is made of, which sets its colour. */
-export type LayerKind = PartKind | 'nerve' | 'organ';
+export type LayerKind = PartKind | 'nerve' | 'lymph' | 'organ';
 
 /**
- * One body system drawn from its own file (skeleton, muscles, vessels, nerves, organs) on the same
+ * One body system drawn from its own file (skeleton, muscles, vessels, nerves, lymph nodes, organs) on the same
  * body. Every mesh in it is a named structure; a tap reports `<layer id>/<structure id>`.
  */
 export interface Viewer3DLayer {
@@ -147,6 +147,7 @@ const PART_OPACITY: Record<PartKind, number> = {
 const LAYER_COLOUR: Record<LayerKind, string> = {
   ...PART_COLOUR,
   nerve: '--color-anat-nerve',
+  lymph: '--color-anat-lymph',
   organ: '--color-anat-organ',
 };
 
