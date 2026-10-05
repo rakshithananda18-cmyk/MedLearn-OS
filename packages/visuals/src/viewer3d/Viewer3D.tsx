@@ -8,10 +8,13 @@ import {
   Box3,
   CatmullRomCurve3,
   Color,
+  DoubleSide,
+  FrontSide,
   type Group,
   Mesh,
   MeshStandardMaterial,
   type Object3D,
+  Plane,
   SphereGeometry,
   TubeGeometry,
   Vector3,
@@ -44,6 +47,21 @@ export interface Viewer3DLayer {
   id: string;
   kind: LayerKind;
   src: string;
+  /** Only this structure of the layer is drawn (the picked one, isolated). */
+  only?: string;
+}
+
+/** The three anatomical planes a section can cut along. */
+export type SectionPlane = 'transverse' | 'coronal' | 'sagittal';
+
+/**
+ * A cut through the whole model along one plane, `at` 0 to 1 across the model: feet to head
+ * (transverse), back to front (coronal) or one side to the other (sagittal). What lies above, in
+ * front of, or beyond the cut is taken away so the inside shows.
+ */
+export interface Viewer3DSection {
+  plane: SectionPlane;
+  at: number;
 }
 
 /** A line a student drew on the model's surface, in the model's frame. */
@@ -79,6 +97,8 @@ export interface Viewer3DProps {
   dpr?: number | [number, number];
   /** Body systems shown on the model, each loaded when it first appears. */
   layers?: Viewer3DLayer[];
+  /** A cut through the model to see inside it. */
+  section?: Viewer3DSection | null;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -128,8 +148,15 @@ function tokenColour(name: string): Color {
   return value ? new Color(value) : new Color();
 }
 
-function material(colour: Color, lit: boolean, opacity: number): MeshStandardMaterial {
+function material(
+  colour: Color,
+  lit: boolean,
+  opacity: number,
+  sectioned = false,
+): MeshStandardMaterial {
   return new MeshStandardMaterial({
+    // A cut shows the inner faces too, so a sliced bone or organ is not an empty shell.
+    side: sectioned ? DoubleSide : FrontSide,
     color: colour,
     roughness: 0.6,
     emissive: lit ? tokenColour('--ml-gold') : new Color('black'),
@@ -211,6 +238,46 @@ function shown(object: Object3D | null): boolean {
   return true;
 }
 
+/** Whether a tap landed on something drawn: shown, and not cut away by a section. */
+function drawn(hit: { object: Object3D; point: Vector3 }, planes: Plane[]): boolean {
+  return shown(hit.object) && planes.every((plane) => plane.distanceToPoint(hit.point) >= 0);
+}
+
+const SECTION_AXIS: Record<SectionPlane, 'x' | 'y' | 'z'> = {
+  transverse: 'y',
+  coronal: 'z',
+  sagittal: 'x',
+};
+
+/**
+ * Cuts everything drawn with one plane across the model's extent, keeping what lies below,
+ * behind, or to one side of it. The renderer clips every material at once.
+ */
+function Section({
+  section,
+  groupRef,
+}: Readonly<{ section: Viewer3DSection | null; groupRef: RefObject<Group | null> }>) {
+  // The renderer is read when the cut changes, not held from render.
+  const get = useThree((state) => state.get);
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!section || !group) return;
+    const { gl, invalidate } = get();
+    const box = new Box3().setFromObject(group);
+    const axis = SECTION_AXIS[section.plane];
+    const normal = new Vector3();
+    normal[axis] = -1;
+    const at = box.min[axis] + (box.max[axis] - box.min[axis]) * section.at;
+    gl.clippingPlanes = [new Plane(normal, at)];
+    invalidate();
+    return () => {
+      gl.clippingPlanes = [];
+      invalidate();
+    };
+  }, [section, groupRef, get]);
+  return null;
+}
+
 function Parts({
   model,
   highlight,
@@ -219,14 +286,17 @@ function Parts({
   hiddenKinds,
   hiddenIds,
   xray,
+  sectioned,
 }: Readonly<
   Pick<Viewer3DProps, 'model' | 'highlight' | 'onSelect' | 'hiddenKinds'> & {
     selecting: boolean;
     hiddenIds: ReadonlySet<string>;
     xray: boolean;
+    sectioned: boolean;
   }
 >) {
   const { scene } = useGLTF(model.src, false, true);
+  const { gl } = useThree();
 
   useEffect(() => {
     // One model file serves several topics; each shows only the parts it lists.
@@ -244,20 +314,21 @@ function Parts({
         const mesh = child as Mesh;
         if (!mesh.isMesh) return;
         if (!mesh.geometry.getAttribute('normal')) mesh.geometry.computeVertexNormals();
-        mesh.material = material(tokenColour(PART_COLOUR[part.kind]), lit, opacity);
+        mesh.material = material(tokenColour(PART_COLOUR[part.kind]), lit, opacity, sectioned);
         mesh.userData.partId = part.id;
       });
     }
-  }, [scene, model.parts, highlight, selecting, hiddenKinds, hiddenIds, xray]);
+  }, [scene, model.parts, highlight, selecting, hiddenKinds, hiddenIds, xray, sectioned]);
 
   const select = (event: ThreeEvent<MouseEvent>) => {
     const id = event.object.userData.partId as string | undefined;
-    // Hidden parts are still in the way of the ray: let the tap through to what is behind.
-    if (!id || !shown(event.object)) return;
+    // Hidden or cut-away parts are still in the way of the ray: let the tap through.
+    if (!id || !drawn(event, gl.clippingPlanes)) return;
     // The see-through skin lets a tap through to whatever shows under it.
     const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
     const under = event.intersections.some(
-      (hit) => hit.object !== event.object && hit.object.userData.partId && shown(hit.object),
+      (hit) =>
+        hit.object !== event.object && hit.object.userData.partId && drawn(hit, gl.clippingPlanes),
     );
     if (skin && under) return;
     event.stopPropagation();
@@ -276,22 +347,24 @@ function SystemLayer({
   highlight,
   selecting,
   xray,
+  sectioned,
   onSelect,
 }: Readonly<{
   layer: Viewer3DLayer;
   highlight: ReadonlySet<string>;
   selecting: boolean;
   xray: boolean;
+  sectioned: boolean;
   onSelect: (id: string) => void;
 }>) {
   const { scene } = useGLTF(layer.src, false, true);
-  const { invalidate } = useThree();
+  const { gl, invalidate } = useThree();
 
   useEffect(() => {
     const colour = tokenColour(LAYER_COLOUR[layer.kind]);
     const opacity = xray ? XRAY : 1;
-    const plain = material(colour, false, selecting ? opacity * DIMMED : opacity);
-    const picked = material(colour, true, 1);
+    const plain = material(colour, false, selecting ? opacity * DIMMED : opacity, sectioned);
+    const picked = material(colour, true, 1, sectioned);
     scene.traverse((child) => {
       const mesh = child as Mesh;
       if (!mesh.isMesh) return;
@@ -299,16 +372,17 @@ function SystemLayer({
       const id = `${layer.id}/${mesh.name}`;
       mesh.userData.partId = id;
       mesh.material = highlight.has(id) ? picked : plain;
+      mesh.visible = !layer.only || mesh.name === layer.only;
     });
     invalidate();
-  }, [scene, layer, highlight, selecting, xray, invalidate]);
+  }, [scene, layer, highlight, selecting, xray, sectioned, invalidate]);
 
   return (
     <primitive
       object={scene} // NOSONAR: a React Three Fiber prop, not a DOM attribute
       onClick={(event: ThreeEvent<MouseEvent>) => {
         const id = event.object.userData.partId as string | undefined;
-        if (!id) return;
+        if (!id || !drawn(event, gl.clippingPlanes)) return;
         event.stopPropagation();
         onSelect(id);
       }}
@@ -507,6 +581,7 @@ export default function Viewer3D({
   resetToken = 0,
   dpr = [1, 2],
   layers = [],
+  section = null,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
   const selecting =
@@ -575,6 +650,7 @@ export default function Viewer3D({
             hiddenKinds={hiddenKinds}
             hiddenIds={hiddenIds}
             xray={xray}
+            sectioned={section !== null}
           />
           {layers.map((layer) => (
             // Each system arrives on its own; the body is usable while the rest load.
@@ -584,6 +660,7 @@ export default function Viewer3D({
                 highlight={highlight}
                 selecting={selecting}
                 xray={xray}
+                sectioned={section !== null}
                 onSelect={pen ? () => {} : onSelect}
               />
             </Suspense>
@@ -619,6 +696,7 @@ export default function Viewer3D({
             <Line points={draft} color={tokenColour(pen.colour)} lineWidth={3} />
           ) : null}
         </group>
+        <Section section={section} groupRef={group} />
         <LabelTracker
           model={model}
           labels={labels}

@@ -4,7 +4,7 @@ import { topicMastery } from '@medlearn/core';
 import type { BodyRegion } from '@medlearn/schemas';
 import { cx, Icon, IconButton, Switch, Text } from '@medlearn/ui';
 import { Eye, PersonStanding, Search, X } from '@medlearn/ui/icons';
-import type { LayerKind } from '@medlearn/visuals/viewer3d';
+import type { LayerKind, SectionPlane, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 import Image from 'next/image';
 import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
@@ -431,6 +431,80 @@ export function SearchSheet({
   return (
     <Sheet label={label} side="left" place="float" onClose={onClose}>
       {children}
+    </Sheet>
+  );
+}
+
+const PLANES: Record<SectionPlane, { name: string; hint: string; along: string }> = {
+  transverse: { name: 'Transverse', hint: 'Across the body, as a CT slice', along: 'Feet to head' },
+  coronal: { name: 'Coronal', hint: 'Front from back', along: 'Back to front' },
+  sagittal: { name: 'Sagittal', hint: 'One side from the other', along: 'Side to side' },
+};
+const PLANE_ORDER: SectionPlane[] = ['transverse', 'coronal', 'sagittal'];
+
+/**
+ * A section through the model, from the view tools: on or off, along which anatomical plane, and
+ * where along it.
+ */
+export function SectionPanel({
+  section,
+  onChange,
+  onClose,
+}: Readonly<{
+  section: Viewer3DSection | null;
+  onChange: (section: Viewer3DSection | null) => void;
+  onClose: () => void;
+}>) {
+  const plane = section?.plane ?? 'transverse';
+  return (
+    <Sheet label="Section" side="right" place="float" compact onClose={onClose}>
+      <Switch
+        label="Cut through the model"
+        checked={section !== null}
+        onCheckedChange={(on) => onChange(on ? { plane, at: 0.5 } : null)}
+      />
+      {section ? (
+        <>
+          <fieldset className="grid grid-cols-3 gap-1 rounded-md bg-surface-muted p-1">
+            <legend className="sr-only">Plane</legend>
+            {PLANE_ORDER.map((id) => (
+              <button
+                key={id}
+                type="button"
+                title={PLANES[id].hint}
+                aria-pressed={id === plane}
+                onClick={() => onChange({ ...section, plane: id })}
+                className={cx(
+                  'h-12 rounded-sm text-sm font-semibold transition-colors duration-150',
+                  id === plane
+                    ? 'bg-surface text-ink shadow-raised'
+                    : 'text-fg-muted hover:text-fg',
+                )}
+              >
+                {PLANES[id].name}
+              </button>
+            ))}
+          </fieldset>
+          <label className="flex flex-col gap-1">
+            <span className="flex justify-between text-sm">
+              <span className="font-semibold text-ink">Where to cut</span>
+              <span className="text-fg-muted">{PLANES[plane].along}</span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(section.at * 100)}
+              onChange={(event) => onChange({ ...section, at: Number(event.target.value) / 100 })}
+              className="h-12 w-full cursor-pointer accent-primary"
+            />
+          </label>
+        </>
+      ) : (
+        <Text size="sm" tone="muted">
+          Slice the model across, front from back, or side to side to see what lies inside.
+        </Text>
+      )}
     </Sheet>
   );
 }

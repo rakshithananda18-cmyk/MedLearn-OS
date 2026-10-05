@@ -7,7 +7,7 @@ import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { BODY_SYSTEMS, type BodyRegionInfo, type BodySystemId } from '@/content/body';
+import { BODY_SYSTEMS, type BodyRegionInfo } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { filmsFor } from '@/content/xrays';
 
@@ -20,6 +20,7 @@ import {
   InfoCard,
   LayersPanel,
   SearchSheet,
+  SectionPanel,
   SettingsPanel,
   StructureSearch,
   TopicsPanel,
@@ -264,18 +265,38 @@ function labelsFor(
     .slice(0, 4);
 }
 
-/** The body's systems switched on, as layers of the viewer (the skin is in the body file). */
-function bodyLayers(systems: ReadonlySet<BodySystemId>) {
-  return BODY_SYSTEMS.flatMap((system) =>
-    system.src && systems.has(system.id)
-      ? [{ id: system.id, kind: system.kind, src: system.src }]
-      : [],
-  );
+/** A structure picked on the body while isolating: its system and its own id there. */
+function isolatedOnBody(session: Session): [string, string] | null {
+  const [system, structure] = session.selected?.split('/') ?? [];
+  return session.isolate && system && structure ? [system, structure] : null;
 }
 
-/** The body file's parts left out: its low-detail skeleton always, the skin when switched off. */
-function bodyHidden(systems: ReadonlySet<BodySystemId>): ReadonlySet<string> {
-  return new Set(systems.has('skin') ? ['skeleton'] : ['skeleton', 'skin']);
+/**
+ * The body's systems switched on, as layers of the viewer (the skin is in the body file); while
+ * isolating, only the picked structure of its system.
+ */
+function bodyLayers(session: Session) {
+  const isolated = isolatedOnBody(session);
+  return BODY_SYSTEMS.flatMap((system) => {
+    if (!system.src) return [];
+    if (isolated) {
+      return system.id === isolated[0]
+        ? [{ id: system.id, kind: system.kind, src: system.src, only: isolated[1] }]
+        : [];
+    }
+    return session.systems.has(system.id)
+      ? [{ id: system.id, kind: system.kind, src: system.src }]
+      : [];
+  });
+}
+
+/**
+ * The body file's parts left out: its low-detail skeleton always, the skin when switched off or
+ * while a structure is isolated.
+ */
+function bodyHidden(session: Session): ReadonlySet<string> {
+  const skin = session.systems.has('skin') && !isolatedOnBody(session);
+  return new Set(skin ? ['skeleton'] : ['skeleton', 'skin']);
 }
 
 /** The model filling the studio, with a caption for screen readers. */
@@ -306,7 +327,7 @@ function StudioModel({
         lit={lit}
         stopId={model.stops[session.stopIndex]?.id ?? ''}
         hiddenKinds={session.hiddenKinds}
-        hidden={topic ? hiddenIn(session, lit, studio.context.pool) : bodyHidden(session.systems)}
+        hidden={topic ? hiddenIn(session, lit, studio.context.pool) : bodyHidden(session)}
         xray={session.xray}
         reducedMotion={reducedMotion}
         pen={session.mode === 'draw' ? session.pen : null}
@@ -314,7 +335,8 @@ function StudioModel({
         labels={labels}
         resetToken={session.reset}
         dpr={pixelRatio(settings.quality)}
-        layers={topic ? [] : bodyLayers(session.systems)}
+        layers={topic ? [] : bodyLayers(session)}
+        section={session.section}
         flat={settings.flat}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -327,7 +349,7 @@ function StudioModel({
 
 /** The view tools: a column on phones, a row beside the title where docked. */
 function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>) {
-  const { session, topic, update } = studio;
+  const { session, update } = studio;
   return (
     <ViewTools
       row={row}
@@ -335,12 +357,14 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       xray={session.xray}
       films={studio.films.length > 0 ? studio.film !== null : null}
       isolate={session.isolate}
-      canIsolate={topic !== null && session.selected !== null}
+      canIsolate={session.selected !== null}
+      section={session.section !== null || session.panel === 'section'}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
       onXray={() => update({ xray: !session.xray })}
       onFilms={() => studio.setFilm(studio.film === null ? 0 : null)}
       onIsolate={() => update({ isolate: !session.isolate })}
+      onSection={() => studio.togglePanel('section')}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
     />
@@ -425,6 +449,19 @@ function Layers({ studio }: Readonly<{ studio: StudioState }>) {
       onToggle={(kind) => update({ hiddenKinds: toggled(session.hiddenKinds, kind) })}
       onShow={(id) => update({ hiddenIds: toggled(session.hiddenIds, id) })}
       onClose={close}
+    />
+  );
+}
+
+/** The section sheet, while open. */
+function Section({ studio }: Readonly<{ studio: StudioState }>) {
+  const { session, update } = studio;
+  if (session.panel !== 'section') return null;
+  return (
+    <SectionPanel
+      section={session.section}
+      onChange={(section) => update({ section })}
+      onClose={() => update({ panel: null })}
     />
   );
 }
@@ -602,6 +639,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
         </div>
       )}
       <Layers studio={studio} />
+      <Section studio={studio} />
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
           <Search studio={studio} topics={topics} autoFocus />
@@ -773,6 +811,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
         </aside>
       ) : null}
       <Layers studio={studio} />
+      <Section studio={studio} />
       <Settings studio={studio} />
     </div>
   );
