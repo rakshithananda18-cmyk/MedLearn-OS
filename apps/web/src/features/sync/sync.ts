@@ -4,36 +4,54 @@ import {
   mergeProgress,
   type StudyProfile,
 } from '@medlearn/core';
+import type { SavedProgress } from '@medlearn/schemas';
 
-import { readProgress, replaceProgress, subscribeToProgress } from '@/features/progress/store';
+import {
+  progressGeneration,
+  readProgress,
+  replaceProgress,
+  subscribeToProgress,
+} from '@/features/progress/store';
 import { clientLogger } from '@/lib/client-logger';
 
-/** Which copy wins: the newer one. A device that has changed nothing yet takes the server's. */
+/** The most recently changed profile wins; study records themselves are merged. */
 export function newerCopy(
   local: LearnerProgress,
   server: LearnerProgress | null,
 ): 'local' | 'server' | 'same' {
   if (!server) return local.updatedAt ? 'local' : 'same';
   if (!local.updatedAt) return 'server';
-  const localTime = Date.parse(local.updatedAt);
-  const serverTime = Date.parse(server.updatedAt ?? '');
-  if (serverTime > localTime) return 'server';
-  return localTime > serverTime ? 'local' : 'same';
+  const difference = Date.parse(local.updatedAt) - Date.parse(server.updatedAt ?? '');
+  if (difference > 0) return 'local';
+  if (difference < 0) return 'server';
+  return 'same';
 }
 
 const SAVE_DELAY_MS = 1000;
+const MAX_ATTEMPTS = 3;
+let lifecycle = 0;
+let pauseDepth = 0;
 
-/** The server's copy, validated; null when there is none or no session. */
-async function loadServerCopy(): Promise<LearnerProgress | null> {
-  const response = await fetch('/api/progress');
-  if (response.status === 401) return null;
+interface SyncSession {
+  flush: () => Promise<void>;
+  pause: () => void;
+  resume: () => void;
+  stop: () => void;
+}
+let activeSync: SyncSession | undefined;
+
+async function loadServerCopy(
+  signal?: AbortSignal,
+  allowMissingSession = false,
+): Promise<SavedProgress | null> {
+  const response = await fetch('/api/progress', { signal, cache: 'no-store' });
+  if (response.status === 401 && allowMissingSession) return null;
   if (!response.ok) throw new Error(`Loading progress failed with ${response.status}`);
-  const body = (await response.json()) as { data: { progress: unknown } | null };
-  if (!body.data) return null;
-  // Loaded only when a server copy arrives, so the schema library is not in every page's download.
-  const { LearnerProgressInput } = await import('@medlearn/schemas');
-  const parsed = LearnerProgressInput.safeParse(body.data.progress);
-  return parsed.success ? (parsed.data as LearnerProgress) : null;
+  const body = (await response.json()) as { data: unknown };
+  if (body.data === null) return null;
+  const { SavedProgress } = await import('@medlearn/schemas');
+  // Invalid server data must not be treated as an empty account and overwritten.
+  return SavedProgress.parse(body.data);
 }
 
 const ADULT_PROFILE: StudyProfile = {
@@ -43,90 +61,253 @@ const ADULT_PROFILE: StudyProfile = {
   adult: true,
 };
 
-/**
- * After signing in or creating an account: joins this phone's progress with the account's so
- * nothing learned on either side is lost. Only adults hold accounts, so the profile says so.
- * Returns whether the student already had a study plan (answered the setup questions).
- */
-export async function adoptAccountProgress(now = new Date()): Promise<boolean> {
-  const server = await loadServerCopy();
-  const local = readProgress();
-  const merged = server
-    ? mergeProgress(local, server, now)
-    : { ...local, updatedAt: now.toISOString() };
-  replaceProgress({ ...merged, profile: { ...(merged.profile ?? ADULT_PROFILE), adult: true } });
-  return merged.profile !== null;
+const report = (error: unknown) => {
+  if (error instanceof Error && error.name === 'AbortError') return;
+  clientLogger.warn('Progress sync failed; will retry with the next change or connection', {
+    message: error instanceof Error ? error.message : String(error),
+  });
+};
+
+/** Matches Array.sort's default UTF-16 order for these string IDs. */
+function compareIds(a: string, b: string): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
+/** Ignores snapshot timestamps and collection order when deciding whether a save is needed. */
+function contentKey(progress: LearnerProgress): string {
+  return JSON.stringify(
+    {
+      ...progress,
+      updatedAt: null,
+      completedLessons: [...progress.completedLessons].sort(compareIds),
+      completedDrills: [...progress.completedDrills].sort(compareIds),
+      correctAnswers: [...progress.correctAnswers].sort(compareIds),
+      mistakes: [...progress.mistakes].sort(compareIds),
+      activity: Object.fromEntries(
+        Object.entries(progress.activity).map(([day, activity]) => [
+          day,
+          {
+            ...activity,
+            lessons: [...activity.lessons].sort(compareIds),
+            drills: [...activity.drills].sort(compareIds),
+          },
+        ]),
+      ),
+    },
+    (_key, value: unknown) =>
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+        : value,
+  );
+}
+
+function mergedCopy(local: LearnerProgress, saved: SavedProgress | null): LearnerProgress {
+  if (!saved) return local;
+  const server = { ...saved.progress, updatedAt: saved.updatedAt };
+  const now = new Date(
+    Math.max(Date.now(), Date.parse(local.updatedAt ?? '') || 0, Date.parse(saved.updatedAt)) + 1,
+  );
+  const merged =
+    newerCopy(local, server) === 'local'
+      ? mergeProgress(server, local, now)
+      : mergeProgress(local, server, now);
+  return contentKey(merged) === contentKey(server) ? server : merged;
+}
+
+function applyMergedCopy(local: LearnerProgress, merged: LearnerProgress): void {
+  if (JSON.stringify(local) !== JSON.stringify(merged)) replaceProgress(merged);
 }
 
 /**
- * A phone that lost its local copy but still has a session (cookies survive clearing site
- * storage less often than people expect) gets its progress back. Only adults ever have a session.
+ * Reads before writing and compares the database version atomically. On a conflict, joins the
+ * competing change before trying again. Retries are bounded, so an unavailable/busy server
+ * never spins or discards the local copy.
  */
-export async function restoreProgress(): Promise<void> {
-  const server = await loadServerCopy();
-  if (server && newerCopy(readProgress(), server) === 'server') replaceProgress(server);
-}
-
-/**
- * Keeps this device and the server in step for an adult learner: starts an anonymous session,
- * takes the newer copy, then saves every change a second after it happens. The phone stays the
- * source of truth offline; a failed save is retried with the next change or when the phone is back
- * online. Returns a stop function.
- */
-export function startProgressSync(): () => void {
-  let lastSynced: string | null = null;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
-  const push = async (): Promise<void> => {
-    const progress = readProgress();
+async function synchronize(signal: AbortSignal, current: () => boolean): Promise<string | null> {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+    const saved = await loadServerCopy(signal);
+    if (!current()) return null;
+    const local = readProgress();
+    if (local.profile?.adult !== true) return null;
+    const merged = mergedCopy(local, saved);
+    applyMergedCopy(local, merged);
+    if (saved && contentKey(merged) === contentKey(saved.progress)) return merged.updatedAt;
     const response = await fetch('/api/progress', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ progress }),
+      signal,
+      body: JSON.stringify({ progress: merged, expectedUpdatedAt: saved?.updatedAt ?? null }),
     });
-    if (response.status === 409) return pull();
+    if (!current()) return null;
+    if (response.status === 409) continue;
     if (!response.ok) throw new Error(`Saving progress failed with ${response.status}`);
-    lastSynced = progress.updatedAt;
-  };
+    return merged.updatedAt;
+  }
+  throw new Error('Progress changed on another device. Please try again.');
+}
 
-  const pull = async (): Promise<void> => {
-    const server = await loadServerCopy();
-    const winner = newerCopy(readProgress(), server);
-    if (winner === 'server' && server) {
-      lastSynced = server.updatedAt;
-      replaceProgress(server);
-    } else if (winner === 'local') {
-      await push();
+/** Pauses background work across an account change; the returned function resumes it. */
+export function pauseProgressSync(): () => void {
+  pauseDepth += 1;
+  lifecycle += 1;
+  activeSync?.pause();
+  let resumed = false;
+  return () => {
+    if (resumed) return;
+    resumed = true;
+    pauseDepth -= 1;
+    if (pauseDepth === 0) activeSync?.resume();
+  };
+}
+
+/** Saves every pending local change before sign-out removes this device's copy. */
+export async function flushProgressSync(): Promise<void> {
+  if (activeSync) return activeSync.flush();
+  if (readProgress().profile?.adult !== true) return;
+  const generation = progressGeneration();
+  const currentLifecycle = lifecycle;
+  const controller = new AbortController();
+  const current = () => generation === progressGeneration() && currentLifecycle === lifecycle;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+    const synced = await synchronize(controller.signal, current);
+    if (!current()) throw new Error('The account changed. Try again.');
+    if (readProgress().updatedAt === synced) return;
+  }
+  throw new Error('Progress is still changing. Please try signing out again.');
+}
+
+/** Joins device progress with the account after sign-in, preserving both learning histories. */
+export async function adoptAccountProgress(now = new Date()): Promise<boolean> {
+  const resume = pauseProgressSync();
+  const generation = progressGeneration();
+  const currentLifecycle = lifecycle;
+  try {
+    const saved = await loadServerCopy();
+    if (generation !== progressGeneration() || currentLifecycle !== lifecycle) {
+      throw new Error('The account changed. Try again.');
     }
-  };
+    const local = readProgress();
+    const merged = saved
+      ? mergeProgress(local, saved.progress, now)
+      : { ...local, updatedAt: now.toISOString() };
+    replaceProgress({ ...merged, profile: { ...(merged.profile ?? ADULT_PROFILE), adult: true } });
+    return merged.profile !== null;
+  } finally {
+    resume();
+  }
+}
 
-  const report = (error: unknown) =>
-    clientLogger.warn('Progress sync failed; will retry with the next change', {
-      message: error instanceof Error ? error.message : String(error),
+/** Restores a lost device copy only while the original account and request are still active. */
+export async function restoreProgress(signal?: AbortSignal): Promise<void> {
+  const generation = progressGeneration();
+  const currentLifecycle = lifecycle;
+  const saved = await loadServerCopy(signal, true);
+  if (
+    !saved ||
+    signal?.aborted ||
+    generation !== progressGeneration() ||
+    currentLifecycle !== lifecycle
+  ) {
+    return;
+  }
+  // A learner may have started setup while the request was pending. Keep that local work.
+  if (readProgress().updatedAt === null) replaceProgress(saved.progress);
+}
+
+/** Serializes saves and cancels pending work when the effect ends or the account changes. */
+export function startProgressSync(): () => void {
+  activeSync?.stop();
+  const generation = progressGeneration();
+  let stopped = false;
+  let controller = new AbortController();
+  let sessionStarted = false;
+  let lastSynced: string | null | undefined;
+  let running: Promise<void> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const available = () => !stopped && pauseDepth === 0 && generation === progressGeneration();
+  const unsaved = () =>
+    readProgress().profile?.adult === true && readProgress().updatedAt !== lastSynced;
+
+  const run = (): Promise<void> => {
+    if (running) return running;
+    if (!available()) return Promise.resolve();
+    const signal = controller.signal;
+    const currentLifecycle = lifecycle;
+    const current = () => available() && !signal.aborted && lifecycle === currentLifecycle;
+    running = (async () => {
+      if (!sessionStarted) {
+        const response = await fetch('/api/session', { method: 'POST', signal });
+        if (!current()) return;
+        if (!response.ok) throw new Error(`Starting session failed with ${response.status}`);
+        sessionStarted = true;
+      }
+      const synced = await synchronize(signal, current);
+      if (current()) lastSynced = synced;
+    })().finally(() => {
+      running = undefined;
     });
-
-  // After sign-out the phone is cleared; that empty copy is never sent anywhere.
-  const unsaved = () => {
-    const progress = readProgress();
-    return progress.profile?.adult === true && progress.updatedAt !== lastSynced;
+    return running;
   };
 
-  fetch('/api/session', { method: 'POST' }).then(pull).catch(report);
+  const schedule = () => {
+    if (!available() || !unsaved()) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => run().then(scheduleIfChanged).catch(report), SAVE_DELAY_MS);
+  };
+  const scheduleIfChanged = () => {
+    if (unsaved()) schedule();
+  };
+
+  const session: SyncSession = {
+    async flush() {
+      clearTimeout(timer);
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+        await run();
+        if (!available()) throw new Error('The account changed. Try again.');
+        if (!unsaved()) return;
+      }
+      throw new Error('Progress is still changing. Please try signing out again.');
+    },
+    pause() {
+      controller.abort();
+      clearTimeout(timer);
+    },
+    resume() {
+      if (stopped) return;
+      controller = new AbortController();
+      sessionStarted = false;
+      lastSynced = undefined;
+      // Wait for a cancelled request to settle before starting the next account's requests.
+      void (running ?? Promise.resolve())
+        .catch(() => undefined)
+        .then(() => {
+          if (available()) void run().then(scheduleIfChanged).catch(report);
+        });
+    },
+    stop() {
+      if (stopped) return;
+      stopped = true;
+      lifecycle += 1;
+      controller.abort();
+      clearTimeout(timer);
+      unsubscribe();
+      globalThis.removeEventListener('online', onOnline);
+      if (activeSync === session) activeSync = undefined;
+    },
+  };
 
   const unsubscribe = subscribeToProgress(() => {
-    if (!unsaved()) return;
-    clearTimeout(timer);
-    timer = setTimeout(() => push().catch(report), SAVE_DELAY_MS);
+    // Changes during a request are saved by its completion handler, never in parallel.
+    if (!running) schedule();
   });
-
   const onOnline = () => {
-    if (unsaved()) push().catch(report);
+    if (available()) void run().then(scheduleIfChanged).catch(report);
   };
   globalThis.addEventListener('online', onOnline);
-
-  return () => {
-    clearTimeout(timer);
-    unsubscribe();
-    globalThis.removeEventListener('online', onOnline);
-  };
+  activeSync = session;
+  void run().then(scheduleIfChanged).catch(report);
+  return session.stop;
 }

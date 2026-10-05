@@ -28,7 +28,7 @@ export function describe(item: TodayItem): {
       return {
         title: `Review ${item.count} ${item.count === 1 ? 'card' : 'cards'}`,
         meta: `${item.minutes} min · spaced recall`,
-        href: '/revise',
+        href: `/revise?limit=${item.count}`,
         icon: RotateCcw,
         kind: 'Recall',
         action: 'Start recall',
