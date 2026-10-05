@@ -5,14 +5,14 @@ import { connection } from 'next/server';
 import { BOOKS } from '@/content/books';
 import { BookChooser } from '@/features/books/BookChooser';
 import { Screen } from '@/features/shell/Screen';
-import { getSubjectsRepository } from '@/server/db';
+import { listSubjects } from '@/server/db';
 
 export const metadata: Metadata = { title: 'My books | MedLearn OS' };
 
 /** The student picks the standard books they follow; every topic then points to them first. */
 export default async function BooksPage() {
   await connection();
-  const subjects = await getSubjectsRepository().list();
+  const subjects = await listSubjects();
   const shelves = subjects
     .map((subject) => ({
       subjectName: subject.name,
