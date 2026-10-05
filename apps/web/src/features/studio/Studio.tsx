@@ -5,14 +5,14 @@ import { cx, IconButton, Text } from '@medlearn/ui';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { filmsFor } from '@/content/xrays';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
-import { useBodyIndex } from './bodyIndex';
+import { bodyQuizPool, useBodyIndex } from './bodyIndex';
 import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
 import {
@@ -53,6 +53,7 @@ import {
   BestCard,
   BottomSheet,
   DockedHeader,
+  FindItButton,
   GuideCard,
   ModelView,
   PhoneHeader,
@@ -119,11 +120,23 @@ function useStudio({
   const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
-  const context = { topic, regions, pool: structures.map((structure) => structure.id) };
+  const index = useBodyIndex(topic === null);
+  // What "Find it" asks for: the topic's structures, or on the body the region's structures of
+  // the systems switched on.
+  const pool = useMemo(
+    () =>
+      topic
+        ? structures.map((structure) => structure.id)
+        : bodyQuizPool(index ?? [], session.systems, session.region, regions),
+    [topic, structures, index, session.systems, session.region, regions],
+  );
+  const context = { topic, regions, pool };
   const update = (patch: Partial<Session>) => setSession({ ...session, ...patch });
   const slug = topic?.slug ?? BODY_KEY;
-  const nameOf = (id: string | null) =>
-    structures.find((structure) => structure.id === id)?.name ?? 'something else';
+  const nameOf = (id: string | null) => {
+    if (id?.includes('/')) return bodyStructure(id).name;
+    return structures.find((structure) => structure.id === id)?.name ?? 'something else';
+  };
 
   return {
     session,
@@ -164,8 +177,7 @@ function useStudio({
     find: (id: string) => setSession(findOnBody(session, id)),
     togglePanel: (panel: Exclude<Panel, null>) =>
       update({ panel: session.panel === panel ? null : panel }),
-    changeMode: (mode: Mode) =>
-      setSession(changeModeIn(session, mode, context, topic ? loadBest(slug) : 0)),
+    changeMode: (mode: Mode) => setSession(changeModeIn(session, mode, context, loadBest(slug))),
     playAgain: () => update({ quiz: startQuiz(context.pool, loadBest(slug)) }),
     keepStrokes: (strokes: Stroke[]) => {
       update({ strokes });
@@ -244,8 +256,9 @@ function labelsFor(
   const { session, topic } = studio;
   if (!studio.settings.labels) return [];
   if (!topic) {
-    // Like their markers, the region names step aside while a structure of the body is picked.
-    if (session.selected?.includes('/')) return [];
+    // Like their markers, the region names step aside while a structure of the body is picked,
+    // and while playing "Find it".
+    if (session.selected?.includes('/') || session.mode === 'quiz') return [];
     return regions.flatMap((region) => {
       const count = topics.filter((item) => item.regions.includes(region.id)).length;
       return count > 0
@@ -332,7 +345,8 @@ function StudioModel({
         capable={capable}
         model={model}
         topic={topic}
-        regions={regions}
+        // While playing "Find it" on the body, its region markers would only be wrong answers.
+        regions={session.mode === 'quiz' ? [] : regions}
         region={session.region}
         selected={session.selected}
         lit={lit}
@@ -379,6 +393,19 @@ function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>)
       onSection={() => studio.togglePanel('section')}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
+    />
+  );
+}
+
+/** "Find it" on the whole body, for the region chosen. */
+function FindIt({ studio }: Readonly<{ studio: StudioState }>) {
+  const region = studio.context.regions.find((item) => item.id === studio.session.region);
+  return (
+    <FindItButton
+      region={region?.name ?? 'the body'}
+      best={loadBest(BODY_KEY)}
+      disabled={studio.context.pool.length === 0}
+      onStart={() => studio.changeMode('quiz')}
     />
   );
 }
@@ -571,6 +598,13 @@ function Quiz({ studio }: Readonly<{ studio: StudioState }>) {
 function PhoneFooter(props: Readonly<OverlayProps>) {
   const { studio, topics, regions, capable } = props;
   const { session, topic } = studio;
+  if (session.mode === 'quiz') {
+    return (
+      <div className="p-3">
+        <Quiz studio={studio} />
+      </div>
+    );
+  }
   if (!topic && session.selected?.includes('/')) {
     return (
       <BottomSheet>
@@ -581,6 +615,11 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
   if (!topic) {
     return (
       <div className="flex flex-col gap-2 p-3">
+        {capable ? (
+          <div className="flex justify-end">
+            <FindIt studio={studio} />
+          </div>
+        ) : null}
         <BodyBrowser
           topics={topics}
           regions={regions}
@@ -589,13 +628,6 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
           onTopic={studio.openTopic}
         />
         <Credit studio={studio} capable={capable} />
-      </div>
-    );
-  }
-  if (session.mode === 'quiz') {
-    return (
-      <div className="p-3">
-        <Quiz studio={studio} />
       </div>
     );
   }
@@ -744,13 +776,22 @@ function Fold({
 /** Beside the title where docked: the best streak, the guided views and the view tools. */
 function HeaderTools({
   studio,
+  capable,
   folded,
   onUnfold,
-}: Readonly<{ studio: StudioState; folded: boolean; onUnfold: () => void }>) {
+}: Readonly<{
+  studio: StudioState;
+  capable: boolean | null;
+  folded: boolean;
+  onUnfold: () => void;
+}>) {
   const { topic } = studio;
+  // "Find it" on the body needs the 3D model to tap.
+  let streak: ReactNode = capable ? <FindIt studio={studio} /> : null;
+  if (topic) streak = <BestCard best={loadBest(topic.slug)} />;
   return (
     <>
-      {topic ? <BestCard best={loadBest(topic.slug)} /> : null}
+      {streak}
       <Guide studio={studio} />
       <Tools studio={studio} row />
       {folded ? <Fold side="right" open={false} onToggle={onUnfold} /> : null}
@@ -801,6 +842,7 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
               quiz ? null : (
                 <HeaderTools
                   studio={studio}
+                  capable={capable}
                   folded={side && !right}
                   onUnfold={() => setRight(true)}
                 />
