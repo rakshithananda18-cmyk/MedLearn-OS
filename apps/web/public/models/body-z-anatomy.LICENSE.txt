@@ -1,4 +1,4 @@
-body-nerves.glb, body-lymph.glb
+body-nerves.glb, body-lymph.glb, and in body-organs.glb the liver and the five lobes of the lungs
 
 The whole body's nervous system (brain, brainstem, spinal cord, cranial and spinal nerves, the
 plexuses and the peripheral nerves of the limbs) and its lymph nodes by group (cervical,
@@ -8,12 +8,14 @@ layers of the one body in the 3D studio. Each structure is one named mesh.
 Source: Z-Anatomy, by Gauthier Kervyn and Lluís Vinent Juanico, built on BodyParts3D
 ((c) The Database Center for Life Science). FBX set from
 https://github.com/LluisV/Z-Anatomy/tree/PC-Version/Resources/Models/FBX
-(NervousSystem100.fbx, LymphoidOrgans100.fbx), downloaded 5 October 2026.
+(NervousSystem100.fbx, LymphoidOrgans100.fbx, VisceralSystem100.fbx), downloaded 5 October
+2026.
 
 Licence: Creative Commons Attribution-ShareAlike 4.0 International
 (https://creativecommons.org/licenses/by-sa/4.0/). These derived models (moved onto the
 BodyParts3D frame, merged per structure, renamed, simplified and compressed by
-scripts/models/build-z-anatomy.mjs) are shared under the same licence.
+scripts/models/build-z-anatomy.mjs and build-body-systems.mjs) are shared under the same
+licence.
 
-Attribution: "Nervous system and lymph nodes: Z-Anatomy (G. Kervyn, L. Vinent Juanico), built on
-BodyParts3D, licensed under CC BY-SA 4.0".
+Attribution: "Nervous system, lymph nodes, lungs and liver: Z-Anatomy (G. Kervyn, L. Vinent
+Juanico), built on BodyParts3D, licensed under CC BY-SA 4.0".

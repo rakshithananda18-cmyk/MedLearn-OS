@@ -34,7 +34,7 @@ export interface BodySystem {
 }
 
 // A new version in the address whenever the files are rebuilt, so phones fetch them again.
-const SYSTEMS_VERSION = 2;
+const SYSTEMS_VERSION = 3;
 const systemFile = (id: string) => `/models/body-${id}.glb?v=${SYSTEMS_VERSION}`;
 
 /** The one body's systems, from the surface in; each can be switched on and off. */
@@ -70,7 +70,7 @@ export function bodyStructure(id: string) {
 export const BODY_MODEL: Model3D = {
   src: '/models/body.glb',
   credit:
-    'Body and its systems: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Nervous system and lymph nodes: Z-Anatomy, CC BY-SA 4.0.',
+    'Body and its systems: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Nervous system, lymph nodes, lungs and liver: Z-Anatomy, CC BY-SA 4.0.',
   parts: [
     {
       id: 'skin',
