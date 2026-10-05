@@ -18,23 +18,30 @@ export function createProgressRepository(db: DbClient) {
       if (!data) return null;
       return SavedProgress.parse({
         progress: data.progress,
-        updatedAt: new Date(data.updated_at).toISOString(),
+        // Keep the database precision: this is also the next compare-and-swap token.
+        updatedAt: data.updated_at,
       });
     },
 
     /**
-     * Saves progress unless the server already holds a newer copy (another device), in which
-     * case nothing changes and the caller should load that copy instead.
+     * Saves atomically. An expected version protects a read/merge/write cycle across devices;
+     * null means the caller saw no saved copy. Older clients keep the timestamp-only guard.
      */
-    async save(userId: string, progress: LearnerProgressInput): Promise<SaveResult> {
+    async save(
+      userId: string,
+      progress: LearnerProgressInput,
+      expectedUpdatedAt?: string | null,
+    ): Promise<SaveResult> {
       const updatedAt = progress.updatedAt ?? new Date().toISOString();
-      const current = await this.load(userId);
-      if (current && Date.parse(current.updatedAt) > Date.parse(updatedAt)) return 'stale';
-      const { error } = await db
-        .from('learner_progress')
-        .upsert({ user_id: userId, progress, updated_at: updatedAt });
+      const { data, error } = await db.rpc('save_learner_progress', {
+        p_user_id: userId,
+        p_progress: { ...progress, updatedAt },
+        p_updated_at: updatedAt,
+        p_check_version: expectedUpdatedAt !== undefined,
+        ...(expectedUpdatedAt != null ? { p_expected_updated_at: expectedUpdatedAt } : {}),
+      });
       if (error) throw new AppError('INTERNAL', 'Failed to save progress', { cause: error });
-      return 'saved';
+      return data ? 'saved' : 'stale';
     },
   };
 }

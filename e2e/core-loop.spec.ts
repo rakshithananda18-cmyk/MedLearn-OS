@@ -84,7 +84,7 @@ test('Today → lesson → practice → revise, then the next topic', async ({ p
     if (card === 0) await expectAccessible(page);
     await page.getByRole('button', { name: 'Good: Recalled' }).click();
   }
-  await expect(page.getByText('No reviews due')).toBeVisible();
+  await expect(page.getByText('Review session complete')).toBeVisible();
 
   // Today moves on to the next topic, and progress survives a reload.
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { libraryTree } from '@/content/library';
+import { studyTopic } from '@/content/study-selection';
 import { PLANNABLE_TOPICS, practiceQuestions, TOPICS } from '@/content/topics';
 import { PracticeView } from '@/features/practice/PracticeView';
 import { Screen } from '@/features/shell/Screen';
@@ -21,6 +23,7 @@ const one = (value: string | string[] | undefined) =>
 /** Practice: ways in, strengths by section and planned tests; ?topic= starts that topic's questions. */
 export default async function PracticePage({ searchParams }: Props) {
   const { topic, goal, revisit } = await searchParams;
+  if (studyTopic(topic) === null || studyTopic(revisit) === null) notFound();
   const start = { topic: one(topic), goal: one(goal), revisit: one(revisit) };
   return (
     <Screen width="wide">

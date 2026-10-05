@@ -76,6 +76,41 @@ describe('progress sync API', () => {
       expect(minor.status).toBe(403);
     });
 
+    it('checks the loaded version even when an incoming timestamp is newer', async () => {
+      const current = await (await getProgress(new Request(url('/api/progress')))).json();
+      const expectedUpdatedAt = current.data.updatedAt;
+      const saved = await putProgress(
+        json('PUT', {
+          progress: progress('2026-09-28T09:00:00.000Z'),
+          expectedUpdatedAt,
+        }),
+      );
+      expect(saved.status).toBe(200);
+      const stale = await putProgress(
+        json('PUT', {
+          progress: progress('2026-09-28T10:00:00.000Z'),
+          expectedUpdatedAt,
+        }),
+      );
+      expect(stale.status).toBe(409);
+      const absent = await putProgress(
+        json('PUT', {
+          progress: progress('2026-09-28T11:00:00.000Z'),
+          expectedUpdatedAt: null,
+        }),
+      );
+      expect(absent.status).toBe(409);
+      const invalid = await putProgress(
+        json('PUT', {
+          progress: progress('2026-09-28T11:00:00.000Z'),
+          expectedUpdatedAt: 'yesterday',
+        }),
+      );
+      expect(invalid.status).toBe(400);
+      const after = await (await getProgress(new Request(url('/api/progress')))).json();
+      expect(Date.parse(after.data.updatedAt)).toBe(Date.parse('2026-09-28T09:00:00.000Z'));
+    });
+
     it('validates what it stores', async () => {
       const response = await putProgress(json('PUT', { progress: { completedLessons: 'all' } }));
       expect(response.status).toBe(400);
