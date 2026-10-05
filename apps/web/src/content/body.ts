@@ -22,7 +22,7 @@ export const BODY_REGIONS: BodyRegionInfo[] = [
 ];
 
 export type BodySystemId =
-  'skin' | 'skeleton' | 'muscles' | 'arteries' | 'veins' | 'nerves' | 'organs';
+  'skin' | 'skeleton' | 'muscles' | 'arteries' | 'veins' | 'nerves' | 'lymph' | 'organs';
 
 /** One system of the body: its name, what it is made of, and its file (none for the skin). */
 export interface BodySystem {
@@ -34,7 +34,7 @@ export interface BodySystem {
 }
 
 // A new version in the address whenever the files are rebuilt, so phones fetch them again.
-const SYSTEMS_VERSION = 1;
+const SYSTEMS_VERSION = 2;
 const systemFile = (id: string) => `/models/body-${id}.glb?v=${SYSTEMS_VERSION}`;
 
 /** The one body's systems, from the surface in; each can be switched on and off. */
@@ -45,6 +45,7 @@ export const BODY_SYSTEMS: BodySystem[] = [
   { id: 'arteries', name: 'Arteries', kind: 'artery', src: systemFile('arteries') },
   { id: 'veins', name: 'Veins', kind: 'vein', src: systemFile('veins') },
   { id: 'nerves', name: 'Nervous system', kind: 'nerve', src: systemFile('nerves') },
+  { id: 'lymph', name: 'Lymph nodes', kind: 'lymph', src: systemFile('lymph') },
   { id: 'organs', name: 'Organs', kind: 'organ', src: systemFile('organs') },
 ];
 
@@ -69,7 +70,7 @@ export function bodyStructure(id: string) {
 export const BODY_MODEL: Model3D = {
   src: '/models/body.glb',
   credit:
-    'Body and its systems: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP).',
+    'Body and its systems: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Nervous system and lymph nodes: Z-Anatomy, CC BY-SA 4.0.',
   parts: [
     {
       id: 'skin',

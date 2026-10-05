@@ -1,6 +1,8 @@
 // Builds the one body's system layers in apps/web/public/models/body-<system>.glb from the whole of
-// BodyParts3D: skeleton, muscles, arteries, veins, nervous system and organs. Every structure is
-// one mesh named by its BodyParts3D (FMA) term, so a tap anywhere on the body can say what it is.
+// BodyParts3D: skeleton, muscles, arteries, veins and organs. Every structure is one mesh named by
+// its BodyParts3D (FMA) term, so a tap anywhere on the body can say what it is. The nervous system
+// and the lymph nodes come from Z-Anatomy instead (build-z-anatomy.mjs), which has the peripheral
+// nerves BodyParts3D lacks.
 //
 // Source: BodyParts3D 4.0 (see build-models.mjs for the licence), polygon-reduced OBJ set.
 // Usage: node scripts/models/build-body-systems.mjs <extracted OBJ folder> <isa_element_parts.txt>
@@ -23,12 +25,12 @@ export const SYSTEMS = {
   muscles: { triangles: 240_000, maxBytes: 3_600_000 },
   arteries: { triangles: 90_000, maxBytes: 1_600_000 },
   veins: { triangles: 90_000, maxBytes: 1_600_000 },
-  nerves: { triangles: 80_000, maxBytes: 1_400_000 },
   organs: { triangles: 120_000, maxBytes: 2_000_000 },
 };
 
 // Which system a BodyParts3D element belongs to, from the concepts it is a kind of. Checked in
-// this order: a muscle head is a muscle before it is an organ part.
+// this order: a muscle head is a muscle before it is an organ part. Nerves are still recognised,
+// so they are not taken for organ parts, though their layer is built from Z-Anatomy.
 const RULES = [
   [
     'nerves',
@@ -129,15 +131,19 @@ export function groupBySystem({ conceptsOf, filesOf }, files) {
     const concepts = conceptsOf.get(file) ?? [];
     const name = nameOf(concepts, filesOf);
     const system = systemOf(concepts) ?? (/\bnerve\b|chiasm/.test(name ?? '') ? 'nerves' : null);
-    if (!system || !name) continue;
+    if (!system || !name || !(system in systems)) continue;
     const structures = systems[system];
     structures.set(name, [...(structures.get(name) ?? []), file]);
   }
   return systems;
 }
 
-async function build(system, structures, sourceDir, io) {
-  const { triangles: budget, maxBytes } = SYSTEMS[system];
+/**
+ * Writes one system layer: each structure one named mesh, simplified together to the layer's
+ * triangle budget, then quantised and compressed. `meshes` is `[name, { positions, indices }][]`
+ * in BodyParts3D millimetres.
+ */
+export async function writeLayer(system, meshes, { triangles: budget, maxBytes }, io) {
   const output = `apps/web/public/models/body-${system}.glb`;
   const document = new Document();
   const buffer = document.createBuffer();
@@ -145,10 +151,7 @@ async function build(system, structures, sourceDir, io) {
   const material = document.createMaterial(system);
 
   let total = 0;
-  for (const [name, files] of structures) {
-    const merged = mergeMeshes(
-      files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8'))),
-    );
+  for (const [name, merged] of meshes) {
     total += merged.indices.length / 3;
     const primitive = document
       .createPrimitive()
@@ -165,7 +168,7 @@ async function build(system, structures, sourceDir, io) {
     scene.addChild(document.createNode(id).setMesh(mesh).setExtras({ name }));
   }
 
-  step(`${system}: ${structures.size} structures, ${total} triangles; simplifying`);
+  step(`${system}: ${meshes.length} structures, ${total} triangles; simplifying`);
   await document.transform(weld());
   const ratio = Math.min(1, budget / total);
   for (const mesh of document.getRoot().listMeshes()) {
@@ -206,23 +209,38 @@ export function boundsOf(positions) {
   return { centre, radius };
 }
 
+/** A structure's entry in the body index: `[id, x, y, z, radius]` in BodyParts3D millimetres. */
+export function indexEntry(system, name, positions) {
+  const { centre, radius } = boundsOf(positions);
+  return [`${system}/${slug(name)}`, ...centre, radius];
+}
+
 /**
- * Every structure's id with where it sits on the body, so a search can name it and the camera
- * can turn to it: `[id, x, y, z, radius]` in BodyParts3D millimetres.
+ * Puts these systems' structures in the body index, keeping the other systems' (built by the
+ * other script), so a search can name any structure and the camera can turn to it.
  */
-function writeIndex(systems, sourceDir) {
-  const structures = [];
-  for (const [system, entries] of Object.entries(systems)) {
-    for (const [name, files] of entries) {
-      const { positions } = mergeMeshes(
-        files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8'))),
-      );
-      const { centre, radius } = boundsOf(positions);
-      structures.push([`${system}/${slug(name)}`, ...centre, radius]);
-    }
+export function updateIndex(systems, entries) {
+  let kept = [];
+  try {
+    kept = JSON.parse(readFileSync(INDEX_FILE, 'utf8')).structures.filter(
+      ([id]) => !systems.includes(id.split('/')[0]),
+    );
+  } catch {
+    // The first build: no index yet.
   }
+  const structures = [...kept, ...entries];
   writeFileSync(INDEX_FILE, `${JSON.stringify({ structures })}\n`);
-  console.log(`  ${structures.length} structures -> ${INDEX_FILE}`);
+  console.log(`  ${entries.length} structures of ${systems.join(', ')} -> ${INDEX_FILE}`);
+}
+
+/** One system's structures from the OBJ files, each merged into one mesh. */
+function meshesOf(structures, sourceDir) {
+  return [...structures].map(([name, files]) => [
+    name,
+    mergeMeshes(
+      files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8'))),
+    ),
+  ]);
 }
 
 async function main() {
@@ -235,17 +253,24 @@ async function main() {
   const index = readIndex(readFileSync(indexFile, 'utf8'));
   const files = [...index.conceptsOf.keys()];
   const systems = groupBySystem(index, files);
-  writeIndex(systems, sourceDir);
-  if (mode === '--index-only') return;
 
   await MeshoptEncoder.ready;
   await MeshoptSimplifier.ready;
-  const io = new NodeIO()
+  const io = layerIO();
+  const entries = [];
+  for (const [system, structures] of Object.entries(systems)) {
+    const meshes = meshesOf(structures, sourceDir);
+    entries.push(...meshes.map(([name, mesh]) => indexEntry(system, name, mesh.positions)));
+    if (mode !== '--index-only') await writeLayer(system, meshes, SYSTEMS[system], io);
+  }
+  updateIndex(Object.keys(SYSTEMS), entries);
+}
+
+/** Reads and writes the layers: quantised, meshopt-compressed glTF. */
+export function layerIO() {
+  return new NodeIO()
     .registerExtensions([KHRMeshQuantization, EXTMeshoptCompression])
     .registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
-  for (const [system, structures] of Object.entries(systems)) {
-    await build(system, structures, sourceDir, io);
-  }
 }
 
 if (process.argv[1]?.endsWith('build-body-systems.mjs')) await main();

@@ -527,6 +527,7 @@ export const LAYER_DOT: Record<LayerKind, string> = {
   artery: 'bg-anat-artery',
   vein: 'bg-anat-vein',
   nerve: 'bg-anat-nerve',
+  lymph: 'bg-anat-lymph',
   organ: 'bg-anat-organ',
 };
 

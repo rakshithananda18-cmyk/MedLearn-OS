@@ -12,7 +12,7 @@ export interface BodyIndexEntry {
 }
 
 // A new version in the address whenever the index is rebuilt, so phones fetch it again.
-const INDEX_FILE = '/models/body-index.json?v=1';
+const INDEX_FILE = '/models/body-index.json?v=2';
 let request: Promise<BodyIndexEntry[]> | null = null;
 
 /** Every structure of the body, fetched once per page, the first time it is needed. */
