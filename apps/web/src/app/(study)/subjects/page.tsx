@@ -7,7 +7,7 @@ import { PLANNABLE_TOPICS, posterOf, TOPICS } from '@/content/topics';
 import { Library } from '@/features/library/Library';
 import type { TopicPreviewData } from '@/features/library/TopicPreview';
 import { Screen } from '@/features/shell/Screen';
-import { getSubjectsRepository } from '@/server/db';
+import { listSubjects } from '@/server/db';
 
 export const metadata: Metadata = { title: 'Library | MedLearn OS' };
 
@@ -21,7 +21,7 @@ interface Props {
 export default async function SubjectsPage({ searchParams }: Props) {
   await connection();
   const { topic: asked, view } = await searchParams;
-  const subjects = await getSubjectsRepository().list();
+  const subjects = await listSubjects();
   const subjectName = (slug: string) =>
     subjects.find((subject) => subject.slug === slug)?.name ?? slug;
   const previews = Object.fromEntries(
