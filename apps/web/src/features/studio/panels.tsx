@@ -368,7 +368,8 @@ export function StructureSearch({
   autoFocus = false,
   onPick,
 }: Readonly<{
-  items: Array<{ id: string; name: string }>;
+  /** What to find, with an optional detail shown after the name (a structure's system). */
+  items: Array<{ id: string; name: string; detail?: string }>;
   label: string;
   autoFocus?: boolean;
   onPick: (id: string) => void;
@@ -413,6 +414,7 @@ export function StructureSearch({
                 className="min-h-12 w-full rounded-md px-3 text-left text-sm text-ink hover:bg-surface-muted"
               >
                 {item.name}
+                {item.detail ? <span className="text-fg-muted"> · {item.detail}</span> : null}
               </button>
             </li>
           ))}

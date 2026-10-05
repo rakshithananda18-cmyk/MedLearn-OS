@@ -6,7 +6,7 @@
 // Usage: node scripts/models/build-body-systems.mjs <extracted OBJ folder> <isa_element_parts.txt>
 // Each system is simplified to a triangle budget, so the body runs in a phone's browser; systems
 // load one at a time, when switched on.
-import { readFileSync, statSync } from 'node:fs';
+import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -189,14 +189,54 @@ async function build(system, structures, sourceDir, io) {
   if (bytes > maxBytes) fail(`${system}: over its ${(maxBytes / 1e6).toFixed(1)} MB budget`);
 }
 
+const INDEX_FILE = 'apps/web/public/models/body-index.json';
+
+/** The middle of a mesh and the radius around it, in whole millimetres. */
+export function boundsOf(positions) {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  for (let at = 0; at < positions.length; at += 3) {
+    for (let axis = 0; axis < 3; axis++) {
+      min[axis] = Math.min(min[axis], positions[at + axis]);
+      max[axis] = Math.max(max[axis], positions[at + axis]);
+    }
+  }
+  const centre = min.map((low, axis) => Math.round((low + max[axis]) / 2));
+  const radius = Math.round(Math.hypot(...max.map((high, axis) => high - min[axis])) / 2);
+  return { centre, radius };
+}
+
+/**
+ * Every structure's id with where it sits on the body, so a search can name it and the camera
+ * can turn to it: `[id, x, y, z, radius]` in BodyParts3D millimetres.
+ */
+function writeIndex(systems, sourceDir) {
+  const structures = [];
+  for (const [system, entries] of Object.entries(systems)) {
+    for (const [name, files] of entries) {
+      const { positions } = mergeMeshes(
+        files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8'))),
+      );
+      const { centre, radius } = boundsOf(positions);
+      structures.push([`${system}/${slug(name)}`, ...centre, radius]);
+    }
+  }
+  writeFileSync(INDEX_FILE, `${JSON.stringify({ structures })}\n`);
+  console.log(`  ${structures.length} structures -> ${INDEX_FILE}`);
+}
+
 async function main() {
-  const [sourceDir, indexFile] = process.argv.slice(2);
+  const [sourceDir, indexFile, mode] = process.argv.slice(2);
   if (!sourceDir || !indexFile) {
-    fail('Usage: node scripts/models/build-body-systems.mjs <OBJ folder> <isa_element_parts.txt>');
+    fail(
+      'Usage: node scripts/models/build-body-systems.mjs <OBJ folder> <isa_element_parts.txt> [--index-only]',
+    );
   }
   const index = readIndex(readFileSync(indexFile, 'utf8'));
   const files = [...index.conceptsOf.keys()];
   const systems = groupBySystem(index, files);
+  writeIndex(systems, sourceDir);
+  if (mode === '--index-only') return;
 
   await MeshoptEncoder.ready;
   await MeshoptSimplifier.ready;
