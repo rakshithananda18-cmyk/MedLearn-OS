@@ -20,6 +20,23 @@ export interface XrayFilm {
   source: string;
 }
 
+const rightBones = (...names: string[]) => names.map((name) => `skeleton/right-${name}`);
+const CARPALS = ['scaphoid', 'lunate', 'pisiform', 'trapezium', 'trapezoid', 'capitate', 'hamate'];
+const METACARPALS = ['first', 'second', 'third', 'fourth', 'fifth'].map(
+  (place) => `${place}-metacarpal-bone`,
+);
+
+/**
+ * The bones each region's films show, on the one body (its right side, like the topic models):
+ * lit while a film is open on the whole body, and where the camera turns.
+ */
+export const FILM_BONES: Record<XrayFilm['region'], string[]> = {
+  shoulder: rightBones('humerus', 'scapula', 'clavicle'),
+  elbow: rightBones('humerus', 'radius', 'ulna'),
+  wrist: rightBones('radius', 'ulna', ...CARPALS),
+  hand: rightBones(...CARPALS, ...METACARPALS),
+};
+
 /** Who made the films, and their licence: shown under every film. */
 export const XRAY_CREDIT = 'Radiographs: Mikael Häggström, CC0, via Wikimedia Commons';
 

@@ -35,7 +35,7 @@ export function XrayViewer({
   return (
     <section
       aria-label={`X-ray: ${film.title}`}
-      className="pointer-events-auto flex min-h-0 flex-1 animate-rise flex-col gap-3 rounded-xl bg-ink p-3 text-canvas shadow-overlay"
+      className="pointer-events-auto flex min-h-0 min-w-0 flex-1 animate-rise flex-col gap-3 rounded-xl bg-ink p-3 text-canvas shadow-overlay"
     >
       <header className="flex items-center gap-2">
         <div className="flex min-w-0 flex-1 flex-col">

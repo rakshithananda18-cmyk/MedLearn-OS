@@ -102,3 +102,24 @@ export function bodyQuizPool(
     )
     .map((entry) => entry.id);
 }
+
+/**
+ * Where to turn the camera for several structures together: the middle of their centres, far
+ * enough back to take them all in.
+ */
+export function focusOn(
+  ids: string[],
+  index: BodyIndexEntry[],
+): { point: Point3; radius: number } | null {
+  const found = index.filter((entry) => ids.includes(entry.id));
+  if (found.length === 0) return null;
+  const point = [0, 1, 2].map(
+    (axis) => found.reduce((sum, entry) => sum + (entry.centre[axis] ?? 0), 0) / found.length,
+  ) as Point3;
+  const spread = Math.max(
+    ...found.map((entry) =>
+      Math.hypot(...entry.centre.map((value, axis) => value - (point[axis] ?? 0))),
+    ),
+  );
+  return { point, radius: Math.max(60, spread) };
+}
