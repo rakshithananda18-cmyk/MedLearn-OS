@@ -18,6 +18,7 @@ import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 
 import { fail, step } from '../lib/cli.mjs';
 import { mergeMeshes, parseObj } from './build-models.mjs';
+import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
 
 /** Triangles per system across the whole body, and the download each may take. */
 export const SYSTEMS = {
@@ -25,7 +26,25 @@ export const SYSTEMS = {
   muscles: { triangles: 240_000, maxBytes: 3_600_000 },
   arteries: { triangles: 90_000, maxBytes: 1_600_000 },
   veins: { triangles: 90_000, maxBytes: 1_600_000 },
-  organs: { triangles: 120_000, maxBytes: 2_000_000 },
+  organs: { triangles: 160_000, maxBytes: 2_400_000 },
+};
+
+/**
+ * Organs BodyParts3D has only in pieces, or not at all, taken whole from Z-Anatomy's visceral set
+ * (CC BY-SA 4.0; see build-z-anatomy.mjs): the liver, in place of BodyParts3D's hepatovenous
+ * segments and caudate lobe, and the lungs, lobe by lobe.
+ */
+export const Z_ANATOMY_ORGANS = {
+  file: 'models-src/z-anatomy/VisceralSystem100.fbx',
+  names: [
+    'Liver',
+    'Superior lobe of right lung',
+    'Middle lobe of right lung',
+    'Inferior lobe of right lung',
+    'Superior lobe of left lung',
+    'Inferior lobe of left lung',
+  ],
+  replaces: /^(hepatovenous segment|caudate lobe of liver)/,
 };
 
 // Which system a BodyParts3D element belongs to, from the concepts it is a kind of. Checked in
@@ -132,6 +151,7 @@ export function groupBySystem({ conceptsOf, filesOf }, files) {
     const name = nameOf(concepts, filesOf);
     const system = systemOf(concepts) ?? (/\bnerve\b|chiasm/.test(name ?? '') ? 'nerves' : null);
     if (!system || !name || !(system in systems)) continue;
+    if (system === 'organs' && Z_ANATOMY_ORGANS.replaces.test(name)) continue;
     const structures = systems[system];
     structures.set(name, [...(structures.get(name) ?? []), file]);
   }
@@ -233,6 +253,15 @@ export function updateIndex(systems, entries) {
   console.log(`  ${entries.length} structures of ${systems.join(', ')} -> ${INDEX_FILE}`);
 }
 
+/** The organs taken whole from Z-Anatomy: every one of them, or the build stops. */
+function zAnatomyOrgans() {
+  const wanted = new Set(Z_ANATOMY_ORGANS.names);
+  const found = zAnatomyStructures(Z_ANATOMY_ORGANS.file).filter(([name]) => wanted.has(name));
+  const missing = Z_ANATOMY_ORGANS.names.filter((name) => !found.some(([got]) => got === name));
+  if (missing.length > 0) fail(`Not in ${Z_ANATOMY_ORGANS.file}: ${missing.join(', ')}`);
+  return found;
+}
+
 /** One system's structures from the OBJ files, each merged into one mesh. */
 function meshesOf(structures, sourceDir) {
   return [...structures].map(([name, files]) => [
@@ -244,10 +273,13 @@ function meshesOf(structures, sourceDir) {
 }
 
 async function main() {
-  const [sourceDir, indexFile, mode] = process.argv.slice(2);
+  const [sourceDir, indexFile, ...flags] = process.argv.slice(2);
+  const indexOnly = flags.includes('--index-only');
+  // --only=organs rebuilds one layer; the index still covers every system.
+  const only = flags.find((flag) => flag.startsWith('--only='))?.slice('--only='.length);
   if (!sourceDir || !indexFile) {
     fail(
-      'Usage: node scripts/models/build-body-systems.mjs <OBJ folder> <isa_element_parts.txt> [--index-only]',
+      'Usage: node scripts/models/build-body-systems.mjs <OBJ folder> <isa_element_parts.txt> [--index-only] [--only=<system>]',
     );
   }
   const index = readIndex(readFileSync(indexFile, 'utf8'));
@@ -260,8 +292,11 @@ async function main() {
   const entries = [];
   for (const [system, structures] of Object.entries(systems)) {
     const meshes = meshesOf(structures, sourceDir);
+    if (system === 'organs') meshes.push(...zAnatomyOrgans());
     entries.push(...meshes.map(([name, mesh]) => indexEntry(system, name, mesh.positions)));
-    if (mode !== '--index-only') await writeLayer(system, meshes, SYSTEMS[system], io);
+    if (!indexOnly && (!only || only === system)) {
+      await writeLayer(system, meshes, SYSTEMS[system], io);
+    }
   }
   updateIndex(Object.keys(SYSTEMS), entries);
 }

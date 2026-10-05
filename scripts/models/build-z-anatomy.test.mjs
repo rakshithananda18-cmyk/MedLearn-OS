@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { plainName, toBodyParts3D } from './build-z-anatomy.mjs';
+import { plainName, toBodyParts3D } from './z-anatomy.mjs';
 
 describe('Z-Anatomy names', () => {
   const names = new Set([
