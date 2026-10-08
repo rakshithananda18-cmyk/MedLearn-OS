@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:openstax.org)",
+      "WebFetch(domain:android-developers.googleblog.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='WINWORD.EXE'\")"
+    ]
+  }
+}

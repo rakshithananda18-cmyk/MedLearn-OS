@@ -1,0 +1,9 @@
+- [Plans as docx](plans-as-docx.md) — deliver plans/specs as .docx; new versions add to old, never replace; reviews = dated exact copy with status notes beside each item
+- [MedLearn OS project](medlearn-os-project.md) — MBBS learning app, small team, blueprint v0.1 in Downloads
+- [Engineering standards](engineering-standards.md) — tests front+back, logger, local setup, modular, uniform UI, no emojis (outlined SVG icons)
+- [No GUI launch from Claude](no-gui-launch-from-claude.md) — never start Docker Desktop from Claude tools (MSIX sandbox breaks it); user starts it or use explorer.exe
+- [Private phase, book content](private-phase-book-content.md) — from 27 Sep 2026: app is private for ~5 people; content from standard textbooks (PDFs coming)
+- [Calm Sky design direction](design-direction-calm-sky.md) — CRED-inspired sky look; keep the light colours; 28 Sep redesign canvas: one hero per screen, night-style dark, phone/tablet/laptop
+- [3D studio direction](3d-studio-direction.md) — 3D is one full-bleed play area across the app: overlaid lists, topics left, draw/edit/discard, customisation, quizzes
+- [Book page offsets](book-page-offsets.md) — BD and Gray's ch7 both printed=idx−23, upper limb 677–825 section map
+- [Female body and X-ray sources](female-and-xray-sources.md) — CC BY Sketchfab female set, CC0 Commons X-rays; downloads await the user's yes
