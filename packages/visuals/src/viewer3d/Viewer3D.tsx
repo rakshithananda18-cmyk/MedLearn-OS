@@ -11,6 +11,7 @@ import {
   DoubleSide,
   FrontSide,
   type Group,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   type Object3D,
@@ -55,6 +56,19 @@ export interface Viewer3DLayer {
 export interface Viewer3DFocus {
   point: Point3;
   radius: number;
+}
+
+/**
+ * A joint movement: the structures that turn, about an axis through a point (model frame), by an
+ * angle in radians. Playing, the angle swings between none and `range` by itself.
+ */
+export interface Viewer3DPose {
+  ids: ReadonlySet<string>;
+  pivot: Point3;
+  axis: Point3;
+  angle: number;
+  range: number;
+  playing: boolean;
 }
 
 /** The three anatomical planes a section can cut along. */
@@ -107,6 +121,8 @@ export interface Viewer3DProps {
   section?: Viewer3DSection | null;
   /** Turns the camera to this structure whenever it changes. */
   focus?: Viewer3DFocus | null;
+  /** A joint movement shown on the model. */
+  pose?: Viewer3DPose | null;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -250,6 +266,59 @@ function shown(object: Object3D | null): boolean {
 /** Whether a tap landed on something drawn: shown, and not cut away by a section. */
 function drawn(hit: { object: Object3D; point: Vector3 }, planes: Plane[]): boolean {
   return shown(hit.object) && planes.every((plane) => plane.distanceToPoint(hit.point) >= 0);
+}
+
+// A played movement goes there and back in this many seconds.
+const SWING_SECONDS = 4;
+
+/**
+ * Turns a movement's structures about its axis, as rigid parts: each keeps its resting place to
+ * return to. Applied on every frame drawn while a movement shows, so systems switched on
+ * meanwhile join in; playing, it swings by itself.
+ */
+function Movement({
+  pose,
+  groupRef,
+}: Readonly<{ pose: Viewer3DPose | null; groupRef: RefObject<Group | null> }>) {
+  const { invalidate } = useThree();
+  const posed = useRef(false);
+  const turn = useMemo(() => new Matrix4(), []);
+  const step = useMemo(() => new Matrix4(), []);
+
+  useEffect(() => {
+    invalidate();
+  }, [pose, invalidate]);
+
+  useFrame((state) => {
+    const group = groupRef.current;
+    if (!group || (!pose && !posed.current)) return;
+    if (pose) {
+      const angle = pose.playing
+        ? (pose.range * (1 - Math.cos((state.clock.elapsedTime * 2 * Math.PI) / SWING_SECONDS))) / 2
+        : pose.angle;
+      const [x, y, z] = pose.pivot;
+      turn
+        .makeTranslation(x, y, z)
+        .multiply(step.makeRotationAxis(new Vector3(...pose.axis).normalize(), angle))
+        .multiply(step.makeTranslation(-x, -y, -z));
+    }
+    group.traverse((child) => {
+      const id = child.userData.partId as string | undefined;
+      const rest = child.userData.rest as Matrix4 | undefined;
+      if (pose && id && pose.ids.has(id)) {
+        child.userData.rest = rest ?? child.matrix.clone();
+        child.matrixAutoUpdate = false;
+        child.matrix.multiplyMatrices(turn, child.userData.rest as Matrix4);
+      } else if (rest) {
+        child.matrix.copy(rest);
+        child.matrixAutoUpdate = true;
+        delete child.userData.rest;
+      }
+    });
+    posed.current = pose !== null;
+    if (pose?.playing) invalidate();
+  });
+  return null;
 }
 
 const SECTION_AXIS: Record<SectionPlane, 'x' | 'y' | 'z'> = {
@@ -614,6 +683,7 @@ export default function Viewer3D({
   layers = [],
   section = null,
   focus = null,
+  pose = null,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
   const selecting =
@@ -729,6 +799,7 @@ export default function Viewer3D({
           ) : null}
         </group>
         <Section section={section} groupRef={group} />
+        <Movement pose={pose} groupRef={group} />
         <LabelTracker
           model={model}
           labels={labels}
