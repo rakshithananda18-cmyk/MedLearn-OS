@@ -22,10 +22,12 @@ const TAIM = 'Taim Talks Med';
 const KHANFOUR = 'Dr Ayman Khanfour Anatomy Teaching';
 const DAVINCI = 'DaVinci Academy';
 const NOTED = 'The Noted Anatomist';
+const BLUELINK = 'BlueLink Anatomy';
+const MEDICOSIS = 'Medicosis Perfectionalis';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax on 13 and 14 Oct 2026); each
+ * thorax from 13 to 15 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -188,12 +190,34 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   ],
   mediastinum: [
     video('41CVqLbPh-0', 'Anatomy of the mediastinum', 'Ninja Nerd', 2228),
+    video('RBQyxZ0FOW4', 'The mediastinum: superior and inferior', MEDICOSIS, 1980),
+  ],
+  pericardium: [video('pKjx5Iqi2jQ', 'Pericardium, its cavity and sinuses', 'Sanjoy Sanyal', 516)],
+  'heart-external-features': [
+    video('NsBQSY-Ynws', 'Surfaces and borders of the heart', BLUELINK, 720),
+    video('fCOZTNeB7kA', 'External features of the heart', 'Med Master Class', 391),
+  ],
+  'heart-chambers': [
+    video('uhSBFOTwzDQ', 'The heart: external and internal structures', TAIM, 1099),
     video(
-      'RBQyxZ0FOW4',
-      'The mediastinum: superior and inferior',
-      'Medicosis Perfectionalis',
-      1980,
+      'eFCK7IoV_sQ',
+      'External and internal features of the heart',
+      'Human Anatomy Education',
+      753,
     ),
+  ],
+  'heart-valves-conduction': [
+    video('kO8-hZ5-CeY', 'Cardiac valves', 'Radiology Tutorials', 1357),
+    video('YNDqDqd2WkY', 'Cardiac conduction system', 'Dr Matt & Dr Mike', 965),
+  ],
+  'coronary-circulation': [
+    video('WMp81Xds4DM', 'Coronary arteries and cardiac veins', BLUELINK, 1589),
+    video('xuIFY3onWPQ', 'Coronary artery anatomy in 3D', 'Geeky Medics', 332),
+    video('BiV5XJ0HWZI', 'Cardiac veins', KNOWLEDGE, 292),
+  ],
+  'fetal-circulation': [
+    video('J56OcWZhZXQ', 'Fetal circulation', MEDICOSIS, 674),
+    video('HVBu9HhTkD4', 'Fetal circulation', 'OPENPediatrics', 367),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', 'Armando Hasudungan', 712),

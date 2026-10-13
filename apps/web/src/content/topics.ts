@@ -10,14 +10,19 @@ import { backMuscles } from './back-muscles';
 import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
 import { carpalTunnel } from './carpal-tunnel';
+import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
+import { fetalCirculation } from './fetal-circulation';
 import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
 import { handMuscles } from './hand-muscles';
+import { heartChambers } from './heart-chambers';
+import { heartExternalFeatures } from './heart-external-features';
+import { heartValvesConduction } from './heart-valves-conduction';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
@@ -28,6 +33,7 @@ import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
+import { pericardium } from './pericardium';
 import { pleura } from './pleura';
 import { radioulnarJoints } from './radioulnar-joints';
 import { ribs } from './ribs';
@@ -91,6 +97,12 @@ export const TOPICS: Topic[] = [
   lungRootBronchialTree,
   bronchopulmonarySegments,
   mediastinum,
+  pericardium,
+  heartExternalFeatures,
+  heartChambers,
+  heartValvesConduction,
+  coronaryCirculation,
+  fetalCirculation,
   oxygenCurve,
 ];
 

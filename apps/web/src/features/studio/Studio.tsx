@@ -71,6 +71,7 @@ const PART_LAYERS: Array<{ kind: PartKind; name: string }> = [
   { kind: 'membrane', name: 'Pleura' },
   { kind: 'organ', name: 'Organs' },
   { kind: 'airway', name: 'Airways' },
+  { kind: 'valve', name: 'Valves' },
   { kind: 'muscle', name: 'Muscles' },
   { kind: 'artery', name: 'Arteries' },
   { kind: 'vein', name: 'Veins' },

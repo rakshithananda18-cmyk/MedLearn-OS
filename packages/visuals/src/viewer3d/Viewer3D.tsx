@@ -149,6 +149,7 @@ const PART_COLOUR: Record<PartKind, string> = {
   organ: '--color-anat-organ',
   airway: '--color-anat-airway',
   membrane: '--color-anat-membrane',
+  valve: '--color-anat-valve',
 };
 const TRACE_COLOUR: Record<ModelTrace['kind'], string> = {
   nerve: '--color-anat-nerve',
@@ -167,6 +168,7 @@ const PART_OPACITY: Record<PartKind, number> = {
   organ: 0.5,
   airway: 1,
   membrane: 0.2,
+  valve: 1,
 };
 
 const LAYER_COLOUR: Record<LayerKind, string> = {

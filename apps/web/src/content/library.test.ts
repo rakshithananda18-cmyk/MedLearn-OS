@@ -43,6 +43,7 @@ describe('libraryTree', () => {
       'Pleura',
       'Lungs',
       'Mediastinum',
+      'Heart',
     ]);
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));
