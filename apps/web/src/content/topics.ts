@@ -17,17 +17,23 @@ import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
 import { handMuscles } from './hand-muscles';
+import { intercostalSpaces } from './intercostal-spaces';
+import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { nerveInjuries } from './nerve-injuries';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
 import { radioulnarJoints } from './radioulnar-joints';
+import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
 import { shoulderGirdle } from './shoulder-girdle';
 import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
+import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { surfaceMarking } from './surface-marking';
+import { thoracicJointsRespiration } from './thoracic-joints-respiration';
+import { thoraxIntroduction } from './thorax-introduction';
 import { upperLimbDevelopment } from './upper-limb-development';
 import { upperLimbXrays } from './upper-limb-xrays';
 import { wristBack } from './wrist-back';
@@ -69,6 +75,12 @@ export const TOPICS: Topic[] = [
   nerveInjuries,
   elbowAnastomosis,
   upperLimbDevelopment,
+  thoraxIntroduction,
+  ribs,
+  sternumThoracicVertebrae,
+  thoracicJointsRespiration,
+  intercostalSpaces,
+  internalThoracicAzygos,
   oxygenCurve,
 ];
 

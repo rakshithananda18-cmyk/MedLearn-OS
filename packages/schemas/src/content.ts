@@ -55,7 +55,7 @@ export type CurveConditions = z.infer<typeof CurveConditions>;
 export const Point3 = z.tuple([z.number(), z.number(), z.number()]);
 export type Point3 = z.infer<typeof Point3>;
 
-export const PartKind = z.enum(['bone', 'muscle', 'artery', 'vein', 'skin']);
+export const PartKind = z.enum(['bone', 'muscle', 'artery', 'vein', 'nerve', 'skin']);
 export type PartKind = z.infer<typeof PartKind>;
 
 /** A named mesh inside the model file; a model shows only the parts its content lists. */

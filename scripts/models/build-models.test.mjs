@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { BODY_MODEL } from '../../apps/web/src/content/body';
 import { SHOULDER_PART_IDS } from '../../apps/web/src/content/shoulder-3d';
-import { clipTrianglesX, mergeMeshes, MODELS, parseObj, readConcepts } from './build-models.mjs';
+import { THORAX_PART_IDS } from '../../apps/web/src/content/thorax-3d';
+import { clipTriangles, mergeMeshes, MODELS, parseObj, readConcepts } from './build-models.mjs';
 
 describe('parseObj', () => {
   it('reads vertices and splits polygons into triangles (BodyParts3D "a//a" faces)', () => {
@@ -35,15 +36,16 @@ describe('mergeMeshes', () => {
   });
 });
 
-describe('clipTrianglesX', () => {
-  it('keeps the triangles whose centre lies in the range', () => {
+describe('clipTriangles', () => {
+  it('keeps the triangles whose centre lies in the range along the axis', () => {
     const mesh = {
-      // One triangle near x = 0, one near x = 10.
-      positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0, 0, 11, 0, 0, 10, 1, 0]),
+      // One triangle near x = 0, z = 10; one near x = 10, z = 0.
+      positions: new Float32Array([0, 0, 10, 1, 0, 10, 0, 1, 10, 10, 0, 0, 11, 0, 0, 10, 1, 0]),
       indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
     };
-    expect([...clipTrianglesX(mesh, [5, Infinity]).indices]).toEqual([3, 4, 5]);
-    expect([...clipTrianglesX(mesh, [-Infinity, 5]).indices]).toEqual([0, 1, 2]);
+    expect([...clipTriangles(mesh, [5, Infinity]).indices]).toEqual([3, 4, 5]);
+    expect([...clipTriangles(mesh, [-Infinity, 5]).indices]).toEqual([0, 1, 2]);
+    expect([...clipTriangles(mesh, [5, Infinity], 2).indices]).toEqual([0, 1, 2]);
   });
 });
 
@@ -81,6 +83,7 @@ describe('content and models', () => {
 
   it('has a mesh for every part the content can show', () => {
     expect(meshes('upper-limb')).toEqual(expect.arrayContaining(SHOULDER_PART_IDS));
+    expect(meshes('thorax')).toEqual(expect.arrayContaining(THORAX_PART_IDS));
     expect(meshes('body')).toEqual(expect.arrayContaining(BODY_MODEL.parts.map((part) => part.id)));
   });
 });

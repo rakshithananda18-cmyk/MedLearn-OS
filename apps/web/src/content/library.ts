@@ -20,19 +20,27 @@ export interface LibraryBranch {
 
 export type LibraryNode = LibraryBranch | LibraryTopic;
 
-// Sections of BD Chaurasia Volume 1, by chapter number, named for what they cover. A topic's
+// Sections of BD Chaurasia Volume 1, by region and chapter number (the book numbers both the
+// upper limb's last chapter and the thorax's first 12), named for what they cover. A topic's
 // section comes from its BD reference, so the tree follows the order students dissect in.
-const BD_SECTIONS: Record<number, string> = {
-  3: 'Pectoral region',
-  4: 'Axilla',
-  5: 'Back',
-  6: 'Scapular region',
-  7: 'Skin nerves, veins and lymph',
-  8: 'Arm',
-  9: 'Forearm and hand',
-  10: 'Joints',
-  11: 'Surface marking and X-rays',
-  12: 'Nerves, arteries and development',
+const BD_SECTIONS: Record<string, Record<number, string>> = {
+  'upper-limb': {
+    3: 'Pectoral region',
+    4: 'Axilla',
+    5: 'Back',
+    6: 'Scapular region',
+    7: 'Skin nerves, veins and lymph',
+    8: 'Arm',
+    9: 'Forearm and hand',
+    10: 'Joints',
+    11: 'Surface marking and X-rays',
+    12: 'Nerves, arteries and development',
+  },
+  thorax: {
+    12: 'Landmarks, inlet and outlet',
+    13: 'Bones and joints',
+    14: 'Walls',
+  },
 };
 
 /** The BD Chaurasia chapter a topic is read in, when it has one. */
@@ -67,7 +75,7 @@ export function libraryTree(topics: Topic[]): LibraryNode[] {
         children: chapters.map((chapter) => ({
           kind: 'branch',
           id: `${region.id}-chapter-${chapter}`,
-          label: BD_SECTIONS[chapter ?? 0] ?? `Chapter ${chapter}`,
+          label: BD_SECTIONS[region.id]?.[chapter ?? 0] ?? `Chapter ${chapter}`,
           children: inRegion.filter((topic) => bdChapter(topic) === chapter).map(leaf),
         })),
       },

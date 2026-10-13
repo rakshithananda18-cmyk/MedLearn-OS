@@ -18,9 +18,13 @@ const ANATOMY_ZONE = 'AnatomyZone';
 const KENHUB = 'Kenhub';
 const KNOWLEDGE = 'Anatomy Knowledge';
 const CATALYST = 'Catalyst University';
+const TAIM = 'Taim Talks Med';
+const KHANFOUR = 'Dr Ayman Khanfour Anatomy Teaching';
+const DAVINCI = 'DaVinci Academy';
 
 /**
- * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026; each
+ * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
+ * thorax on 13 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -115,7 +119,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   'radioulnar-joints': [
     video('L4VN67kFaLQ', 'Movements and muscles of the radioulnar joints', CATALYST, 723),
   ],
-  'wrist-hand-joints': [video('LPU6-YF89xY', 'Wrist and hand joints', 'Taim Talks Med', 615)],
+  'wrist-hand-joints': [video('LPU6-YF89xY', 'Wrist and hand joints', TAIM, 615)],
   'skin-veins-lymph': [
     video('N3CIyTJCo6U', 'Superficial veins: basilic and cephalic', KNOWLEDGE, 234),
   ],
@@ -139,6 +143,31 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
       'FSU College of Medicine',
       537,
     ),
+  ],
+  'thorax-introduction': [
+    video('bXOrg-Fbgds', 'Thoracic cage: inlet, cavity and outlet', KHANFOUR, 2401),
+    video('Z-TMJPst69w', 'Ribs and sternum: classification and landmarks', TAIM, 642),
+  ],
+  ribs: [
+    video('Z-TMJPst69w', 'Ribs and sternum: classification and landmarks', TAIM, 642),
+    video('EOXfnRK0-Ic', 'Thoracic cage: ribs, sternum and thoracic vertebrae', DAVINCI, 980),
+  ],
+  'sternum-thoracic-vertebrae': [
+    video('EOXfnRK0-Ic', 'Thoracic cage: ribs, sternum and thoracic vertebrae', DAVINCI, 980),
+    video('Ok8-nwVLysM', 'Thoracic vertebrae, typical and atypical', 'Med Tube', 325),
+  ],
+  'thoracic-joints-respiration': [
+    video('ocj8C8yAg2E', 'How breathing actually works', KENHUB, 1133),
+    video('dxEDGK4nAZM', 'Pump-handle and bucket-handle movements', 'Medical Lecture', 598),
+  ],
+  'intercostal-spaces': [
+    video('A6rk-HArtmc', 'Intercostal spaces: muscles, vessels and nerves', KHANFOUR, 2382),
+    video('CDegVLKtu28', 'Intercostal neurovascular bundle', 'Sam Webster', 1624),
+  ],
+  'internal-thoracic-azygos': [
+    video('D4vcdePoRX4', 'Vessels of the thorax', DAVINCI, 1072),
+    video('KXNsaZO9B1Q', 'Internal thoracic artery', 'Human Anatomy Lessons', 266),
+    video('_H4gu8lnkoM', 'Azygos and hemiazygos veins', 'Dr G Bhanu Prakash', 343),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', 'Armando Hasudungan', 712),
