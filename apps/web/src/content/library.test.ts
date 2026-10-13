@@ -32,6 +32,15 @@ describe('libraryTree', () => {
       'axillary-lymph-nodes',
       'brachial-plexus',
     ]);
+    // The thorax reuses chapter 12 for its own first section.
+    const thorax = tree[1];
+    expect(thorax).toMatchObject({ kind: 'branch', label: 'Thorax' });
+    if (thorax?.kind !== 'branch') throw new Error('no thorax');
+    expect(thorax.children.map((section) => section.kind === 'branch' && section.label)).toEqual([
+      'Landmarks, inlet and outlet',
+      'Bones and joints',
+      'Walls',
+    ]);
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));
     expect(all).toHaveLength(bySubject('anatomy').length);

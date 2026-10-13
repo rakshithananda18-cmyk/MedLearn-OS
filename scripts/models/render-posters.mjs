@@ -3,7 +3,8 @@
 // seconds. Transparent WebP, trimmed to the model, so it sits on any background.
 //
 // Usage: start the app (pnpm dev, or a production build), then
-//   node scripts/models/render-posters.mjs [base URL, default http://localhost:3200]
+//   node scripts/models/render-posters.mjs [base URL, default http://localhost:3200] [names...]
+// Names (such as ribs) render just those posters; none renders them all.
 // Re-run when a model or a topic's first camera view changes.
 import { mkdirSync } from 'node:fs';
 
@@ -13,6 +14,7 @@ import sharp from 'sharp';
 import { fail, step } from '../lib/cli.mjs';
 
 const BASE = process.argv[2] ?? 'http://localhost:3200';
+const ONLY = process.argv.slice(3);
 const OUT = 'apps/web/public/posters';
 const WIDTH = 560;
 
@@ -49,6 +51,12 @@ export const POSTERS = [
   { name: 'nerve-injuries', path: '/studio?topic=nerve-injuries' },
   { name: 'elbow-anastomosis', path: '/studio?topic=elbow-anastomosis' },
   { name: 'upper-limb-development', path: '/studio?topic=upper-limb-development' },
+  { name: 'thorax-introduction', path: '/studio?topic=thorax-introduction' },
+  { name: 'ribs', path: '/studio?topic=ribs' },
+  { name: 'sternum-thoracic-vertebrae', path: '/studio?topic=sternum-thoracic-vertebrae' },
+  { name: 'thoracic-joints-respiration', path: '/studio?topic=thoracic-joints-respiration' },
+  { name: 'intercostal-spaces', path: '/studio?topic=intercostal-spaces' },
+  { name: 'internal-thoracic-azygos', path: '/studio?topic=internal-thoracic-azygos' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
@@ -68,7 +76,7 @@ async function main() {
     reducedMotion: 'reduce',
   });
   try {
-    for (const poster of POSTERS) {
+    for (const poster of POSTERS.filter(({ name }) => ONLY.length === 0 || ONLY.includes(name))) {
       step(`Rendering ${poster.name}`);
       await page.goto(`${BASE}${poster.path}`, { waitUntil: 'networkidle' });
       await page.waitForSelector('canvas', { timeout: 60_000 });

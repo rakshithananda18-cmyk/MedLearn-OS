@@ -38,7 +38,7 @@ export interface Viewer3DLabel {
 }
 
 /** What a whole-body system layer is made of, which sets its colour. */
-export type LayerKind = PartKind | 'nerve' | 'lymph' | 'organ';
+export type LayerKind = PartKind | 'lymph' | 'organ';
 
 /**
  * One body system drawn from its own file (skeleton, muscles, vessels, nerves, lymph nodes, organs) on the same
@@ -144,6 +144,7 @@ const PART_COLOUR: Record<PartKind, string> = {
   muscle: '--color-anat-muscle',
   artery: '--color-anat-artery',
   vein: '--color-anat-vein',
+  nerve: '--color-anat-nerve',
   skin: '--color-anat-skin',
 };
 const TRACE_COLOUR: Record<ModelTrace['kind'], string> = {
@@ -157,12 +158,12 @@ const PART_OPACITY: Record<PartKind, number> = {
   muscle: 0.45,
   artery: 1,
   vein: 1,
+  nerve: 1,
   skin: 0.35,
 };
 
 const LAYER_COLOUR: Record<LayerKind, string> = {
   ...PART_COLOUR,
-  nerve: '--color-anat-nerve',
   lymph: '--color-anat-lymph',
   organ: '--color-anat-organ',
 };

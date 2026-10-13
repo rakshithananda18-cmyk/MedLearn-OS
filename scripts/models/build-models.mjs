@@ -1,6 +1,8 @@
 // Builds the app's 3D models in apps/web/public/models from BodyParts3D meshes:
 //  - upper-limb.glb: bones, muscles, arteries and veins of the right upper limb and chest, shared
 //    by the upper limb topics (each topic shows its own parts)
+//  - thorax.glb: the thoracic cage, its walls and the great vessels and veins behind them, both
+//    sides, shared by the thorax topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -9,7 +11,7 @@
 // models built here are shared under CC BY-SA to be safe (logged for legal review).
 //
 // Usage: node scripts/models/build-models.mjs <folder with the extracted FJ*.obj files>
-//          <isa_element_parts.txt, the index from the same download page>
+//          <isa_element_parts.txt, the index from the same download page> [--only=<model>]
 // Coordinates stay in the source frame (millimetres, Z up); the viewer turns them into its scene.
 // Model files are cached forever by URL, so a rebuilt model with new parts needs a new address
 // (the version in SHOULDER_MODEL_SRC, apps/web/src/content/shoulder-3d.ts).
@@ -22,12 +24,15 @@ import { meshopt, prune, simplifyPrimitive, weld } from '@gltf-transform/functio
 import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 
 import { fail, step } from '../lib/cli.mjs';
+import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
 
 /**
  * Each part is one mesh named by the id the content uses, merged from BodyParts3D element files
  * (right side, negative X), simplified to `ratio` of its triangles (1 keeps it as it is).
- * `concept` takes every element file of a BodyParts3D concept instead of listing `files`.
- * `clipX` keeps only the triangles whose centre lies in [min, max) along X.
+ * `concept` takes every element file of a BodyParts3D concept instead of listing `files`, and
+ * `concepts` those of several. `zAnatomy` takes named structures from a Z-Anatomy FBX instead
+ * (CC BY-SA 4.0; see build-z-anatomy.mjs), for what BodyParts3D lacks, such as the thoracic nerves.
+ * `clipX` and `clipZ` keep only the triangles whose centre lies in [min, max) along that axis.
  */
 // Pectoralis minor lies in front of the axillary artery from X -137 to -107 (measured from the
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
@@ -248,6 +253,94 @@ export const MODELS = [
     ],
   },
   {
+    name: 'thorax',
+    // The thoracic cage and its walls with the vessels behind them, both sides (thorax batch 1).
+    maxTriangles: 150_000,
+    error: 0.004,
+    parts: [
+      // Bones.
+      { id: 'first-rib', concept: 'first rib', ratio: 0.5 },
+      { id: 'second-rib', concept: 'second rib', ratio: 0.4 },
+      {
+        id: 'typical-ribs',
+        concepts: [
+          'third rib',
+          'fourth rib',
+          'fifth rib',
+          'sixth rib',
+          'seventh rib',
+          'eighth rib',
+          'ninth rib',
+        ],
+        ratio: 0.12,
+      },
+      { id: 'tenth-rib', concept: 'tenth rib', ratio: 0.3 },
+      { id: 'eleventh-rib', concept: 'eleventh rib', ratio: 0.4 },
+      { id: 'twelfth-rib', concept: 'twelfth rib', ratio: 0.4 },
+      { id: 'costal-cartilages', concept: 'costal cartilage', ratio: 0.25 },
+      { id: 'manubrium', concept: 'manubrium', ratio: 0.5 },
+      { id: 'body-of-sternum', concept: 'body of sternum', ratio: 0.5 },
+      { id: 'xiphoid-process', concept: 'xiphoid process', ratio: 1 },
+      { id: 'thoracic-vertebrae', concept: 'thoracic vertebra', ratio: 0.12 },
+      { id: 'thoracic-discs', concept: 'intervertebral disk of thoracic vertebra', ratio: 0.3 },
+      { id: 'clavicles', concept: 'clavicle', ratio: 0.3 },
+      // Muscles of the wall, and the diaphragm closing the outlet.
+      { id: 'external-intercostal', concept: 'external intercostal muscle', ratio: 0.04 },
+      { id: 'internal-intercostal', concept: 'internal intercostal muscle', ratio: 0.04 },
+      { id: 'innermost-intercostal', concept: 'innermost intercostal muscle', ratio: 0.05 },
+      { id: 'transversus-thoracis', concept: 'transversus thoracis', ratio: 0.3 },
+      { id: 'diaphragm', concept: 'diaphragm', ratio: 0.12 },
+      // Arteries.
+      { id: 'ascending-aorta', concept: 'ascending aorta', ratio: 0.5 },
+      { id: 'arch-of-aorta', concept: 'arch of aorta', ratio: 0.5 },
+      { id: 'descending-aorta', concept: 'descending thoracic aorta', ratio: 0.4 },
+      {
+        id: 'posterior-intercostal-arteries',
+        concept: 'posterior intercostal arteries',
+        ratio: 0.14,
+      },
+      { id: 'internal-thoracic-artery', concept: 'internal thoracic artery', ratio: 0.5 },
+      { id: 'subcostal-arteries', concept: 'subcostal artery', ratio: 0.5 },
+      // Veins.
+      { id: 'superior-vena-cava', concept: 'superior vena cava', ratio: 0.5 },
+      { id: 'brachiocephalic-veins', concept: 'brachiocephalic vein', ratio: 0.5 },
+      { id: 'azygos-vein', concept: 'azygos vein', ratio: 0.5 },
+      { id: 'hemiazygos-vein', concept: 'hemiazygos vein', ratio: 0.5 },
+      { id: 'accessory-hemiazygos-vein', concept: 'accessory hemiazygos vein', ratio: 0.5 },
+      { id: 'internal-thoracic-vein', concept: 'internal thoracic vein', ratio: 0.5 },
+      {
+        id: 'anterior-intercostal-veins',
+        concept: 'set of anterior intercostal veins',
+        ratio: 0.14,
+      },
+      { id: 'subcostal-veins', concept: 'subcostal vein', ratio: 0.5 },
+      // Nerves, from Z-Anatomy: BodyParts3D has no intercostal nerves or sympathetic trunks.
+      {
+        id: 'intercostal-nerves',
+        zAnatomy: {
+          file: 'NervousSystem100.fbx',
+          names: ['Right intercostal nerves', 'Left intercostal nerves'],
+        },
+        ratio: 0.06,
+      },
+      {
+        id: 'sympathetic-trunks',
+        zAnatomy: {
+          file: 'NervousSystem100.fbx',
+          names: [
+            'Right sympathetic trunk',
+            'Left sympathetic trunk',
+            'Right ganglia of sympathetic trunk',
+            'Left ganglia of sympathetic trunk',
+          ],
+        },
+        // Their thoracic parts only, from the first rib to the twelfth.
+        clipZ: [1000, 1385],
+        ratio: 0.08,
+      },
+    ],
+  },
+  {
     name: 'body',
     maxTriangles: 50_000,
     // The body is seen whole, so it tolerates coarser surfaces.
@@ -283,15 +376,31 @@ export function parseObj(text) {
   return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
 }
 
-/** The triangles whose centre lies in [min, max) along X; vertices stay as they are. */
-export function clipTrianglesX({ positions, indices }, [min, max]) {
+/** The triangles whose centre lies in [min, max) along an axis (0 X, 2 Z); vertices stay. */
+export function clipTriangles({ positions, indices }, [min, max], axis = 0) {
   const kept = [];
   for (let t = 0; t < indices.length; t += 3) {
     const corners = [indices[t], indices[t + 1], indices[t + 2]];
-    const x = corners.reduce((sum, index) => sum + positions[index * 3], 0) / 3;
-    if (x >= min && x < max) kept.push(...corners);
+    const centre = corners.reduce((sum, index) => sum + positions[index * 3 + axis], 0) / 3;
+    if (centre >= min && centre < max) kept.push(...corners);
   }
   return { positions, indices: new Uint32Array(kept) };
+}
+
+const Z_ANATOMY_DIR = 'models-src/z-anatomy';
+const zAnatomyFiles = new Map();
+
+/** Named structures from a Z-Anatomy FBX, read once per file. */
+function zAnatomyMeshes({ file, names }) {
+  if (!zAnatomyFiles.has(file)) {
+    zAnatomyFiles.set(file, new Map(zAnatomyStructures(join(Z_ANATOMY_DIR, file))));
+  }
+  const structures = zAnatomyFiles.get(file);
+  return names.map((name) => {
+    const mesh = structures.get(name);
+    if (!mesh) fail(`Not in ${file}: ${name}`);
+    return mesh;
+  });
 }
 
 /** Element file ids by concept name, from BodyParts3D's isa_element_parts.txt. */
@@ -334,13 +443,19 @@ async function build(model, sourceDir, concepts, io) {
 
   step(`${model.name}: reading BodyParts3D meshes`);
   for (const part of model.parts) {
-    const files = part.files ?? concepts.get(part.concept) ?? [];
-    if (files.length === 0) fail(`No BodyParts3D files for ${part.id}`);
-    const merged = mergeMeshes(
-      files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8'))),
-    );
+    let meshes;
+    if (part.zAnatomy) {
+      meshes = zAnatomyMeshes(part.zAnatomy);
+    } else {
+      const files =
+        part.files ?? (part.concepts ?? [part.concept]).flatMap((name) => concepts.get(name) ?? []);
+      if (files.length === 0) fail(`No BodyParts3D files for ${part.id}`);
+      meshes = files.map((file) => parseObj(readFileSync(join(sourceDir, `${file}.obj`), 'utf8')));
+    }
     // prune() later drops the vertices a clip leaves unused.
-    const { positions, indices } = part.clipX ? clipTrianglesX(merged, part.clipX) : merged;
+    let { positions, indices } = mergeMeshes(meshes);
+    if (part.clipX) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipX, 0));
+    if (part.clipZ) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipZ, 2));
     const primitive = document
       .createPrimitive()
       .setMaterial(material)
@@ -386,12 +501,14 @@ async function build(model, sourceDir, concepts, io) {
 }
 
 async function main() {
-  const [sourceDir, index] = process.argv.slice(2);
+  const [sourceDir, index, ...flags] = process.argv.slice(2);
   if (!sourceDir || !index) {
     fail(
-      'Usage: node scripts/models/build-models.mjs <extracted OBJ folder> <isa_element_parts.txt>',
+      'Usage: node scripts/models/build-models.mjs <extracted OBJ folder> <isa_element_parts.txt> [--only=<model>]',
     );
   }
+  // --only=thorax rebuilds one model and leaves the others' files as they are.
+  const only = flags.find((flag) => flag.startsWith('--only='))?.slice('--only='.length);
   const concepts = readConcepts(readFileSync(index, 'utf8'));
 
   await MeshoptEncoder.ready;
@@ -399,7 +516,9 @@ async function main() {
   const io = new NodeIO()
     .registerExtensions([KHRMeshQuantization, EXTMeshoptCompression])
     .registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
-  for (const model of MODELS) await build(model, sourceDir, concepts, io);
+  for (const model of MODELS) {
+    if (!only || model.name === only) await build(model, sourceDir, concepts, io);
+  }
 }
 
 if (process.argv[1]?.endsWith('build-models.mjs')) await main();
