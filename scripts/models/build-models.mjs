@@ -40,6 +40,53 @@ import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
 const PEC_MINOR_X = { lateral: -137, medial: -107 };
 
+/** Parts from Z-Anatomy's visceral file, from rows of [part id, Z-Anatomy names, ratio]. */
+const visceral = (rows) =>
+  rows.map(([id, names, ratio]) => ({
+    id,
+    zAnatomy: { file: 'VisceralSystem100.fbx', names: [names].flat() },
+    ratio,
+  }));
+const PLEURA = { file: 'VisceralSystem100.fbx', names: ['Pleura'] };
+const LOBES = visceral([
+  ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
+  ['right-middle-lobe', 'Middle lobe of right lung', 0.8],
+  ['right-lower-lobe', 'Inferior lobe of right lung', 0.8],
+  ['left-upper-lobe', 'Superior lobe of left lung', 0.8],
+  ['left-lower-lobe', 'Inferior lobe of left lung', 0.8],
+]);
+// The trachea, principal and lobar bronchi, and one segmental bronchus per bronchopulmonary
+// segment (Z-Anatomy joins the left 1 and 2).
+const AIRWAYS = visceral([
+  ['trachea', 'Trachea', 0.6],
+  ['right-main-bronchus', ['Right main bronchus', 'Intermediate bronchusr'], 1],
+  ['left-main-bronchus', 'Left main bronchus', 1],
+  ['right-upper-lobar-bronchus', 'Right superior lobar bronchus', 1],
+  ['right-middle-lobar-bronchus', 'Middle lobar bronchusr', 1],
+  ['right-lower-lobar-bronchus', 'Right inferior lobar bronchus', 1],
+  ['left-upper-lobar-bronchus', 'Left superior lobar bronchus', 1],
+  ['left-lower-lobar-bronchus', 'Left inferior lobar bronchus', 1],
+  ['right-b1', 'Apical segmental bronchus of right lung (BI)', 0.15],
+  ['right-b2', 'Posterior segmental bronchus of right lung (BII)', 0.15],
+  ['right-b3', 'Anterior segmental bronchus of right lung (BIII)', 0.15],
+  ['right-b4', 'Lateral segmental bronchus of right lung (BIV)', 0.15],
+  ['right-b5', 'Medial segmental bronchus of right lung (BV)', 0.15],
+  ['right-b6', 'Superior segmental bronchus of right lung (BVI)', 0.15],
+  ['right-b7', 'Medial basal segmental bronchus of right lung (BVII)', 0.15],
+  ['right-b8', 'Anterior basal segmental bronchus of right lung (BVIII)', 0.15],
+  ['right-b9', 'Lateral basal segmental bronchus of right lung (BIX)', 0.15],
+  ['right-b10', 'Posterior basal segmental bronchus of right lung (BX)', 0.15],
+  ['left-b1-2', 'Apicoposterior segmental bronchus of left lung (BI+BII)', 0.15],
+  ['left-b3', 'Anterior segmental bronchus of left lung (BIII)', 0.15],
+  ['left-b4', 'Superior lingular segmental bronchus of left lung (BIV)', 0.15],
+  ['left-b5', 'Inferior lingular segmental bronchus of left lung (BV)', 0.15],
+  ['left-b6', 'Superior segmental bronchus of left lung (BVI)', 0.15],
+  ['left-b7', 'Medial basal segmental bronchus of left lung (BVII)', 0.15],
+  ['left-b8', 'Anterior basal segmental bronchus of left lung (BVIII)', 0.15],
+  ['left-b9', 'Lateral basal segmental bronchus of left lung (BIX)', 0.15],
+  ['left-b10', 'Posterior basal segmental bronchus of left lung (BX)', 0.15],
+]);
+
 export const MODELS = [
   {
     name: 'upper-limb',
@@ -357,242 +404,12 @@ export const MODELS = [
       { id: 'thoracic-vertebrae', concept: 'thoracic vertebra', ratio: 0.06 },
       { id: 'clavicles', concept: 'clavicle', ratio: 0.2 },
       { id: 'diaphragm', concept: 'diaphragm', ratio: 0.1 },
-      // Lungs and pleurae, from Z-Anatomy: BodyParts3D has the airways but no lung tissue.
-      {
-        id: 'right-upper-lobe',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Superior lobe of right lung'] },
-        ratio: 0.8,
-      },
-      {
-        id: 'right-middle-lobe',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Middle lobe of right lung'] },
-        ratio: 0.8,
-      },
-      {
-        id: 'right-lower-lobe',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Inferior lobe of right lung'] },
-        ratio: 0.8,
-      },
-      {
-        id: 'left-upper-lobe',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Superior lobe of left lung'] },
-        ratio: 0.8,
-      },
-      {
-        id: 'left-lower-lobe',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Inferior lobe of left lung'] },
-        ratio: 0.8,
-      },
+      // Lungs, pleurae and airways, from Z-Anatomy: BodyParts3D has the airways but no lung tissue.
+      ...LOBES,
       // One mesh for both pleurae, split at the midline (the right side is negative X).
-      {
-        id: 'right-pleura',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Pleura'] },
-        clipX: [-Infinity, 0],
-        ratio: 0.12,
-      },
-      {
-        id: 'left-pleura',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Pleura'] },
-        clipX: [0, Infinity],
-        ratio: 0.12,
-      },
-      // Airways.
-      {
-        id: 'trachea',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Trachea'] },
-        ratio: 0.6,
-      },
-      {
-        id: 'right-main-bronchus',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Right main bronchus', 'Intermediate bronchusr'],
-        },
-        ratio: 1,
-      },
-      {
-        id: 'left-main-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left main bronchus'] },
-        ratio: 1,
-      },
-      {
-        id: 'right-upper-lobar-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Right superior lobar bronchus'] },
-        ratio: 1,
-      },
-      {
-        id: 'right-middle-lobar-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Middle lobar bronchusr'] },
-        ratio: 1,
-      },
-      {
-        id: 'right-lower-lobar-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Right inferior lobar bronchus'] },
-        ratio: 1,
-      },
-      {
-        id: 'left-upper-lobar-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left superior lobar bronchus'] },
-        ratio: 1,
-      },
-      {
-        id: 'left-lower-lobar-bronchus',
-        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left inferior lobar bronchus'] },
-        ratio: 1,
-      },
-      // Segmental bronchi, one per bronchopulmonary segment (Z-Anatomy joins the left 1 and 2).
-      {
-        id: 'right-b1',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Apical segmental bronchus of right lung (BI)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b2',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Posterior segmental bronchus of right lung (BII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b3',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Anterior segmental bronchus of right lung (BIII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b4',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Lateral segmental bronchus of right lung (BIV)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b5',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Medial segmental bronchus of right lung (BV)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b6',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Superior segmental bronchus of right lung (BVI)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b7',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Medial basal segmental bronchus of right lung (BVII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b8',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Anterior basal segmental bronchus of right lung (BVIII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b9',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Lateral basal segmental bronchus of right lung (BIX)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'right-b10',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Posterior basal segmental bronchus of right lung (BX)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b1-2',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Apicoposterior segmental bronchus of left lung (BI+BII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b3',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Anterior segmental bronchus of left lung (BIII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b4',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Superior lingular segmental bronchus of left lung (BIV)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b5',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Inferior lingular segmental bronchus of left lung (BV)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b6',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Superior segmental bronchus of left lung (BVI)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b7',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Medial basal segmental bronchus of left lung (BVII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b8',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Anterior basal segmental bronchus of left lung (BVIII)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b9',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Lateral basal segmental bronchus of left lung (BIX)'],
-        },
-        ratio: 0.15,
-      },
-      {
-        id: 'left-b10',
-        zAnatomy: {
-          file: 'VisceralSystem100.fbx',
-          names: ['Posterior basal segmental bronchus of left lung (BX)'],
-        },
-        ratio: 0.15,
-      },
+      { id: 'right-pleura', zAnatomy: PLEURA, clipX: [-Infinity, 0], ratio: 0.12 },
+      { id: 'left-pleura', zAnatomy: PLEURA, clipX: [0, Infinity], ratio: 0.12 },
+      ...AIRWAYS,
       // Heart and great vessels.
       { id: 'ventricles', files: ['FJ2428'], ratio: 0.12 },
       { id: 'right-atrium', concept: 'wall of right atrium', ratio: 0.2 },
