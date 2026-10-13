@@ -68,6 +68,9 @@ import { XrayViewer } from './XrayViewer';
 
 // A topic's layers, from the surface in.
 const PART_LAYERS: Array<{ kind: PartKind; name: string }> = [
+  { kind: 'membrane', name: 'Pleura' },
+  { kind: 'organ', name: 'Organs' },
+  { kind: 'airway', name: 'Airways' },
   { kind: 'muscle', name: 'Muscles' },
   { kind: 'artery', name: 'Arteries' },
   { kind: 'vein', name: 'Veins' },

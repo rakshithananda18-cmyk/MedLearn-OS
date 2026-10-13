@@ -40,6 +40,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     12: 'Landmarks, inlet and outlet',
     13: 'Bones and joints',
     14: 'Walls',
+    15: 'Pleura',
+    16: 'Lungs',
+    17: 'Mediastinum',
   },
 };
 

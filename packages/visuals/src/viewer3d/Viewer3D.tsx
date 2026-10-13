@@ -38,7 +38,7 @@ export interface Viewer3DLabel {
 }
 
 /** What a whole-body system layer is made of, which sets its colour. */
-export type LayerKind = PartKind | 'lymph' | 'organ';
+export type LayerKind = PartKind | 'lymph';
 
 /**
  * One body system drawn from its own file (skeleton, muscles, vessels, nerves, lymph nodes, organs) on the same
@@ -146,13 +146,17 @@ const PART_COLOUR: Record<PartKind, string> = {
   vein: '--color-anat-vein',
   nerve: '--color-anat-nerve',
   skin: '--color-anat-skin',
+  organ: '--color-anat-organ',
+  airway: '--color-anat-airway',
+  membrane: '--color-anat-membrane',
 };
 const TRACE_COLOUR: Record<ModelTrace['kind'], string> = {
   nerve: '--color-anat-nerve',
   lymph: '--color-anat-lymph',
   outline: '--color-fg-muted',
 };
-// Muscles and skin are see-through, so the vessels and nerves under them stay visible.
+// Muscles, skin, organs and membranes are see-through, so what lies in them stays visible: the
+// vessels under a muscle, the bronchi in a lung, the lung in its pleura.
 const PART_OPACITY: Record<PartKind, number> = {
   bone: 1,
   muscle: 0.45,
@@ -160,12 +164,14 @@ const PART_OPACITY: Record<PartKind, number> = {
   vein: 1,
   nerve: 1,
   skin: 0.35,
+  organ: 0.5,
+  airway: 1,
+  membrane: 0.2,
 };
 
 const LAYER_COLOUR: Record<LayerKind, string> = {
   ...PART_COLOUR,
   lymph: '--color-anat-lymph',
-  organ: '--color-anat-organ',
 };
 
 /** Anatomical colours come from the design tokens, so 2D and 3D always match. */

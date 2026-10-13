@@ -626,6 +626,8 @@ export const LAYER_DOT: Record<LayerKind, string> = {
   nerve: 'bg-anat-nerve',
   lymph: 'bg-anat-lymph',
   organ: 'bg-anat-organ',
+  airway: 'bg-anat-airway',
+  membrane: 'bg-anat-membrane',
 };
 
 /**
@@ -696,6 +698,9 @@ const KIND_LABEL: Record<NonNullable<StructureInfo['kind']>, string> = {
   nerve: 'Nerve',
   lymph: 'Lymph nodes',
   outline: 'Outline',
+  organ: 'Organ',
+  airway: 'Airway',
+  membrane: 'Membrane',
 };
 
 const KIND_DOT: Record<NonNullable<StructureInfo['kind']>, string> = {
@@ -707,6 +712,9 @@ const KIND_DOT: Record<NonNullable<StructureInfo['kind']>, string> = {
   nerve: 'bg-anat-nerve',
   lymph: 'bg-anat-lymph',
   outline: 'bg-fg-muted',
+  organ: 'bg-anat-organ',
+  airway: 'bg-anat-airway',
+  membrane: 'bg-anat-membrane',
 };
 
 /** On a phone, a long path shows only its last steps, up to the structure itself. */

@@ -3,6 +3,8 @@
 //    by the upper limb topics (each topic shows its own parts)
 //  - thorax.glb: the thoracic cage, its walls and the great vessels and veins behind them, both
 //    sides, shared by the thorax topics
+//  - thoracic-organs.glb: the lungs, pleurae, airways, heart, great vessels and mediastinum,
+//    shared by the lungs and mediastinum topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -336,6 +338,317 @@ export const MODELS = [
         },
         // Their thoracic parts only, from the first rib to the twelfth.
         clipZ: [1000, 1385],
+        ratio: 0.08,
+      },
+    ],
+  },
+  {
+    name: 'thoracic-organs',
+    // The lungs lobe by lobe in their pleurae, the airways down to every segmental bronchus, and
+    // the heart, great vessels and nerves between them (thorax batch 2). The cage is coarse here,
+    // only to place them.
+    maxTriangles: 150_000,
+    error: 0.004,
+    parts: [
+      // Bones and the diaphragm, for orientation.
+      { id: 'ribs', concept: 'rib', ratio: 0.05 },
+      { id: 'costal-cartilages', concept: 'costal cartilage', ratio: 0.15 },
+      { id: 'sternum', concepts: ['manubrium', 'body of sternum', 'xiphoid process'], ratio: 0.3 },
+      { id: 'thoracic-vertebrae', concept: 'thoracic vertebra', ratio: 0.06 },
+      { id: 'clavicles', concept: 'clavicle', ratio: 0.2 },
+      { id: 'diaphragm', concept: 'diaphragm', ratio: 0.1 },
+      // Lungs and pleurae, from Z-Anatomy: BodyParts3D has the airways but no lung tissue.
+      {
+        id: 'right-upper-lobe',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Superior lobe of right lung'] },
+        ratio: 0.8,
+      },
+      {
+        id: 'right-middle-lobe',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Middle lobe of right lung'] },
+        ratio: 0.8,
+      },
+      {
+        id: 'right-lower-lobe',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Inferior lobe of right lung'] },
+        ratio: 0.8,
+      },
+      {
+        id: 'left-upper-lobe',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Superior lobe of left lung'] },
+        ratio: 0.8,
+      },
+      {
+        id: 'left-lower-lobe',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Inferior lobe of left lung'] },
+        ratio: 0.8,
+      },
+      // One mesh for both pleurae, split at the midline (the right side is negative X).
+      {
+        id: 'right-pleura',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Pleura'] },
+        clipX: [-Infinity, 0],
+        ratio: 0.12,
+      },
+      {
+        id: 'left-pleura',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Pleura'] },
+        clipX: [0, Infinity],
+        ratio: 0.12,
+      },
+      // Airways.
+      {
+        id: 'trachea',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Trachea'] },
+        ratio: 0.6,
+      },
+      {
+        id: 'right-main-bronchus',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Right main bronchus', 'Intermediate bronchusr'],
+        },
+        ratio: 1,
+      },
+      {
+        id: 'left-main-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left main bronchus'] },
+        ratio: 1,
+      },
+      {
+        id: 'right-upper-lobar-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Right superior lobar bronchus'] },
+        ratio: 1,
+      },
+      {
+        id: 'right-middle-lobar-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Middle lobar bronchusr'] },
+        ratio: 1,
+      },
+      {
+        id: 'right-lower-lobar-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Right inferior lobar bronchus'] },
+        ratio: 1,
+      },
+      {
+        id: 'left-upper-lobar-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left superior lobar bronchus'] },
+        ratio: 1,
+      },
+      {
+        id: 'left-lower-lobar-bronchus',
+        zAnatomy: { file: 'VisceralSystem100.fbx', names: ['Left inferior lobar bronchus'] },
+        ratio: 1,
+      },
+      // Segmental bronchi, one per bronchopulmonary segment (Z-Anatomy joins the left 1 and 2).
+      {
+        id: 'right-b1',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Apical segmental bronchus of right lung (BI)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b2',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Posterior segmental bronchus of right lung (BII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b3',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Anterior segmental bronchus of right lung (BIII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b4',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Lateral segmental bronchus of right lung (BIV)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b5',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Medial segmental bronchus of right lung (BV)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b6',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Superior segmental bronchus of right lung (BVI)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b7',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Medial basal segmental bronchus of right lung (BVII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b8',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Anterior basal segmental bronchus of right lung (BVIII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b9',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Lateral basal segmental bronchus of right lung (BIX)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'right-b10',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Posterior basal segmental bronchus of right lung (BX)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b1-2',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Apicoposterior segmental bronchus of left lung (BI+BII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b3',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Anterior segmental bronchus of left lung (BIII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b4',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Superior lingular segmental bronchus of left lung (BIV)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b5',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Inferior lingular segmental bronchus of left lung (BV)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b6',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Superior segmental bronchus of left lung (BVI)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b7',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Medial basal segmental bronchus of left lung (BVII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b8',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Anterior basal segmental bronchus of left lung (BVIII)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b9',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Lateral basal segmental bronchus of left lung (BIX)'],
+        },
+        ratio: 0.15,
+      },
+      {
+        id: 'left-b10',
+        zAnatomy: {
+          file: 'VisceralSystem100.fbx',
+          names: ['Posterior basal segmental bronchus of left lung (BX)'],
+        },
+        ratio: 0.15,
+      },
+      // Heart and great vessels.
+      { id: 'ventricles', files: ['FJ2428'], ratio: 0.12 },
+      { id: 'right-atrium', concept: 'wall of right atrium', ratio: 0.2 },
+      { id: 'left-atrium', concept: 'wall of left atrium', ratio: 0.3 },
+      { id: 'ascending-aorta', concept: 'ascending aorta', ratio: 0.5 },
+      { id: 'arch-of-aorta', concept: 'arch of aorta', ratio: 0.5 },
+      { id: 'descending-aorta', concept: 'descending thoracic aorta', ratio: 0.4 },
+      { id: 'brachiocephalic-trunk', concept: 'brachiocephalic artery', ratio: 0.5 },
+      // The arch's other branches up to the root of the neck.
+      {
+        id: 'left-common-carotid',
+        concept: 'left common carotid artery',
+        clipZ: [0, 1400],
+        ratio: 0.5,
+      },
+      {
+        id: 'left-subclavian-artery',
+        concept: 'left subclavian artery',
+        clipX: [-Infinity, 60],
+        ratio: 0.5,
+      },
+      { id: 'pulmonary-trunk', concept: 'pulmonary trunk', ratio: 0.5 },
+      { id: 'right-pulmonary-artery', concept: 'right pulmonary artery', ratio: 0.5 },
+      { id: 'left-pulmonary-artery', concept: 'left pulmonary artery', ratio: 0.5 },
+      {
+        id: 'right-pulmonary-veins',
+        concepts: ['right superior pulmonary vein', 'right inferior pulmonary vein'],
+        ratio: 0.4,
+      },
+      {
+        id: 'left-pulmonary-veins',
+        concepts: ['left superior pulmonary vein', 'left inferior pulmonary vein'],
+        ratio: 0.4,
+      },
+      { id: 'superior-vena-cava', concept: 'superior vena cava', ratio: 0.5 },
+      { id: 'brachiocephalic-veins', concept: 'brachiocephalic vein', ratio: 0.5 },
+      {
+        id: 'inferior-vena-cava',
+        concept: 'inferior vena cava',
+        clipZ: [1070, Infinity],
+        ratio: 0.5,
+      },
+      { id: 'azygos-vein', concept: 'azygos vein', ratio: 0.3 },
+      // Other contents of the mediastinum.
+      { id: 'thymus', concepts: ['right lobe of thymus', 'left lobe of thymus'], ratio: 0.3 },
+      { id: 'oesophagus', concept: 'esophagus', clipZ: [1000, 1420], ratio: 1 },
+      {
+        id: 'right-vagus',
+        zAnatomy: { file: 'NervousSystem100.fbx', names: ['Right vagus nerve (X)'] },
+        clipZ: [1000, 1400],
+        ratio: 0.05,
+      },
+      {
+        id: 'left-vagus',
+        zAnatomy: { file: 'NervousSystem100.fbx', names: ['Left vagus nerve (X)'] },
+        clipZ: [1000, 1400],
         ratio: 0.08,
       },
     ],
