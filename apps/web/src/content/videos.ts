@@ -21,10 +21,11 @@ const CATALYST = 'Catalyst University';
 const TAIM = 'Taim Talks Med';
 const KHANFOUR = 'Dr Ayman Khanfour Anatomy Teaching';
 const DAVINCI = 'DaVinci Academy';
+const NOTED = 'The Noted Anatomist';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax on 13 Oct 2026); each
+ * thorax on 13 and 14 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -45,7 +46,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('hrKesc_XSzo', 'Brachial plexus: structure and location', ANATOMY_ZONE, 513),
     video('qsjUz4ID_Ss', 'Brachial plexus: terminal branches', ANATOMY_ZONE, 338),
   ],
-  'back-muscles': [video('dYw8JxT8QYo', 'Superficial back muscles', 'The Noted Anatomist', 573)],
+  'back-muscles': [video('dYw8JxT8QYo', 'Superficial back muscles', NOTED, 573)],
   'deltoid-rotator-cuff': [
     video('RaIt79pPfgE', 'The rotator cuff', ANATOMY_ZONE, 626),
     video('FSSGkYrYwqM', 'Deltoid: origin, insertion and action', KENHUB, 234),
@@ -168,6 +169,31 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('D4vcdePoRX4', 'Vessels of the thorax', DAVINCI, 1072),
     video('KXNsaZO9B1Q', 'Internal thoracic artery', 'Human Anatomy Lessons', 266),
     video('_H4gu8lnkoM', 'Azygos and hemiazygos veins', 'Dr G Bhanu Prakash', 343),
+  ],
+  pleura: [
+    video('FXp0EywEbFA', 'Anatomy of the pleura', 'Dr Adel Bondok Anatomy Channel', 670),
+    video('sHNxOzXCHtc', 'The pleura: layers, recesses and clinical notes', NOTED, 543),
+  ],
+  lungs: [
+    video('FSlPEK_E3FI', 'Lungs: lobes, fissures and blood supply', DAVINCI, 1206),
+    video('LqA3LWhrtQo', 'The lungs: lobes, surfaces and clinical notes', NOTED, 644),
+  ],
+  'lung-root-bronchial-tree': [
+    video('iSPEBBIK71c', 'Root of the lung', 'Dopamine Education', 1764),
+    video('FSlPEK_E3FI', 'Lungs: lobes, fissures and blood supply', DAVINCI, 1206),
+  ],
+  'bronchopulmonary-segments': [
+    video('h__5_UrKhfY', 'Bronchopulmonary segments', 'Quick Anatomy Revision', 1235),
+    video('HswYNsu_nAg', 'Bronchopulmonary segments', 'Pulse Academy', 973),
+  ],
+  mediastinum: [
+    video('41CVqLbPh-0', 'Anatomy of the mediastinum', 'Ninja Nerd', 2228),
+    video(
+      'RBQyxZ0FOW4',
+      'The mediastinum: superior and inferior',
+      'Medicosis Perfectionalis',
+      1980,
+    ),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', 'Armando Hasudungan', 712),

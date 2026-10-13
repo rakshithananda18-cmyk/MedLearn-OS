@@ -57,6 +57,11 @@ export const POSTERS = [
   { name: 'thoracic-joints-respiration', path: '/studio?topic=thoracic-joints-respiration' },
   { name: 'intercostal-spaces', path: '/studio?topic=intercostal-spaces' },
   { name: 'internal-thoracic-azygos', path: '/studio?topic=internal-thoracic-azygos' },
+  { name: 'pleura', path: '/studio?topic=pleura' },
+  { name: 'lungs', path: '/studio?topic=lungs' },
+  { name: 'lung-root-bronchial-tree', path: '/studio?topic=lung-root-bronchial-tree' },
+  { name: 'bronchopulmonary-segments', path: '/studio?topic=bronchopulmonary-segments' },
+  { name: 'mediastinum', path: '/studio?topic=mediastinum' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

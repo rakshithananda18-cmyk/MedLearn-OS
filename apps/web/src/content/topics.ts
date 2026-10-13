@@ -8,6 +8,7 @@ import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
 import { backMuscles } from './back-muscles';
 import { brachialPlexus } from './brachial-plexus';
+import { bronchopulmonarySegments } from './bronchopulmonary-segments';
 import { carpalTunnel } from './carpal-tunnel';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
@@ -19,11 +20,15 @@ import { forearmVesselsNerves } from './forearm-vessels-nerves';
 import { handMuscles } from './hand-muscles';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
+import { lungRootBronchialTree } from './lung-root-bronchial-tree';
+import { lungs } from './lungs';
+import { mediastinum } from './mediastinum';
 import { nerveInjuries } from './nerve-injuries';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
+import { pleura } from './pleura';
 import { radioulnarJoints } from './radioulnar-joints';
 import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
@@ -81,6 +86,11 @@ export const TOPICS: Topic[] = [
   thoracicJointsRespiration,
   intercostalSpaces,
   internalThoracicAzygos,
+  pleura,
+  lungs,
+  lungRootBronchialTree,
+  bronchopulmonarySegments,
+  mediastinum,
   oxygenCurve,
 ];
 

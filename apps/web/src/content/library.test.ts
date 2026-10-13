@@ -40,6 +40,9 @@ describe('libraryTree', () => {
       'Landmarks, inlet and outlet',
       'Bones and joints',
       'Walls',
+      'Pleura',
+      'Lungs',
+      'Mediastinum',
     ]);
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));

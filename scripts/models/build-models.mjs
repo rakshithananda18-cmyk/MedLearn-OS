@@ -3,6 +3,8 @@
 //    by the upper limb topics (each topic shows its own parts)
 //  - thorax.glb: the thoracic cage, its walls and the great vessels and veins behind them, both
 //    sides, shared by the thorax topics
+//  - thoracic-organs.glb: the lungs, pleurae, airways, heart, great vessels and mediastinum,
+//    shared by the lungs and mediastinum topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -37,6 +39,53 @@ import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
 // Pectoralis minor lies in front of the axillary artery from X -137 to -107 (measured from the
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
 const PEC_MINOR_X = { lateral: -137, medial: -107 };
+
+/** Parts from Z-Anatomy's visceral file, from rows of [part id, Z-Anatomy names, ratio]. */
+const visceral = (rows) =>
+  rows.map(([id, names, ratio]) => ({
+    id,
+    zAnatomy: { file: 'VisceralSystem100.fbx', names: [names].flat() },
+    ratio,
+  }));
+const PLEURA = { file: 'VisceralSystem100.fbx', names: ['Pleura'] };
+const LOBES = visceral([
+  ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
+  ['right-middle-lobe', 'Middle lobe of right lung', 0.8],
+  ['right-lower-lobe', 'Inferior lobe of right lung', 0.8],
+  ['left-upper-lobe', 'Superior lobe of left lung', 0.8],
+  ['left-lower-lobe', 'Inferior lobe of left lung', 0.8],
+]);
+// The trachea, principal and lobar bronchi, and one segmental bronchus per bronchopulmonary
+// segment (Z-Anatomy joins the left 1 and 2).
+const AIRWAYS = visceral([
+  ['trachea', 'Trachea', 0.6],
+  ['right-main-bronchus', ['Right main bronchus', 'Intermediate bronchusr'], 1],
+  ['left-main-bronchus', 'Left main bronchus', 1],
+  ['right-upper-lobar-bronchus', 'Right superior lobar bronchus', 1],
+  ['right-middle-lobar-bronchus', 'Middle lobar bronchusr', 1],
+  ['right-lower-lobar-bronchus', 'Right inferior lobar bronchus', 1],
+  ['left-upper-lobar-bronchus', 'Left superior lobar bronchus', 1],
+  ['left-lower-lobar-bronchus', 'Left inferior lobar bronchus', 1],
+  ['right-b1', 'Apical segmental bronchus of right lung (BI)', 0.15],
+  ['right-b2', 'Posterior segmental bronchus of right lung (BII)', 0.15],
+  ['right-b3', 'Anterior segmental bronchus of right lung (BIII)', 0.15],
+  ['right-b4', 'Lateral segmental bronchus of right lung (BIV)', 0.15],
+  ['right-b5', 'Medial segmental bronchus of right lung (BV)', 0.15],
+  ['right-b6', 'Superior segmental bronchus of right lung (BVI)', 0.15],
+  ['right-b7', 'Medial basal segmental bronchus of right lung (BVII)', 0.15],
+  ['right-b8', 'Anterior basal segmental bronchus of right lung (BVIII)', 0.15],
+  ['right-b9', 'Lateral basal segmental bronchus of right lung (BIX)', 0.15],
+  ['right-b10', 'Posterior basal segmental bronchus of right lung (BX)', 0.15],
+  ['left-b1-2', 'Apicoposterior segmental bronchus of left lung (BI+BII)', 0.15],
+  ['left-b3', 'Anterior segmental bronchus of left lung (BIII)', 0.15],
+  ['left-b4', 'Superior lingular segmental bronchus of left lung (BIV)', 0.15],
+  ['left-b5', 'Inferior lingular segmental bronchus of left lung (BV)', 0.15],
+  ['left-b6', 'Superior segmental bronchus of left lung (BVI)', 0.15],
+  ['left-b7', 'Medial basal segmental bronchus of left lung (BVII)', 0.15],
+  ['left-b8', 'Anterior basal segmental bronchus of left lung (BVIII)', 0.15],
+  ['left-b9', 'Lateral basal segmental bronchus of left lung (BIX)', 0.15],
+  ['left-b10', 'Posterior basal segmental bronchus of left lung (BX)', 0.15],
+]);
 
 export const MODELS = [
   {
@@ -336,6 +385,87 @@ export const MODELS = [
         },
         // Their thoracic parts only, from the first rib to the twelfth.
         clipZ: [1000, 1385],
+        ratio: 0.08,
+      },
+    ],
+  },
+  {
+    name: 'thoracic-organs',
+    // The lungs lobe by lobe in their pleurae, the airways down to every segmental bronchus, and
+    // the heart, great vessels and nerves between them (thorax batch 2). The cage is coarse here,
+    // only to place them.
+    maxTriangles: 150_000,
+    error: 0.004,
+    parts: [
+      // Bones and the diaphragm, for orientation.
+      { id: 'ribs', concept: 'rib', ratio: 0.05 },
+      { id: 'costal-cartilages', concept: 'costal cartilage', ratio: 0.15 },
+      { id: 'sternum', concepts: ['manubrium', 'body of sternum', 'xiphoid process'], ratio: 0.3 },
+      { id: 'thoracic-vertebrae', concept: 'thoracic vertebra', ratio: 0.06 },
+      { id: 'clavicles', concept: 'clavicle', ratio: 0.2 },
+      { id: 'diaphragm', concept: 'diaphragm', ratio: 0.1 },
+      // Lungs, pleurae and airways, from Z-Anatomy: BodyParts3D has the airways but no lung tissue.
+      ...LOBES,
+      // One mesh for both pleurae, split at the midline (the right side is negative X).
+      { id: 'right-pleura', zAnatomy: PLEURA, clipX: [-Infinity, 0], ratio: 0.12 },
+      { id: 'left-pleura', zAnatomy: PLEURA, clipX: [0, Infinity], ratio: 0.12 },
+      ...AIRWAYS,
+      // Heart and great vessels.
+      { id: 'ventricles', files: ['FJ2428'], ratio: 0.12 },
+      { id: 'right-atrium', concept: 'wall of right atrium', ratio: 0.2 },
+      { id: 'left-atrium', concept: 'wall of left atrium', ratio: 0.3 },
+      { id: 'ascending-aorta', concept: 'ascending aorta', ratio: 0.5 },
+      { id: 'arch-of-aorta', concept: 'arch of aorta', ratio: 0.5 },
+      { id: 'descending-aorta', concept: 'descending thoracic aorta', ratio: 0.4 },
+      { id: 'brachiocephalic-trunk', concept: 'brachiocephalic artery', ratio: 0.5 },
+      // The arch's other branches up to the root of the neck.
+      {
+        id: 'left-common-carotid',
+        concept: 'left common carotid artery',
+        clipZ: [0, 1400],
+        ratio: 0.5,
+      },
+      {
+        id: 'left-subclavian-artery',
+        concept: 'left subclavian artery',
+        clipX: [-Infinity, 60],
+        ratio: 0.5,
+      },
+      { id: 'pulmonary-trunk', concept: 'pulmonary trunk', ratio: 0.5 },
+      { id: 'right-pulmonary-artery', concept: 'right pulmonary artery', ratio: 0.5 },
+      { id: 'left-pulmonary-artery', concept: 'left pulmonary artery', ratio: 0.5 },
+      {
+        id: 'right-pulmonary-veins',
+        concepts: ['right superior pulmonary vein', 'right inferior pulmonary vein'],
+        ratio: 0.4,
+      },
+      {
+        id: 'left-pulmonary-veins',
+        concepts: ['left superior pulmonary vein', 'left inferior pulmonary vein'],
+        ratio: 0.4,
+      },
+      { id: 'superior-vena-cava', concept: 'superior vena cava', ratio: 0.5 },
+      { id: 'brachiocephalic-veins', concept: 'brachiocephalic vein', ratio: 0.5 },
+      {
+        id: 'inferior-vena-cava',
+        concept: 'inferior vena cava',
+        clipZ: [1070, Infinity],
+        ratio: 0.5,
+      },
+      { id: 'azygos-vein', concept: 'azygos vein', ratio: 0.3 },
+      // Other contents of the mediastinum.
+      { id: 'thymus', concepts: ['right lobe of thymus', 'left lobe of thymus'], ratio: 0.3 },
+      { id: 'oesophagus', concept: 'esophagus', clipZ: [1000, 1420], ratio: 1 },
+      {
+        id: 'right-vagus',
+        zAnatomy: { file: 'NervousSystem100.fbx', names: ['Right vagus nerve (X)'] },
+        clipZ: [1000, 1400],
+        ratio: 0.05,
+      },
+      {
+        id: 'left-vagus',
+        zAnatomy: { file: 'NervousSystem100.fbx', names: ['Left vagus nerve (X)'] },
+        clipZ: [1000, 1400],
         ratio: 0.08,
       },
     ],
