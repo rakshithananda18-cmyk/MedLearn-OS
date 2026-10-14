@@ -5,8 +5,8 @@ import type { Stroke, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 import { BODY_SYSTEMS, type BodySystemId, FIRST_SYSTEMS } from '@/content/body';
 import type { MovementId } from '@/content/movements';
 
-import type { StudioTopic } from './knowledge';
-import { answerQuiz, type QuizState, roundOver, startQuiz } from './quiz';
+import { structuresOf, type StudioTopic } from './knowledge';
+import { answerQuiz, MAX_HINTS, type QuizState, REVEAL_AFTER, roundOver, startQuiz } from './quiz';
 
 // What the student is doing in the 3D studio, and every change to it, as plain functions: the
 // component keeps only the side effects (saving, the address bar) and the layout.
@@ -144,13 +144,51 @@ export function changeModeIn(
   };
 }
 
-/** What glows: the picked region on the body, else the picked structure and its whole path. */
-export function litIn(session: Session, topic: StudioTopic | null): ReadonlySet<string> {
+/** The structures of the same kind as this one: on a topic its kind, on the body its system. */
+function kindOf(id: string, topic: StudioTopic | null, pool: readonly string[]): string[] {
+  if (!topic) {
+    const [system] = id.split('/');
+    return pool.filter((other) => other.startsWith(`${system}/`));
+  }
+  const structures = structuresOf(topic);
+  const kind = structures.find((structure) => structure.id === id)?.kind;
+  return structures.filter((structure) => structure.kind === kind).map((structure) => structure.id);
+}
+
+/**
+ * What glows while playing "Find it": the structure just found; with a hint, everything of the
+ * kind asked for; after two wrong taps, the one asked for. Otherwise nothing, so the model gives
+ * no answers away.
+ */
+function quizLit(
+  quiz: QuizState,
+  topic: StudioTopic | null,
+  pool: readonly string[],
+): ReadonlySet<string> {
+  if (quiz.last === 'right' && quiz.picked) return new Set([quiz.picked]);
+  if (quiz.misses >= REVEAL_AFTER) return new Set([quiz.targetId]);
+  if (quiz.hints > 0) return new Set(kindOf(quiz.targetId, topic, pool));
+  return new Set();
+}
+
+/** Where the camera turns while playing "Find it": to the structure asked for, at the last hint. */
+export const quizFocus = (quiz: QuizState | null): string | null =>
+  quiz && quiz.hints >= MAX_HINTS ? quiz.targetId : null;
+
+/**
+ * What glows: while playing "Find it", only what the game shows; else the picked region on the
+ * body, or the picked structure and its whole path.
+ */
+export function litIn(
+  session: Session,
+  topic: StudioTopic | null,
+  pool: readonly string[] = [],
+): ReadonlySet<string> {
+  if (session.mode === 'quiz') return session.quiz ? quizLit(session.quiz, topic, pool) : new Set();
   // The whole body: the region picked, and a structure picked on one of its systems.
   if (!topic)
     return new Set(session.selected ? [session.region, session.selected] : [session.region]);
-  // No hints while playing "Find it".
-  if (session.mode === 'quiz' || !session.selected) return new Set();
+  if (!session.selected) return new Set();
   const onDiagram = topic.diagram?.nodes.some((node) => node.id === session.selected);
   return onDiagram && topic.diagram
     ? pathThrough(topic.diagram.edges, session.selected)

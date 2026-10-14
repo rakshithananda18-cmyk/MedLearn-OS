@@ -40,6 +40,7 @@ const viewer = vi.hoisted(() => ({
     pose: Viewer3DPose | null;
     insetRight: number;
     pan: boolean;
+    focusId: string | null;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -208,25 +209,61 @@ describe('Studio on a phone', () => {
     expect(screen.queryByRole('region', { name: 'Search' })).not.toBeInTheDocument();
   });
 
-  it('plays "Find it" in rounds of ten: a right tap scores, a wrong one names what was tapped', async () => {
+  it('plays "Find it" in rounds of ten: finds score, misses are named, hints help for half', async () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
     expect(screen.getByText('Cords of the brachial plexus')).toBeInTheDocument();
     expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+    // Nothing glows to give the answer away.
+    expect(viewer.props?.highlight.size).toBe(0);
+
     tap('cords');
     expect(screen.getByText('Right! Next one.')).toBeInTheDocument();
     expect(screen.getByText('Question 2 of 10')).toBeInTheDocument();
+    // The one found glows, named with its point.
+    expect(viewer.props?.highlight).toEqual(new Set(['cords']));
+    expect(viewer.props?.labels).toEqual([
+      { id: 'cords', text: '+1 Cords of the brachial plexus', active: true },
+    ]);
     tap('humerus');
-    expect(screen.getByText(/You tapped Humerus/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Hint/ })).toBeDisabled();
+    expect(screen.getByText(/You tapped Humerus. Try again/)).toBeInTheDocument();
 
-    for (let skip = 0; skip < 9; skip++) {
+    // A hint brightens its kind; another turns the camera to it.
+    await userEvent.click(screen.getByRole('button', { name: 'Hint' }));
+    expect(screen.getByText('Hint: it is among the ones still bright.')).toBeInTheDocument();
+    expect(viewer.props?.highlight.size).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Hint 2' }));
+    const asked = viewer.props?.focusId ?? '';
+    expect(asked).not.toBe('');
+    expect(screen.getByRole('button', { name: 'No hints' })).toBeDisabled();
+    // Found with help: half a point.
+    tap(asked);
+    expect(screen.getByText('Found it, for half a point. Next one.')).toBeInTheDocument();
+
+    for (let skip = 0; skip < 8; skip++) {
       await userEvent.click(screen.getByRole('button', { name: 'Skip' }));
     }
-    expect(screen.getByText('Round over: you found 1 of 10.')).toBeInTheDocument();
+    expect(screen.getByText('Round over: you found 2 of 10.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '0 of 3 stars' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
     expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+
+    for (let skip = 0; skip < 10; skip++) {
+      await userEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    }
+    // What was skipped or found with help waits to be learnt, a tap from exploring it.
+    const again = screen.getByRole('region', { name: 'Worth another look' });
+    await userEvent.click(
+      within(again).getAllByRole('button', { name: 'Learn it' })[0] as HTMLElement,
+    );
+    expect(screen.queryByText('Find it on the model')).not.toBeInTheDocument();
+    expect(viewer.props?.highlight.size).toBeGreaterThan(0);
+  });
+
+  it('ends a round from the question card', async () => {
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
     await userEvent.click(screen.getByRole('button', { name: 'End the game' }));
     expect(screen.queryByText('Find it on the model')).not.toBeInTheDocument();
   });

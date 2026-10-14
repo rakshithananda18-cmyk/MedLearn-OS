@@ -3,7 +3,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { studioTopics } from '@/content/studio';
 
 import { structureInfo, structuresOf } from './knowledge';
-import { answerQuiz, nextTarget, skipQuiz, startQuiz } from './quiz';
+import {
+  answerQuiz,
+  hintQuiz,
+  MAX_HINTS,
+  milestone,
+  nextTarget,
+  points,
+  skipQuiz,
+  starsFor,
+  startQuiz,
+  toRevisit,
+} from './quiz';
 import { loadBest, loadStrokes, saveBest, saveStrokes } from './saved';
 
 const topics = studioTopics();
@@ -57,6 +68,30 @@ describe('Find it', () => {
     expect(start.targetId).toBe('a');
     const right = answerQuiz(answerQuiz(start, 'a', pool, first), 'b', pool, first);
     expect(right).toMatchObject({ score: 2, streak: 2, best: 2, last: 'right' });
+  });
+
+  it('counts a find with a hint, or once shown, as half, and keeps it to look at again', () => {
+    const start = startQuiz(pool, 0, first);
+    const hinted = answerQuiz(hintQuiz(start), 'a', pool, first);
+    expect(hinted).toMatchObject({ score: 0.5, streak: 0, gained: 0.5, targetId: 'b' });
+    const missedTwice = answerQuiz(answerQuiz(hinted, 'c', pool, first), 'c', pool, first);
+    expect(missedTwice).toMatchObject({ misses: 2, targetId: 'b' });
+    const shown = answerQuiz(missedTwice, 'b', pool, first);
+    expect(shown.score).toBe(1);
+    const skipped = skipQuiz(shown, pool, first);
+    expect(skipped.results.map((result) => result.how)).toEqual(['helped', 'helped', 'skipped']);
+    expect(toRevisit(skipped)).toEqual(['a', 'b']);
+  });
+
+  it('cheers streaks of 3, 5 and 10, gives up to three stars, and two hints at most', () => {
+    let state = startQuiz(pool, 0, first);
+    for (let found = 0; found < 3; found++) state = answerQuiz(state, state.targetId, pool, first);
+    expect(milestone(state)).toBe(3);
+    expect(milestone(answerQuiz(state, state.targetId, pool, first))).toBeNull();
+    expect([2.5, 3, 6, 9.5].map(starsFor)).toEqual([0, 1, 2, 3]);
+    expect(points(7.5)).toBe('7½');
+    expect(points(7)).toBe('7');
+    expect(hintQuiz(hintQuiz(hintQuiz(state))).hints).toBe(MAX_HINTS);
   });
 
   it('breaks the streak on a wrong tap, names what was tapped and asks again', () => {

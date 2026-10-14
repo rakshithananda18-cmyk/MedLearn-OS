@@ -124,6 +124,8 @@ export interface Viewer3DProps {
   section?: Viewer3DSection | null;
   /** Turns the camera to this structure whenever it changes. */
   focus?: Viewer3DFocus | null;
+  /** Turns the camera to the structure with this id (a part, trace or system structure). */
+  focusId?: string | null;
   /** A joint movement shown on the model. */
   pose?: Viewer3DPose | null;
   /**
@@ -234,8 +236,13 @@ function Trace({
   // Meshes are built here and handed over whole, like the model's own parts.
   const meshes = useMemo(() => {
     const traceMaterial = material(tokenColour(TRACE_COLOUR[trace.kind]), lit, dimmed ? DIMMED : 1);
-    return geometries.map((geometry) => new Mesh(geometry, traceMaterial));
-  }, [geometries, trace.kind, lit, dimmed]);
+    return geometries.map((geometry) => {
+      const mesh = new Mesh(geometry, traceMaterial);
+      // Named like the model's parts, so the camera can find it.
+      mesh.userData.partId = trace.id;
+      return mesh;
+    });
+  }, [geometries, trace.kind, trace.id, lit, dimmed]);
   const select = (event: ThreeEvent<MouseEvent>) => {
     if (dragged(event)) return;
     event.stopPropagation();
@@ -612,9 +619,13 @@ function CameraRig({
   reducedMotion,
   resetToken,
   focus,
+  focusId,
+  groupRef,
 }: Readonly<
   Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'> & {
     focus: Viewer3DFocus | null;
+    focusId: string | null;
+    groupRef: RefObject<Group | null>;
   }
 >) {
   const { camera, invalidate } = useThree();
@@ -657,6 +668,30 @@ function CameraRig({
     }
     invalidate();
   }, [focus, reducedMotion, camera, controls, invalidate]);
+
+  // A structure asked for by its id: turn to it from where the camera is, close enough to see it.
+  useEffect(() => {
+    if (!focusId || !controls || !groupRef.current) return;
+    const bounds = new Box3();
+    groupRef.current.traverse((object) => {
+      if (object.userData.partId === focusId) bounds.expandByObject(object);
+    });
+    if (bounds.isEmpty()) return;
+    const target = bounds.getCenter(new Vector3());
+    const size = bounds.getSize(new Vector3()).length();
+    const distance = Math.min(1.2, Math.max(0.3, size * 1.6));
+    const away = camera.position.clone().sub(controls.target).normalize();
+    const position = target.clone().add(away.multiplyScalar(distance));
+    if (reducedMotion) {
+      camera.position.copy(position);
+      controls.target.copy(target);
+      controls.update();
+      goal.current = null;
+    } else {
+      goal.current = { position, target };
+    }
+    invalidate();
+  }, [focusId, reducedMotion, camera, controls, invalidate, groupRef]);
 
   useFrame((_, delta) => {
     if (!goal.current || !controls) return;
@@ -774,6 +809,7 @@ export default function Viewer3D({
   layers = [],
   section = null,
   focus = null,
+  focusId = null,
   pose = null,
   insetRight = 0,
   pan = false,
@@ -928,6 +964,8 @@ export default function Viewer3D({
           reducedMotion={reducedMotion}
           resetToken={resetToken}
           focus={focus}
+          focusId={focusId}
+          groupRef={group}
         />
       </Canvas>
       <LabelLayer labels={labels} nodesRef={labelNodes} redrawRef={redraw} />

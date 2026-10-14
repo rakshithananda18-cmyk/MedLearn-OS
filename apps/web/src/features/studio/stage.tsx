@@ -66,6 +66,8 @@ export interface ModelViewProps {
   section: Viewer3DSection | null;
   /** A structure to turn the camera to, or null. */
   focus: Viewer3DFocus | null;
+  /** A structure to turn the camera to by its id, or null. */
+  focusId: string | null;
   /** A joint movement shown on the body, or null. */
   pose: Viewer3DPose | null;
   /** The topic's flat diagram in place of the model, when it has one. */
@@ -109,6 +111,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         layers={props.layers}
         section={props.section}
         focus={props.focus}
+        focusId={props.focusId}
         pose={props.pose}
         insetRight={props.insetRight}
         pan={props.pan}

@@ -62,6 +62,7 @@ export {
   Shuffle,
   Slice,
   SlidersHorizontal,
+  Star,
   Stethoscope,
   Sun,
   Sunrise,
