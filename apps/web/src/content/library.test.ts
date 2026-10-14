@@ -61,6 +61,8 @@ describe('libraryTree', () => {
         'Back of thigh',
         'Front and sides of leg',
         'Back of leg',
+        'Sole of foot',
+        'Drainage and innervation',
       ],
     );
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);

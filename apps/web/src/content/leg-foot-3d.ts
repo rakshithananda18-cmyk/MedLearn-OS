@@ -4,11 +4,11 @@ import type { CameraStop, ModelPart } from '@medlearn/schemas';
 // millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const LEG_FOOT_MODEL_SRC = '/models/leg-foot.glb?v=1';
+export const LEG_FOOT_MODEL_SRC = '/models/leg-foot.glb?v=2';
 
 /** Credit for the model, shown wherever it is. */
 export const LEG_FOOT_MODEL_CREDIT =
-  'Bones, muscles and vessels: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP); it has no peroneal artery, so its vein shows the path, and of extensor digitorum brevis only the slip to the big toe. Nerves: Z-Anatomy, CC BY-SA 4.0.';
+  'Bones, muscles and vessels: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP); it has no peroneal artery, so its vein shows the path, of extensor digitorum brevis only the slip to the big toe, and of the interossei only the plantar ones. Nerves: Z-Anatomy, CC BY-SA 4.0.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what
@@ -170,6 +170,60 @@ const PARTS = {
     about:
       'The deepest muscle of the calf, from the interosseous membrane and both bones to the navicular tuberosity and most tarsal bones. Inverts the foot and holds up its medial arch. Tibial nerve.',
   },
+  'abductor-hallucis': {
+    name: 'Abductor hallucis',
+    kind: 'muscle',
+    about:
+      'First layer of the sole, along its medial border from the calcaneus and flexor retinaculum to the big toe; it covers the plantar vessels and nerves as they enter. Medial plantar nerve.',
+  },
+  'flexor-digitorum-brevis': {
+    name: 'Flexor digitorum brevis',
+    kind: 'muscle',
+    about:
+      'First layer, in the middle under the plantar aponeurosis; its tendons split to let the long flexor tendons through and insert on the middle phalanges of the lateral four toes. Medial plantar nerve.',
+  },
+  'abductor-digiti-minimi': {
+    name: 'Abductor digiti minimi',
+    kind: 'muscle',
+    about:
+      'First layer, along the lateral border of the sole from the calcaneus to the little toe. Lateral plantar nerve.',
+  },
+  'flexor-accessorius': {
+    name: 'Flexor digitorum accessorius',
+    kind: 'muscle',
+    about:
+      'Second layer: two heads from the calcaneus into the tendon of flexor digitorum longus, straightening its oblique pull. Lateral plantar nerve.',
+  },
+  lumbricals: {
+    name: 'Lumbricals',
+    kind: 'muscle',
+    about:
+      'Second layer: four small muscles from the tendons of flexor digitorum longus to the extensor expansions of the lateral four toes; they keep the toes from buckling when walking. The first by the medial plantar nerve, the rest by the lateral.',
+  },
+  'flexor-hallucis-brevis': {
+    name: 'Flexor hallucis brevis',
+    kind: 'muscle',
+    about:
+      'Third layer, under the first metatarsal; its two tendons go to either side of the base of the big toe, each with a sesamoid. Medial plantar nerve.',
+  },
+  'adductor-hallucis': {
+    name: 'Adductor hallucis',
+    kind: 'muscle',
+    about:
+      'Third layer: an oblique head from the bases of the middle metatarsals and a transverse head across the toe joints, both to the lateral side of the big toe; it holds the transverse arch. Deep branch of the lateral plantar nerve.',
+  },
+  'flexor-digiti-minimi-brevis': {
+    name: 'Flexor digiti minimi brevis',
+    kind: 'muscle',
+    about:
+      'Third layer, along the fifth metatarsal to the little toe. Superficial branch of the lateral plantar nerve.',
+  },
+  'plantar-interossei': {
+    name: 'Plantar interossei',
+    kind: 'muscle',
+    about:
+      'Fourth layer: three muscles on the third to fifth metatarsals that pull those toes towards the second toe. Lateral plantar nerve. The model has no dorsal interossei.',
+  },
   sartorius: {
     name: 'Sartorius (lower end)',
     kind: 'muscle',
@@ -223,6 +277,18 @@ const PARTS = {
     about:
       'The artery of the back of the leg, from the lower border of popliteus to under the flexor retinaculum, where it divides into the medial and lateral plantar arteries. Its pulse is felt behind the medial malleolus.',
   },
+  'plantar-arch': {
+    name: 'Plantar arch',
+    kind: 'artery',
+    about:
+      'The continuation of the lateral plantar artery across the bases of the metatarsals between the third and fourth layers of the sole, completed by the dorsalis pedis; it gives the plantar metatarsal arteries.',
+  },
+  'deep-plantar-artery': {
+    name: 'Deep plantar artery',
+    kind: 'artery',
+    about:
+      'The end of the dorsalis pedis, dipping through the first intermetatarsal space to complete the plantar arch.',
+  },
   'medial-plantar-artery': {
     name: 'Medial plantar artery',
     kind: 'artery',
@@ -245,6 +311,18 @@ const PARTS = {
     kind: 'vein',
     about:
       'With the peroneal artery, the largest branch of the posterior tibial, down along the fibula behind the ankle. The model has no peroneal artery: this vein shows its path.',
+  },
+  'anterior-tibial-vein': {
+    name: 'Anterior tibial veins',
+    kind: 'vein',
+    about:
+      'Deep veins with the anterior tibial artery; they join the posterior tibial veins at the lower border of popliteus to form the popliteal vein.',
+  },
+  'posterior-tibial-vein': {
+    name: 'Posterior tibial veins',
+    kind: 'vein',
+    about:
+      'Deep veins with the posterior tibial artery; the medial perforating veins above the ankle drain into them from the great saphenous system.',
   },
   'great-saphenous-vein': {
     name: 'Great saphenous vein',
@@ -307,16 +385,16 @@ const PARTS = {
       'The branch of the femoral nerve that reaches the foot: down the medial leg in front of the great saphenous vein to the medial border of the foot.',
   },
   'medial-plantar-nerve': {
-    name: 'Medial plantar nerve (start)',
+    name: 'Medial plantar nerve',
     kind: 'nerve',
     about:
-      'The larger terminal branch of the tibial nerve, under the flexor retinaculum, to the medial sole.',
+      'The larger terminal branch of the tibial nerve, between abductor hallucis and flexor digitorum brevis; four muscles and the skin of the medial sole and medial three and a half toes, like the median nerve in the hand.',
   },
   'lateral-plantar-nerve': {
-    name: 'Lateral plantar nerve (start)',
+    name: 'Lateral plantar nerve',
     kind: 'nerve',
     about:
-      'The smaller terminal branch of the tibial nerve, under the flexor retinaculum, across to the lateral sole.',
+      'The smaller terminal branch of the tibial nerve, across the sole between the first and second layers; the other fourteen muscles of the sole and the lateral one and a half toes, like the ulnar nerve.',
   },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
@@ -367,6 +445,41 @@ export const CALF_DEEP: LegFootPartId[] = [
   'flexor-hallucis-longus',
   'tibialis-posterior',
 ];
+
+export const SOLE_LAYER_1: LegFootPartId[] = [
+  'abductor-hallucis',
+  'flexor-digitorum-brevis',
+  'abductor-digiti-minimi',
+];
+
+export const SOLE_LAYER_2: LegFootPartId[] = [
+  'flexor-accessorius',
+  'lumbricals',
+  'flexor-digitorum-longus',
+  'flexor-hallucis-longus',
+];
+
+export const SOLE_LAYER_3: LegFootPartId[] = [
+  'flexor-hallucis-brevis',
+  'adductor-hallucis',
+  'flexor-digiti-minimi-brevis',
+];
+
+export const SOLE_LAYER_4: LegFootPartId[] = [
+  'plantar-interossei',
+  'tibialis-posterior',
+  'peroneus-longus',
+];
+
+/** The right sole from below and in front. */
+export const SOLE_BELOW: CameraStop = {
+  id: 'sole',
+  title: 'The sole from below',
+  description:
+    'Looking up at the sole: the toes at the top, the heel at the bottom, the big toe on the right.',
+  target: [-85, -130, -45],
+  position: [-97, -433, -517],
+};
 
 /** The right leg from the front. */
 export const LEG_FRONT: CameraStop = {

@@ -137,8 +137,20 @@ const LEG_FOOT_NERVES = zParts('NervousSystem100.fbx', [
     0.3,
     KNEE_UP,
   ],
-  ['medial-plantar-nerve', 'Right medial plantar nerve', 0.5],
-  ['lateral-plantar-nerve', 'Right lateral plantar nerve', 0.5],
+  [
+    'medial-plantar-nerve',
+    ['Right medial plantar nerve', 'Right proper plantar digital branches of medial plantar nerve'],
+    0.3,
+  ],
+  [
+    'lateral-plantar-nerve',
+    [
+      'Right lateral plantar nerve',
+      'Right common plantar digital branches of lateral plantar nerve',
+      'Right proper plantar digital branches of lateral plantar nerve',
+    ],
+    0.3,
+  ],
 ]);
 const TOES = ['big', 'second', 'third', 'fourth', 'little'];
 const LOBES = visceral([
@@ -822,9 +834,9 @@ export const MODELS = [
   },
   {
     name: 'leg-foot',
-    // The right leg and foot from just above the knee (lower limb batch 3). BodyParts3D has no
-    // peroneal artery, extensor digitorum brevis (only its slip to the big toe) or retinacula;
-    // the peroneal vein shows the artery's path.
+    // The right leg and foot from just above the knee (lower limb batches 3 and 4). BodyParts3D
+    // has no peroneal artery, extensor digitorum brevis (only its slip to the big toe), dorsal
+    // interossei of the foot or retinacula; the peroneal vein shows the artery's path.
     maxTriangles: 150_000,
     error: 0.003,
     parts: [
@@ -877,7 +889,23 @@ export const MODELS = [
         ['flexor-digitorum-longus', 'right flexor digitorum longus', 0.6],
         ['flexor-hallucis-longus', 'right flexor hallucis longus', 0.6],
         ['tibialis-posterior', 'right tibialis posterior', 0.6],
+        // The sole, layer by layer.
+        ['abductor-hallucis', 'right abductor hallucis', 0.6],
+        ['flexor-digitorum-brevis', 'right flexor digitorum brevis', 0.6],
+        ['abductor-digiti-minimi', 'abductor digiti minimi of right foot', 0.6],
+        ['flexor-accessorius', 'right flexor accessorius', 0.8],
+        ['flexor-digiti-minimi-brevis', 'flexor digiti minimi brevis of right foot', 1],
       ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
+      ...[
+        ['lumbricals', ['first', 'second', 'third', 'fourth'], 'lumbrical of right foot'],
+        ['plantar-interossei', ['first', 'second', 'third'], 'plantar interosseous of right foot'],
+        ['flexor-hallucis-brevis', ['medial', 'lateral'], 'head of right flexor hallucis brevis'],
+        ['adductor-hallucis', ['oblique', 'transverse'], 'head of right adductor hallucis'],
+      ].map(([id, which, concept]) => ({
+        id,
+        concepts: which.map((one) => `${one} ${concept}`),
+        ratio: 1,
+      })),
       // Muscles that come down from the thigh, cut above the knee.
       {
         id: 'gastrocnemius',
@@ -900,10 +928,14 @@ export const MODELS = [
         ['posterior-tibial-artery', 'right posterior tibial artery', 0.15],
         ['medial-plantar-artery', 'right medial plantar artery', 0.3],
         ['lateral-plantar-artery', 'right lateral plantar artery', 0.3],
+        ['plantar-arch', 'right plantar arch', 0.5],
+        ['deep-plantar-artery', 'right deep plantar artery', 1],
       ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
       // Veins. One of the three "right fibular vein" files is in the left thigh.
       { id: 'popliteal-vein', concept: 'right popliteal vein', ratio: 0.1, ...KNEE_UP },
       { id: 'peroneal-vein', files: ['FJ2200'], ratio: 0.2 },
+      { id: 'anterior-tibial-vein', concept: 'right anterior tibial vein', ratio: 0.15 },
+      { id: 'posterior-tibial-vein', concept: 'right posterior tibial vein', ratio: 0.15 },
       {
         id: 'great-saphenous-vein',
         concept: 'right great saphenous vein',
