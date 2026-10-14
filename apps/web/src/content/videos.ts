@@ -372,6 +372,15 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('SzAyUsA25MQ', 'Dermatomes of the lower limb', 'Physiotutors', 231),
     video('ptO9ZvsUPDg', 'Myotomes of the lower limb', 'Physiotutors', 174),
   ],
+  'foot-arches': [
+    video('4VCecnBw_6E', 'Arches of the foot', 'Angelina Issac', 1235),
+    video(
+      'nQ3I_qi0sSQ',
+      'Medial, lateral and transverse arches of the foot',
+      'Medical Research Foundation',
+      818,
+    ),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

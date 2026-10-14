@@ -58,6 +58,7 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     9: 'Back of leg',
     10: 'Sole of foot',
     11: 'Drainage and innervation',
+    13: 'Arches of foot',
   },
 };
 

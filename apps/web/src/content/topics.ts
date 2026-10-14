@@ -21,6 +21,7 @@ import { elbowJoint } from './elbow-joint';
 import { femoralTriangle } from './femoral-triangle';
 import { femoralVesselsNerve } from './femoral-vessels-nerve';
 import { fetalCirculation } from './fetal-circulation';
+import { footArches } from './foot-arches';
 import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
@@ -165,6 +166,7 @@ export const TOPICS: Topic[] = [
   lowerLimbVeins,
   lowerLimbLymphatics,
   lowerLimbDermatomes,
+  footArches,
   oxygenCurve,
 ];
 
