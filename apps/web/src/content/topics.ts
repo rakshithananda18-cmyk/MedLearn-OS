@@ -24,12 +24,14 @@ import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
 import { glutealMuscles } from './gluteal-muscles';
 import { glutealNervesVessels } from './gluteal-nerves-vessels';
+import { hamstringMuscles } from './hamstrings';
 import { handMuscles } from './hand-muscles';
 import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
 import { heartValvesConduction } from './heart-valves-conduction';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
+import { kneeAnastomoses } from './knee-anastomoses';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
@@ -41,9 +43,12 @@ import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
 import { pericardium } from './pericardium';
 import { pleura } from './pleura';
+import { poplitealFossa } from './popliteal-fossa';
+import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
 import { radioulnarJoints } from './radioulnar-joints';
 import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
+import { sciaticNerveThigh } from './sciatic-nerve-thigh';
 import { shoulderGirdle } from './shoulder-girdle';
 import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
@@ -129,6 +134,11 @@ export const TOPICS: Topic[] = [
   thighMedial,
   glutealMuscles,
   glutealNervesVessels,
+  poplitealFossa,
+  poplitealVesselsNerves,
+  kneeAnastomoses,
+  hamstringMuscles,
+  sciaticNerveThigh,
   oxygenCurve,
 ];
 

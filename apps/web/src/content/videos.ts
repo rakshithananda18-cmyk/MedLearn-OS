@@ -277,6 +277,28 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   'gluteal-nerves-vessels': [
     video('C8D-04qegXo', 'Gluteal region: greater and lesser sciatic foramina', KNOWLEDGE, 162),
   ],
+  'popliteal-fossa': [
+    video('IpSEdJrLBYc', 'Popliteal fossa', BHANU, 2484),
+    video('-QsTZy2gga8', 'Popliteal fossa', ANATOMY_ZONE, 212),
+  ],
+  'popliteal-vessels-nerves': [
+    video('VkgO_MuxxN8', 'Popliteal artery', BHANU, 311),
+    video('WfKgB5q5Wjs', 'Common peroneal nerve and its branches', KNOWLEDGE, 214),
+    video('7HO486qXxzw', 'Tibial nerve', KNOWLEDGE, 114),
+  ],
+  'knee-anastomoses': [
+    video('_IoPNg1q0to', 'Anastomosis round the knee joint', BHANU, 912),
+    video('zzr-8w_oLcM', 'Anastomosis round the knee: genicular arteries', 'Dr Hasana', 405),
+  ],
+  hamstrings: [
+    video('8TmbmENX7Fc', 'Muscles of the back of the thigh', BHANU, 1111),
+    video('fCaQJRh-R4U', 'Posterior compartment of the thigh: hamstrings', KNOWLEDGE, 147),
+  ],
+  'sciatic-nerve-thigh': [
+    video('dKsnNi2APDA', 'Sciatic nerve: course, branches and clinical points', KENHUB, 852),
+    video('SyCwjOMZ91E', 'Sciatic nerve: course, relations and branches', BHANU, 416),
+    video('pWl3s6X9cSk', 'Sciatic nerve', KNOWLEDGE, 200),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

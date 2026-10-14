@@ -5,7 +5,7 @@ import type { CameraStop, ModelPart } from '@medlearn/schemas';
 // (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const HIP_THIGH_MODEL_SRC = '/models/hip-thigh.glb?v=1';
+export const HIP_THIGH_MODEL_SRC = '/models/hip-thigh.glb?v=2';
 
 /** Credit for the model, shown wherever it is. */
 export const HIP_THIGH_MODEL_CREDIT =
@@ -49,7 +49,8 @@ const PARTS = {
   fibula: {
     name: 'Fibula (upper end)',
     kind: 'bone',
-    about: 'Biceps femoris inserts on its head, at the lateral side of the knee.',
+    about:
+      'Biceps femoris inserts on its head, at the lateral side of the knee; the common peroneal nerve winds round its neck.',
   },
   'gluteus-maximus': {
     name: 'Gluteus maximus',
@@ -198,6 +199,30 @@ const PARTS = {
     kind: 'muscle',
     about: 'A hamstring from the ischial tuberosity to the back of the medial tibial condyle.',
   },
+  'gastrocnemius-medial-head': {
+    name: 'Gastrocnemius, medial head',
+    kind: 'muscle',
+    about:
+      'From the femur above the medial condyle: the lower medial boundary of the popliteal fossa. With the lateral head it makes the calf and plantar-flexes the foot. Tibial nerve.',
+  },
+  'gastrocnemius-lateral-head': {
+    name: 'Gastrocnemius, lateral head',
+    kind: 'muscle',
+    about:
+      'From the outer side of the lateral femoral condyle: with plantaris, the lower lateral boundary of the popliteal fossa.',
+  },
+  plantaris: {
+    name: 'Plantaris',
+    kind: 'muscle',
+    about:
+      'A small belly above the lateral head of gastrocnemius with a long thin tendon down the calf; part of the lower lateral boundary of the popliteal fossa.',
+  },
+  popliteus: {
+    name: 'Popliteus',
+    kind: 'muscle',
+    about:
+      'The lowest part of the floor of the popliteal fossa, from the lateral femoral condyle to the back of the tibia. It unlocks the straightened knee before the hamstrings flex it.',
+  },
   'external-iliac-artery': {
     name: 'External iliac artery',
     kind: 'artery',
@@ -237,7 +262,49 @@ const PARTS = {
     name: 'Popliteal artery',
     kind: 'artery',
     about:
-      'The continuation of the femoral artery behind the knee, after it passes through the opening in adductor magnus.',
+      'The continuation of the femoral artery through the opening in adductor magnus: the deepest structure in the popliteal fossa, ending at the lower border of popliteus as the anterior and posterior tibial arteries.',
+  },
+  'superior-medial-genicular-artery': {
+    name: 'Superior medial genicular artery',
+    kind: 'artery',
+    about:
+      'Winds round the femur just above the medial condyle, under the hamstrings, to the anastomosis round the knee.',
+  },
+  'superior-lateral-genicular-artery': {
+    name: 'Superior lateral genicular artery',
+    kind: 'artery',
+    about:
+      'Winds round the femur just above the lateral condyle, under biceps femoris, to the anastomosis round the knee.',
+  },
+  'middle-genicular-artery': {
+    name: 'Middle genicular artery',
+    kind: 'artery',
+    about:
+      'Goes straight forwards through the oblique popliteal ligament to the cruciate ligaments and synovial membrane inside the knee.',
+  },
+  'inferior-medial-genicular-artery': {
+    name: 'Inferior medial genicular artery',
+    kind: 'artery',
+    about:
+      'Winds round the medial tibial condyle under the tibial collateral ligament to the front of the knee.',
+  },
+  'inferior-lateral-genicular-artery': {
+    name: 'Inferior lateral genicular artery',
+    kind: 'artery',
+    about:
+      'Runs laterally above the head of the fibula, under the fibular collateral ligament, to the front of the knee.',
+  },
+  'anterior-tibial-artery': {
+    name: 'Anterior tibial artery (start)',
+    kind: 'artery',
+    about:
+      'The smaller end branch of the popliteal artery, at the lower border of popliteus; it passes forwards above the interosseous membrane into the front of the leg.',
+  },
+  'posterior-tibial-artery': {
+    name: 'Posterior tibial artery (start)',
+    kind: 'artery',
+    about:
+      'The larger end branch of the popliteal artery, at the lower border of popliteus, down the back of the leg with the tibial nerve.',
   },
   'external-iliac-vein': {
     name: 'External iliac vein',
@@ -299,7 +366,13 @@ const PARTS = {
     name: 'Popliteal vein',
     kind: 'vein',
     about:
-      'Behind the knee, continuing up as the femoral vein through the opening in adductor magnus.',
+      'Between the artery and the tibial nerve in the popliteal fossa, continuing up as the femoral vein through the opening in adductor magnus. It receives the small saphenous vein.',
+  },
+  'small-saphenous-vein': {
+    name: 'Small saphenous vein',
+    kind: 'vein',
+    about:
+      'Up the back of the calf from behind the lateral malleolus; it pierces the roof of the popliteal fossa to end in the popliteal vein. Popliteal lymph nodes lie beside its end.',
   },
   'femoral-nerve': {
     name: 'Femoral nerve',
@@ -355,6 +428,30 @@ const PARTS = {
     about:
       'Appears briefly below piriformis, crosses the sacrospinous ligament and leaves through the lesser sciatic foramen for the perineum.',
   },
+  'tibial-nerve': {
+    name: 'Tibial nerve',
+    kind: 'nerve',
+    about:
+      'The larger end branch of the sciatic nerve (ventral divisions, L4–S3): the most superficial of the main contents of the popliteal fossa, straight down its middle into the back of the leg.',
+  },
+  'common-peroneal-nerve': {
+    name: 'Common peroneal (fibular) nerve',
+    kind: 'nerve',
+    about:
+      'The smaller end branch of the sciatic nerve (dorsal divisions, L4–S2), along the medial border of biceps femoris and round the neck of the fibula, where it divides into superficial and deep branches. Injured there more than any other nerve of the limb: foot drop.',
+  },
+  'medial-sural-cutaneous-nerve': {
+    name: 'Sural nerve',
+    kind: 'nerve',
+    about:
+      'The cutaneous branch of the tibial nerve (medial sural cutaneous in newer books), from the middle of the popliteal fossa down between the heads of gastrocnemius to the back of the leg and the lateral border of the foot.',
+  },
+  'sural-communicating-nerve': {
+    name: 'Sural communicating nerve',
+    kind: 'nerve',
+    about:
+      'From the common peroneal nerve in the upper part of the popliteal fossa, over the lateral head of gastrocnemius, to join the sural nerve.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type HipThighPartId = keyof typeof PARTS;
@@ -408,6 +505,22 @@ export const ADDUCTORS: HipThighPartId[] = [
 
 export const HAMSTRINGS: HipThighPartId[] = ['biceps-femoris', 'semitendinosus', 'semimembranosus'];
 
+/** The lower boundaries and the lowest part of the floor of the popliteal fossa. */
+export const CALF_MUSCLES: HipThighPartId[] = [
+  'gastrocnemius-medial-head',
+  'gastrocnemius-lateral-head',
+  'plantaris',
+  'popliteus',
+];
+
+export const GENICULAR_ARTERIES: HipThighPartId[] = [
+  'superior-medial-genicular-artery',
+  'superior-lateral-genicular-artery',
+  'middle-genicular-artery',
+  'inferior-medial-genicular-artery',
+  'inferior-lateral-genicular-artery',
+];
+
 /** The right thigh from the front. */
 export const THIGH_FRONT: CameraStop = {
   id: 'front',
@@ -426,4 +539,24 @@ export const GLUTEAL_BACK: CameraStop = {
     'Gluteus maximus covers the buttock, from the back of the pelvis down and out to the iliotibial tract and the femur.',
   target: [-75, -40, 820],
   position: [-192, 1002, 875],
+};
+
+/** The right thigh from behind. */
+export const THIGH_BACK: CameraStop = {
+  id: 'back',
+  title: 'The thigh from behind',
+  description:
+    'From the buttock to the calf: the hamstrings run down from the ischial tuberosity and part above the knee to bound the popliteal fossa.',
+  target: [-75, -40, 600],
+  position: [-155, 1205, 660],
+};
+
+/** The right popliteal fossa from behind. */
+export const POPLITEAL_BACK: CameraStop = {
+  id: 'popliteal',
+  title: 'The popliteal fossa from behind',
+  description:
+    'A diamond behind the knee: the hamstrings part above it, the two heads of gastrocnemius close it below.',
+  target: [-80, -45, 405],
+  position: [-120, 703, 450],
 };

@@ -1,0 +1,443 @@
+import type { Topic } from '@medlearn/schemas';
+
+import { bookSource } from './books';
+import {
+  CALF_MUSCLES,
+  HAMSTRINGS,
+  HIP_THIGH_BONES,
+  HIP_THIGH_MODEL_CREDIT,
+  HIP_THIGH_MODEL_SRC,
+  hipThighParts,
+  POPLITEAL_BACK,
+} from './hip-thigh-3d';
+
+// Lower limb batch 2 (BD Volume 2). Facts in our own words; `reviewed: false` until a student
+// checks the topic against the book pages.
+export const poplitealFossa: Topic = {
+  slug: 'popliteal-fossa',
+  subjectSlug: 'anatomy',
+  regions: ['lower-limb'],
+  title: 'Popliteal fossa: boundaries, roof, floor and contents',
+  summary:
+    'The diamond behind the knee: the muscles that bound it, what pierces its roof, the three layers of its floor, and its contents from superficial to deep.',
+  estimatedMinutes: 12,
+  reviewed: false,
+  version: '0.1.0',
+  sources: [
+    {
+      title: 'Written by the MedLearn OS content team',
+      detail: 'In our own words from the standard books; awaiting review',
+      licence: 'All rights reserved',
+    },
+    bookSource('bd-chaurasia', 'Volume 2, Chapter 6 Popliteal Fossa, pages 87 to 89 and 92'),
+    bookSource(
+      'grays-anatomy',
+      'Chapter 6 Lower Limb, regional anatomy: popliteal fossa, pages 609 to 611',
+    ),
+    {
+      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      detail:
+        'Bones, muscles and vessels (BodyParts3D, CC BY 4.0); nerves (Z-Anatomy, CC BY-SA 4.0)',
+      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
+      licence: 'CC BY 4.0 and CC BY-SA 4.0',
+    },
+  ],
+  keyFacts: [
+    'A diamond-shaped space behind the knee, felt best with the knee half bent; the lower limb’s counterpart of the cubital fossa.',
+    'Above: biceps femoris laterally; semitendinosus and semimembranosus medially, helped by gracilis, sartorius and adductor magnus.',
+    'Below: the lateral head of gastrocnemius with plantaris laterally; the medial head of gastrocnemius medially.',
+    'Roof: popliteal fascia, pierced by the small saphenous vein. Floor, from above down: popliteal surface of the femur, capsule with the oblique popliteal ligament, fascia over popliteus.',
+    'Contents: popliteal artery and vein, tibial and common peroneal nerves, posterior cutaneous nerve of thigh, genicular branch of the obturator nerve, popliteal lymph nodes and fat.',
+  ],
+  visual: {
+    kind: 'path',
+    // Upper and lower boundaries, roof, floor, the three main contents and the rest.
+    diagram: {
+      width: 360,
+      height: 450,
+      nodes: [
+        { id: 'above', label: 'Above', name: 'Upper boundaries', x: 50, y: 30 },
+        {
+          id: 'biceps-femoris',
+          label: 'Biceps\nfemoris',
+          name: 'Upper lateral: biceps femoris',
+          x: 145,
+          y: 30,
+        },
+        {
+          id: 'semitendinosus',
+          label: 'Semiten-\ndinosus',
+          name: 'Upper medial: semitendinosus',
+          x: 225,
+          y: 30,
+        },
+        {
+          id: 'semimembranosus',
+          label: 'Semimem-\nbranosus',
+          name: 'Upper medial: semimembranosus, helped by gracilis, sartorius and adductor magnus',
+          x: 305,
+          y: 30,
+        },
+        { id: 'below', label: 'Below', name: 'Lower boundaries', x: 50, y: 110 },
+        {
+          id: 'gastrocnemius-lateral-head',
+          label: 'Lateral\nhead',
+          name: 'Lower lateral: lateral head of gastrocnemius',
+          x: 145,
+          y: 110,
+        },
+        {
+          id: 'plantaris',
+          label: 'Plantaris',
+          name: 'Lower lateral: plantaris, with the lateral head',
+          x: 225,
+          y: 110,
+        },
+        {
+          id: 'gastrocnemius-medial-head',
+          label: 'Medial\nhead',
+          name: 'Lower medial: medial head of gastrocnemius',
+          x: 305,
+          y: 110,
+        },
+        { id: 'roof', label: 'Roof', name: 'Roof: popliteal fascia', x: 50, y: 186 },
+        {
+          id: 'small-saphenous-vein',
+          label: 'Small\nsaphenous',
+          name: 'Small saphenous vein, piercing the roof',
+          x: 145,
+          y: 186,
+        },
+        {
+          id: 'posterior-cutaneous-nerve-of-thigh',
+          label: 'Posterior\ncutaneous',
+          name: 'Posterior cutaneous nerve of the thigh',
+          x: 225,
+          y: 186,
+        },
+        {
+          id: 'sural-communicating-nerve',
+          label: 'Sural com-\nmunicating',
+          name: 'Sural communicating nerve',
+          x: 305,
+          y: 186,
+        },
+        { id: 'floor', label: 'Floor', name: 'Floor, from above down', x: 50, y: 262 },
+        { id: 'femur', label: 'Femur', name: 'Popliteal surface of the femur', x: 145, y: 262 },
+        {
+          id: 'knee-capsule',
+          label: 'Capsule',
+          name: 'Capsule of the knee with the oblique popliteal ligament',
+          x: 225,
+          y: 262,
+        },
+        { id: 'popliteus', label: 'Popliteus', name: 'Fascia covering popliteus', x: 305, y: 262 },
+        {
+          id: 'contents',
+          label: 'Contents',
+          name: 'Main contents, superficial to deep',
+          x: 50,
+          y: 340,
+        },
+        {
+          id: 'tibial-nerve',
+          label: 'Tibial\nnerve',
+          name: 'Tibial nerve, the most superficial',
+          x: 145,
+          y: 340,
+        },
+        { id: 'popliteal-vein', label: 'Vein', name: 'Popliteal vein', x: 225, y: 340 },
+        {
+          id: 'popliteal-artery',
+          label: 'Artery',
+          name: 'Popliteal artery, the deepest',
+          x: 305,
+          y: 340,
+        },
+        { id: 'also', label: 'Also', name: 'Other contents', x: 50, y: 416 },
+        {
+          id: 'common-peroneal-nerve',
+          label: 'Common\nperoneal',
+          name: 'Common peroneal nerve, along biceps femoris',
+          x: 145,
+          y: 416,
+        },
+        {
+          id: 'obturator-branch',
+          label: 'Obturator\nbranch',
+          name: 'Genicular branch of the obturator nerve',
+          x: 225,
+          y: 416,
+        },
+        {
+          id: 'lymph-nodes',
+          label: 'Lymph\nnodes',
+          name: 'Popliteal lymph nodes, by the end of the small saphenous vein',
+          x: 305,
+          y: 416,
+        },
+      ],
+      edges: [
+        { from: 'above', to: 'biceps-femoris' },
+        { from: 'above', to: 'semitendinosus' },
+        { from: 'above', to: 'semimembranosus' },
+        { from: 'below', to: 'gastrocnemius-lateral-head' },
+        { from: 'below', to: 'plantaris' },
+        { from: 'below', to: 'gastrocnemius-medial-head' },
+        { from: 'roof', to: 'small-saphenous-vein' },
+        { from: 'roof', to: 'posterior-cutaneous-nerve-of-thigh' },
+        { from: 'roof', to: 'sural-communicating-nerve' },
+        { from: 'floor', to: 'femur' },
+        { from: 'floor', to: 'knee-capsule' },
+        { from: 'floor', to: 'popliteus' },
+        { from: 'contents', to: 'tibial-nerve' },
+        { from: 'contents', to: 'popliteal-vein' },
+        { from: 'contents', to: 'popliteal-artery' },
+        { from: 'also', to: 'common-peroneal-nerve' },
+        { from: 'also', to: 'obturator-branch' },
+        { from: 'also', to: 'lymph-nodes' },
+      ],
+    },
+    lesions: [
+      {
+        id: 'popliteal-nodes',
+        label: 'Enlarged nodes',
+        nodeIds: ['lymph-nodes', 'small-saphenous-vein'],
+        explanation:
+          'The popliteal nodes drain the lateral side of the foot and the back of the leg along the small saphenous vein; an infected blister on the outer border of the foot can make them swell in the fossa.',
+      },
+      {
+        id: 'popliteal-aneurysm',
+        label: 'Popliteal aneurysm',
+        nodeIds: ['popliteal-artery'],
+        explanation:
+          'The popliteal artery balloons more often than most arteries, giving a pulsating swelling deep in the fossa, felt with the knee half bent.',
+      },
+      {
+        id: 'bakers-cyst',
+        label: 'Baker’s cyst',
+        nodeIds: ['knee-capsule'],
+        explanation:
+          'Synovial membrane pushed out through the back of the capsule makes a swelling in the middle of the fossa, often with arthritis of the knee.',
+      },
+    ],
+    drill: [
+      {
+        id: 'boundaries',
+        title: 'Boundaries',
+        hint: 'Biceps and the two semis part above; the two heads of gastrocnemius and plantaris close it below.',
+        nodeIds: [
+          'biceps-femoris',
+          'semitendinosus',
+          'semimembranosus',
+          'gastrocnemius-lateral-head',
+          'plantaris',
+          'gastrocnemius-medial-head',
+        ],
+      },
+      {
+        id: 'roof-floor-contents',
+        title: 'Roof, floor and contents',
+        hint: 'What pierces the roof, the floor from above down, then the main contents from superficial to deep.',
+        nodeIds: [
+          'small-saphenous-vein',
+          'femur',
+          'knee-capsule',
+          'popliteus',
+          'tibial-nerve',
+          'popliteal-vein',
+          'popliteal-artery',
+        ],
+      },
+    ],
+    model3d: {
+      src: HIP_THIGH_MODEL_SRC,
+      credit: HIP_THIGH_MODEL_CREDIT,
+      parts: hipThighParts([
+        ...HIP_THIGH_BONES,
+        ...HAMSTRINGS,
+        'adductor-magnus',
+        'gracilis',
+        'sartorius',
+        ...CALF_MUSCLES,
+        'popliteal-artery',
+        'popliteal-vein',
+        'small-saphenous-vein',
+        'sciatic-nerve',
+        'tibial-nerve',
+        'common-peroneal-nerve',
+        'medial-sural-cutaneous-nerve',
+        'sural-communicating-nerve',
+        'posterior-cutaneous-nerve-of-thigh',
+      ]),
+      traces: [],
+      stops: [
+        POPLITEAL_BACK,
+        {
+          id: 'upper-angle',
+          title: 'Upper angle',
+          description:
+            'Biceps femoris turns out to the fibula, semitendinosus and semimembranosus in to the tibia; the sciatic nerve has divided into the tibial and common peroneal nerves just above.',
+          target: [-80, -45, 470],
+          position: [-110, 640, 520],
+        },
+        {
+          id: 'lower-angle',
+          title: 'Lower angle',
+          description:
+            'The two heads of gastrocnemius meet below, plantaris beside the lateral head; the small saphenous vein comes up between them and pierces the roof.',
+          target: [-80, -40, 340],
+          position: [-120, 660, 300],
+        },
+        {
+          id: 'floor',
+          title: 'Floor',
+          description:
+            'From behind and medially: the femur, the back of the knee joint and popliteus, with the artery lying on them. Switch the hamstrings and gastrocnemius off in Layers to see it.',
+          target: [-80, -60, 380],
+          position: [320, 520, 430],
+        },
+      ],
+    },
+  },
+  lesson: [
+    {
+      id: 'shape',
+      title: 'A diamond behind the knee',
+      body: 'The popliteal fossa is the space behind the knee joint, the lower end of the femur and the upper end of the tibia. It is diamond-shaped, and you feel it best with the knee half bent, when its muscle walls relax. Like the cubital fossa, it is the passage for the main vessels and nerves from one segment of the limb to the next.',
+      focus: [],
+    },
+    {
+      id: 'boundaries',
+      title: 'Boundaries',
+      body: 'The hamstrings part above the knee: biceps femoris goes laterally to the head of the fibula, and semitendinosus and semimembranosus go medially to the tibia, with gracilis, sartorius and adductor magnus helping on that side. Below, the two heads of gastrocnemius come together; plantaris lies with the lateral head.',
+      focus: [
+        'above',
+        'below',
+        'biceps-femoris',
+        'semitendinosus',
+        'semimembranosus',
+        'gastrocnemius-lateral-head',
+        'plantaris',
+        'gastrocnemius-medial-head',
+      ],
+    },
+    {
+      id: 'roof',
+      title: 'Roof',
+      body: 'Deep fascia, the popliteal fascia, continuous with the fascia lata above and the fascia of the leg below. In the superficial fascia over it run the small saphenous vein, which pierces the roof to end in the popliteal vein, the end of the posterior cutaneous nerve of the thigh, a branch of the medial cutaneous nerve of the thigh, and the sural communicating nerve.',
+      focus: [
+        'roof',
+        'small-saphenous-vein',
+        'posterior-cutaneous-nerve-of-thigh',
+        'sural-communicating-nerve',
+      ],
+    },
+    {
+      id: 'floor',
+      title: 'Floor',
+      body: 'From above down: the popliteal surface of the femur, the capsule of the knee joint strengthened by the oblique popliteal ligament, and the strong fascia over popliteus. The popliteal artery lies straight on it.',
+      focus: ['floor', 'femur', 'knee-capsule', 'popliteus'],
+    },
+    {
+      id: 'contents',
+      title: 'Contents',
+      body: 'The popliteal vessels and the tibial nerve cross the fossa vertically, one over the other: the tibial nerve is the most superficial, the vein deeper and the artery deepest of all. The common peroneal nerve runs out along the medial border of biceps femoris. The fossa also holds the posterior cutaneous nerve of the thigh, the genicular branch of the obturator nerve, the popliteal lymph nodes and fat round them all.',
+      focus: [
+        'contents',
+        'tibial-nerve',
+        'popliteal-vein',
+        'popliteal-artery',
+        'also',
+        'common-peroneal-nerve',
+        'obturator-branch',
+        'lymph-nodes',
+      ],
+    },
+    {
+      id: 'explore',
+      title: 'Find it yourself',
+      body: 'Switch the hamstrings and gastrocnemius off and on in Layers to open and close the diamond, then select the tibial nerve, vein and artery to see their order from behind.',
+      focus: [],
+    },
+  ],
+  questions: [
+    {
+      id: 'popliteal-inferomedial',
+      prompt: 'The lower medial boundary of the popliteal fossa is formed by:',
+      options: [
+        { id: 'medial-head', text: 'Medial head of gastrocnemius' },
+        { id: 'lateral-head', text: 'Lateral head of gastrocnemius' },
+        { id: 'biceps', text: 'Biceps femoris' },
+        { id: 'semis', text: 'Semitendinosus and semimembranosus' },
+      ],
+      answerId: 'medial-head',
+      explanation:
+        'The semis form the upper medial boundary; the medial head of gastrocnemius the lower.',
+    },
+    {
+      id: 'popliteal-not-content',
+      prompt: 'Which is not a content of the popliteal fossa?',
+      options: [
+        { id: 'great-saphenous', text: 'Great saphenous vein' },
+        { id: 'popliteal-artery', text: 'Popliteal artery' },
+        { id: 'tibial', text: 'Tibial nerve' },
+        { id: 'obturator-branch', text: 'Genicular branch of the obturator nerve' },
+      ],
+      answerId: 'great-saphenous',
+      explanation:
+        'The great saphenous vein runs up the medial side of the knee; the small saphenous vein is the one that ends in the fossa.',
+    },
+    {
+      id: 'popliteal-most-superficial',
+      prompt: 'Of the main contents, the most superficial is the:',
+      options: [
+        { id: 'tibial', text: 'Tibial nerve' },
+        { id: 'vein', text: 'Popliteal vein' },
+        { id: 'artery', text: 'Popliteal artery' },
+        { id: 'nodes', text: 'Popliteal lymph nodes' },
+      ],
+      answerId: 'tibial',
+      explanation: 'From behind forwards: nerve, vein, artery. The artery lies on the floor.',
+    },
+    {
+      id: 'popliteal-floor-lowest',
+      prompt: 'The lowest part of the floor of the popliteal fossa is the:',
+      options: [
+        { id: 'popliteus', text: 'Fascia covering popliteus' },
+        { id: 'femur', text: 'Popliteal surface of the femur' },
+        { id: 'oblique', text: 'Oblique popliteal ligament' },
+        { id: 'soleus', text: 'Soleus' },
+      ],
+      answerId: 'popliteus',
+      explanation:
+        'From above down: femur, capsule with the oblique popliteal ligament, popliteus.',
+    },
+  ],
+  cards: [
+    {
+      id: 'popliteal-boundaries-card',
+      front: 'Boundaries of the popliteal fossa?',
+      back: 'Above: biceps femoris laterally, semitendinosus and semimembranosus medially. Below: lateral head of gastrocnemius with plantaris laterally, medial head medially.',
+    },
+    {
+      id: 'popliteal-roof-card',
+      front: 'What lies in or pierces the roof of the popliteal fossa?',
+      back: 'Small saphenous vein (pierces it), posterior cutaneous nerve of thigh, branch of the medial cutaneous nerve of thigh, sural communicating nerve.',
+    },
+    {
+      id: 'popliteal-floor-card',
+      front: 'Floor of the popliteal fossa, from above down?',
+      back: 'Popliteal surface of the femur, capsule of the knee with the oblique popliteal ligament, fascia over popliteus.',
+    },
+    {
+      id: 'popliteal-contents-card',
+      front: 'Contents of the popliteal fossa?',
+      back: 'Popliteal artery and vein, tibial and common peroneal nerves, posterior cutaneous nerve of thigh, genicular branch of obturator nerve, popliteal lymph nodes, fat.',
+    },
+  ],
+  readIn: [
+    { bookId: 'bd-chaurasia', chapter: 'Volume 2, Chapter 6 Popliteal Fossa', pages: '87–89, 92' },
+    { bookId: 'grays-anatomy', chapter: 'Chapter 6 Lower Limb', pages: '609–611' },
+  ],
+};

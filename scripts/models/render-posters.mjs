@@ -81,6 +81,11 @@ export const POSTERS = [
   { name: 'thigh-medial', path: '/studio?topic=thigh-medial' },
   { name: 'gluteal-muscles', path: '/studio?topic=gluteal-muscles' },
   { name: 'gluteal-nerves-vessels', path: '/studio?topic=gluteal-nerves-vessels' },
+  { name: 'popliteal-fossa', path: '/studio?topic=popliteal-fossa' },
+  { name: 'popliteal-vessels-nerves', path: '/studio?topic=popliteal-vessels-nerves' },
+  { name: 'knee-anastomoses', path: '/studio?topic=knee-anastomoses' },
+  { name: 'hamstrings', path: '/studio?topic=hamstrings' },
+  { name: 'sciatic-nerve-thigh', path: '/studio?topic=sciatic-nerve-thigh' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
