@@ -6,6 +6,8 @@ test('the library previews a topic, and the topic page leads back to that previe
   page,
 }) => {
   await page.goto('/subjects');
+  // The library opens folded to the regions: one, then a book section in it.
+  await page.getByRole('button', { name: /^Upper limb/, expanded: false }).click();
   await page.getByRole('button', { name: /^Axilla/, expanded: false }).click();
   await page.getByRole('button', { name: /Brachial plexus/ }).click();
   await expect(page).toHaveURL(/\/subjects\?topic=brachial-plexus$/);

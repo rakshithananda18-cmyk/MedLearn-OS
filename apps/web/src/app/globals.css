@@ -31,6 +31,13 @@
     outline-offset: 2px;
   }
 
+  /* Every scrollbar, the page's and each panel's: a thin teal thumb on a clear track, so it sits
+     quietly on the sky and the glass instead of the system's grey bar. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--color-primary) 40%, transparent) transparent;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

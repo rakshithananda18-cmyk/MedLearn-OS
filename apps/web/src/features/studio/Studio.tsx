@@ -1,18 +1,22 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, IconButton, Text } from '@medlearn/ui';
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from '@medlearn/ui/icons';
+import { cx, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
+import { BookOpen, Box, PanelLeftClose, PanelLeftOpen, Play } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
+import { bestMatches, searchTerms } from '@/content/match';
 import { MOVEMENTS } from '@/content/movements';
 import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
+import { useProgress } from '@/features/progress/store';
+import { SearchBox, type SearchGroup } from '@/features/search/SearchBox';
+import { useHydrated } from '@/features/shell/media';
 
-import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
+import { DrawBar, ModeSwitch, PENS, QuestionCard, Scoreboard, TourBar } from './bars';
 import { bodyQuizPool, focusOn, useBodyIndex } from './bodyIndex';
 import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
@@ -20,15 +24,15 @@ import {
   BodyBrowser,
   GLASS,
   InfoCard,
+  KIND_LABEL,
   LayersPanel,
   MovementPanel,
   SearchSheet,
   SectionPanel,
   SettingsPanel,
-  StructureSearch,
   TopicsPanel,
 } from './panels';
-import { skipQuiz, startQuiz } from './quiz';
+import { hintQuiz, points, skipQuiz, startQuiz } from './quiz';
 import {
   loadBest,
   loadSettings,
@@ -47,14 +51,13 @@ import {
   openTopicIn,
   type Panel,
   pickIn,
+  quizFocus,
   type Session,
   startSession,
   toggled,
 } from './session';
 import {
-  BestCard,
   BottomSheet,
-  DockedHeader,
   FindItButton,
   GuideCard,
   ModelView,
@@ -123,6 +126,8 @@ function useStudio({
   );
   const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
+  // The Move tool: a plain drag moves the model instead of turning it.
+  const [pan, setPan] = useState(false);
   // The X-ray film showing over or beside the model, by its place in the films at hand.
   const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
@@ -149,6 +154,8 @@ function useStudio({
     session,
     setSession,
     update,
+    pan,
+    togglePan: () => setPan(!pan),
     touring,
     setTouring,
     film,
@@ -193,6 +200,13 @@ function useStudio({
       update({ panel: session.panel === panel ? null : panel }),
     changeMode: (mode: Mode) => setSession(changeModeIn(session, mode, context, loadBest(slug))),
     playAgain: () => update({ quiz: startQuiz(context.pool, loadBest(slug)) }),
+    skip: () => session.quiz && update({ quiz: skipQuiz(session.quiz, context.pool) }),
+    hint: () => session.quiz && update({ quiz: hintQuiz(session.quiz) }),
+    /** After a round, a structure to learn again: back to exploring, with it picked. */
+    learn: (id: string) => {
+      const exploring = { ...session, mode: 'explore' as const, quiz: null };
+      setSession(topic ? pickIn(exploring, id, context) : findOnBody(exploring, id));
+    },
     keepStrokes: (strokes: Stroke[]) => {
       update({ strokes });
       saveStrokes(slug, strokes);
@@ -289,6 +303,14 @@ function labelsFor(
         : [];
     });
   }
+  const quiz = session.mode === 'quiz' ? session.quiz : null;
+  if (quiz) {
+    // Only what was tapped: never the name asked for.
+    if (!quiz.picked || !quiz.last) return [];
+    const name = studio.nameOf(quiz.picked);
+    const text = quiz.last === 'right' ? `+${points(quiz.gained)} ${name}` : name;
+    return [{ id: quiz.picked, text, active: quiz.last === 'right' }];
+  }
   const selected = session.mode === 'explore' ? session.selected : null;
   if (!selected) return [];
   // Only structures on the model: a path also runs through diagram-only steps.
@@ -336,17 +358,22 @@ function bodyHidden(session: Session): ReadonlySet<string> {
   return new Set(skin ? ['skeleton'] : ['skeleton', 'skin']);
 }
 
-/** The model filling the studio, with a caption for screen readers. */
+/** The model, with a caption for screen readers; where it sits comes from the layout. */
 function StudioModel({
   studio,
   regions,
   capable,
   labels,
+  className = 'absolute inset-0',
+  insetRight = 0,
 }: Readonly<{
   studio: StudioState;
   regions: BodyRegionInfo[];
   capable: boolean | null;
   labels: Viewer3DLabel[];
+  className?: string;
+  /** How much of the view's right edge a panel covers, in pixels. */
+  insetRight?: number;
 }>) {
   const { session, topic, model, update, settings } = studio;
   const systemReducedMotion = useReducedMotion();
@@ -356,8 +383,8 @@ function StudioModel({
   const film = topic || studio.film === null ? undefined : studio.films[studio.film];
   const filmBones = useMemo(() => (film ? FILM_BONES[film.region] : []), [film]);
   const lit = useMemo(
-    () => new Set([...litIn(session, topic), ...filmBones]),
-    [session, topic, filmBones],
+    () => new Set([...litIn(session, topic, studio.context.pool), ...filmBones]),
+    [session, topic, filmBones, studio.context.pool],
   );
   // A joint moving on the whole body: what turns, about its axis, by its angle.
   const moving = topic ? null : session.movement;
@@ -382,7 +409,7 @@ function StudioModel({
     return entry ? { point: entry.centre, radius: entry.radius } : null;
   }, [index, session.focus, filmBones, movement]);
   return (
-    <figure className="absolute inset-0">
+    <figure className={className}>
       <ModelView
         capable={capable}
         model={model}
@@ -406,8 +433,11 @@ function StudioModel({
         layers={topic ? [] : bodyLayers(session)}
         section={session.section}
         focus={topic ? null : focus}
+        focusId={quizFocus(session.mode === 'quiz' ? session.quiz : null)}
         pose={pose}
         flat={settings.flat}
+        insetRight={insetRight}
+        pan={studio.pan}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
         onStroke={(stroke) => studio.keepStrokes([...session.strokes, stroke])}
@@ -417,17 +447,18 @@ function StudioModel({
   );
 }
 
-/** The view tools: a column on phones, a row beside the title where docked. */
-function Tools({ studio, row }: Readonly<{ studio: StudioState; row: boolean }>) {
+/** The view tools, as a column down the model's left edge. */
+function Tools({ studio }: Readonly<{ studio: StudioState }>) {
   const { session, update } = studio;
   return (
     <ViewTools
-      row={row}
       layers={session.panel === 'layers'}
       xray={session.xray}
       films={studio.films.length > 0 ? studio.film !== null : null}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
+      pan={studio.pan}
+      onPan={studio.togglePan}
       section={session.section !== null || session.panel === 'section'}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
@@ -469,53 +500,125 @@ function Guide({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
+/** Suggestions per group in the studio's search. */
+const SEARCH_LIMIT = 6;
+
 /**
- * Search the open topic's structures; on the whole body, the topics with a model and then every
- * structure of the body, each with its system.
+ * The studio's search, the same box as the library's: suggestions in groups as the student types,
+ * a letter wrong forgiven. On a topic, the model's own structures and then other topics to open in
+ * 3D; on the whole body, the topics in 3D and then every structure of the body with its system.
+ * Empty, it offers the next topic to learn and the open model's structures. Picking one turns the
+ * model to it or opens the topic, here in the studio. In the phone's search sheet the suggestions
+ * sit in place under the box.
  */
 function Search({
   studio,
   topics,
-  autoFocus = false,
-}: Readonly<{ studio: StudioState; topics: StudioTopic[]; autoFocus?: boolean }>) {
-  const index = useBodyIndex(studio.topic === null);
+  inline = false,
+}: Readonly<{ studio: StudioState; topics: StudioTopic[]; inline?: boolean }>) {
+  const { topic } = studio;
+  const [query, setQuery] = useState('');
+  const learnt = new Set(useProgress().completedLessons);
+  const index = useBodyIndex(topic === null);
   const bodyItems = useMemo(
-    () => [
-      ...topics
-        .filter((topic) => topic.model)
-        .map((topic) => ({ id: topic.slug, name: topic.title })),
-      ...(index ?? []).map((entry) => {
-        const { name, system } = bodyStructure(entry.id);
-        return { id: entry.id, name, detail: system?.name };
-      }),
-    ],
-    [topics, index],
+    () => (index ?? []).map((entry) => ({ id: entry.id, ...bodyStructure(entry.id) })),
+    [index],
   );
-  if (studio.topic) {
-    return (
-      <StructureSearch
-        items={studio.structures}
-        label="Find a structure"
-        autoFocus={autoFocus}
-        onPick={studio.choose}
-      />
-    );
+  const others = topics.filter((item) => item.model && item.slug !== topic?.slug);
+  // Picking one clears the box, ready for the next search.
+  const andClear = (then: () => void) => () => {
+    setQuery('');
+    then();
+  };
+  const topicOption = (item: StudioTopic, meta: string, icon: IconGlyph = BookOpen) => ({
+    id: `topic-${item.slug}`,
+    label: item.title,
+    meta,
+    icon,
+    onSelect: andClear(() => studio.openTopic(item.slug)),
+  });
+  const structureOption = (item: { id: string; name: string; kind: string }) => ({
+    id: `structure-${item.id}`,
+    label: item.name,
+    meta: KIND_LABEL[item.kind as keyof typeof KIND_LABEL] ?? 'On this model',
+    icon: Box,
+    onSelect: andClear(() => studio.choose(item.id)),
+  });
+  const byName = (item: { name: string }) => item.name;
+  const byTitle = (item: StudioTopic) => item.title;
+
+  const typed = searchTerms(query).length > 0;
+  let groups: SearchGroup[];
+  if (!typed) {
+    const next = others.find((item) => !learnt.has(item.slug));
+    groups = [
+      { title: 'Up next', options: next ? [topicOption(next, 'Up next to learn', Play)] : [] },
+      {
+        title: 'On this model',
+        options: studio.structures.slice(0, SEARCH_LIMIT).map(structureOption),
+      },
+    ];
+  } else if (topic) {
+    groups = [
+      {
+        title: 'On this model',
+        options: bestMatches(studio.structures, byName, query, SEARCH_LIMIT).map(structureOption),
+      },
+      {
+        title: 'Other topics in 3D',
+        options: bestMatches(others, byTitle, query, SEARCH_LIMIT).map((item) =>
+          topicOption(item, 'Open in 3D'),
+        ),
+      },
+    ];
+  } else {
+    groups = [
+      {
+        title: 'Topics in 3D',
+        options: bestMatches(others, byTitle, query, SEARCH_LIMIT).map((item) =>
+          topicOption(item, 'Open in 3D'),
+        ),
+      },
+      {
+        title: 'On the body',
+        options: bestMatches(bodyItems, byName, query, SEARCH_LIMIT).map((item) => ({
+          id: `body-${item.id}`,
+          label: item.name,
+          meta: item.system?.name ?? 'Body',
+          icon: Box,
+          onSelect: andClear(() => studio.find(item.id)),
+        })),
+      },
+    ];
   }
+  const label = topic ? 'Find a structure' : 'Find a structure or topic';
+  // Short enough to show whole in the docked panel; the label above says it in full.
+  const placeholder = topic ? 'Search this model' : 'Search the body';
+  const nothing = typed && groups.every((group) => group.options.length === 0);
   return (
-    <StructureSearch
-      items={bodyItems}
-      label="Find a structure or topic"
-      autoFocus={autoFocus}
-      onPick={(id) => (id.includes('/') ? studio.find(id) : studio.openTopic(id))}
+    <SearchBox
+      label={label}
+      placeholder={placeholder}
+      query={query}
+      onQuery={setQuery}
+      groups={groups}
+      status={nothing ? 'Nothing by that name here. Try fewer letters.' : null}
+      inline={inline}
+      autoFocus={inline}
     />
   );
 }
 
+/** What is known about the structure picked while exploring a topic, if one is. */
+function pickedInfo({ session, topic }: StudioState, topics: StudioTopic[]) {
+  const selected = session.mode === 'explore' ? session.selected : null;
+  return topic && selected ? structureInfo(topic, selected, topics) : null;
+}
+
 /** The picked structure's card, while exploring a topic; nothing otherwise. */
 function Info({ studio, topics, docked }: Readonly<OverlayProps & { docked: boolean }>) {
-  const { session, topic } = studio;
-  const selected = session.mode === 'explore' ? session.selected : null;
-  const info = topic && selected ? structureInfo(topic, selected, topics) : null;
+  const { session } = studio;
+  const info = pickedInfo(studio, topics);
   if (!info) return null;
   return (
     <InfoCard
@@ -640,16 +743,31 @@ function Draw({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
+/** "Find it": the scoreboard, its hints and skips, and the end of the round. */
 function Quiz({ studio }: Readonly<{ studio: StudioState }>) {
-  const { session } = studio;
-  if (!session.quiz) return null;
-  const quiz = session.quiz;
+  const { quiz } = studio.session;
+  if (!quiz) return null;
   return (
-    <QuizBar
+    <Scoreboard
       quiz={quiz}
-      pickedName={studio.nameOf(quiz.picked)}
-      onSkip={() => studio.update({ quiz: skipQuiz(quiz, studio.context.pool) })}
+      nameOf={studio.nameOf}
+      onHint={studio.hint}
+      onSkip={studio.skip}
+      onLearn={studio.learn}
       onAgain={studio.playAgain}
+      onEnd={() => studio.changeMode('explore')}
+    />
+  );
+}
+
+/** What to find, at the top of the model. */
+function Question({ studio }: Readonly<{ studio: StudioState }>) {
+  const { quiz } = studio.session;
+  if (!quiz) return null;
+  return (
+    <QuestionCard
+      quiz={quiz}
+      name={studio.nameOf(quiz.targetId)}
       onEnd={() => studio.changeMode('explore')}
     />
   );
@@ -661,9 +779,9 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
   const { session, topic } = studio;
   if (session.mode === 'quiz') {
     return (
-      <div className="p-3">
+      <BottomSheet>
         <Quiz studio={studio} />
-      </div>
+      </BottomSheet>
     );
   }
   if (!topic && session.selected?.includes('/')) {
@@ -729,8 +847,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
         {quiz ? (
           <>
             <h1 className="sr-only">{title}</h1>
-            <QuizProgress quiz={quiz} onEnd={() => studio.changeMode('explore')} />
-            <QuizTarget name={studio.nameOf(quiz.targetId)} />
+            <Question studio={studio} />
           </>
         ) : (
           <PhoneHeader
@@ -744,7 +861,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
       </div>
       {quiz ? null : (
         <div className="absolute top-20 left-3">
-          <Tools studio={studio} row={false} />
+          <Tools studio={studio} />
         </div>
       )}
       <PhoneFooter {...props} />
@@ -771,7 +888,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
       <Moves studio={studio} />
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
-          <Search studio={studio} topics={topics} autoFocus />
+          <Search studio={studio} topics={topics} inline />
         </SearchSheet>
       ) : null}
       <Settings studio={studio} />
@@ -779,7 +896,10 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
   );
 }
 
-/** Along the bottom where docked: the drawing tools, "Find it", or how to use the model. */
+/**
+ * Along the bottom where docked: the guided views (or the tour playing), the drawing tools,
+ * "Find it", and how to use the model.
+ */
 function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' | 'capable'>>) {
   const { mode } = studio.session;
   return (
@@ -791,17 +911,25 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
           onPause={() => studio.setTouring(false)}
         />
       ) : null}
+      {mode === 'explore' && !studio.touring ? (
+        <div className="flex justify-center">
+          <Guide studio={studio} />
+        </div>
+      ) : null}
       {mode === 'draw' ? (
         <div className={cx(GLASS, 'pointer-events-auto p-3')}>
           <Draw studio={studio} />
         </div>
       ) : null}
-      {mode === 'quiz' ? <Quiz studio={studio} /> : null}
+      {mode === 'quiz' ? (
+        <Text size="xs" tone="muted" className="px-2">
+          Tap it on the model · drag to turn · right-drag to move · scroll to zoom
+        </Text>
+      ) : null}
       {mode === 'explore' ? (
         <Text size="xs" tone="muted" className="px-2">
-          {studio.topic
-            ? 'Drag to turn · scroll to zoom · click a structure'
-            : 'Drag to turn · click a structure or a region marker'}
+          {studio.pan ? 'Drag to move' : 'Drag to turn · right-drag to move'} · scroll to zoom ·{' '}
+          {studio.topic ? 'click a structure' : 'click a structure or a region marker'}
         </Text>
       ) : null}
       <div className="px-2">
@@ -811,150 +939,159 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
   );
 }
 
-/** Folds a docked panel away, or brings it back from the edge. */
-function Fold({
-  side,
-  open,
-  onToggle,
-}: Readonly<{ side: 'left' | 'right'; open: boolean; onToggle: () => void }>) {
-  const left = side === 'left';
-  let icon = left ? PanelLeftOpen : PanelRightOpen;
-  if (open) icon = left ? PanelLeftClose : PanelRightClose;
-  const name = left ? 'topics' : 'model panel';
+/** The gap between the model's column and the card beside it (gap-4), in pixels. */
+const CARD_GAP_PX = 16;
+
+/** Folds the docked topics away, or brings them back as a pill at the start of the header. */
+function Fold({ open, onToggle }: Readonly<{ open: boolean; onToggle: () => void }>) {
+  if (open) {
+    return (
+      <IconButton
+        icon={PanelLeftClose}
+        label="Hide the topics"
+        title="Hide the topics"
+        size="sm"
+        variant="ghost"
+        aria-expanded
+        className="pointer-events-auto"
+        onClick={onToggle}
+      />
+    );
+  }
   return (
-    <IconButton
-      icon={icon}
-      label={open ? `Hide the ${name}` : `Show the ${name}`}
-      title={open ? `Hide the ${name}` : `Show the ${name}`}
-      size="sm"
-      variant={open ? 'ghost' : 'secondary'}
-      aria-expanded={open}
-      className={cx('pointer-events-auto', !open && 'shadow-glass')}
+    <button
+      type="button"
+      aria-label="Show the topics"
+      aria-expanded={false}
       onClick={onToggle}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink',
+      )}
+    >
+      <Icon icon={PanelLeftOpen} size="sm" />
+      Topics
+    </button>
+  );
+}
+
+/** At the end of the header where docked: the topic's modes, or "Find it" on the whole body. */
+function HeaderAction({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' | 'capable'>>) {
+  // Both need the 3D model to tap.
+  if (!capable) return null;
+  if (!studio.topic) return <FindIt studio={studio} />;
+  return (
+    <ModeSwitch
+      mode={studio.session.mode}
+      onMode={studio.changeMode}
+      className={cx(GLASS, 'pointer-events-auto shrink-0')}
     />
   );
 }
 
-/** Beside the title where docked: the best streak, the guided views and the view tools. */
-function HeaderTools({
-  studio,
-  capable,
-  folded,
-  onUnfold,
-}: Readonly<{
-  studio: StudioState;
-  capable: boolean | null;
-  folded: boolean;
-  onUnfold: () => void;
-}>) {
-  const { topic } = studio;
-  // "Find it" on the body needs the 3D model to tap.
-  let streak: ReactNode = capable ? <FindIt studio={studio} /> : null;
-  if (topic) streak = <BestCard best={loadBest(topic.slug)} />;
-  return (
-    <>
-      {streak}
-      <Guide studio={studio} />
-      <Tools studio={studio} row />
-      {folded ? <Fold side="right" open={false} onToggle={onUnfold} /> : null}
-    </>
-  );
-}
-
 /**
- * Tablets held sideways and laptops: the topics docked on the left, the model in the middle, and
- * on the right what the student is looking at (a topic's modes and picked structure, or a
- * structure picked on the body). Either side folds away to give the model room. By the view tools
- * sit the best "Find it" streak and the guided views; layers and settings open from the tools.
+ * Tablets held sideways and laptops: the topics docked on the left (they fold away), and beside
+ * them the model under one header row, so the title never sits on it. The view tools stand down
+ * the model's left edge, the guided views sit along the bottom, and a structure picked opens its
+ * card on the right; layers and settings open from the tools.
  */
-function DockedOverlay(props: Readonly<OverlayProps>) {
+function DockedOverlay({
+  stage,
+  ...props
+}: Readonly<OverlayProps & { stage: (insetRight: number) => ReactNode }>) {
   const { studio, topics, tree, regions, capable } = props;
   const { session, topic } = studio;
   const [left, setLeft] = useState(true);
-  const [right, setRight] = useState(true);
+  // How much of the model's view the open card covers (its width and the gap before it), so the
+  // model keeps to the free space beside it.
+  const [covered, setCovered] = useState(0);
+  // Kept the same between renders, so React measures the card only as it opens and closes.
+  const measureCard = useCallback((node: HTMLElement | null) => {
+    setCovered(node ? node.offsetWidth + CARD_GAP_PX : 0);
+  }, []);
   const quiz = session.mode === 'quiz' ? session.quiz : null;
-  // On the whole body the right panel opens only for a structure picked on it.
+  // A structure picked on the whole body, or on the open topic.
   const picked = !topic && session.selected?.includes('/') ? session.selected : null;
-  const side = topic !== null || picked !== null;
+  const card = quiz !== null || picked !== null || pickedInfo(studio, topics) !== null;
+  // During a round the topics step aside, giving the model the room.
+  const topicsShown = left && !quiz;
   return (
-    <div className="pointer-events-none absolute inset-0 flex gap-4 p-4">
-      {left ? (
+    // Inset as far as the side rail, so their tops and bottoms line up.
+    <div className="pointer-events-none absolute inset-0 flex gap-4 p-3">
+      {topicsShown ? (
         <TopicsPanel
           place="dock"
           tree={tree}
           topics={topics}
           regions={regions}
           current={topic?.slug ?? null}
-          search={quiz ? undefined : <Search studio={studio} topics={topics} />}
-          action={<Fold side="left" open onToggle={() => setLeft(false)} />}
+          search={<Search studio={studio} topics={topics} />}
+          action={<Fold open onToggle={() => setLeft(false)} />}
           onRegion={(region) => studio.update({ region })}
           onTopic={studio.openTopic}
           onClose={() => studio.update({ panel: null })}
         />
-      ) : (
-        <div className="self-start">
-          <Fold side="left" open={false} onToggle={() => setLeft(true)} />
-        </div>
-      )}
-      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-        <div className="flex flex-col gap-3">
-          <DockedHeader
-            title={topic?.title ?? 'Whole body'}
-            tools={
-              quiz ? null : (
-                <HeaderTools
-                  studio={studio}
-                  capable={capable}
-                  folded={side && !right}
-                  onUnfold={() => setRight(true)}
-                />
-              )
-            }
-          />
-          {quiz ? (
-            <div className="pointer-events-auto flex flex-col gap-3">
-              <QuizProgress quiz={quiz} onEnd={() => studio.changeMode('explore')} />
-              <QuizTarget name={studio.nameOf(quiz.targetId)} />
-            </div>
-          ) : null}
-        </div>
-        {studio.film === null ? null : (
-          // The right half of the middle on wide screens: the camera centres the model, which
-          // stays in view beside the film.
-          <div className="flex min-h-0 flex-1 xl:w-1/2 xl:self-end">
-            <Films studio={studio} />
-          </div>
-        )}
-        <DockedFooter studio={studio} capable={capable} />
-      </div>
-      {side && right ? (
-        <aside
-          aria-label="About the model"
-          className={cx(
-            GLASS,
-            'pointer-events-auto flex w-sheet shrink-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4',
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <div className="min-w-0 flex-1">
-              {topic && capable ? (
-                <ModeSwitch mode={session.mode} onMode={studio.changeMode} />
-              ) : null}
-            </div>
-            <Fold side="right" open onToggle={() => setRight(false)} />
-          </div>
-          {topic && session.mode === 'explore' && !session.selected ? (
-            <Text size="sm" tone="muted">
-              Tap a structure on the model, or find it by name, to see what it is.
-            </Text>
-          ) : null}
-          {picked ? (
-            <BodyPartCard id={picked} onClose={() => studio.pick(null)} />
-          ) : (
-            <Info {...props} docked />
-          )}
-        </aside>
       ) : null}
+      <div className="relative min-w-0 flex-1">
+        {stage(card ? covered : 0)}
+        <div className="absolute inset-0 flex flex-col gap-3">
+          {/* The name of what is loaded, centred over the model; the sides take equal room. */}
+          <header className={cx('flex min-h-12 gap-3', quiz ? 'items-start' : 'items-center')}>
+            <div className="flex flex-1 basis-0">
+              {left || quiz ? null : <Fold open={false} onToggle={() => setLeft(true)} />}
+            </div>
+            {/* During a round the question takes the title's place. */}
+            <h1
+              className={cx(
+                'text-gold min-w-0 truncate text-center font-display text-2xl tracking-display',
+                quiz && 'sr-only',
+              )}
+            >
+              {topic?.title ?? 'Whole body'}
+            </h1>
+            {quiz ? <Question studio={studio} /> : null}
+            <div className="flex flex-1 basis-0 justify-end">
+              {/* On a topic the modes stay, so Explore is a tap away; on the body the question
+                  card ends the game. */}
+              {quiz && !topic ? null : <HeaderAction studio={studio} capable={capable} />}
+            </div>
+          </header>
+          <div className="flex min-h-0 flex-1 gap-4">
+            <div className="flex min-w-0 flex-1 flex-col justify-end gap-3">
+              {studio.film === null ? null : (
+                // The right half on wide screens: the model stays in view beside the film.
+                <div className="flex min-h-0 flex-1 xl:w-1/2 xl:self-end">
+                  <Films studio={studio} />
+                </div>
+              )}
+              <DockedFooter studio={studio} capable={capable} />
+            </div>
+            {card ? (
+              <aside
+                ref={measureCard}
+                aria-label={quiz ? 'Your round' : 'About the model'}
+                className={cx(
+                  GLASS,
+                  'pointer-events-auto flex w-sheet shrink-0 animate-slide-in flex-col gap-4 overflow-x-hidden overflow-y-auto p-4 motion-reduce:animate-none',
+                  // The scoreboard is only as tall as it needs to be.
+                  quiz && 'self-start',
+                )}
+              >
+                {quiz ? <Quiz studio={studio} /> : null}
+                {!quiz && picked ? (
+                  <BodyPartCard id={picked} onClose={() => studio.pick(null)} />
+                ) : null}
+                {!quiz && !picked ? <Info {...props} docked /> : null}
+              </aside>
+            ) : null}
+          </div>
+          {/* The view tools down the model's left edge: level with the topics' top, or under their
+              pill when they are folded away. */}
+          <div className={cx('absolute left-0', topicsShown || quiz ? 'top-0' : 'top-16')}>
+            <Tools studio={studio} />
+          </div>
+        </div>
+      </div>
       <Layers studio={studio} />
       <Section studio={studio} />
       <Moves studio={studio} />
@@ -964,11 +1101,11 @@ function DockedOverlay(props: Readonly<OverlayProps>) {
 }
 
 /**
- * The 3D studio: one model filling the screen, with everything else floating over it. Pick a
- * region on the body or a topic; turn, light, hide and x-ray structures; draw on the model; or
- * play "Find it". Tablets held sideways and laptops keep the topics docked on the left and the
- * structure and layers on the right. On a phone a topic fills the whole screen, with a back
- * button in place of the tab bar. Phones that cannot show 3D get the flat diagram.
+ * The 3D studio: the model with everything else floating over or docked beside it. Pick a region
+ * on the body or a topic; turn, light, hide and x-ray structures; draw on the model; or play
+ * "Find it". Tablets held sideways and laptops dock the topics on the left and open a picked
+ * structure on the right. On a phone a topic fills the whole screen, with a back button in place
+ * of the tab bar. Phones that cannot show 3D get the flat diagram.
  */
 export function Studio(props: Readonly<StudioProps>) {
   const { topics, tree, regions } = props;
@@ -976,7 +1113,29 @@ export function Studio(props: Readonly<StudioProps>) {
   const docked = useDocked();
   const studio = useStudio(props);
   useTour(studio);
-  const Overlay = docked ? DockedOverlay : PhoneOverlay;
+  // The screen's size is known only in the browser: until then the model's placeholder stands
+  // alone, so a laptop never shows the phone's layout first.
+  const hydrated = useHydrated();
+  const overlay = { studio, topics, tree, regions, capable };
+  const stage = (insetRight = 0) => (
+    <StudioModel
+      studio={studio}
+      regions={regions}
+      capable={capable}
+      labels={labelsFor(studio, topics, regions)}
+      insetRight={insetRight}
+      // Docked, the model sits between the header row and the guided views; on phones it fills
+      // the screen.
+      className={
+        docked
+          ? cx(
+              'pointer-events-auto absolute inset-x-0 bottom-24',
+              studio.session.mode === 'quiz' ? 'top-24' : 'top-16',
+            )
+          : undefined
+      }
+    />
+  );
   return (
     <section
       aria-label="3D studio"
@@ -985,13 +1144,8 @@ export function Studio(props: Readonly<StudioProps>) {
         studio.topic ? 'h-dvh max-md:fixed max-md:inset-0 max-md:z-40 max-md:bg-sky' : 'h-studio',
       )}
     >
-      <StudioModel
-        studio={studio}
-        regions={regions}
-        capable={capable}
-        labels={labelsFor(studio, topics, regions)}
-      />
-      <Overlay studio={studio} topics={topics} tree={tree} regions={regions} capable={capable} />
+      {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
+      {hydrated && !docked ? <PhoneOverlay {...overlay} /> : null}
     </section>
   );
 }

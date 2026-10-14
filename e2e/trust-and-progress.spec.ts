@@ -18,7 +18,9 @@ test('a student reports an issue from the topic hub', async ({ page }) => {
   await expect(drawer.getByText('Thank you')).toBeVisible();
 });
 
-test('Progress shows mastery and turns a missed question into a weak spot', async ({ page }) => {
+test('the library shows progress and turns a missed question into a weak spot', async ({
+  page,
+}) => {
   const now = new Date().toISOString();
   await seedProgress(page, {
     completedLessons: ['brachial-plexus'],
@@ -26,15 +28,14 @@ test('Progress shows mastery and turns a missed question into a weak spot', asyn
     lastActiveAt: now,
     updatedAt: now,
   });
-  // The old address lands on the library's Progress view.
+  // The old address lands on the library, where progress sits on the list itself.
   await page.goto('/progress');
-  await expect(page).toHaveURL(/\/subjects\?view=progress$/);
+  await expect(page).toHaveURL(/\/subjects$/);
   // One lesson done, however many topics there are.
-  await expect(page.getByText(/^1 of \d+ lessons$/)).toBeVisible();
-  await expect(page.getByText('Brachial plexus: 1 missed question to recall')).toBeVisible();
+  await expect(page.getByText(/^First year · 1 of \d+ learnt$/)).toBeVisible();
   await expectAccessible(page);
 
-  await page.getByRole('link', { name: 'Revise them' }).click();
+  await page.getByRole('link', { name: /1 weak spot/ }).click();
   await expect(page.getByText('5 cards due. Answer in your head, then check.')).toBeVisible();
 });
 

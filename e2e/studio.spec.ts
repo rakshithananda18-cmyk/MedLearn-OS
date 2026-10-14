@@ -15,8 +15,8 @@ async function clickIfShown(page: Page, name: string) {
 /** Finds a structure by name: the search sheet on phones, the docked topics panel on laptops. */
 async function findStructure(page: Page, query: string, name: string) {
   await clickIfShown(page, 'Search structures');
-  await page.getByRole('searchbox', { name: 'Find a structure' }).fill(query);
-  await page.getByRole('button', { name, exact: true }).click();
+  await page.getByRole('combobox', { name: 'Find a structure' }).fill(query);
+  await page.getByRole('option', { name: new RegExp(`^${name}`) }).click();
 }
 
 test('the 3D tab opens the body; a region leads to a topic to explore and learn from', async ({
@@ -31,9 +31,12 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   await expect(page.getByRole('heading', { level: 1, name: 'Whole body' })).toBeAttached();
   await expectAccessible(page);
 
-  // Laptops list the topics as a tree whose Axilla section starts folded; phones show cards.
-  const section = page.getByRole('button', { name: /^Axilla\s?\d/, expanded: false });
-  if (await section.isVisible()) await section.click();
+  // Laptops list the topics as a tree folded to the regions; phones show cards.
+  const region = page.getByRole('button', { name: /^Upper limb\s?\d/, expanded: false });
+  if (await region.isVisible()) {
+    await region.click();
+    await page.getByRole('button', { name: /^Axilla\s?\d/, expanded: false }).click();
+  }
   await page.getByRole('button', { name: /Axilla: walls/ }).click();
   await expect(
     page.getByRole('heading', { level: 1, name: 'Axilla: walls and contents' }),

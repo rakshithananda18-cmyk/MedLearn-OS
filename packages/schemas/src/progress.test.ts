@@ -53,6 +53,15 @@ describe('LearnerProgressInput', () => {
     const badProfile = { ...progress, profile: { ...progress.profile, year: 7 } };
     expect(LearnerProgressInput.safeParse(badProfile).success).toBe(false);
   });
+
+  it("keeps the student's name trimmed, and refuses an empty or overlong one", () => {
+    const named = (name: string) => ({ ...progress, profile: { ...progress.profile, name } });
+    expect(LearnerProgressInput.parse(named('  Rakshith Ananda ')).profile?.name).toBe(
+      'Rakshith Ananda',
+    );
+    expect(LearnerProgressInput.safeParse(named('   ')).success).toBe(false);
+    expect(LearnerProgressInput.safeParse(named('a'.repeat(41))).success).toBe(false);
+  });
 });
 
 describe('ContentReportInput', () => {

@@ -19,6 +19,7 @@ export function Heading({ level, className, ...rest }: HeadingProps) {
 }
 
 const DISPLAY_SIZE = {
+  md: 'text-2xl md:text-3xl',
   lg: 'text-3xl md:text-4xl',
   xl: 'text-4xl md:text-5xl',
 } as const;

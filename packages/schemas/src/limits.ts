@@ -3,3 +3,6 @@
 
 /** Longest note a student can keep on one topic. */
 export const NOTE_MAX_LENGTH = 5000;
+
+/** Longest name a student can give, for their initials and greeting. */
+export const NAME_MAX_LENGTH = 40;

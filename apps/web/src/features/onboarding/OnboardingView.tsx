@@ -28,14 +28,14 @@ const AGES: ChoiceOption<'adult' | 'minor'>[] = [
   { value: 'minor', label: 'Under 18', description: 'Your progress stays on this phone for now' },
 ];
 
-const YEARS: ChoiceOption<`${MbbsYear}`>[] = [
+export const YEARS: ChoiceOption<`${MbbsYear}`>[] = [
   { value: '1', label: 'First year', description: 'Anatomy, Physiology, Biochemistry' },
   { value: '2', label: 'Second year', description: 'Pathology, Pharmacology, Microbiology' },
   { value: '3', label: 'Third year, part 1', description: 'Community Medicine, ENT, Eye, FMT' },
   { value: '4', label: 'Final year', description: 'Medicine, Surgery, OBG, Paediatrics' },
 ];
 
-const MINUTES: ChoiceOption<string>[] = [
+export const MINUTES: ChoiceOption<string>[] = [
   { value: '10', label: '10 minutes', description: 'A few reviews and questions' },
   { value: '20', label: '20 minutes', description: 'One lesson or a round of reviews' },
   { value: '30', label: '30 minutes', description: 'A lesson plus practice' },

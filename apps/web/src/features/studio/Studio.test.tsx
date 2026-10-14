@@ -38,6 +38,9 @@ const viewer = vi.hoisted(() => ({
     section: Viewer3DSection | null;
     focus: Viewer3DFocus | null;
     pose: Viewer3DPose | null;
+    insetRight: number;
+    pan: boolean;
+    focusId: string | null;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -195,34 +198,72 @@ describe('Studio on a phone', () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Search structures' }));
     const sheet = screen.getByRole('region', { name: 'Search' });
+    // The same search as the library's, its suggestions listed in the sheet; a letter wrong is
+    // forgiven.
     await userEvent.type(
-      within(sheet).getByRole('searchbox', { name: 'Find a structure' }),
-      'vein',
+      within(sheet).getByRole('combobox', { name: 'Find a structure' }),
+      'axilary vein',
     );
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Axillary vein' }));
+    await userEvent.click(within(sheet).getByRole('option', { name: /^Axillary vein/ }));
     expect(screen.getByRole('region', { name: 'Axillary vein' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Search' })).not.toBeInTheDocument();
   });
 
-  it('plays "Find it" in rounds of ten: a right tap scores, a wrong one names what was tapped', async () => {
+  it('plays "Find it" in rounds of ten: finds score, misses are named, hints help for half', async () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
     expect(screen.getByText('Cords of the brachial plexus')).toBeInTheDocument();
     expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+    // Nothing glows to give the answer away.
+    expect(viewer.props?.highlight.size).toBe(0);
+
     tap('cords');
     expect(screen.getByText('Right! Next one.')).toBeInTheDocument();
     expect(screen.getByText('Question 2 of 10')).toBeInTheDocument();
+    // The one found glows, named with its point.
+    expect(viewer.props?.highlight).toEqual(new Set(['cords']));
+    expect(viewer.props?.labels).toEqual([
+      { id: 'cords', text: '+1 Cords of the brachial plexus', active: true },
+    ]);
     tap('humerus');
-    expect(screen.getByText(/You tapped Humerus/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Hint/ })).toBeDisabled();
+    expect(screen.getByText(/You tapped Humerus. Try again/)).toBeInTheDocument();
 
-    for (let skip = 0; skip < 9; skip++) {
+    // A hint brightens its kind; another turns the camera to it.
+    await userEvent.click(screen.getByRole('button', { name: 'Hint' }));
+    expect(screen.getByText('Hint: it is among the ones still bright.')).toBeInTheDocument();
+    expect(viewer.props?.highlight.size).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Hint 2' }));
+    const asked = viewer.props?.focusId ?? '';
+    expect(asked).not.toBe('');
+    expect(screen.getByRole('button', { name: 'No hints' })).toBeDisabled();
+    // Found with help: half a point.
+    tap(asked);
+    expect(screen.getByText('Found it, for half a point. Next one.')).toBeInTheDocument();
+
+    for (let skip = 0; skip < 8; skip++) {
       await userEvent.click(screen.getByRole('button', { name: 'Skip' }));
     }
-    expect(screen.getByText('Round over: you found 1 of 10.')).toBeInTheDocument();
+    expect(screen.getByText('Round over: you found 2 of 10.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '0 of 3 stars' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
     expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+
+    for (let skip = 0; skip < 10; skip++) {
+      await userEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    }
+    // What was skipped or found with help waits to be learnt, a tap from exploring it.
+    const again = screen.getByRole('region', { name: 'Worth another look' });
+    await userEvent.click(
+      within(again).getAllByRole('button', { name: 'Learn it' })[0] as HTMLElement,
+    );
+    expect(screen.queryByText('Find it on the model')).not.toBeInTheDocument();
+    expect(viewer.props?.highlight.size).toBeGreaterThan(0);
+  });
+
+  it('ends a round from the question card', async () => {
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
     await userEvent.click(screen.getByRole('button', { name: 'End the game' }));
     expect(screen.queryByText('Find it on the model')).not.toBeInTheDocument();
   });
@@ -263,54 +304,62 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
-  it('docks the topics and search, the guided views by the tools, and the structure', async () => {
+  it('docks the topics and search, the modes by the title, the guided views and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');
     expect(screen.queryByRole('button', { name: 'Search structures' })).not.toBeInTheDocument();
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(screen.getByText('Best streak')).toBeInTheDocument();
     const guide = screen.getByRole('group', { name: 'Guided views' });
     expect(guide).toHaveTextContent('1/');
     await userEvent.click(within(guide).getByRole('button', { name: 'Next view' }));
     expect(guide).toHaveTextContent('2/');
-    const side = screen.getByRole('complementary', { name: 'About the model' });
-    // The layers open from beside the settings, not in the side panel.
-    expect(within(side).queryByRole('region', { name: 'Layers' })).not.toBeInTheDocument();
+    // Nothing on the right until a structure is picked; the layers open from the tools.
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
     expect(screen.getByRole('switch', { name: 'Muscles', checked: true })).toBeInTheDocument();
 
     await userEvent.type(
-      within(topics).getByRole('searchbox', { name: 'Find a structure' }),
+      within(topics).getByRole('combobox', { name: 'Find a structure' }),
       'serr',
     );
-    await userEvent.click(within(topics).getByRole('button', { name: 'Serratus anterior' }));
+    await userEvent.click(within(topics).getByRole('option', { name: /^Serratus anterior/ }));
+    const side = screen.getByRole('complementary', { name: 'About the model' });
     const card = within(side).getByRole('region', { name: 'Serratus anterior' });
     // Docked, the card shows everything at once.
     expect(within(card).getByText('Long thoracic nerve injury.')).toBeInTheDocument();
     await expectNoA11yViolations(container);
 
-    await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
+    const header = screen.getByRole('banner');
+    await userEvent.click(within(header).getByRole('button', { name: 'Find it', pressed: false }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
   });
 
-  it('lists regions and book sections as a tree of topic cards, each branch folding', async () => {
+  it('lists the topics folded to the regions, one open at a time, the next one to continue', async () => {
     wideScreen();
     await renderStudio('axilla');
     const tree = screen.getByRole('list', { name: 'Regions and topics' });
-    const open = within(tree).getByRole('button', { name: /Axilla: walls.*Open/ });
-    expect(open).toHaveAttribute('aria-current', 'true');
-    // The branches leading to the open topic start open; the others are folded.
-    expect(within(tree).getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
-    const pectoral = within(tree).getByRole('button', {
-      name: /^Pectoral region/,
-      expanded: false,
-    });
-    await userEvent.click(pectoral);
-    expect(pectoral).toHaveAttribute('aria-expanded', 'true');
+    // The next topic to learn waits at the top; the open one is in the title.
+    const resume = screen.getByRole('region', { name: 'Continue' });
     expect(
-      within(tree).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
-    ).toBeInTheDocument();
+      within(resume).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
+    ).toBeVisible();
+    const upper = within(tree).getByRole('button', { name: /^Upper limb/, expanded: false });
+    const thorax = within(tree).getByRole('button', { name: /^Thorax\s?\d/, expanded: false });
+    expect(thorax).toBeVisible();
+
+    await userEvent.click(upper);
+    const axilla = within(tree).getByRole('button', { name: /^Axilla\s?\d/, expanded: false });
+    await userEvent.click(axilla);
+    expect(within(tree).getByRole('button', { name: /Axilla: walls.*Open/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    // Another book section folds this one; another region folds the region.
+    await userEvent.click(within(tree).getByRole('button', { name: /^Back\s?\d/ }));
+    expect(axilla).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(thorax);
+    expect(upper).toHaveAttribute('aria-expanded', 'false');
 
     // The whole body sits beside the search.
     await userEvent.click(screen.getByRole('button', { name: 'Whole body', pressed: false }));
@@ -410,9 +459,9 @@ describe('Studio on a wide screen', () => {
     await userEvent.click(screen.getByRole('switch', { name: 'Skeleton' }));
     expect(viewer.props?.layers).toEqual([]);
 
-    const search = screen.getByRole('searchbox', { name: 'Find a structure or topic' });
+    const search = screen.getByRole('combobox', { name: 'Find a structure or topic' });
     await userEvent.type(search, 'femur');
-    await userEvent.click(await screen.findByRole('button', { name: /^Left femur.*Skeleton$/ }));
+    await userEvent.click(await screen.findByRole('option', { name: /^Left femur.*Skeleton$/ }));
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
     expect(viewer.props?.highlight).toContain('skeleton/left-femur');
     expect(viewer.props?.focus).toEqual({ point: [91, -81, 601], radius: 243 });
@@ -467,17 +516,35 @@ describe('Studio on a wide screen', () => {
     );
   });
 
-  it('folds either panel away and brings it back', async () => {
+  it('folds the topics away and back, and opens the structure card only for a tap', async () => {
     wideScreen();
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Hide the topics' }));
     expect(screen.queryByRole('region', { name: 'Topics' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Hide the model panel' }));
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Show the topics' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Show the model panel' }));
     expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
-    expect(screen.getByRole('complementary', { name: 'About the model' })).toBeInTheDocument();
+
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(viewer.props?.insetRight).toBe(0);
+    tap('serratus');
+    const side = screen.getByRole('complementary', { name: 'About the model' });
+    // The model keeps to the free space beside the card, and back when it closes.
+    expect(viewer.props?.insetRight).toBeGreaterThan(0);
+    await userEvent.click(within(side).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(viewer.props?.insetRight).toBe(0);
+  });
+
+  it('moves the model with the Move tool, and says how', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    expect(screen.getByText(/right-drag to move/)).toBeInTheDocument();
+    const move = screen.getByRole('button', { name: 'Move the model', pressed: false });
+    await userEvent.click(move);
+    expect(viewer.props?.pan).toBe(true);
+    expect(screen.getByText(/^Drag to move/)).toBeInTheDocument();
+    await userEvent.click(move);
+    expect(viewer.props?.pan).toBe(false);
   });
 
   it('shows the topic as its flat diagram when the student picks 2D in the settings', async () => {

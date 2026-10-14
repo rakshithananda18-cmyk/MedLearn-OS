@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Crosshair,
   FileImage,
+  Hand,
   Layers,
   Pause,
   Play,
@@ -65,10 +66,16 @@ export interface ModelViewProps {
   section: Viewer3DSection | null;
   /** A structure to turn the camera to, or null. */
   focus: Viewer3DFocus | null;
+  /** A structure to turn the camera to by its id, or null. */
+  focusId: string | null;
   /** A joint movement shown on the body, or null. */
   pose: Viewer3DPose | null;
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
+  /** How much of the view's right edge a panel covers, in pixels: the model keeps beside it. */
+  insetRight: number;
+  /** A plain drag moves the model instead of turning it. */
+  pan: boolean;
   onPick: (id: string | null) => void;
   onRegion: (id: BodyRegion) => void;
   onStroke: (stroke: Stroke) => void;
@@ -104,7 +111,10 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         layers={props.layers}
         section={props.section}
         focus={props.focus}
+        focusId={props.focusId}
         pose={props.pose}
+        insetRight={props.insetRight}
+        pan={props.pan}
       />
     );
   }
@@ -128,20 +138,21 @@ export function ModelView(props: Readonly<ModelViewProps>) {
 }
 
 const pressed = (on: boolean) =>
-  cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
+  cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong ring-1 ring-primary/40');
 
 /**
  * Round buttons for the view: see-through, only the picked structure, a section through the
- * model, the topic's X-ray films, back to the guided view, then the layers beside the settings. A column down the left on phones,
- * a row beside the title where docked.
+ * model, the topic's X-ray films, moving the model (a plain drag moves it instead of turning it),
+ * back to the guided view, then the layers beside the settings.
+ * A column down the model's left edge.
  */
 export function ViewTools({
-  row,
   layers,
   xray,
   films,
   isolate,
   canIsolate,
+  pan,
   section,
   movement,
   settings,
@@ -149,12 +160,12 @@ export function ViewTools({
   onXray,
   onFilms,
   onIsolate,
+  onPan,
   onSection,
   onMovement,
   onReset,
   onSettings,
 }: Readonly<{
-  row: boolean;
   /** Whether the layers sheet is open. */
   layers: boolean;
   xray: boolean | null;
@@ -162,6 +173,8 @@ export function ViewTools({
   films: boolean | null;
   isolate: boolean;
   canIsolate: boolean;
+  /** Whether a plain drag moves the model. */
+  pan: boolean;
   /** Whether the model is cut, or the section sheet open. */
   section: boolean;
   /** Whether a joint is moving or the movement sheet open, or null where there are none. */
@@ -172,6 +185,7 @@ export function ViewTools({
   onXray: () => void;
   onFilms: () => void;
   onIsolate: () => void;
+  onPan: () => void;
   onSection: () => void;
   onMovement: () => void;
   onReset: () => void;
@@ -181,12 +195,8 @@ export function ViewTools({
     <div
       role="toolbar"
       aria-label="View"
-      aria-orientation={row ? 'horizontal' : 'vertical'}
-      className={cx(
-        GLASS,
-        'pointer-events-auto flex gap-1 rounded-full p-1',
-        row ? 'flex-row' : 'flex-col',
-      )}
+      aria-orientation="vertical"
+      className={cx(GLASS, 'pointer-events-auto flex flex-col gap-1 rounded-full p-1')}
     >
       {xray === null ? null : (
         <>
@@ -236,6 +246,14 @@ export function ViewTools({
           onClick={onFilms}
         />
       )}
+      <IconButton
+        icon={Hand}
+        label="Move the model"
+        title="Move the model"
+        aria-pressed={pan}
+        className={pressed(pan)}
+        onClick={onPan}
+      />
       <IconButton
         icon={RotateCcw}
         label="Reset the view"
@@ -325,19 +343,6 @@ export function PhoneHeader({
         className="pointer-events-auto shadow-glass"
         onClick={onSearch}
       />
-    </header>
-  );
-}
-
-/**
- * The top of the studio where the panels are docked: the title in gold, then the cards beside the
- * view tools (the best "Find it" streak and the guided views), wrapping under it when narrow.
- */
-export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: ReactNode }>) {
-  return (
-    <header className="flex flex-wrap items-center justify-between gap-3 px-2">
-      <h1 className="text-gold line-clamp-2 font-display text-3xl tracking-display">{title}</h1>
-      <div className="flex flex-wrap items-center justify-end gap-2">{tools}</div>
     </header>
   );
 }
@@ -442,7 +447,6 @@ export function GuideCard({
   );
 }
 
-/** The best "Find it" streak on the open topic, as a card by the guided views. */
 /** Starts "Find it" on the whole body, in the region chosen, with the systems switched on. */
 export function FindItButton({
   region,
@@ -470,30 +474,13 @@ export function FindItButton({
   );
 }
 
-export function BestCard({ best }: Readonly<{ best: number }>) {
-  return (
-    <p
-      className={cx(
-        GLASS,
-        'pointer-events-auto flex h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink',
-      )}
-    >
-      <span className="text-gold font-display text-2xl">{best}</span>
-      <span className="flex flex-col leading-tight">
-        <span>Best streak</span>
-        <span className="text-xs font-normal text-fg-muted">in Find it</span>
-      </span>
-    </p>
-  );
-}
-
 /** The sheet along the bottom of a phone: a grip, then the mode switch and what the mode shows. */
 export function BottomSheet({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="pointer-events-auto flex max-h-sheet flex-col gap-3 overflow-y-auto *:shrink-0 rounded-t-xl border-t border-glass-border bg-surface/95 px-4 pt-2 pb-4 shadow-overlay backdrop-blur-md md:mx-auto md:mb-3 md:w-full md:max-w-2xl md:rounded-xl md:border short:absolute short:top-20 short:right-3 short:bottom-3 short:m-0 short:max-h-none short:w-sheet short:max-w-none">
+    <div className="pointer-events-auto flex max-h-sheet flex-col gap-3 overflow-y-auto *:shrink-0 rounded-t-xl border-t border-border/80 bg-surface/98 px-4 pt-2 pb-4 shadow-overlay backdrop-blur-md md:mx-auto md:mb-3 md:w-full md:max-w-2xl md:rounded-xl md:border short:absolute short:top-20 short:right-3 short:bottom-3 short:m-0 short:max-h-none short:w-sheet short:max-w-none">
       <span
         aria-hidden="true"
-        className="h-1 w-12 shrink-0 self-center rounded-full bg-border-strong"
+        className="h-1 w-12 shrink-0 self-center rounded-full bg-border-strong/80"
       />
       {children}
     </div>

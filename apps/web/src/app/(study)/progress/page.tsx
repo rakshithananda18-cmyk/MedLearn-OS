@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-/** Progress lives in the library now; old links and bookmarks land on its Progress view. */
+/** Progress lives on the library's list now; old links and bookmarks land there. */
 export default function ProgressPage() {
-  redirect('/subjects?view=progress');
+  redirect('/subjects');
 }

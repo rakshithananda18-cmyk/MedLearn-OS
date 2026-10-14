@@ -7,7 +7,7 @@ import {
   type StudyProfile,
   type TopicRevisit,
 } from '@medlearn/core';
-import { NOTE_MAX_LENGTH } from '@medlearn/schemas/limits';
+import { NAME_MAX_LENGTH, NOTE_MAX_LENGTH } from '@medlearn/schemas/limits';
 
 // Device storage is untrusted. Keep this synchronous, small parser separate from the Zod API
 // schema so every page that reads progress does not download the server-side schema library.
@@ -70,7 +70,9 @@ function isProfile(value: unknown): value is StudyProfile {
     value.dailyMinutes >= 5 &&
     value.dailyMinutes <= 240 &&
     typeof value.adult === 'boolean' &&
-    (value.books === undefined || isIdList(value.books, 50))
+    (value.books === undefined || isIdList(value.books, 50)) &&
+    (value.name === undefined ||
+      (typeof value.name === 'string' && value.name.length <= NAME_MAX_LENGTH))
   );
 }
 
@@ -186,6 +188,7 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
             dailyMinutes: profile.dailyMinutes,
             adult: profile.adult,
             ...(profile.books === undefined ? {} : { books: [...profile.books] }),
+            ...(profile.name === undefined ? {} : { name: profile.name }),
           },
     completedLessons: [...ids(data.completedLessons)],
     completedDrills: [...ids(data.completedDrills)],

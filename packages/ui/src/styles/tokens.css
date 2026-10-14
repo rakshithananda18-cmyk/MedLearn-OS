@@ -484,22 +484,27 @@
   max-height: min(60dvh, 36rem);
 }
 
-/* A row that scrolls sideways (tags, chips): a hairline scrollbar that does not crowd it. */
+/* A row that scrolls sideways (tags, chips), with the app's thin scrollbar (set in the base). */
 @utility scroll-row {
   overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) transparent;
 }
 
 /* A panel that folds open and shut smoothly: its one child needs min-h-0 and overflow-hidden. */
+/* A closed fold skips its contents altogether: clipped content still counted towards the page
+   height in Chrome, leaving empty space below a folded list. The switch waits for the closing
+   slide to end (allow-discrete), so nothing vanishes early. */
 @utility fold {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 250ms var(--ease-standard);
+  content-visibility: hidden;
+  transition:
+    grid-template-rows 250ms var(--ease-standard),
+    content-visibility 250ms allow-discrete;
 }
 
 @utility fold-open {
   grid-template-rows: 1fr;
+  content-visibility: visible;
 }
 
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */

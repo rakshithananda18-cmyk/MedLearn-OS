@@ -118,3 +118,21 @@ export function topicTrails(nodes: LibraryNode[], trail: string[] = []): Record<
     ),
   );
 }
+
+/** The branches leading to a topic, by id, from its region down: the trail to unfold for it. */
+export function trailTo(nodes: LibraryNode[], slug: string | null): string[] {
+  for (const node of nodes) {
+    if (node.kind === 'topic') continue;
+    if (topicsUnder(node).some((topic) => topic.slug === slug)) {
+      return [node.id, ...trailTo(node.children, slug)];
+    }
+  }
+  return [];
+}
+
+/**
+ * The open trail after a fold at this depth is toggled: one branch open per level, so opening one
+ * folds the others beside it (and whatever was open inside them), and the open one folds shut.
+ */
+export const toggledTrail = (trail: readonly string[], depth: number, id: string): string[] =>
+  trail[depth] === id ? trail.slice(0, depth) : [...trail.slice(0, depth), id];

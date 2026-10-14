@@ -1,5 +1,6 @@
 'use client';
 
+import type { TopicMastery } from '@medlearn/core';
 import { cx, Icon, ProgressRing, Text } from '@medlearn/ui';
 import { Check, ChevronDown } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -9,7 +10,9 @@ import {
   type LibraryBranch,
   type LibraryNode,
   type LibraryTopic,
+  toggledTrail,
   topicsUnder,
+  trailTo,
 } from '@/content/library';
 
 /** A subject with its topics, as the library tree for it. */
@@ -25,6 +28,8 @@ export interface TopicsState {
   next: string | null;
   /** The topic shown in the preview, highlighted. */
   selected: string | null;
+  /** How each topic is going, by slug. */
+  mastery: ReadonlyMap<string, TopicMastery>;
   /** Where a preview sits beside the list, picking a topic shows it there; else topics are links. */
   onSelect?: (slug: string) => void;
 }
@@ -44,6 +49,8 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const next = topic.slug === state.next;
   const selected = topic.slug === state.selected;
   const learnt = state.learnt.has(topic.slug);
+  const mastery = state.mastery.get(topic.slug);
+  const weak = mastery?.weakSpots ?? 0;
   const className = cx(
     'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
     selected
@@ -53,10 +60,15 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const content = (
     <>
       <span className="min-w-0 flex-1">{topic.title}</span>
+      {weak > 0 ? (
+        <span className="shrink-0 rounded-full bg-gloss px-2 py-1 text-xs font-semibold text-gold-ink">
+          {weak} to recall
+        </span>
+      ) : null}
       {learnt ? (
         <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary-strong">
           <Icon icon={Check} size="sm" />
-          Learnt
+          Learnt{mastery ? ` · ${mastery.percent}%` : ''}
         </span>
       ) : (
         <span className={cx('shrink-0 text-xs', next ? 'text-primary-strong' : 'text-fg-muted')}>
@@ -100,16 +112,23 @@ export function Chevron({ open }: Readonly<{ open: boolean }>) {
   );
 }
 
+/** The open trail (a region, then a book section in it) and how to fold one open or shut. */
+interface Folds {
+  trail: readonly string[];
+  onToggle: (depth: number, id: string) => void;
+}
+
 /** A book section: a ring for how much is learnt, and its topics folding open underneath. */
-function Section({ section, state }: Readonly<{ section: LibraryBranch; state: TopicsState }>) {
+function Section({
+  section,
+  state,
+  folds,
+}: Readonly<{ section: LibraryBranch; state: TopicsState; folds: Folds }>) {
   const id = useId();
   const topics = topicsUnder(section);
   const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   const holdsNext = topics.some((topic) => topic.slug === state.next);
-  const holdsSelected = topics.some((topic) => topic.slug === state.selected);
-  // Folded until the student opens it, unless it holds the next or the selected topic.
-  const [toggled, setToggled] = useState<boolean | null>(null);
-  const open = toggled ?? (holdsNext || holdsSelected);
+  const open = folds.trail[1] === section.id;
   const minutes = topics.reduce((total, topic) => total + topic.minutes, 0);
   return (
     <div
@@ -122,7 +141,7 @@ function Section({ section, state }: Readonly<{ section: LibraryBranch; state: T
         type="button"
         aria-expanded={open}
         aria-controls={id}
-        onClick={() => setToggled(!open)}
+        onClick={() => folds.onToggle(1, section.id)}
         className="flex min-h-12 w-full items-center gap-3 rounded-lg px-4 py-3 text-left"
       >
         <span aria-hidden="true" className="flex shrink-0">
@@ -163,24 +182,25 @@ function Section({ section, state }: Readonly<{ section: LibraryBranch; state: T
   );
 }
 
-/**
- * A body region: its name and how far through it the student is, folding its book sections away
- * when the student wants the page clear.
- */
-function Region({ region, state }: Readonly<{ region: LibraryBranch; state: TopicsState }>) {
+/** A body region: its name and how far through it the student is, folding onto its sections. */
+function Region({
+  region,
+  state,
+  folds,
+}: Readonly<{ region: LibraryBranch; state: TopicsState; folds: Folds }>) {
   const id = useId();
-  const [open, setOpen] = useState(true);
   const topics = topicsUnder(region);
-  const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   const sections = region.children.filter((node) => node.kind === 'branch');
+  const open = folds.trail[0] === region.id;
+  const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   return (
-    <section aria-labelledby={`${id}-name`} className="flex flex-col gap-3">
-      <h2 id={`${id}-name`} className="font-display text-3xl tracking-display text-ink">
+    <section aria-labelledby={`${id}-name`} className="flex flex-col gap-2">
+      <h2 id={`${id}-name`} className="font-display text-2xl tracking-display text-ink">
         <button
           type="button"
           aria-expanded={open}
           aria-controls={id}
-          onClick={() => setOpen(!open)}
+          onClick={() => folds.onToggle(0, region.id)}
           className="flex min-h-12 w-full items-end justify-between gap-3 text-left"
         >
           {region.label}
@@ -205,7 +225,7 @@ function Region({ region, state }: Readonly<{ region: LibraryBranch; state: Topi
           <ul className="flex flex-col gap-2 pt-1">
             {sections.map((section) => (
               <li key={section.id}>
-                <Section section={section} state={state} />
+                <Section section={section} state={state} folds={folds} />
               </li>
             ))}
           </ul>
@@ -216,8 +236,10 @@ function Region({ region, state }: Readonly<{ region: LibraryBranch; state: Topi
 }
 
 /**
- * One subject's topics: each body region with its progress and book sections, and any topics
- * outside a region listed on their own.
+ * One subject's topics, folded to the body regions: one region open at a time, and in it one book
+ * section, so the list stays short. Only the trail to a topic picked on arrival starts open; the
+ * next topic to learn waits in a Continue row at the top. Topics outside a region are listed on
+ * their own.
  */
 export function SubjectTopics({
   subject,
@@ -225,6 +247,13 @@ export function SubjectTopics({
 }: Readonly<{ subject: LibrarySubject; state: TopicsState }>) {
   const regions = subject.nodes.filter((node) => node.kind === 'branch');
   const loose = subject.nodes.filter((node) => node.kind === 'topic');
+  const continueId = useId();
+  const [trail, setTrail] = useState(() => trailTo(subject.nodes, state.selected));
+  const folds: Folds = {
+    trail,
+    onToggle: (depth, id) => setTrail((current) => toggledTrail(current, depth, id)),
+  };
+  const upNext = subject.nodes.flatMap(topicsUnder).find((topic) => topic.slug === state.next);
   if (subject.nodes.length === 0) {
     return (
       <div className="rounded-lg border border-glass-border bg-glass p-6 shadow-glass">
@@ -233,9 +262,23 @@ export function SubjectTopics({
     );
   }
   return (
-    <div className="flex animate-rise flex-col gap-8">
+    <div className="flex animate-rise flex-col gap-6">
+      {upNext ? (
+        <section
+          aria-labelledby={continueId}
+          className="flex flex-col gap-1 rounded-lg border border-glass-border bg-glass p-2 shadow-glass"
+        >
+          <h2
+            id={continueId}
+            className="px-3 pt-1 text-xs font-semibold uppercase tracking-eyebrow text-gold-ink"
+          >
+            Continue
+          </h2>
+          <TopicRow topic={upNext} state={state} />
+        </section>
+      ) : null}
       {regions.map((region) => (
-        <Region key={region.id} region={region} state={state} />
+        <Region key={region.id} region={region} state={state} folds={folds} />
       ))}
       {loose.length > 0 ? (
         <section aria-label={`${subject.name} topics`} className="flex flex-col gap-3">

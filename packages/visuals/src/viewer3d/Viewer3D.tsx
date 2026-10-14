@@ -14,9 +14,12 @@ import {
   Matrix4,
   Mesh,
   MeshStandardMaterial,
+  MOUSE,
   type Object3D,
+  type PerspectiveCamera,
   Plane,
   SphereGeometry,
+  TOUCH,
   TubeGeometry,
   Vector3,
 } from 'three';
@@ -121,8 +124,17 @@ export interface Viewer3DProps {
   section?: Viewer3DSection | null;
   /** Turns the camera to this structure whenever it changes. */
   focus?: Viewer3DFocus | null;
+  /** Turns the camera to the structure with this id (a part, trace or system structure). */
+  focusId?: string | null;
   /** A joint movement shown on the model. */
   pose?: Viewer3DPose | null;
+  /**
+   * How much of the view's right edge a panel covers, in pixels: the model keeps to the middle of
+   * what is left, sliding there and back as the panel opens and closes.
+   */
+  insetRight?: number;
+  /** One finger or the left button moves the model instead of turning it (the right turns it). */
+  pan?: boolean;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -131,6 +143,11 @@ const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
   outline: 1.4,
 };
 const MARKER_RADIUS_MM = 28;
+/** A press that travels further than this (in pixels) turned or moved the model: not a tap. */
+const TAP_SLOP_PX = 6;
+const dragged = (event: ThreeEvent<MouseEvent>) => event.delta > TAP_SLOP_PX;
+/** How far past the model's bounds the view may be moved, in metres. */
+const PAN_MARGIN_M = 0.05;
 const DIMMED = 0.3;
 const XRAY = 0.3;
 const NONE: ReadonlySet<string> = new Set();
@@ -219,9 +236,15 @@ function Trace({
   // Meshes are built here and handed over whole, like the model's own parts.
   const meshes = useMemo(() => {
     const traceMaterial = material(tokenColour(TRACE_COLOUR[trace.kind]), lit, dimmed ? DIMMED : 1);
-    return geometries.map((geometry) => new Mesh(geometry, traceMaterial));
-  }, [geometries, trace.kind, lit, dimmed]);
+    return geometries.map((geometry) => {
+      const mesh = new Mesh(geometry, traceMaterial);
+      // Named like the model's parts, so the camera can find it.
+      mesh.userData.partId = trace.id;
+      return mesh;
+    });
+  }, [geometries, trace.kind, trace.id, lit, dimmed]);
   const select = (event: ThreeEvent<MouseEvent>) => {
+    if (dragged(event)) return;
     event.stopPropagation();
     onSelect(trace.id);
   };
@@ -254,6 +277,7 @@ function Marker({
     <primitive
       object={sphere} // NOSONAR: a React Three Fiber prop, not a DOM attribute
       onClick={(event: ThreeEvent<MouseEvent>) => {
+        if (dragged(event)) return;
         event.stopPropagation();
         onSelect(marker.id);
       }}
@@ -410,7 +434,7 @@ function Parts({
   const select = (event: ThreeEvent<MouseEvent>) => {
     const id = event.object.userData.partId as string | undefined;
     // Hidden or cut-away parts are still in the way of the ray: let the tap through.
-    if (!id || !drawn(event, gl.clippingPlanes)) return;
+    if (!id || dragged(event) || !drawn(event, gl.clippingPlanes)) return;
     // The see-through skin lets a tap through to whatever shows under it.
     const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
     const under = event.intersections.some(
@@ -469,7 +493,7 @@ function SystemLayer({
       object={scene} // NOSONAR: a React Three Fiber prop, not a DOM attribute
       onClick={(event: ThreeEvent<MouseEvent>) => {
         const id = event.object.userData.partId as string | undefined;
-        if (!id || !drawn(event, gl.clippingPlanes)) return;
+        if (!id || dragged(event) || !drawn(event, gl.clippingPlanes)) return;
         event.stopPropagation();
         onSelect(id);
       }}
@@ -595,9 +619,13 @@ function CameraRig({
   reducedMotion,
   resetToken,
   focus,
+  focusId,
+  groupRef,
 }: Readonly<
   Pick<Viewer3DProps, 'model' | 'stopId' | 'reducedMotion' | 'resetToken'> & {
     focus: Viewer3DFocus | null;
+    focusId: string | null;
+    groupRef: RefObject<Group | null>;
   }
 >) {
   const { camera, invalidate } = useThree();
@@ -641,6 +669,30 @@ function CameraRig({
     invalidate();
   }, [focus, reducedMotion, camera, controls, invalidate]);
 
+  // A structure asked for by its id: turn to it from where the camera is, close enough to see it.
+  useEffect(() => {
+    if (!focusId || !controls || !groupRef.current) return;
+    const bounds = new Box3();
+    groupRef.current.traverse((object) => {
+      if (object.userData.partId === focusId) bounds.expandByObject(object);
+    });
+    if (bounds.isEmpty()) return;
+    const target = bounds.getCenter(new Vector3());
+    const size = bounds.getSize(new Vector3()).length();
+    const distance = Math.min(1.2, Math.max(0.3, size * 1.6));
+    const away = camera.position.clone().sub(controls.target).normalize();
+    const position = target.clone().add(away.multiplyScalar(distance));
+    if (reducedMotion) {
+      camera.position.copy(position);
+      controls.target.copy(target);
+      controls.update();
+      goal.current = null;
+    } else {
+      goal.current = { position, target };
+    }
+    invalidate();
+  }, [focusId, reducedMotion, camera, controls, invalidate, groupRef]);
+
   useFrame((_, delta) => {
     if (!goal.current || !controls) return;
     const ease = 1 - Math.exp(-delta * 6);
@@ -650,6 +702,71 @@ function CameraRig({
     if (camera.position.distanceTo(goal.current.position) < 0.0005) goal.current = null;
     else invalidate();
   });
+  return null;
+}
+
+/**
+ * Keeps the model in the middle of the view left uncovered: a panel over the right edge shifts
+ * the picture left by half its width, easing there and back (at once when motion is reduced).
+ * The camera's own view is shifted, so the model keeps its size and taps still land true.
+ */
+function ViewInset({ right, reducedMotion }: Readonly<{ right: number; reducedMotion: boolean }>) {
+  const { camera, size, invalidate } = useThree();
+  const shift = useRef(0);
+  const applied = useRef({ shift: 0, width: 0, height: 0 });
+  useEffect(() => invalidate(), [right, invalidate]);
+  useFrame((_, delta) => {
+    const goal = right / 2;
+    let next = goal;
+    if (!reducedMotion) next = shift.current + (goal - shift.current) * (1 - Math.exp(-delta * 8));
+    shift.current = Math.abs(next - goal) < 0.5 ? goal : next;
+    if (shift.current !== goal) invalidate();
+    const last = applied.current;
+    if (last.shift === shift.current && last.width === size.width && last.height === size.height) {
+      return;
+    }
+    const view = camera as PerspectiveCamera;
+    if (shift.current === 0) view.clearViewOffset();
+    else view.setViewOffset(size.width, size.height, shift.current, 0, size.width, size.height);
+    applied.current = { shift: shift.current, width: size.width, height: size.height };
+  });
+  return null;
+}
+
+/**
+ * Keeps moving the model within its own bounds: the point the camera turns about stays inside
+ * the model, so it can never be dragged off the screen and lost. The bounds are measured as a
+ * drag starts, so they follow the systems switched on.
+ */
+function PanLimit({ groupRef }: Readonly<{ groupRef: RefObject<Group | null> }>) {
+  const { camera } = useThree();
+  const controls = useThree((state) => state.controls) as unknown as {
+    target: Vector3;
+    addEventListener: (type: string, listener: () => void) => void;
+    removeEventListener: (type: string, listener: () => void) => void;
+  } | null;
+  useEffect(() => {
+    if (!controls) return;
+    const bounds = new Box3();
+    const before = new Vector3();
+    const measure = () => {
+      // A little room around it: guided views may look at a point just off the surface.
+      if (groupRef.current) bounds.setFromObject(groupRef.current).expandByScalar(PAN_MARGIN_M);
+    };
+    const keep = () => {
+      if (bounds.isEmpty()) return;
+      before.copy(controls.target);
+      controls.target.clamp(bounds.min, bounds.max);
+      // The camera moves back by as much, so the view slides rather than swings.
+      camera.position.add(controls.target).sub(before);
+    };
+    controls.addEventListener('start', measure);
+    controls.addEventListener('change', keep);
+    return () => {
+      controls.removeEventListener('start', measure);
+      controls.removeEventListener('change', keep);
+    };
+  }, [controls, camera, groupRef]);
   return null;
 }
 
@@ -692,7 +809,10 @@ export default function Viewer3D({
   layers = [],
   section = null,
   focus = null,
+  focusId = null,
   pose = null,
+  insetRight = 0,
+  pan = false,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
   const selecting =
@@ -823,13 +943,29 @@ export default function Viewer3D({
           enableDamping={!reducedMotion}
           minDistance={0.08}
           maxDistance={maxDistance}
+          // Turning is the plain drag; moving is the right button or two fingers, or the plain
+          // drag while the Move tool is on.
+          mouseButtons={
+            pan
+              ? { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE }
+              : { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN }
+          }
+          touches={
+            pan
+              ? { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE }
+              : { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }
+          }
         />
+        <PanLimit groupRef={group} />
+        <ViewInset right={insetRight} reducedMotion={reducedMotion} />
         <CameraRig
           model={model}
           stopId={stopId}
           reducedMotion={reducedMotion}
           resetToken={resetToken}
           focus={focus}
+          focusId={focusId}
+          groupRef={group}
         />
       </Canvas>
       <LabelLayer labels={labels} nodesRef={labelNodes} redrawRef={redraw} />
