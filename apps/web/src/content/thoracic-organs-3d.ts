@@ -404,6 +404,9 @@ export const OPEN_FRAME: OrgansPartId[] = [
   'diaphragm',
 ];
 
+/** Only the spine, clavicles and diaphragm, for mediastinal topics where the sternum would hide the vessels. */
+export const SPINE_FRAME: OrgansPartId[] = ['thoracic-vertebrae', 'clavicles', 'diaphragm'];
+
 export const LOBES: OrgansPartId[] = [
   'right-upper-lobe',
   'right-middle-lobe',
@@ -455,3 +458,41 @@ export const PHRENIC_PATHS: Record<'right' | 'left', ModelTrace['paths']> = {
     ],
   ],
 };
+
+/** Credit when a topic adds the thoracic duct or recurrent laryngeal nerve, which neither source has. */
+export const DUCT_NERVE_CREDIT =
+  'Thoracic duct and left recurrent laryngeal nerve: MedLearn schematic, not yet medically reviewed.';
+
+/**
+ * The thoracic duct, drawn schematically: up from the aortic opening between the aorta and the
+ * azygos vein, behind the oesophagus, across to the left at T5, up the left edge of the
+ * oesophagus into the neck, and arching down into the angle of the left subclavian and internal
+ * jugular veins.
+ */
+export const THORACIC_DUCT_PATHS: ModelTrace['paths'] = [
+  [
+    [2, -78, 1065],
+    [0, -80, 1120],
+    [-2, -82, 1180],
+    [0, -84, 1235],
+    [8, -86, 1262],
+    [16, -86, 1300],
+    [20, -88, 1340],
+    [24, -92, 1375],
+    [34, -100, 1392],
+    [40, -110, 1382],
+    [32, -116, 1356],
+  ],
+];
+
+/** The left recurrent laryngeal nerve: from the vagus, round the ligamentum arteriosum and under the arch, up the groove between the trachea and oesophagus. */
+export const RECURRENT_LARYNGEAL_PATHS: ModelTrace['paths'] = [
+  [
+    [34, -90, 1305],
+    [32, -98, 1284],
+    [22, -92, 1276],
+    [13, -84, 1292],
+    [11, -82, 1330],
+    [10, -82, 1390],
+  ],
+];

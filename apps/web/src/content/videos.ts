@@ -24,10 +24,11 @@ const DAVINCI = 'DaVinci Academy';
 const NOTED = 'The Noted Anatomist';
 const BLUELINK = 'BlueLink Anatomy';
 const MEDICOSIS = 'Medicosis Perfectionalis';
+const ARMANDO = 'Armando Hasudungan';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax from 13 to 15 Oct 2026); each
+ * thorax on 13 and 14 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -219,8 +220,44 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('J56OcWZhZXQ', 'Fetal circulation', MEDICOSIS, 674),
     video('HVBu9HhTkD4', 'Fetal circulation', 'OPENPediatrics', 367),
   ],
+  'svc-pulmonary-trunk': [
+    video('paf-euzgW5o', 'The superior and inferior venae cavae', 'Sam Webster', 988),
+    video(
+      'aM4wm0Qpst0',
+      'Arch branches, venae cavae and brachiocephalic veins',
+      'Witty Anatomy',
+      209,
+    ),
+  ],
+  aorta: [
+    video('-soBqyJdq40', 'The aorta, its sections and branches', ARMANDO, 756),
+    video('oJhocDkExZ4', 'Arch of aorta: branches and relations', 'Air Anatomy', 750),
+  ],
+  trachea: [
+    video('Dvxln66NrpY', 'Trachea', 'Angelina Issac', 566),
+    video('e71FvCfVv9E', 'Trachea, bronchi and the respiratory tree', DAVINCI, 493),
+  ],
+  oesophagus: [
+    video('qi126uCoE-8', 'The oesophagus', 'PAALS Anatomy', 1068),
+    video('BZ0JBiPeek8', 'The oesophagus: clinical anatomy', ARMANDO, 911),
+  ],
+  'thoracic-duct': [
+    video('qaw5VHOW_Ig', 'Thoracic duct in the posterior mediastinum', BLUELINK, 334),
+    video(
+      'FfHouZJ9IH4',
+      'Thoracic duct: course, relations and tributaries',
+      'Dr G Bhanu Prakash',
+      329,
+    ),
+    video('dqRGzbEUBHA', 'Thoracic duct', KNOWLEDGE, 147),
+  ],
+  'thorax-surface-xray': [
+    video('C52UENd2xZU', 'Anatomy of the chest X-ray', 'The Radiologist', 1147),
+    video('L6bnD2wOEmg', 'Reading a chest X-ray: method and anatomy', 'Strong Medicine', 611),
+    video('sHFmxtxQelA', 'Surface anatomy of the thorax', 'sqadia.com', 295),
+  ],
   'oxygen-haemoglobin-curve': [
-    video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', 'Armando Hasudungan', 712),
+    video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),
   ],
 };

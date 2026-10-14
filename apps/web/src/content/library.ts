@@ -44,6 +44,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     16: 'Lungs',
     17: 'Mediastinum',
     18: 'Heart',
+    19: 'Great vessels',
+    20: 'Trachea, oesophagus and thoracic duct',
+    21: 'Surface marking and X-rays',
   },
 };
 
