@@ -1,16 +1,20 @@
 'use client';
 
 import type { BodyRegion, Model3D, PartKind } from '@medlearn/schemas';
-import { cx, Icon, IconButton, Text } from '@medlearn/ui';
-import { PanelLeftClose, PanelLeftOpen } from '@medlearn/ui/icons';
+import { cx, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
+import { BookOpen, Box, PanelLeftClose, PanelLeftOpen, Play } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
+import { bestMatches, searchTerms } from '@/content/match';
 import { MOVEMENTS } from '@/content/movements';
 import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
+import { useProgress } from '@/features/progress/store';
+import { SearchBox, type SearchGroup } from '@/features/search/SearchBox';
+import { useHydrated } from '@/features/shell/media';
 
 import { DrawBar, ModeSwitch, PENS, QuizBar, QuizProgress, QuizTarget, TourBar } from './bars';
 import { bodyQuizPool, focusOn, useBodyIndex } from './bodyIndex';
@@ -20,12 +24,12 @@ import {
   BodyBrowser,
   GLASS,
   InfoCard,
+  KIND_LABEL,
   LayersPanel,
   MovementPanel,
   SearchSheet,
   SectionPanel,
   SettingsPanel,
-  StructureSearch,
   TopicsPanel,
 } from './panels';
 import { skipQuiz, startQuiz } from './quiz';
@@ -468,44 +472,111 @@ function Guide({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
+/** Suggestions per group in the studio's search. */
+const SEARCH_LIMIT = 6;
+
 /**
- * Search the open topic's structures; on the whole body, the topics with a model and then every
- * structure of the body, each with its system.
+ * The studio's search, the same box as the library's: suggestions in groups as the student types,
+ * a letter wrong forgiven. On a topic, the model's own structures and then other topics to open in
+ * 3D; on the whole body, the topics in 3D and then every structure of the body with its system.
+ * Empty, it offers the next topic to learn and the open model's structures. Picking one turns the
+ * model to it or opens the topic, here in the studio. In the phone's search sheet the suggestions
+ * sit in place under the box.
  */
 function Search({
   studio,
   topics,
-  autoFocus = false,
-}: Readonly<{ studio: StudioState; topics: StudioTopic[]; autoFocus?: boolean }>) {
-  const index = useBodyIndex(studio.topic === null);
+  inline = false,
+}: Readonly<{ studio: StudioState; topics: StudioTopic[]; inline?: boolean }>) {
+  const { topic } = studio;
+  const [query, setQuery] = useState('');
+  const learnt = new Set(useProgress().completedLessons);
+  const index = useBodyIndex(topic === null);
   const bodyItems = useMemo(
-    () => [
-      ...topics
-        .filter((topic) => topic.model)
-        .map((topic) => ({ id: topic.slug, name: topic.title })),
-      ...(index ?? []).map((entry) => {
-        const { name, system } = bodyStructure(entry.id);
-        return { id: entry.id, name, detail: system?.name };
-      }),
-    ],
-    [topics, index],
+    () => (index ?? []).map((entry) => ({ id: entry.id, ...bodyStructure(entry.id) })),
+    [index],
   );
-  if (studio.topic) {
-    return (
-      <StructureSearch
-        items={studio.structures}
-        label="Find a structure"
-        autoFocus={autoFocus}
-        onPick={studio.choose}
-      />
-    );
+  const others = topics.filter((item) => item.model && item.slug !== topic?.slug);
+  // Picking one clears the box, ready for the next search.
+  const andClear = (then: () => void) => () => {
+    setQuery('');
+    then();
+  };
+  const topicOption = (item: StudioTopic, meta: string, icon: IconGlyph = BookOpen) => ({
+    id: `topic-${item.slug}`,
+    label: item.title,
+    meta,
+    icon,
+    onSelect: andClear(() => studio.openTopic(item.slug)),
+  });
+  const structureOption = (item: { id: string; name: string; kind: string }) => ({
+    id: `structure-${item.id}`,
+    label: item.name,
+    meta: KIND_LABEL[item.kind as keyof typeof KIND_LABEL] ?? 'On this model',
+    icon: Box,
+    onSelect: andClear(() => studio.choose(item.id)),
+  });
+  const byName = (item: { name: string }) => item.name;
+  const byTitle = (item: StudioTopic) => item.title;
+
+  const typed = searchTerms(query).length > 0;
+  let groups: SearchGroup[];
+  if (!typed) {
+    const next = others.find((item) => !learnt.has(item.slug));
+    groups = [
+      { title: 'Up next', options: next ? [topicOption(next, 'Up next to learn', Play)] : [] },
+      {
+        title: 'On this model',
+        options: studio.structures.slice(0, SEARCH_LIMIT).map(structureOption),
+      },
+    ];
+  } else if (topic) {
+    groups = [
+      {
+        title: 'On this model',
+        options: bestMatches(studio.structures, byName, query, SEARCH_LIMIT).map(structureOption),
+      },
+      {
+        title: 'Other topics in 3D',
+        options: bestMatches(others, byTitle, query, SEARCH_LIMIT).map((item) =>
+          topicOption(item, 'Open in 3D'),
+        ),
+      },
+    ];
+  } else {
+    groups = [
+      {
+        title: 'Topics in 3D',
+        options: bestMatches(others, byTitle, query, SEARCH_LIMIT).map((item) =>
+          topicOption(item, 'Open in 3D'),
+        ),
+      },
+      {
+        title: 'On the body',
+        options: bestMatches(bodyItems, byName, query, SEARCH_LIMIT).map((item) => ({
+          id: `body-${item.id}`,
+          label: item.name,
+          meta: item.system?.name ?? 'Body',
+          icon: Box,
+          onSelect: andClear(() => studio.find(item.id)),
+        })),
+      },
+    ];
   }
+  const label = topic ? 'Find a structure' : 'Find a structure or topic';
+  // Short enough to show whole in the docked panel; the label above says it in full.
+  const placeholder = topic ? 'Search this model' : 'Search the body';
+  const nothing = typed && groups.every((group) => group.options.length === 0);
   return (
-    <StructureSearch
-      items={bodyItems}
-      label="Find a structure or topic"
-      autoFocus={autoFocus}
-      onPick={(id) => (id.includes('/') ? studio.find(id) : studio.openTopic(id))}
+    <SearchBox
+      label={label}
+      placeholder={placeholder}
+      query={query}
+      onQuery={setQuery}
+      groups={groups}
+      status={nothing ? 'Nothing by that name here. Try fewer letters.' : null}
+      inline={inline}
+      autoFocus={inline}
     />
   );
 }
@@ -775,7 +846,7 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
       <Moves studio={studio} />
       {session.panel === 'search' ? (
         <SearchSheet label="Search" onClose={() => studio.update({ panel: null })}>
-          <Search studio={studio} topics={topics} autoFocus />
+          <Search studio={studio} topics={topics} inline />
         </SearchSheet>
       ) : null}
       <Settings studio={studio} />
@@ -885,7 +956,8 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
   const picked = !topic && session.selected?.includes('/') ? session.selected : null;
   const card = picked !== null || pickedInfo(studio, topics) !== null;
   return (
-    <div className="pointer-events-none absolute inset-0 flex gap-4 p-4">
+    // Inset as far as the side rail, so their tops and bottoms line up.
+    <div className="pointer-events-none absolute inset-0 flex gap-4 p-3">
       {left ? (
         <TopicsPanel
           place="dock"
@@ -903,12 +975,17 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
       <div className="relative min-w-0 flex-1">
         {stage}
         <div className="absolute inset-0 flex flex-col gap-3">
+          {/* The name of what is loaded, centred over the model; the sides take equal room. */}
           <header className="flex min-h-12 items-center gap-3">
-            {left ? null : <Fold open={false} onToggle={() => setLeft(true)} />}
-            <h1 className="text-gold min-w-0 flex-1 truncate font-display text-2xl tracking-display">
+            <div className="flex flex-1 basis-0">
+              {left ? null : <Fold open={false} onToggle={() => setLeft(true)} />}
+            </div>
+            <h1 className="text-gold min-w-0 truncate text-center font-display text-2xl tracking-display">
               {topic?.title ?? 'Whole body'}
             </h1>
-            {quiz ? null : <HeaderAction studio={studio} capable={capable} />}
+            <div className="flex flex-1 basis-0 justify-end">
+              {quiz ? null : <HeaderAction studio={studio} capable={capable} />}
+            </div>
           </header>
           {quiz ? (
             <div className="pointer-events-auto flex flex-col gap-3">
@@ -917,11 +994,6 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
             </div>
           ) : null}
           <div className="flex min-h-0 flex-1 gap-4">
-            {quiz ? null : (
-              <div className="self-start">
-                <Tools studio={studio} />
-              </div>
-            )}
             <div className="flex min-w-0 flex-1 flex-col justify-end gap-3">
               {studio.film === null ? null : (
                 // The right half on wide screens: the model stays in view beside the film.
@@ -947,6 +1019,13 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
               </aside>
             ) : null}
           </div>
+          {/* The view tools down the model's left edge: level with the topics' top, or under their
+              pill when they are folded away. */}
+          {quiz ? null : (
+            <div className={cx('absolute left-0', left ? 'top-0' : 'top-16')}>
+              <Tools studio={studio} />
+            </div>
+          )}
         </div>
       </div>
       <Layers studio={studio} />
@@ -970,6 +1049,9 @@ export function Studio(props: Readonly<StudioProps>) {
   const docked = useDocked();
   const studio = useStudio(props);
   useTour(studio);
+  // The screen's size is known only in the browser: until then the model's placeholder stands
+  // alone, so a laptop never shows the phone's layout first.
+  const hydrated = useHydrated();
   const overlay = { studio, topics, tree, regions, capable };
   const stage = (
     <StudioModel
@@ -990,14 +1072,8 @@ export function Studio(props: Readonly<StudioProps>) {
         studio.topic ? 'h-dvh max-md:fixed max-md:inset-0 max-md:z-40 max-md:bg-sky' : 'h-studio',
       )}
     >
-      {docked ? (
-        <DockedOverlay {...overlay} stage={stage} />
-      ) : (
-        <>
-          {stage}
-          <PhoneOverlay {...overlay} />
-        </>
-      )}
+      {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage}
+      {hydrated && !docked ? <PhoneOverlay {...overlay} /> : null}
     </section>
   );
 }

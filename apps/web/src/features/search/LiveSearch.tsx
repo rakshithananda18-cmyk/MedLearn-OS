@@ -1,6 +1,6 @@
 'use client';
 
-import { cx, Icon, type IconGlyph } from '@medlearn/ui';
+import type { IconGlyph } from '@medlearn/ui';
 import {
   BookOpen,
   Box,
@@ -12,30 +12,18 @@ import {
   Search,
   Target,
 } from '@medlearn/ui/icons';
-import Link from 'next/link';
-import { type KeyboardEvent, useEffect, useId, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { SearchKind, SearchResult } from '@/content/search';
 import { useProgress } from '@/features/progress/store';
+
+import { SearchBox, type SearchGroup as Group, type SearchOption as Option } from './SearchBox';
 
 /** What the box needs to know about each topic for its suggestions. */
 export interface SearchTopic {
   slug: string;
   title: string;
   questionIds: string[];
-}
-
-interface Option {
-  id: string;
-  label: string;
-  meta: string;
-  href: string;
-  icon: IconGlyph;
-}
-
-interface Group {
-  title: string;
-  options: Option[];
 }
 
 const KIND_ICON: Record<SearchKind, IconGlyph> = {
@@ -112,10 +100,7 @@ export function LiveSearch({
   className,
 }: Readonly<{ topics: SearchTopic[]; defaultValue?: string; className?: string }>) {
   const progress = useProgress();
-  const listId = useId();
   const [query, setQuery] = useState(defaultValue);
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(-1);
   const [found, setFound] = useState<{ query: string; results: SearchResult[] } | null>(null);
   const terms = words(query);
   const typed = terms.length > 0;
@@ -215,113 +200,25 @@ export function LiveSearch({
       },
     ];
   }
-  const shown = groups.filter((group) => group.options.length > 0);
-  const options = shown.flatMap((group) => group.options);
-  const current = options[active];
-
-  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Escape') {
-      setOpen(false);
-      setActive(-1);
-    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      setOpen(true);
-      // Round the list and back to the box itself (-1).
-      const next = active + (event.key === 'ArrowDown' ? 1 : -1);
-      if (next >= options.length) setActive(-1);
-      else if (next < -1) setActive(options.length - 1);
-      else setActive(next);
-    } else if (event.key === 'Enter' && open && current) {
-      // Opens the highlighted suggestion exactly as a click on its link does.
-      event.preventDefault();
-      document.getElementById(`${listId}-${current.id}`)?.click();
-    }
-  };
+  const options = groups.flatMap((group) => group.options);
+  let status: string | null = null;
+  if (typed && found?.query !== query) status = 'Searching…';
+  else if (typed && options.length === 1) {
+    status = 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.';
+  }
 
   return (
-    <form
+    <SearchBox
+      label="Search topics, structures and notes"
+      placeholder="Search topics, structures, notes"
+      query={query}
+      onQuery={setQuery}
+      groups={groups}
+      status={status}
       action="/search"
-      role="search"
-      // On phones the suggestions hang from the row the box sits in (the caller makes it
-      // relative), so they use the screen's width; from tablets, from the box itself.
-      className={cx('md:relative', className)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
-      }}
-    >
-      <label className="flex h-12 items-center gap-2 rounded-full bg-gloss px-4 text-fg-muted shadow-glass focus-within:ring-2 focus-within:ring-focus">
-        <Icon icon={Search} size="sm" />
-        <span className="sr-only">Search topics, structures and notes</span>
-        <input
-          type="search"
-          name="q"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={open}
-          aria-controls={listId}
-          aria-activedescendant={open && current ? `${listId}-${current.id}` : undefined}
-          autoComplete="off"
-          maxLength={100}
-          value={query}
-          placeholder="Search topics, structures, notes"
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setOpen(true);
-            setActive(-1);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={onKeyDown}
-          className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-fg-muted"
-        />
-      </label>
-      <div
-        hidden={!open}
-        // Focusable, so a press anywhere in the panel keeps the focus inside the search (and the
-        // panel open) until the click lands, in every browser.
-        tabIndex={-1}
-        className="absolute inset-x-0 top-full z-40 mt-2 flex max-h-dialog min-w-full flex-col gap-2 overflow-y-auto rounded-xl border border-glass-border bg-surface p-2 shadow-overlay md:min-w-sm"
-      >
-        <output aria-live="polite" className="px-3 text-sm text-fg-muted empty:hidden">
-          {typed && found?.query !== query ? 'Searching…' : null}
-          {typed && found?.query === query && options.length === 1
-            ? 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.'
-            : null}
-        </output>
-        <div id={listId} role="listbox" aria-label="Suggestions" className="flex flex-col gap-2">
-          {shown.map((group) => (
-            <div key={group.title} role="group" aria-label={group.title} className="flex flex-col">
-              <span
-                aria-hidden="true"
-                className="px-3 pt-1 pb-1 text-xs font-semibold uppercase tracking-eyebrow text-gold-ink"
-              >
-                {group.title}
-              </span>
-              {group.options.map((option) => (
-                <Link
-                  key={option.id}
-                  id={`${listId}-${option.id}`}
-                  role="option"
-                  aria-selected={option === current}
-                  href={option.href}
-                  onClick={() => setOpen(false)}
-                  className={cx(
-                    'flex min-h-12 items-center gap-3 rounded-md px-3 py-2 text-left',
-                    option === current ? 'bg-primary-subtle' : 'hover:bg-surface-muted',
-                  )}
-                >
-                  <Icon icon={option.icon} size="sm" className="shrink-0 text-gold-ink" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="line-clamp-2 text-sm font-semibold text-ink">
-                      {option.label}
-                    </span>
-                    <span className="truncate text-xs text-fg-muted">{option.meta}</span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ))}
-        </div>
-        {typed ? null : (
+      className={className}
+      footer={
+        typed ? null : (
           <div className="flex flex-col gap-2 px-3 pt-1 pb-2">
             <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
               Try searching
@@ -331,10 +228,7 @@ export function LiveSearch({
                 <li key={word}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setQuery(word);
-                      setActive(-1);
-                    }}
+                    onClick={() => setQuery(word)}
                     className="min-h-8 rounded-full border border-border-strong px-3 py-1 text-xs font-semibold text-ink hover:border-gold"
                   >
                     {word}
@@ -343,8 +237,8 @@ export function LiveSearch({
               ))}
             </ul>
           </div>
-        )}
-      </div>
-    </form>
+        )
+      }
+    />
   );
 }

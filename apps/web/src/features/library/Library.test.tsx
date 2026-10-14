@@ -62,37 +62,49 @@ afterEach(() => {
 });
 
 describe('Library', () => {
-  it('opens across the whole page, with the section of the next topic unfolded and no preview', async () => {
+  it('opens folded to the regions, with the next topic to continue and no preview', async () => {
     screenWidth(true);
     const { container } = renderLibrary();
     expect(screen.getByRole('button', { name: /Anatomy/, pressed: true })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: /^Upper limb/ })).toBeInTheDocument();
-    // Sections are the buttons that fold: the next topic's is open, the others folded.
+    for (const region of [/^Upper limb/, /^Thorax/, /^Lower limb/]) {
+      expect(screen.getByRole('button', { name: region, expanded: false })).toBeVisible();
+    }
+    const resume = screen.getByRole('region', { name: 'Continue' });
     expect(
-      screen.getByRole('button', { name: /^Pectoral region.*Up next/, expanded: true }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Axilla/, expanded: false })).toBeInTheDocument();
+      within(resume).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
+    ).toBeVisible();
     expect(previewPanel()).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
-  it('starts short: other regions folded, and one book section open at a time', async () => {
+  it('opens one region at a time, and in it one book section at a time', async () => {
     screenWidth(true);
     renderLibrary();
-    expect(screen.getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
-    expect(screen.getByRole('button', { name: /^Thorax/, expanded: false })).toBeVisible();
-    expect(screen.getByRole('button', { name: /^Lower limb/, expanded: false })).toBeVisible();
-
-    const pectoral = screen.getByRole('button', { name: /^Pectoral region/, expanded: true });
+    const upper = screen.getByRole('button', { name: /^Upper limb/, expanded: false });
+    const thorax = screen.getByRole('button', { name: /^Thorax/, expanded: false });
+    await userEvent.click(upper);
+    expect(upper).toHaveAttribute('aria-expanded', 'true');
+    // Its sections start folded, the next topic's marked.
+    const pectoral = screen.getByRole('button', {
+      name: /^Pectoral region.*Up next/,
+      expanded: false,
+    });
     const axilla = screen.getByRole('button', { name: /^Axilla/, expanded: false });
+    expect(pectoral).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(pectoral);
     await userEvent.click(axilla);
     expect(axilla).toHaveAttribute('aria-expanded', 'true');
     expect(pectoral).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(thorax);
+    expect(thorax).toHaveAttribute('aria-expanded', 'true');
+    expect(upper).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('slides in a preview of the picked topic, keeps it in the address, and closes it', async () => {
     screenWidth(true);
     renderLibrary();
+    await userEvent.click(screen.getByRole('button', { name: /^Upper limb/, expanded: false }));
     await userEvent.click(screen.getByRole('button', { name: /^Axilla/, expanded: false }));
     const plexus = screen.getByRole('button', { name: /Brachial plexus/ });
     await userEvent.click(plexus);
@@ -143,9 +155,14 @@ describe('Library', () => {
       'href',
       '/books',
     );
-    // The next topic moved on to the axilla, whose section now opens by itself.
+    // The next topic moved on to the axilla: it waits in Continue, and its section is marked.
     expect(
-      screen.getByRole('button', { name: /^Axilla.*Up next/, expanded: true }),
+      within(screen.getByRole('region', { name: 'Continue' })).getByRole('button', {
+        name: /Axilla: walls and contents/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Axilla.*Up next/, expanded: false }),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Physiology/ }));
@@ -158,7 +175,11 @@ describe('Library', () => {
     screenWidth(false);
     renderLibrary();
     expect(screen.queryByRole('complementary', { name: 'Topic preview' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Pectoral region and breast/ }));
+    await userEvent.click(
+      within(screen.getByRole('region', { name: 'Continue' })).getByRole('button', {
+        name: /Pectoral region and breast/,
+      }),
+    );
     const drawer = screen.getByRole('dialog', { name: 'Pectoral region and breast' });
     expect(within(drawer).getByRole('link', { name: /Start lesson/ })).toHaveAttribute(
       'href',
@@ -184,6 +205,7 @@ describe('Library', () => {
     expect(screen.getByRole('link', { name: /1 weak spot/ })).toHaveAttribute('href', '/revise');
     expect(screen.getByRole('link', { name: /reviews? due/ })).toHaveAttribute('href', '/revise');
 
+    await userEvent.click(screen.getByRole('button', { name: /^Upper limb/, expanded: false }));
     await userEvent.click(screen.getByRole('button', { name: /^Axilla/, expanded: false }));
     expect(
       screen.getByRole('button', { name: /^Brachial plexus.*1 to recall.*Learnt · \d+%/ }),

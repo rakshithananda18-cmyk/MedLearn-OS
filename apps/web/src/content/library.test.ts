@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { libraryTree, topicsUnder, topicTrails } from './library';
+import { libraryTree, toggledTrail, topicsUnder, topicTrails, trailTo } from './library';
 import { TOPICS } from './topics';
 
 const bySubject = (slug: string) => TOPICS.filter((topic) => topic.subjectSlug === slug);
@@ -83,5 +83,29 @@ describe('libraryTree', () => {
     expect(topicTrails(libraryTree(bySubject('physiology')))['oxygen-haemoglobin-curve']).toEqual(
       [],
     );
+  });
+});
+
+describe('folding the tree', () => {
+  it('finds the branches leading to a topic, by id', () => {
+    const tree = libraryTree(bySubject('anatomy'));
+    const [region, section] = trailTo(tree, 'brachial-plexus');
+    expect(tree.find((node) => node.kind === 'branch' && node.id === region)).toMatchObject({
+      label: 'Upper limb',
+    });
+    expect(section).toBeDefined();
+    expect(trailTo(tree, null)).toEqual([]);
+  });
+
+  it('keeps one branch open per level', () => {
+    // Opening a region, then a section in it.
+    expect(toggledTrail([], 0, 'arm')).toEqual(['arm']);
+    expect(toggledTrail(['arm'], 1, 'axilla')).toEqual(['arm', 'axilla']);
+    // Another section folds the first; another region folds the region and its section.
+    expect(toggledTrail(['arm', 'axilla'], 1, 'back')).toEqual(['arm', 'back']);
+    expect(toggledTrail(['arm', 'axilla'], 0, 'thorax')).toEqual(['thorax']);
+    // The open one folds shut, and with it what was open inside.
+    expect(toggledTrail(['arm', 'axilla'], 1, 'axilla')).toEqual(['arm']);
+    expect(toggledTrail(['arm', 'axilla'], 0, 'arm')).toEqual([]);
   });
 });

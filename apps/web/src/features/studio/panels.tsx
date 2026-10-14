@@ -3,14 +3,14 @@
 import { topicMastery } from '@medlearn/core';
 import type { BodyRegion } from '@medlearn/schemas';
 import { cx, Icon, IconButton, Switch, Text } from '@medlearn/ui';
-import { Eye, Pause, PersonStanding, Play, Search, X } from '@medlearn/ui/icons';
+import { Eye, Pause, PersonStanding, Play, X } from '@medlearn/ui/icons';
 import type { LayerKind, SectionPlane, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
-import { type LibraryNode, topicsUnder } from '@/content/library';
+import { type LibraryNode, toggledTrail, topicsUnder } from '@/content/library';
 import type { MovementId } from '@/content/movements';
 import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
@@ -60,13 +60,14 @@ function Sheet({
             compact ? 'max-h-sheet' : 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
-        // Docked, the panel is only as tall as what is unfolded in it, scrolling past the screen.
-        place === 'dock' &&
-          cx(GLASS, 'max-h-full w-dock shrink-0 self-start overflow-x-hidden overflow-y-auto p-4'),
+        // Docked, the panel is only as tall as what is unfolded in it (its list scrolls past the
+        // screen), and it stands above the model so the search's suggestions can hang over it.
+        place === 'dock' && cx(GLASS, 'relative z-10 max-h-full w-dock shrink-0 self-start p-4'),
       )}
     >
       <div className="flex min-h-8 items-center justify-between gap-2">
-        <h2 className={LABEL}>{label}</h2>
+        {/* Docked, the title lines up with the names in the list below it. */}
+        <h2 className={cx(LABEL, place === 'dock' && 'px-2')}>{label}</h2>
         {place === 'float' ? (
           <IconButton icon={X} label={`Close ${label.toLowerCase()}`} size="sm" onClick={onClose} />
         ) : (
@@ -135,7 +136,7 @@ function TopicCard({
 }>) {
   const card = row
     ? cx(
-        'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
+        'flex min-h-12 w-full items-center gap-3 rounded-md px-2 text-left text-sm transition-colors duration-150',
         current
           ? 'bg-primary-subtle font-semibold text-primary-strong'
           : 'text-ink hover:bg-surface-muted',
@@ -183,17 +184,6 @@ function TopicCard({
       {body}
     </Link>
   );
-}
-
-/** The branches of the tree that lead to a topic, by id: its region and its book section. */
-function trailTo(nodes: LibraryNode[], slug: string | null): string[] {
-  for (const node of nodes) {
-    if (node.kind === 'topic') continue;
-    if (topicsUnder(node).some((topic) => topic.slug === slug)) {
-      return [node.id, ...trailTo(node.children, slug)];
-    }
-  }
-  return [];
 }
 
 /** A branch of the topic tree: its name and count, folding open onto what it holds. */
@@ -246,9 +236,9 @@ function Branch({
 }
 
 /**
- * The topics as the library's tree: body regions, then book sections, then a row for each
- * topic. Every branch folds; the ones leading to the open (or next) topic start open, and only
- * one book section is open at a time.
+ * The topics as the library's tree, folded to the body regions: one region open at a time, and in
+ * it one book section, then a row for each topic. The next topic to learn waits in a Continue row
+ * at the top, unless it is the one open.
  */
 function TopicTree({
   tree,
@@ -266,19 +256,11 @@ function TopicTree({
   const learnt = new Set(useProgress().completedLessons);
   const noteOf = useCardNotes(topics, current);
   const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
-  const focus = current ?? topics.find((topic) => !learnt.has(topic.slug))?.slug ?? null;
-  const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(trailTo(tree, focus)));
-  // One book section open at a time, as in the library: opening one folds the others.
-  const regionIds = new Set(tree.flatMap((node) => (node.kind === 'branch' ? [node.id] : [])));
-  const regionsOpen = () => [...open].filter((id) => regionIds.has(id));
-  // Opening another topic unfolds the branches that lead to it.
-  const [seen, setSeen] = useState(current);
-  if (seen !== current) {
-    setSeen(current);
-    setOpen(new Set([...regionsOpen(), ...trailTo(tree, current)]));
-  }
+  const next = topics.find((topic) => !learnt.has(topic.slug));
+  const continueId = useId();
+  const [trail, setTrail] = useState<string[]>([]);
 
-  const render = (node: LibraryNode, top: boolean): ReactNode => {
+  const render = (node: LibraryNode, depth: number): ReactNode => {
     if (node.kind === 'topic') {
       const topic = bySlug.get(node.slug);
       return topic ? (
@@ -294,35 +276,42 @@ function TopicTree({
       ) : null;
     }
     const under = topicsUnder(node);
-    const isOpen = open.has(node.id);
+    const isOpen = trail[depth] === node.id;
     return (
       <Branch
         key={node.id}
         label={node.label}
         learnt={under.filter((topic) => learnt.has(topic.slug)).length}
         total={under.length}
-        top={top}
+        top={depth === 0}
         open={isOpen}
         onToggle={() => {
-          const next = new Set(top || isOpen ? open : regionsOpen());
-          if (isOpen) next.delete(node.id);
-          else next.add(node.id);
-          setOpen(next);
+          setTrail(toggledTrail(trail, depth, node.id));
           // A region opening also turns the body towards it.
-          if (top && !isOpen) onRegion(node.id as BodyRegion);
+          if (depth === 0 && !isOpen) onRegion(node.id as BodyRegion);
         }}
       >
-        <ul className={cx('flex flex-col pt-1 pb-2 pl-2', top ? 'gap-1' : 'gap-px')}>
-          {node.children.map((child) => render(child, false))}
+        <ul className={cx('flex flex-col pt-1 pb-2 pl-2', depth === 0 ? 'gap-1' : 'gap-px')}>
+          {node.children.map((child) => render(child, depth + 1))}
         </ul>
       </Branch>
     );
   };
 
   return (
-    <ul aria-label="Regions and topics" className="flex flex-col gap-1">
-      {tree.map((node) => render(node, true))}
-    </ul>
+    <>
+      {next && next.slug !== current ? (
+        <section aria-labelledby={continueId} className="flex flex-col gap-1">
+          <h3 id={continueId} className={cx(LABEL, 'px-2')}>
+            Continue
+          </h3>
+          <TopicCard topic={next} note={noteOf(next)} current={false} row onOpen={onTopic} />
+        </section>
+      ) : null}
+      <ul aria-label="Regions and topics" className="flex flex-col gap-1">
+        {tree.map((node) => render(node, 0))}
+      </ul>
+    </>
   );
 }
 
@@ -369,82 +358,22 @@ export function TopicsPanel({
           onClick={() => onTopic(null)}
         />
       </div>
-      <TopicTree
-        tree={tree}
-        topics={topics}
-        current={current}
-        onRegion={onRegion}
-        onTopic={onTopic}
-      />
-      {soon.length > 0 ? (
-        <Text size="xs" tone="muted" className="px-2">
-          Coming soon: {soon.map((region) => region.name).join(' · ')}
-        </Text>
-      ) : null}
-    </Sheet>
-  );
-}
-
-/** Find a structure on the open model, or a topic on the whole body, by name. */
-export function StructureSearch({
-  items,
-  label,
-  autoFocus = false,
-  onPick,
-}: Readonly<{
-  /** What to find, with an optional detail shown after the name (a structure's system). */
-  items: Array<{ id: string; name: string; detail?: string }>;
-  label: string;
-  autoFocus?: boolean;
-  onPick: (id: string) => void;
-}>) {
-  const [query, setQuery] = useState('');
-  const words = query.trim().toLowerCase();
-  const found = words
-    ? items.filter((item) => item.name.toLowerCase().includes(words)).slice(0, 8)
-    : [];
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="flex h-12 items-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-fg-muted focus-within:border-primary">
-        <Icon icon={Search} size="sm" />
-        <span className="sr-only">{label}</span>
-        <input
-          type="search"
-          value={query}
-          placeholder={label}
-          // Opened on purpose by the search button, so the keyboard should come up.
-          autoFocus={autoFocus} // NOSONAR: the student asked for search by tapping its button
-          onChange={(event) => setQuery(event.target.value)}
-          className="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-muted"
+      {/* The list scrolls under the search, so the search's suggestions can hang over it. */}
+      <div className="-mr-2 flex min-h-0 flex-col gap-4 overflow-x-hidden overflow-y-auto pr-2">
+        <TopicTree
+          tree={tree}
+          topics={topics}
+          current={current}
+          onRegion={onRegion}
+          onTopic={onTopic}
         />
-      </label>
-      {words ? (
-        <ul aria-label="Search results" className="flex flex-col gap-1">
-          {found.length === 0 ? (
-            <li>
-              <Text size="sm" tone="muted">
-                Nothing by that name here.
-              </Text>
-            </li>
-          ) : null}
-          {found.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  onPick(item.id);
-                }}
-                className="min-h-12 w-full rounded-md px-3 text-left text-sm text-ink hover:bg-surface-muted"
-              >
-                {item.name}
-                {item.detail ? <span className="text-fg-muted"> · {item.detail}</span> : null}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
+        {soon.length > 0 ? (
+          <Text size="xs" tone="muted" className="px-2">
+            Coming soon: {soon.map((region) => region.name).join(' · ')}
+          </Text>
+        ) : null}
+      </div>
+    </Sheet>
   );
 }
 
@@ -713,7 +642,7 @@ export function LayersPanel<Id extends string>({
   );
 }
 
-const KIND_LABEL: Record<NonNullable<StructureInfo['kind']>, string> = {
+export const KIND_LABEL: Record<NonNullable<StructureInfo['kind']>, string> = {
   bone: 'Bone',
   muscle: 'Muscle',
   artery: 'Artery',
