@@ -60,7 +60,9 @@ function Sheet({
             compact ? 'max-h-sheet' : 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
-        place === 'dock' && cx(GLASS, 'w-dock shrink-0 overflow-x-hidden overflow-y-auto p-4'),
+        // Docked, the panel is only as tall as what is unfolded in it, scrolling past the screen.
+        place === 'dock' &&
+          cx(GLASS, 'max-h-full w-dock shrink-0 self-start overflow-x-hidden overflow-y-auto p-4'),
       )}
     >
       <div className="flex min-h-8 items-center justify-between gap-2">

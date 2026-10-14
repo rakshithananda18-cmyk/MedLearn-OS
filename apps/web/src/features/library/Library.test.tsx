@@ -1,10 +1,11 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { libraryTree } from '@/content/library';
 import { PLANNABLE_TOPICS, TOPICS } from '@/content/topics';
+import { completeLesson, recordAnswer, resetProgress } from '@/features/progress/store';
 
 import { Library } from './Library';
 import type { TopicPreviewData } from './TopicPreview';
@@ -55,7 +56,10 @@ beforeEach(() => {
   localStorage.clear();
   window.history.replaceState(null, '', '/subjects');
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  act(() => resetProgress());
+});
 
 describe('Library', () => {
   it('opens across the whole page, with the section of the next topic unfolded and no preview', async () => {
@@ -167,18 +171,22 @@ describe('Library', () => {
     expect(window.location.search).toBe('');
   });
 
-  it('shows how each topic is going in its Progress view, kept in the address', async () => {
+  it('shows progress on the list itself: what to revise, and how each topic is going', async () => {
     screenWidth(true);
     renderLibrary();
-    await userEvent.click(screen.getByRole('button', { name: 'Progress', pressed: false }));
-    expect(window.location.search).toBe('?view=progress');
-    expect(
-      screen.getByRole('progressbar', { name: 'Brachial plexus mastery' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/^0 of \d+ lessons$/)).toBeInTheDocument();
+    // A new student has nothing to revise, and no separate Progress view to switch to.
+    expect(screen.getByText('No reviews due')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Progress' })).not.toBeInTheDocument();
+    act(() => {
+      completeLesson('brachial-plexus');
+      recordAnswer('erb-roots', false);
+    });
+    expect(screen.getByRole('link', { name: /1 weak spot/ })).toHaveAttribute('href', '/revise');
+    expect(screen.getByRole('link', { name: /reviews? due/ })).toHaveAttribute('href', '/revise');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Topics', pressed: false }));
-    expect(window.location.search).toBe('');
-    expect(screen.getByRole('heading', { level: 2, name: /^Upper limb/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /^Axilla/, expanded: false }));
+    expect(
+      screen.getByRole('button', { name: /^Brachial plexus.*1 to recall.*Learnt · \d+%/ }),
+    ).toBeVisible();
   });
 });

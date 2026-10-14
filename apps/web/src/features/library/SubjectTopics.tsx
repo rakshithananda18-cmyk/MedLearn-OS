@@ -1,5 +1,6 @@
 'use client';
 
+import type { TopicMastery } from '@medlearn/core';
 import { cx, Icon, ProgressRing, Text } from '@medlearn/ui';
 import { Check, ChevronDown } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -25,6 +26,8 @@ export interface TopicsState {
   next: string | null;
   /** The topic shown in the preview, highlighted. */
   selected: string | null;
+  /** How each topic is going, by slug. */
+  mastery: ReadonlyMap<string, TopicMastery>;
   /** Where a preview sits beside the list, picking a topic shows it there; else topics are links. */
   onSelect?: (slug: string) => void;
 }
@@ -44,6 +47,8 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const next = topic.slug === state.next;
   const selected = topic.slug === state.selected;
   const learnt = state.learnt.has(topic.slug);
+  const mastery = state.mastery.get(topic.slug);
+  const weak = mastery?.weakSpots ?? 0;
   const className = cx(
     'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
     selected
@@ -53,10 +58,15 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const content = (
     <>
       <span className="min-w-0 flex-1">{topic.title}</span>
+      {weak > 0 ? (
+        <span className="shrink-0 rounded-full bg-gloss px-2 py-1 text-xs font-semibold text-gold-ink">
+          {weak} to recall
+        </span>
+      ) : null}
       {learnt ? (
         <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary-strong">
           <Icon icon={Check} size="sm" />
-          Learnt
+          Learnt{mastery ? ` · ${mastery.percent}%` : ''}
         </span>
       ) : (
         <span className={cx('shrink-0 text-xs', next ? 'text-primary-strong' : 'text-fg-muted')}>

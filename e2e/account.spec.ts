@@ -21,7 +21,7 @@ test('an adult saves progress to an account, signs out, and gets it back by sign
     updatedAt: now,
   });
 
-  // Create the account from the Progress nudge.
+  // Create the account from the nudge at the foot of the library (the old Progress address).
   await page.goto('/progress');
   await page.getByRole('link', { name: 'Create account or sign in' }).click();
   await expect(
