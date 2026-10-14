@@ -28,6 +28,7 @@ const ARMANDO = 'Armando Hasudungan';
 const BHANU = 'Dr G Bhanu Prakash';
 const SANYAL = 'Sanjoy Sanyal';
 const TONY = 'Tony’s Tutorial';
+const HASANA = 'Dr Hasana';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
@@ -288,7 +289,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   ],
   'knee-anastomoses': [
     video('_IoPNg1q0to', 'Anastomosis round the knee joint', BHANU, 912),
-    video('zzr-8w_oLcM', 'Anastomosis round the knee: genicular arteries', 'Dr Hasana', 405),
+    video('zzr-8w_oLcM', 'Anastomosis round the knee: genicular arteries', HASANA, 405),
   ],
   hamstrings: [
     video('8TmbmENX7Fc', 'Muscles of the back of the thigh', BHANU, 1111),
@@ -298,6 +299,43 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('dKsnNi2APDA', 'Sciatic nerve: course, branches and clinical points', KENHUB, 852),
     video('SyCwjOMZ91E', 'Sciatic nerve: course, relations and branches', BHANU, 416),
     video('pWl3s6X9cSk', 'Sciatic nerve', KNOWLEDGE, 200),
+  ],
+  'leg-superficial': [
+    video('s8AdnKPkdSc', 'Leg: superficial fascia, cutaneous nerves and veins', HASANA, 576),
+    video('RKZkHZLbUZw', 'Great saphenous vein', BHANU, 389),
+    video('jZ-U-2v9X6U', 'Great and small saphenous veins', KNOWLEDGE, 278),
+  ],
+  'leg-front-muscles': [
+    video(
+      '83_ctEOFkhM',
+      'Muscles of the leg: anterior and lateral compartments',
+      ANATOMY_ZONE,
+      971,
+    ),
+    video('XZA8yR1cDPI', 'Anterior compartment of the leg', 'Dr Divya N Pai', 281),
+  ],
+  'anterior-tibial-dorsalis-pedis': [
+    video('AsCbJ5400m8', 'Anterior and posterior tibial arteries', TAIM, 428),
+    video('kkID0CIvoLE', 'Dorsalis pedis artery', BHANU, 238),
+    video('DHMCb4M-qeQ', 'Anterior tibial and dorsalis pedis arteries', KNOWLEDGE, 162),
+  ],
+  'leg-lateral-medial': [
+    video(
+      'wGjTcG4foIo',
+      'Lateral compartment of the leg and superficial peroneal nerve',
+      HASANA,
+      378,
+    ),
+    video('LKk2TFRbLro', 'Lateral compartment of the leg', NOTED, 133),
+  ],
+  'calf-muscles': [
+    video('F1J0HbV2n5s', 'Muscles of the leg: posterior compartment', ANATOMY_ZONE, 993),
+    video('2sBUudzLNTI', 'Posterior compartment of the leg', NOTED, 274),
+  ],
+  'posterior-tibial-tibial-nerve': [
+    video('rzmix1hwL_w', 'Tibial nerve and the tarsal tunnel', BHANU, 306),
+    video('qsr4DnWT0a0', 'Tarsal tunnel anatomy', 'Vincent Stevenson', 183),
+    video('kPA4i6xPn9s', 'Posterior tibial artery', KNOWLEDGE, 141),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),

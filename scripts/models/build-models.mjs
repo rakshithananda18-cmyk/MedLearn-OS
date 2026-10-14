@@ -7,6 +7,7 @@
 //    shared by the lungs and mediastinum topics
 //  - heart.glb: the heart's walls, chambers, valves and coronary vessels, shared by the heart topics
 //  - hip-thigh.glb: the right hip and thigh, shared by the gluteal and thigh topics
+//  - leg-foot.glb: the right leg and foot from just above the knee, shared by the leg topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -103,6 +104,43 @@ const HIP_THIGH_NERVES = zParts('NervousSystem100.fbx', [
   ['medial-sural-cutaneous-nerve', 'Right medial sural cutaneous nerve', 0.5],
   ['sural-communicating-nerve', 'Right sural communicating branch of common fibular nerve', 0.5],
 ]);
+// Nerves of the right leg and foot, from Z-Anatomy; those coming down from the thigh are cut just
+// above the knee, where the leg and foot model starts.
+const KNEE_UP = { clipZ: [-Infinity, 450] };
+const LEG_FOOT_NERVES = zParts('NervousSystem100.fbx', [
+  ['tibial-nerve', 'Right tibial nerve', 0.4, KNEE_UP],
+  ['common-peroneal-nerve', 'Right common fibular nerve', 0.5, KNEE_UP],
+  [
+    'superficial-peroneal-nerve',
+    [
+      'Right superficial fibular nerve',
+      'Right medial dorsal cutaneous nerve of foot',
+      'Right intermediate dorsal cutaneous nerve of foot',
+      'Right dorsal digital branches of superficial fibular nerve',
+    ],
+    0.3,
+  ],
+  [
+    'deep-peroneal-nerve',
+    [
+      'Right deep fibular nerve',
+      'Right muscular branches of deep fibular nerve',
+      'Right dorsal digital branches of deep fibular nerve',
+    ],
+    0.35,
+  ],
+  ['sural-nerve', ['Right medial sural cutaneous nerve', 'Right sural nerve'], 0.35, KNEE_UP],
+  ['sural-communicating-nerve', 'Right sural communicating branch of common fibular nerve', 0.5],
+  [
+    'saphenous-nerve',
+    ['Right saphenous nerve', 'Right infrapatellar branch of saphenous nerve'],
+    0.3,
+    KNEE_UP,
+  ],
+  ['medial-plantar-nerve', 'Right medial plantar nerve', 0.5],
+  ['lateral-plantar-nerve', 'Right lateral plantar nerve', 0.5],
+]);
+const TOES = ['big', 'second', 'third', 'fourth', 'little'];
 const LOBES = visceral([
   ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
   ['right-middle-lobe', 'Middle lobe of right lung', 0.8],
@@ -780,6 +818,102 @@ export const MODELS = [
       },
       // Nerves.
       ...HIP_THIGH_NERVES,
+    ],
+  },
+  {
+    name: 'leg-foot',
+    // The right leg and foot from just above the knee (lower limb batch 3). BodyParts3D has no
+    // peroneal artery, extensor digitorum brevis (only its slip to the big toe) or retinacula;
+    // the peroneal vein shows the artery's path.
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Bones.
+      { id: 'femur', concept: 'right femur', ratio: 1, ...KNEE_UP },
+      ...[
+        ['patella', 'right patella'],
+        ['tibia', 'right tibia'],
+        ['fibula', 'right fibula'],
+        ['talus', 'right talus'],
+        ['calcaneus', 'right calcaneus'],
+        ['navicular', 'navicular bone of right foot'],
+        ['cuboid', 'right cuboid bone'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 1 })),
+      {
+        id: 'cuneiforms',
+        concepts: ['medial', 'intermediate', 'lateral'].map((c) => `right ${c} cuneiform bone`),
+        ratio: 1,
+      },
+      {
+        id: 'metatarsals',
+        concepts: ['first', 'second', 'third', 'fourth', 'fifth'].map(
+          (n) => `right ${n} metatarsal bone`,
+        ),
+        ratio: 1,
+      },
+      {
+        id: 'phalanges',
+        // The big toe has no middle phalanx.
+        concepts: TOES.flatMap((toe) =>
+          ['proximal', 'middle', 'distal']
+            .filter((row) => toe !== 'big' || row !== 'middle')
+            .map((row) => `${row} phalanx of right ${toe} toe`),
+        ),
+        ratio: 1,
+      },
+      // Front and lateral side of the leg, and the dorsum of the foot.
+      ...[
+        ['tibialis-anterior', 'right tibialis anterior', 0.6],
+        ['extensor-hallucis-longus', 'right extensor hallucis longus', 0.6],
+        ['extensor-digitorum-longus', 'right extensor digitorum longus', 0.5],
+        ['peroneus-tertius', 'right fibularis tertius', 0.8],
+        ['extensor-hallucis-brevis', 'right extensor hallucis brevis', 1],
+        ['peroneus-longus', 'right fibularis longus', 0.5],
+        ['peroneus-brevis', 'right fibularis brevis', 0.6],
+        // Back of the leg.
+        ['soleus', 'right soleus', 0.5],
+        ['calcaneal-tendon', 'right calcaneal tendon', 0.6],
+        ['popliteus', 'right popliteus', 1],
+        ['flexor-digitorum-longus', 'right flexor digitorum longus', 0.6],
+        ['flexor-hallucis-longus', 'right flexor hallucis longus', 0.6],
+        ['tibialis-posterior', 'right tibialis posterior', 0.6],
+      ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
+      // Muscles that come down from the thigh, cut above the knee.
+      {
+        id: 'gastrocnemius',
+        concepts: ['medial head of right gastrocnemius', 'lateral head of right gastrocnemius'],
+        ratio: 0.5,
+      },
+      ...[
+        ['plantaris', 'right plantaris'],
+        ['sartorius', 'right sartorius'],
+        ['gracilis', 'right gracilis'],
+        ['semitendinosus', 'right semitendinosus'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 0.6, ...KNEE_UP })),
+      // Arteries.
+      { id: 'popliteal-artery', concept: 'right popliteal artery', ratio: 0.1, ...KNEE_UP },
+      ...[
+        ['anterior-tibial-artery', 'right anterior tibial artery', 0.15],
+        ['dorsalis-pedis-artery', 'right dorsalis pedis artery', 0.5],
+        ['arcuate-artery', 'right arcuate artery', 0.4],
+        ['lateral-tarsal-artery', 'right lateral tarsal artery', 0.4],
+        ['posterior-tibial-artery', 'right posterior tibial artery', 0.15],
+        ['medial-plantar-artery', 'right medial plantar artery', 0.3],
+        ['lateral-plantar-artery', 'right lateral plantar artery', 0.3],
+      ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
+      // Veins. One of the three "right fibular vein" files is in the left thigh.
+      { id: 'popliteal-vein', concept: 'right popliteal vein', ratio: 0.1, ...KNEE_UP },
+      { id: 'peroneal-vein', files: ['FJ2200'], ratio: 0.2 },
+      {
+        id: 'great-saphenous-vein',
+        concept: 'right great saphenous vein',
+        ratio: 0.1,
+        ...KNEE_UP,
+      },
+      { id: 'small-saphenous-vein', concept: 'right small saphenous vein', ratio: 0.12 },
+      { id: 'dorsal-venous-arch', concept: 'dorsal venous arch of right foot', ratio: 0.4 },
+      // Nerves.
+      ...LEG_FOOT_NERVES,
     ],
   },
   {

@@ -29,8 +29,9 @@ export default defineConfig({
         test: {
           name: 'component',
           environment: 'jsdom',
-          // Accessibility scans in jsdom are slow, more so under coverage on a busy laptop.
-          testTimeout: 15_000,
+          // Accessibility scans in jsdom are slow, more so under coverage on a busy laptop, and
+          // the pages that list every topic grow with each content batch.
+          testTimeout: 30_000,
           include: ['packages/*/src/**/*.test.tsx', 'apps/web/src/**/*.test.tsx'],
           setupFiles: ['packages/test-utils/src/setup-dom.ts'],
         },
