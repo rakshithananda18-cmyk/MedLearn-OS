@@ -37,6 +37,9 @@ import { kneeAnastomoses } from './knee-anastomoses';
 import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
+import { lowerLimbDermatomes } from './lower-limb-dermatomes';
+import { lowerLimbLymphatics } from './lower-limb-lymphatics';
+import { lowerLimbVeins } from './lower-limb-veins';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
@@ -47,6 +50,7 @@ import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
 import { pericardium } from './pericardium';
+import { plantarVesselsNerves } from './plantar-vessels-nerves';
 import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
 import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
@@ -58,6 +62,9 @@ import { sciaticNerveThigh } from './sciatic-nerve-thigh';
 import { shoulderGirdle } from './shoulder-girdle';
 import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
+import { soleLayersOneTwo } from './sole-layers-1-2';
+import { soleLayersThreeFour } from './sole-layers-3-4';
+import { soleSkinFascia } from './sole-skin-fascia';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { surfaceMarking } from './surface-marking';
 import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
@@ -151,6 +158,13 @@ export const TOPICS: Topic[] = [
   legLateralMedial,
   calfMuscles,
   posteriorTibialTibialNerve,
+  soleSkinFascia,
+  soleLayersOneTwo,
+  soleLayersThreeFour,
+  plantarVesselsNerves,
+  lowerLimbVeins,
+  lowerLimbLymphatics,
+  lowerLimbDermatomes,
   oxygenCurve,
 ];
 

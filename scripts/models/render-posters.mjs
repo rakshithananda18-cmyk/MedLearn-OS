@@ -92,6 +92,13 @@ export const POSTERS = [
   { name: 'leg-lateral-medial', path: '/studio?topic=leg-lateral-medial' },
   { name: 'calf-muscles', path: '/studio?topic=calf-muscles' },
   { name: 'posterior-tibial-tibial-nerve', path: '/studio?topic=posterior-tibial-tibial-nerve' },
+  { name: 'sole-skin-fascia', path: '/studio?topic=sole-skin-fascia' },
+  { name: 'sole-layers-1-2', path: '/studio?topic=sole-layers-1-2' },
+  { name: 'sole-layers-3-4', path: '/studio?topic=sole-layers-3-4' },
+  { name: 'plantar-vessels-nerves', path: '/studio?topic=plantar-vessels-nerves' },
+  { name: 'lower-limb-veins', path: '/studio?topic=lower-limb-veins' },
+  { name: 'lower-limb-lymphatics', path: '/studio?topic=lower-limb-lymphatics' },
+  { name: 'lower-limb-dermatomes', path: '/studio?topic=lower-limb-dermatomes' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

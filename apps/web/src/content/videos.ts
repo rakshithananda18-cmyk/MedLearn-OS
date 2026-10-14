@@ -337,6 +337,41 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('qsr4DnWT0a0', 'Tarsal tunnel anatomy', 'Vincent Stevenson', 183),
     video('kPA4i6xPn9s', 'Posterior tibial artery', KNOWLEDGE, 141),
   ],
+  'sole-skin-fascia': [
+    video('HYLJrlVIh9g', 'Plantar aponeurosis', 'ONE VISION MBBS', 649),
+    video('Fc9F3yoVyvg', 'Sole of the foot: layers, nerves and plantar aponeurosis', HASANA, 651),
+  ],
+  'sole-layers-1-2': [
+    video('P0_5ChpOnlU', 'Muscles of the sole of the foot', 'Angelina Issac', 1597),
+    video('ftU9Utfmsxo', 'The four layers of the sole', 'VB Anatomy', 627),
+  ],
+  'sole-layers-3-4': [
+    video(
+      's0flRrM3gHw',
+      'Sole of the foot: layers, muscles, nerves and blood supply',
+      'Medvisor',
+      1427,
+    ),
+    video('dg4QDyZmFoc', 'Muscles of the foot', TAIM, 420),
+  ],
+  'plantar-vessels-nerves': [
+    video('a2qpCaC4itA', 'Plantar arch and the medial and lateral plantar nerves', HASANA, 568),
+    video('__yEug8KHc0', 'Medial and lateral plantar nerves', 'Medical Research Foundation', 330),
+    video('jsQErjPwmgY', 'Plantar arteries', KNOWLEDGE, 131),
+  ],
+  'lower-limb-veins': [
+    video('v5edTHVz30s', 'Venous drainage of the lower limb', BHANU, 2027),
+    video('AinzrO_qnHw', 'Veins of the lower limb', ANATOMY_ZONE, 517),
+  ],
+  'lower-limb-lymphatics': [
+    video('IR-SsLxyRUw', 'Lymphatic drainage of the lower limb', 'Knowing Anatomy', 701),
+    video('GhfWqCZ4miY', 'Lymphatic drainage of the lower limb', 'Dr Adel Bondok', 297),
+  ],
+  'lower-limb-dermatomes': [
+    video('kJHXs0jee9M', 'Dermatomes and myotomes', MEDICOSIS, 734),
+    video('SzAyUsA25MQ', 'Dermatomes of the lower limb', 'Physiotutors', 231),
+    video('ptO9ZvsUPDg', 'Myotomes of the lower limb', 'Physiotutors', 174),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),
