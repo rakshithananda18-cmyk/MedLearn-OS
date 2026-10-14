@@ -32,6 +32,7 @@ export {
   Flag,
   Flame,
   GraduationCap,
+  Hand,
   Hourglass,
   House,
   Inbox,

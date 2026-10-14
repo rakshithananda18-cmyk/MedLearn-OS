@@ -5,7 +5,7 @@ import { cx, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
 import { BookOpen, Box, PanelLeftClose, PanelLeftOpen, Play } from '@medlearn/ui/icons';
 import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
@@ -125,6 +125,8 @@ function useStudio({
   );
   const [settings, setSettings] = useState<StudioSettings>(loadSettings);
   const [touring, setTouring] = useState(initialTour && withModel(topics, initialTopic) !== null);
+  // The Move tool: a plain drag moves the model instead of turning it.
+  const [pan, setPan] = useState(false);
   // The X-ray film showing over or beside the model, by its place in the films at hand.
   const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
@@ -151,6 +153,8 @@ function useStudio({
     session,
     setSession,
     update,
+    pan,
+    togglePan: () => setPan(!pan),
     touring,
     setTouring,
     film,
@@ -345,12 +349,15 @@ function StudioModel({
   capable,
   labels,
   className = 'absolute inset-0',
+  insetRight = 0,
 }: Readonly<{
   studio: StudioState;
   regions: BodyRegionInfo[];
   capable: boolean | null;
   labels: Viewer3DLabel[];
   className?: string;
+  /** How much of the view's right edge a panel covers, in pixels. */
+  insetRight?: number;
 }>) {
   const { session, topic, model, update, settings } = studio;
   const systemReducedMotion = useReducedMotion();
@@ -412,6 +419,8 @@ function StudioModel({
         focus={topic ? null : focus}
         pose={pose}
         flat={settings.flat}
+        insetRight={insetRight}
+        pan={studio.pan}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
         onStroke={(stroke) => studio.keepStrokes([...session.strokes, stroke])}
@@ -431,6 +440,8 @@ function Tools({ studio }: Readonly<{ studio: StudioState }>) {
       films={studio.films.length > 0 ? studio.film !== null : null}
       isolate={session.isolate}
       canIsolate={session.selected !== null}
+      pan={studio.pan}
+      onPan={studio.togglePan}
       section={session.section !== null || session.panel === 'section'}
       settings={session.panel === 'settings'}
       onLayers={() => studio.togglePanel('layers')}
@@ -882,9 +893,8 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
       {mode === 'quiz' ? <Quiz studio={studio} /> : null}
       {mode === 'explore' ? (
         <Text size="xs" tone="muted" className="px-2">
-          {studio.topic
-            ? 'Drag to turn · scroll to zoom · click a structure'
-            : 'Drag to turn · click a structure or a region marker'}
+          {studio.pan ? 'Drag to move' : 'Drag to turn · right-drag to move'} · scroll to zoom ·{' '}
+          {studio.topic ? 'click a structure' : 'click a structure or a region marker'}
         </Text>
       ) : null}
       <div className="px-2">
@@ -893,6 +903,9 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
     </footer>
   );
 }
+
+/** The gap between the model's column and the card beside it (gap-4), in pixels. */
+const CARD_GAP_PX = 16;
 
 /** Folds the docked topics away, or brings them back as a pill at the start of the header. */
 function Fold({ open, onToggle }: Readonly<{ open: boolean; onToggle: () => void }>) {
@@ -947,10 +960,20 @@ function HeaderAction({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
  * the model's left edge, the guided views sit along the bottom, and a structure picked opens its
  * card on the right; layers and settings open from the tools.
  */
-function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: ReactNode }>) {
+function DockedOverlay({
+  stage,
+  ...props
+}: Readonly<OverlayProps & { stage: (insetRight: number) => ReactNode }>) {
   const { studio, topics, tree, regions, capable } = props;
   const { session, topic } = studio;
   const [left, setLeft] = useState(true);
+  // How much of the model's view the open card covers (its width and the gap before it), so the
+  // model keeps to the free space beside it.
+  const [covered, setCovered] = useState(0);
+  // Kept the same between renders, so React measures the card only as it opens and closes.
+  const measureCard = useCallback((node: HTMLElement | null) => {
+    setCovered(node ? node.offsetWidth + CARD_GAP_PX : 0);
+  }, []);
   const quiz = session.mode === 'quiz' ? session.quiz : null;
   // A structure picked on the whole body, or on the open topic.
   const picked = !topic && session.selected?.includes('/') ? session.selected : null;
@@ -973,7 +996,7 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
         />
       ) : null}
       <div className="relative min-w-0 flex-1">
-        {stage}
+        {stage(card ? covered : 0)}
         <div className="absolute inset-0 flex flex-col gap-3">
           {/* The name of what is loaded, centred over the model; the sides take equal room. */}
           <header className="flex min-h-12 items-center gap-3">
@@ -1005,6 +1028,7 @@ function DockedOverlay({ stage, ...props }: Readonly<OverlayProps & { stage: Rea
             </div>
             {card ? (
               <aside
+                ref={measureCard}
                 aria-label="About the model"
                 className={cx(
                   GLASS,
@@ -1053,12 +1077,13 @@ export function Studio(props: Readonly<StudioProps>) {
   // alone, so a laptop never shows the phone's layout first.
   const hydrated = useHydrated();
   const overlay = { studio, topics, tree, regions, capable };
-  const stage = (
+  const stage = (insetRight = 0) => (
     <StudioModel
       studio={studio}
       regions={regions}
       capable={capable}
       labels={labelsFor(studio, topics, regions)}
+      insetRight={insetRight}
       // Docked, the model sits between the header row and the guided views; on phones it fills
       // the screen.
       className={docked ? 'pointer-events-auto absolute inset-x-0 top-16 bottom-24' : undefined}
@@ -1072,7 +1097,7 @@ export function Studio(props: Readonly<StudioProps>) {
         studio.topic ? 'h-dvh max-md:fixed max-md:inset-0 max-md:z-40 max-md:bg-sky' : 'h-studio',
       )}
     >
-      {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage}
+      {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
       {hydrated && !docked ? <PhoneOverlay {...overlay} /> : null}
     </section>
   );

@@ -38,6 +38,8 @@ const viewer = vi.hoisted(() => ({
     section: Viewer3DSection | null;
     focus: Viewer3DFocus | null;
     pose: Viewer3DPose | null;
+    insetRight: number;
+    pan: boolean;
   },
 }));
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn() }));
@@ -486,10 +488,26 @@ describe('Studio on a wide screen', () => {
     expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
 
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(viewer.props?.insetRight).toBe(0);
     tap('serratus');
     const side = screen.getByRole('complementary', { name: 'About the model' });
+    // The model keeps to the free space beside the card, and back when it closes.
+    expect(viewer.props?.insetRight).toBeGreaterThan(0);
     await userEvent.click(within(side).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(viewer.props?.insetRight).toBe(0);
+  });
+
+  it('moves the model with the Move tool, and says how', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    expect(screen.getByText(/right-drag to move/)).toBeInTheDocument();
+    const move = screen.getByRole('button', { name: 'Move the model', pressed: false });
+    await userEvent.click(move);
+    expect(viewer.props?.pan).toBe(true);
+    expect(screen.getByText(/^Drag to move/)).toBeInTheDocument();
+    await userEvent.click(move);
+    expect(viewer.props?.pan).toBe(false);
   });
 
   it('shows the topic as its flat diagram when the student picks 2D in the settings', async () => {

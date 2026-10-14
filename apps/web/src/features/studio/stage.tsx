@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Crosshair,
   FileImage,
+  Hand,
   Layers,
   Pause,
   Play,
@@ -69,6 +70,10 @@ export interface ModelViewProps {
   pose: Viewer3DPose | null;
   /** The topic's flat diagram in place of the model, when it has one. */
   flat: boolean;
+  /** How much of the view's right edge a panel covers, in pixels: the model keeps beside it. */
+  insetRight: number;
+  /** A plain drag moves the model instead of turning it. */
+  pan: boolean;
   onPick: (id: string | null) => void;
   onRegion: (id: BodyRegion) => void;
   onStroke: (stroke: Stroke) => void;
@@ -105,6 +110,8 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         section={props.section}
         focus={props.focus}
         pose={props.pose}
+        insetRight={props.insetRight}
+        pan={props.pan}
       />
     );
   }
@@ -132,7 +139,8 @@ const pressed = (on: boolean) =>
 
 /**
  * Round buttons for the view: see-through, only the picked structure, a section through the
- * model, the topic's X-ray films, back to the guided view, then the layers beside the settings.
+ * model, the topic's X-ray films, moving the model (a plain drag moves it instead of turning it),
+ * back to the guided view, then the layers beside the settings.
  * A column down the model's left edge.
  */
 export function ViewTools({
@@ -141,6 +149,7 @@ export function ViewTools({
   films,
   isolate,
   canIsolate,
+  pan,
   section,
   movement,
   settings,
@@ -148,6 +157,7 @@ export function ViewTools({
   onXray,
   onFilms,
   onIsolate,
+  onPan,
   onSection,
   onMovement,
   onReset,
@@ -160,6 +170,8 @@ export function ViewTools({
   films: boolean | null;
   isolate: boolean;
   canIsolate: boolean;
+  /** Whether a plain drag moves the model. */
+  pan: boolean;
   /** Whether the model is cut, or the section sheet open. */
   section: boolean;
   /** Whether a joint is moving or the movement sheet open, or null where there are none. */
@@ -170,6 +182,7 @@ export function ViewTools({
   onXray: () => void;
   onFilms: () => void;
   onIsolate: () => void;
+  onPan: () => void;
   onSection: () => void;
   onMovement: () => void;
   onReset: () => void;
@@ -230,6 +243,14 @@ export function ViewTools({
           onClick={onFilms}
         />
       )}
+      <IconButton
+        icon={Hand}
+        label="Move the model"
+        title="Move the model"
+        aria-pressed={pan}
+        className={pressed(pan)}
+        onClick={onPan}
+      />
       <IconButton
         icon={RotateCcw}
         label="Reset the view"
