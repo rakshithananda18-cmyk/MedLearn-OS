@@ -5,6 +5,7 @@
 //    sides, shared by the thorax topics
 //  - thoracic-organs.glb: the lungs, pleurae, airways, heart, great vessels and mediastinum,
 //    shared by the lungs and mediastinum topics
+//  - heart.glb: the heart's walls, chambers, valves and coronary vessels, shared by the heart topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -467,6 +468,121 @@ export const MODELS = [
         zAnatomy: { file: 'NervousSystem100.fbx', names: ['Left vagus nerve (X)'] },
         clipZ: [1000, 1400],
         ratio: 0.08,
+      },
+    ],
+  },
+  {
+    name: 'heart',
+    // The heart in detail: walls, the blood-filled cavity of each chamber, the valves and
+    // papillary muscles, the coronary arteries and cardiac veins, and the roots of the great
+    // vessels (thorax batch 3).
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Walls, see-through over the chambers.
+      { id: 'ventricular-wall', files: ['FJ2428'], ratio: 0.4 },
+      { id: 'right-atrial-wall', concept: 'wall of right atrium', ratio: 0.4 },
+      { id: 'left-atrial-wall', concept: 'wall of left atrium', ratio: 0.6 },
+      // The chambers as casts of the blood they hold.
+      { id: 'right-atrium', concept: 'cavity of right atrium', ratio: 1 },
+      { id: 'right-ventricle', concept: 'cavity of right ventricle', ratio: 1 },
+      { id: 'left-atrium', concept: 'cavity of left atrium', ratio: 1 },
+      { id: 'left-ventricle', concept: 'cavity of left ventricle', ratio: 1 },
+      // Valves and papillary muscles.
+      { id: 'tricuspid-valve', concept: 'leaflet of tricuspid valve', ratio: 0.3 },
+      { id: 'mitral-valve', concept: 'leaflet of mitral valve', ratio: 0.35 },
+      { id: 'pulmonary-valve', concept: 'cusp of pulmonary valve', ratio: 0.8 },
+      { id: 'aortic-valve', concept: 'cusp of aortic valve', ratio: 1 },
+      { id: 'right-papillary-muscles', files: ['FJ2419', 'FJ2430', 'FJ2437'], ratio: 0.6 },
+      { id: 'left-papillary-muscles', files: ['FJ2418', 'FJ2429'], ratio: 0.6 },
+      // Coronary arteries: each trunk with its small branches.
+      {
+        id: 'right-coronary-artery',
+        concepts: [
+          'trunk of right coronary artery',
+          'right conus artery',
+          'first anterior ventricular branch of right coronary artery',
+          'posterior ventricular branch of right coronary artery',
+        ],
+        ratio: 0.5,
+      },
+      {
+        id: 'posterior-interventricular-artery',
+        concepts: [
+          'posterior interventricular branch of right coronary artery',
+          'septal branch of right posterior interventricular artery',
+        ],
+        ratio: 0.5,
+      },
+      {
+        id: 'right-marginal-artery',
+        concept: 'marginal branch of right coronary artery',
+        ratio: 0.5,
+      },
+      { id: 'left-coronary-artery', concept: 'trunk of left coronary artery', ratio: 1 },
+      {
+        id: 'anterior-interventricular-artery',
+        concepts: [
+          'trunk of anterior interventricular branch of left coronary artery',
+          'right anterior branch of anterior interventricular branch of left coronary artery',
+          'conus branch of anterior interventricular branch of left coronary artery',
+          'septal branch of anterior interventricular artery',
+        ],
+        ratio: 0.5,
+      },
+      { id: 'circumflex-artery', concept: 'circumflex branch of left coronary artery', ratio: 0.5 },
+      {
+        id: 'diagonal-arteries',
+        concept: 'diagonal branch of anterior descending branch of left coronary artery',
+        ratio: 0.5,
+      },
+      // Cardiac veins.
+      { id: 'coronary-sinus', concept: 'coronary sinus', ratio: 1 },
+      {
+        id: 'great-cardiac-vein',
+        concepts: ['great cardiac vein', 'anterior interventricular vein', 'left marginal vein'],
+        ratio: 0.5,
+      },
+      { id: 'middle-cardiac-vein', concept: 'middle cardiac vein', ratio: 0.5 },
+      {
+        id: 'small-cardiac-vein',
+        concepts: ['small cardiac vein', 'right marginal vein'],
+        ratio: 0.5,
+      },
+      {
+        id: 'posterior-vein-of-left-ventricle',
+        concept: 'posterior vein of left ventricle',
+        ratio: 0.5,
+      },
+      { id: 'anterior-cardiac-veins', concept: 'anterior cardiac vein', ratio: 1 },
+      // Roots of the great vessels.
+      { id: 'ascending-aorta', concept: 'ascending aorta', ratio: 0.6 },
+      { id: 'arch-of-aorta', concept: 'arch of aorta', ratio: 0.6 },
+      {
+        id: 'descending-aorta',
+        concept: 'descending thoracic aorta',
+        clipZ: [1200, Infinity],
+        ratio: 0.5,
+      },
+      { id: 'pulmonary-trunk', concept: 'pulmonary trunk', ratio: 0.6 },
+      { id: 'right-pulmonary-artery', concept: 'right pulmonary artery', ratio: 0.6 },
+      { id: 'left-pulmonary-artery', concept: 'left pulmonary artery', ratio: 0.5 },
+      {
+        id: 'pulmonary-veins',
+        concepts: [
+          'right superior pulmonary vein',
+          'right inferior pulmonary vein',
+          'left superior pulmonary vein',
+          'left inferior pulmonary vein',
+        ],
+        ratio: 0.5,
+      },
+      { id: 'superior-vena-cava', concept: 'superior vena cava', ratio: 0.6 },
+      {
+        id: 'inferior-vena-cava',
+        concept: 'inferior vena cava',
+        clipZ: [1150, Infinity],
+        ratio: 0.6,
       },
     ],
   },

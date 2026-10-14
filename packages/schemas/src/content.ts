@@ -65,6 +65,7 @@ export const PartKind = z.enum([
   'organ',
   'airway',
   'membrane',
+  'valve',
 ]);
 export type PartKind = z.infer<typeof PartKind>;
 

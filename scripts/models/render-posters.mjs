@@ -62,6 +62,12 @@ export const POSTERS = [
   { name: 'lung-root-bronchial-tree', path: '/studio?topic=lung-root-bronchial-tree' },
   { name: 'bronchopulmonary-segments', path: '/studio?topic=bronchopulmonary-segments' },
   { name: 'mediastinum', path: '/studio?topic=mediastinum' },
+  { name: 'pericardium', path: '/studio?topic=pericardium' },
+  { name: 'heart-external-features', path: '/studio?topic=heart-external-features' },
+  { name: 'heart-chambers', path: '/studio?topic=heart-chambers' },
+  { name: 'heart-valves-conduction', path: '/studio?topic=heart-valves-conduction' },
+  { name: 'coronary-circulation', path: '/studio?topic=coronary-circulation' },
+  { name: 'fetal-circulation', path: '/studio?topic=fetal-circulation' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

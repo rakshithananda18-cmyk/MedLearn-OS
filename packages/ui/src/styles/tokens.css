@@ -202,6 +202,7 @@
   --color-anat-organ: #c97b84;
   --color-anat-airway: #d5dde2;
   --color-anat-membrane: #b9d3e0;
+  --color-anat-valve: #f3ead2;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;

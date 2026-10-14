@@ -43,6 +43,7 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     15: 'Pleura',
     16: 'Lungs',
     17: 'Mediastinum',
+    18: 'Heart',
   },
 };
 
