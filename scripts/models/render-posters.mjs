@@ -99,6 +99,7 @@ export const POSTERS = [
   { name: 'lower-limb-veins', path: '/studio?topic=lower-limb-veins' },
   { name: 'lower-limb-lymphatics', path: '/studio?topic=lower-limb-lymphatics' },
   { name: 'lower-limb-dermatomes', path: '/studio?topic=lower-limb-dermatomes' },
+  { name: 'foot-arches', path: '/studio?topic=foot-arches' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

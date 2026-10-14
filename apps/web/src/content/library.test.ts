@@ -63,6 +63,7 @@ describe('libraryTree', () => {
         'Back of leg',
         'Sole of foot',
         'Drainage and innervation',
+        'Arches of foot',
       ],
     );
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
