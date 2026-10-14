@@ -1,6 +1,7 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
 import { armBackRadial } from './arm-back-radial';
 import { armFront } from './arm-front';
@@ -10,6 +11,7 @@ import { axillaryVessels } from './axillary-vessels';
 import { backMuscles } from './back-muscles';
 import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
+import { calfMuscles } from './calf-muscles';
 import { carpalTunnel } from './carpal-tunnel';
 import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
@@ -32,6 +34,9 @@ import { heartValvesConduction } from './heart-valves-conduction';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { kneeAnastomoses } from './knee-anastomoses';
+import { legFrontMuscles } from './leg-front-muscles';
+import { legLateralMedial } from './leg-lateral-medial';
+import { legSuperficial } from './leg-superficial';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
@@ -45,6 +50,7 @@ import { pericardium } from './pericardium';
 import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
 import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
+import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
 import { radioulnarJoints } from './radioulnar-joints';
 import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
@@ -139,6 +145,12 @@ export const TOPICS: Topic[] = [
   kneeAnastomoses,
   hamstringMuscles,
   sciaticNerveThigh,
+  legSuperficial,
+  legFrontMuscles,
+  anteriorTibialDorsalisPedis,
+  legLateralMedial,
+  calfMuscles,
+  posteriorTibialTibialNerve,
   oxygenCurve,
 ];
 
