@@ -29,10 +29,11 @@ const BHANU = 'Dr G Bhanu Prakash';
 const SANYAL = 'Sanjoy Sanyal';
 const TONY = 'Tony’s Tutorial';
 const HASANA = 'Dr Hasana';
+const EBRAHEIM = 'Dr Nabil Ebraheim';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax and lower limb on 13 and 14 Oct 2026); each
+ * thorax and lower limb on 13 to 15 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -380,6 +381,19 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
       'Medical Research Foundation',
       818,
     ),
+  ],
+  'lower-limb-surface-marking': [
+    video('JNczJx2ju3I', 'Arteries of the lower limb: an overview', ANATOMY_ZONE, 315),
+    video('6EsHOruv2SM', 'Feeling the lower limb pulses', 'Geeky Medics', 130),
+  ],
+  'lower-limb-nerve-injuries': [
+    video('TpyGVLHp-g0', 'Lower limb nerve injuries', 'Sam Webster', 976),
+    video('DnBJhTfUVgs', 'Foot drop: common peroneal nerve injury', EBRAHEIM, 403),
+    video('HE0lk5MVFEg', 'Trendelenburg gait', EBRAHEIM, 215),
+  ],
+  'lower-limb-development': [
+    video('EYCoaCtz9Is', 'Limb development', 'SCRUBS BSOM', 1019),
+    video('eCY-KE3xxHA', 'Limb development and muscle migration', 'Lecturio', 630),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),

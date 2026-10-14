@@ -100,6 +100,9 @@ export const POSTERS = [
   { name: 'lower-limb-lymphatics', path: '/studio?topic=lower-limb-lymphatics' },
   { name: 'lower-limb-dermatomes', path: '/studio?topic=lower-limb-dermatomes' },
   { name: 'foot-arches', path: '/studio?topic=foot-arches' },
+  { name: 'lower-limb-surface-marking', path: '/studio?topic=lower-limb-surface-marking' },
+  { name: 'lower-limb-nerve-injuries', path: '/studio?topic=lower-limb-nerve-injuries' },
+  { name: 'lower-limb-development', path: '/studio?topic=lower-limb-development' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

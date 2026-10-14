@@ -8,6 +8,8 @@
 //  - heart.glb: the heart's walls, chambers, valves and coronary vessels, shared by the heart topics
 //  - hip-thigh.glb: the right hip and thigh, shared by the gluteal and thigh topics
 //  - leg-foot.glb: the right leg and foot from just above the knee, shared by the leg topics
+//  - lower-limb.glb: the whole right lower limb without its muscles, for surface marking, nerve
+//    injuries and development
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -137,6 +139,81 @@ const LEG_FOOT_NERVES = zParts('NervousSystem100.fbx', [
     0.3,
     KNEE_UP,
   ],
+  [
+    'medial-plantar-nerve',
+    ['Right medial plantar nerve', 'Right proper plantar digital branches of medial plantar nerve'],
+    0.3,
+  ],
+  [
+    'lateral-plantar-nerve',
+    [
+      'Right lateral plantar nerve',
+      'Right common plantar digital branches of lateral plantar nerve',
+      'Right proper plantar digital branches of lateral plantar nerve',
+    ],
+    0.3,
+  ],
+]);
+// Nerves of the whole right lower limb, from Z-Anatomy, root to toes and uncut (lower limb batch
+// 6). Z-Anatomy has no inferior gluteal nerve.
+const LOWER_LIMB_NERVES = zParts('NervousSystem100.fbx', [
+  [
+    'femoral-nerve',
+    ['Right femoral nerve', 'Right anterior cutaneous branches of femoral nerve'],
+    0.35,
+  ],
+  [
+    'saphenous-nerve',
+    [
+      'Right saphenous nerve',
+      'Right infrapatellar branch of saphenous nerve',
+      'Right medial crural cutaneous branches of saphenous nerve',
+    ],
+    0.25,
+  ],
+  ['lateral-cutaneous-nerve-of-thigh', 'Right lateral femoral cutaneous nerve', 0.25],
+  [
+    'obturator-nerve',
+    [
+      'Right obturator nerve',
+      'Right anterior branch of obturator nerve',
+      'Right posterior branch of obturator nerve',
+    ],
+    0.35,
+  ],
+  ['superior-gluteal-nerve', 'Right superior gluteal nerve', 0.35],
+  ['sciatic-nerve', 'Right sciatic nerve', 0.35],
+  [
+    'posterior-cutaneous-nerve-of-thigh',
+    [
+      'Right posterior femoral cutaneous nerve',
+      'Right posterior root of posterior femoral cutaneous nerve',
+      'Right anterior root of posterior femoral cutaneous nerve',
+    ],
+    0.3,
+  ],
+  ['tibial-nerve', 'Right tibial nerve', 0.4],
+  ['common-peroneal-nerve', 'Right common fibular nerve', 0.5],
+  [
+    'superficial-peroneal-nerve',
+    [
+      'Right superficial fibular nerve',
+      'Right medial dorsal cutaneous nerve of foot',
+      'Right intermediate dorsal cutaneous nerve of foot',
+      'Right dorsal digital branches of superficial fibular nerve',
+    ],
+    0.3,
+  ],
+  [
+    'deep-peroneal-nerve',
+    [
+      'Right deep fibular nerve',
+      'Right muscular branches of deep fibular nerve',
+      'Right dorsal digital branches of deep fibular nerve',
+    ],
+    0.35,
+  ],
+  ['sural-nerve', ['Right medial sural cutaneous nerve', 'Right sural nerve'], 0.35],
   [
     'medial-plantar-nerve',
     ['Right medial plantar nerve', 'Right proper plantar digital branches of medial plantar nerve'],
@@ -946,6 +1023,80 @@ export const MODELS = [
       { id: 'dorsal-venous-arch', concept: 'dorsal venous arch of right foot', ratio: 0.4 },
       // Nerves.
       ...LEG_FOOT_NERVES,
+    ],
+  },
+  {
+    name: 'lower-limb',
+    // The whole right lower limb from the hip bone to the toes, without its muscles: the bones to
+    // find landmarks on, the arterial trunk with its pulses, the main veins and every nerve
+    // (lower limb batch 6: surface marking, nerve injuries, development). BodyParts3D has no
+    // profunda femoris, gluteal or peroneal arteries; their veins show the way.
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Bones.
+      { id: 'hip-bone', concept: 'right hip bone', ratio: 1 },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.2 },
+      ...[
+        ['femur', 'right femur'],
+        ['patella', 'right patella'],
+        ['tibia', 'right tibia'],
+        ['fibula', 'right fibula'],
+        ['talus', 'right talus'],
+        ['calcaneus', 'right calcaneus'],
+        ['navicular', 'navicular bone of right foot'],
+        ['cuboid', 'right cuboid bone'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 1 })),
+      {
+        id: 'cuneiforms',
+        concepts: ['medial', 'intermediate', 'lateral'].map((c) => `right ${c} cuneiform bone`),
+        ratio: 1,
+      },
+      {
+        id: 'metatarsals',
+        concepts: ['first', 'second', 'third', 'fourth', 'fifth'].map(
+          (n) => `right ${n} metatarsal bone`,
+        ),
+        ratio: 1,
+      },
+      {
+        id: 'phalanges',
+        concepts: TOES.flatMap((toe) =>
+          ['proximal', 'middle', 'distal']
+            .filter((row) => toe !== 'big' || row !== 'middle')
+            .map((row) => `${row} phalanx of right ${toe} toe`),
+        ),
+        ratio: 1,
+      },
+      // Arteries, from the groin to the sole.
+      ...[
+        ['external-iliac-artery', 'right external iliac artery', 1],
+        ['femoral-artery', 'right femoral artery', 1],
+        ['lateral-circumflex-femoral-artery', 'right lateral circumflex femoral artery', 1],
+        ['descending-genicular-artery', 'right descending genicular artery', 0.2],
+        ['popliteal-artery', 'right popliteal artery', 0.1],
+        ['anterior-tibial-artery', 'right anterior tibial artery', 0.15],
+        ['dorsalis-pedis-artery', 'right dorsalis pedis artery', 0.5],
+        ['posterior-tibial-artery', 'right posterior tibial artery', 0.15],
+        ['medial-plantar-artery', 'right medial plantar artery', 0.3],
+        ['lateral-plantar-artery', 'right lateral plantar artery', 0.3],
+        ['plantar-arch', 'right plantar arch', 0.5],
+      ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
+      // Veins: the saphenous veins under the skin, the deep trunk, and those standing in for the
+      // missing arteries.
+      ...[
+        ['femoral-vein', 'right femoral vein', 1],
+        ['deep-femoral-vein', 'right deep femoral vein', 0.3],
+        ['superior-gluteal-vein', 'right superior gluteal vein', 1],
+        ['inferior-gluteal-vein', 'right inferior gluteal vein', 0.15],
+        ['popliteal-vein', 'right popliteal vein', 0.1],
+        ['great-saphenous-vein', 'right great saphenous vein', 0.1],
+        ['small-saphenous-vein', 'right small saphenous vein', 0.12],
+        ['dorsal-venous-arch', 'dorsal venous arch of right foot', 0.4],
+      ].map(([id, concept, ratio]) => ({ id, concept, ratio })),
+      { id: 'peroneal-vein', files: ['FJ2200'], ratio: 0.2 },
+      // Nerves.
+      ...LOWER_LIMB_NERVES,
     ],
   },
   {

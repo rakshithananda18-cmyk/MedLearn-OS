@@ -20,6 +20,9 @@ export interface LibraryBranch {
 
 export type LibraryNode = LibraryBranch | LibraryTopic;
 
+/** Where an appendix sorts among the chapters: after any chapter a volume has. */
+const APPENDIX = 100;
+
 // Sections of BD Chaurasia Volume 1, by region and chapter number (the book numbers both the
 // upper limb's last chapter and the thorax's first 12), named for what they cover. A topic's
 // section comes from its BD reference, so the tree follows the order students dissect in.
@@ -57,16 +60,24 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     8: 'Front and sides of leg',
     9: 'Back of leg',
     10: 'Sole of foot',
+    1: 'Introduction and development',
     11: 'Drainage and innervation',
     13: 'Arches of foot',
+    14: 'Surface marking and X-rays',
+    [APPENDIX + 1]: 'Nerves, arteries and clinical terms',
   },
 };
 
-/** The BD Chaurasia chapter a topic is read in, when it has one. */
+/**
+ * The BD Chaurasia chapter a topic is read in, when it has one. An appendix comes after the
+ * chapters: Volume 2's Appendix 1, which has no chapter number, counts as APPENDIX + 1.
+ */
 function bdChapter(topic: Topic): number | null {
-  const reference = topic.readIn.find((item) => item.bookId === 'bd-chaurasia');
-  const number = /Chapter (\d+)/.exec(reference?.chapter ?? '')?.[1];
-  return number ? Number(number) : null;
+  const reference = topic.readIn.find((item) => item.bookId === 'bd-chaurasia')?.chapter ?? '';
+  const chapter = /Chapter (\d+)/.exec(reference)?.[1];
+  if (chapter) return Number(chapter);
+  const appendix = /Appendix (\d+)/.exec(reference)?.[1];
+  return appendix ? APPENDIX + Number(appendix) : null;
 }
 
 const leaf = (topic: Topic): LibraryTopic => ({
