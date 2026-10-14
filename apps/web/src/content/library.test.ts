@@ -44,6 +44,9 @@ describe('libraryTree', () => {
       'Lungs',
       'Mediastinum',
       'Heart',
+      'Great vessels',
+      'Trachea, oesophagus and thoracic duct',
+      'Surface marking and X-rays',
     ]);
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));

@@ -1,6 +1,7 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { aorta } from './aorta';
 import { armBackRadial } from './arm-back-radial';
 import { armFront } from './arm-front';
 import { axilla } from './axilla';
@@ -29,6 +30,7 @@ import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
 import { nerveInjuries } from './nerve-injuries';
+import { oesophagus } from './oesophagus';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
@@ -43,8 +45,12 @@ import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { surfaceMarking } from './surface-marking';
+import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
+import { thoracicDuct } from './thoracic-duct';
 import { thoracicJointsRespiration } from './thoracic-joints-respiration';
 import { thoraxIntroduction } from './thorax-introduction';
+import { thoraxSurfaceXray } from './thorax-surface-xray';
+import { trachea } from './trachea';
 import { upperLimbDevelopment } from './upper-limb-development';
 import { upperLimbXrays } from './upper-limb-xrays';
 import { wristBack } from './wrist-back';
@@ -103,6 +109,12 @@ export const TOPICS: Topic[] = [
   heartValvesConduction,
   coronaryCirculation,
   fetalCirculation,
+  svcPulmonaryTrunk,
+  aorta,
+  trachea,
+  oesophagus,
+  thoracicDuct,
+  thoraxSurfaceXray,
   oxygenCurve,
 ];
 

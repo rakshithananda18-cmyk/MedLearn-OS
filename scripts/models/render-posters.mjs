@@ -68,6 +68,12 @@ export const POSTERS = [
   { name: 'heart-valves-conduction', path: '/studio?topic=heart-valves-conduction' },
   { name: 'coronary-circulation', path: '/studio?topic=coronary-circulation' },
   { name: 'fetal-circulation', path: '/studio?topic=fetal-circulation' },
+  { name: 'svc-pulmonary-trunk', path: '/studio?topic=svc-pulmonary-trunk' },
+  { name: 'aorta', path: '/studio?topic=aorta' },
+  { name: 'trachea', path: '/studio?topic=trachea' },
+  { name: 'oesophagus', path: '/studio?topic=oesophagus' },
+  { name: 'thoracic-duct', path: '/studio?topic=thoracic-duct' },
+  { name: 'thorax-surface-xray', path: '/studio?topic=thorax-surface-xray' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
