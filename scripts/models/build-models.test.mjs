@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BODY_MODEL } from '../../apps/web/src/content/body';
 import { HEART_PART_IDS } from '../../apps/web/src/content/heart-3d';
+import { HIP_THIGH_PART_IDS } from '../../apps/web/src/content/hip-thigh-3d';
 import { SHOULDER_PART_IDS } from '../../apps/web/src/content/shoulder-3d';
 import { ORGANS_PART_IDS } from '../../apps/web/src/content/thoracic-organs-3d';
 import { THORAX_PART_IDS } from '../../apps/web/src/content/thorax-3d';
@@ -88,6 +89,7 @@ describe('content and models', () => {
     expect(meshes('thorax')).toEqual(expect.arrayContaining(THORAX_PART_IDS));
     expect(meshes('thoracic-organs')).toEqual(expect.arrayContaining(ORGANS_PART_IDS));
     expect(meshes('heart')).toEqual(expect.arrayContaining(HEART_PART_IDS));
+    expect(meshes('hip-thigh')).toEqual(expect.arrayContaining(HIP_THIGH_PART_IDS));
     expect(meshes('body')).toEqual(expect.arrayContaining(BODY_MODEL.parts.map((part) => part.id)));
   });
 });

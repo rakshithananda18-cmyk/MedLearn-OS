@@ -6,6 +6,7 @@
 //  - thoracic-organs.glb: the lungs, pleurae, airways, heart, great vessels and mediastinum,
 //    shared by the lungs and mediastinum topics
 //  - heart.glb: the heart's walls, chambers, valves and coronary vessels, shared by the heart topics
+//  - hip-thigh.glb: the right hip and thigh, shared by the gluteal and thigh topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -41,14 +42,58 @@ import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
 const PEC_MINOR_X = { lateral: -137, medial: -107 };
 
-/** Parts from Z-Anatomy's visceral file, from rows of [part id, Z-Anatomy names, ratio]. */
-const visceral = (rows) =>
-  rows.map(([id, names, ratio]) => ({
+/** Parts from a Z-Anatomy file, from rows of [part id, Z-Anatomy names, ratio, extras]. */
+const zParts = (file, rows) =>
+  rows.map(([id, names, ratio, extras]) => ({
     id,
-    zAnatomy: { file: 'VisceralSystem100.fbx', names: [names].flat() },
+    zAnatomy: { file, names: [names].flat() },
     ratio,
+    ...extras,
   }));
+const visceral = (rows) => zParts('VisceralSystem100.fbx', rows);
 const PLEURA = { file: 'VisceralSystem100.fbx', names: ['Pleura'] };
+// Nerves of the right hip and thigh, from Z-Anatomy: BodyParts3D has almost no limb nerves. The
+// saphenous nerve is cut at the knee, where the hip and thigh model ends.
+const KNEE_DOWN = { clipZ: [250, Infinity] };
+const HIP_THIGH_NERVES = zParts('NervousSystem100.fbx', [
+  [
+    'femoral-nerve',
+    ['Right femoral nerve', 'Right anterior cutaneous branches of femoral nerve'],
+    0.35,
+  ],
+  ['saphenous-nerve', 'Right saphenous nerve', 0.25, KNEE_DOWN],
+  ['lateral-cutaneous-nerve-of-thigh', 'Right lateral femoral cutaneous nerve', 0.25],
+  [
+    'genitofemoral-nerve',
+    [
+      'Right genitofemoral nerve',
+      'Right femoral branch of genitofemoral nerve',
+      'Right genital branch of genitofemoral nerve',
+    ],
+    0.3,
+  ],
+  [
+    'obturator-nerve',
+    [
+      'Right obturator nerve',
+      'Right anterior branch of obturator nerve',
+      'Right posterior branch of obturator nerve',
+    ],
+    0.35,
+  ],
+  ['sciatic-nerve', 'Right sciatic nerve', 0.35],
+  [
+    'posterior-cutaneous-nerve-of-thigh',
+    [
+      'Right posterior femoral cutaneous nerve',
+      'Right posterior root of posterior femoral cutaneous nerve',
+      'Right anterior root of posterior femoral cutaneous nerve',
+    ],
+    0.3,
+  ],
+  ['superior-gluteal-nerve', 'Right superior gluteal nerve', 0.35],
+  ['pudendal-nerve', 'Right pudendal nerve', 0.3],
+]);
 const LOBES = visceral([
   ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
   ['right-middle-lobe', 'Middle lobe of right lung', 0.8],
@@ -584,6 +629,115 @@ export const MODELS = [
         clipZ: [1150, Infinity],
         ratio: 0.6,
       },
+    ],
+  },
+  {
+    name: 'hip-thigh',
+    // The right hip and thigh, from the iliac crest to just below the knee: bones, gluteal and
+    // thigh muscles, vessels and nerves (lower limb batch 1). BodyParts3D has no profunda
+    // femoris, gluteal or obturator arteries; their veins show where they run.
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Bones.
+      { id: 'hip-bone', concept: 'right hip bone', ratio: 1 },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.2 },
+      { id: 'femur', concept: 'right femur', ratio: 1 },
+      { id: 'patella', concept: 'right patella', ratio: 1 },
+      { id: 'tibia', concept: 'right tibia', ratio: 1, ...KNEE_DOWN },
+      { id: 'fibula', concept: 'right fibula', ratio: 1, ...KNEE_DOWN },
+      // Gluteal muscles.
+      { id: 'gluteus-maximus', concept: 'right gluteus maximus', ratio: 0.8 },
+      { id: 'gluteus-medius', concept: 'right gluteus medius', ratio: 0.6 },
+      { id: 'gluteus-minimus', concept: 'right gluteus minimus', ratio: 0.5 },
+      { id: 'piriformis', concept: 'right piriformis', ratio: 1 },
+      { id: 'obturator-internus', concept: 'right obturator internus', ratio: 0.6 },
+      {
+        id: 'gemelli',
+        concepts: ['right gemellus superior', 'right gemellus inferior'],
+        ratio: 1,
+      },
+      { id: 'quadratus-femoris', concept: 'right quadratus femoris', ratio: 1 },
+      { id: 'obturator-externus', concept: 'right obturator externus', ratio: 1 },
+      { id: 'tensor-fasciae-latae', concept: 'right tensor fasciae latae', ratio: 1 },
+      { id: 'iliotibial-tract', concept: 'right iliotibial tract', ratio: 0.12 },
+      // Front of the thigh.
+      { id: 'sartorius', concept: 'right sartorius', ratio: 0.6 },
+      { id: 'rectus-femoris', concept: 'right rectus femoris', ratio: 0.45 },
+      { id: 'vastus-lateralis', concept: 'right vastus lateralis', ratio: 0.45 },
+      { id: 'vastus-medialis', concept: 'right vastus medialis', ratio: 0.5 },
+      { id: 'vastus-intermedius', concept: 'right vastus intermedius', ratio: 0.5 },
+      { id: 'iliacus', concept: 'right iliacus', ratio: 0.6 },
+      { id: 'psoas-major', concept: 'right psoas major', ratio: 0.45 },
+      // Medial side of the thigh.
+      { id: 'pectineus', concept: 'right pectineus', ratio: 1 },
+      { id: 'adductor-longus', concept: 'right adductor longus', ratio: 0.7 },
+      { id: 'adductor-brevis', concept: 'right adductor brevis', ratio: 1 },
+      {
+        id: 'adductor-magnus',
+        concepts: ['right adductor magnus', 'right adductor minimus'],
+        ratio: 0.45,
+      },
+      { id: 'gracilis', concept: 'right gracilis', ratio: 0.6 },
+      // Back of the thigh (their origins lie under gluteus maximus).
+      {
+        id: 'biceps-femoris',
+        concepts: ['long head of right biceps femoris', 'short head of right biceps femoris'],
+        ratio: 0.4,
+      },
+      { id: 'semitendinosus', concept: 'right semitendinosus', ratio: 0.5 },
+      { id: 'semimembranosus', concept: 'right semimembranosus', ratio: 0.4 },
+      // Arteries.
+      { id: 'external-iliac-artery', concept: 'right external iliac artery', ratio: 1 },
+      { id: 'femoral-artery', concept: 'right femoral artery', ratio: 1 },
+      {
+        id: 'superficial-epigastric-artery',
+        concept: 'right superficial epigastric artery',
+        ratio: 0.3,
+      },
+      {
+        id: 'lateral-circumflex-femoral-artery',
+        concept: 'right lateral circumflex femoral artery',
+        ratio: 1,
+      },
+      { id: 'perforating-arteries', files: ['FJ2127', 'FJ2203'], ratio: 1 },
+      {
+        id: 'descending-genicular-artery',
+        concept: 'right descending genicular artery',
+        ratio: 0.2,
+      },
+      { id: 'popliteal-artery', concept: 'right popliteal artery', ratio: 0.1 },
+      // Veins.
+      { id: 'external-iliac-vein', concept: 'right external iliac vein', ratio: 1 },
+      { id: 'femoral-vein', concept: 'right femoral vein', ratio: 1 },
+      { id: 'deep-femoral-vein', concept: 'right deep femoral vein', ratio: 0.3 },
+      {
+        id: 'great-saphenous-vein',
+        concept: 'right great saphenous vein',
+        ratio: 0.1,
+        ...KNEE_DOWN,
+      },
+      {
+        id: 'superficial-epigastric-vein',
+        concept: 'right superficial epigastric vein',
+        ratio: 0.5,
+      },
+      {
+        id: 'medial-circumflex-femoral-vein',
+        concept: 'right medial circumflex femoral vein',
+        ratio: 1,
+      },
+      {
+        id: 'lateral-circumflex-femoral-vein',
+        concept: 'right lateral circumflex femoral vein',
+        ratio: 0.5,
+      },
+      { id: 'superior-gluteal-vein', concept: 'right superior gluteal vein', ratio: 1 },
+      { id: 'inferior-gluteal-vein', concept: 'right inferior gluteal vein', ratio: 0.15 },
+      { id: 'obturator-vein', concept: 'right obturator vein', ratio: 0.3 },
+      { id: 'popliteal-vein', concept: 'right popliteal vein', ratio: 0.1 },
+      // Nerves.
+      ...HIP_THIGH_NERVES,
     ],
   },
   {
