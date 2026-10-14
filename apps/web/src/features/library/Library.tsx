@@ -45,7 +45,7 @@ function SubjectTabs({
     // Phones give the subjects a line of their own, so the view switch never covers them.
     <fieldset
       aria-label="Subjects"
-      className="flex min-w-0 basis-full gap-2 overflow-x-auto pb-1 sm:basis-auto"
+      className="flex min-w-0 basis-full gap-2 overflow-x-auto pb-1 md:basis-auto"
     >
       {subjects.map((subject) => {
         const on = subject.slug === current;
