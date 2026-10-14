@@ -19,7 +19,8 @@ import type { StructureInfo, StudioTopic } from './knowledge';
 import type { Quality, StudioSettings } from './saved';
 import type { Detail } from './session';
 
-export const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-md';
+export const GLASS =
+  'rounded-xl border border-border/80 bg-surface/98 shadow-raised backdrop-blur-md';
 export const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
 
 /**
@@ -55,7 +56,7 @@ function Sheet({
         place === 'float' &&
           cx(
             GLASS,
-            'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto p-4',
+            'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto p-4 max-sm:inset-x-3 max-sm:w-auto',
             compact ? 'max-h-sheet' : 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
@@ -120,18 +121,33 @@ function TopicCard({
   topic,
   note,
   current,
+  row = false,
   onOpen,
 }: Readonly<{
   topic: StudioTopic;
   note: CardNote;
   current: boolean;
+  /** A plain row, as in the library's list, rather than a card with a still. */
+  row?: boolean;
   onOpen: (slug: string) => void;
 }>) {
-  const card = cx(
-    'flex h-24 w-full gap-3 rounded-lg border bg-glass p-2 text-left shadow-glass backdrop-blur-md',
-    note.border,
-  );
-  const body = (
+  const card = row
+    ? cx(
+        'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
+        current
+          ? 'bg-primary-subtle font-semibold text-primary-strong'
+          : 'text-ink hover:bg-surface-muted',
+      )
+    : cx(
+        'flex h-24 w-full gap-3 rounded-lg border bg-glass p-2 text-left shadow-glass backdrop-blur-md',
+        note.border,
+      );
+  const body = row ? (
+    <>
+      <span className="min-w-0 flex-1">{topic.title}</span>
+      <span className={cx('shrink-0 text-xs font-semibold', note.tone)}>{note.text}</span>
+    </>
+  ) : (
     <>
       <span className="relative size-20 shrink-0 overflow-hidden rounded-md bg-surface-muted">
         {topic.poster ? (
@@ -208,7 +224,7 @@ function Branch({
         <span
           className={cx(
             'min-w-0 flex-1',
-            top ? 'font-display text-2xl text-ink' : 'text-sm font-semibold text-ink',
+            top ? 'font-display text-xl text-ink' : 'text-sm font-semibold text-ink',
           )}
         >
           {label}
@@ -228,8 +244,9 @@ function Branch({
 }
 
 /**
- * The topics as the library's tree: body regions, then book sections, then a card for each
- * topic. Every branch folds; the ones leading to the open (or next) topic start open.
+ * The topics as the library's tree: body regions, then book sections, then a row for each
+ * topic. Every branch folds; the ones leading to the open (or next) topic start open, and only
+ * one book section is open at a time.
  */
 function TopicTree({
   tree,
@@ -249,11 +266,14 @@ function TopicTree({
   const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
   const focus = current ?? topics.find((topic) => !learnt.has(topic.slug))?.slug ?? null;
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(trailTo(tree, focus)));
+  // One book section open at a time, as in the library: opening one folds the others.
+  const regionIds = new Set(tree.flatMap((node) => (node.kind === 'branch' ? [node.id] : [])));
+  const regionsOpen = () => [...open].filter((id) => regionIds.has(id));
   // Opening another topic unfolds the branches that lead to it.
   const [seen, setSeen] = useState(current);
   if (seen !== current) {
     setSeen(current);
-    setOpen(new Set([...open, ...trailTo(tree, current)]));
+    setOpen(new Set([...regionsOpen(), ...trailTo(tree, current)]));
   }
 
   const render = (node: LibraryNode, top: boolean): ReactNode => {
@@ -265,6 +285,7 @@ function TopicTree({
             topic={topic}
             note={noteOf(topic)}
             current={node.slug === current}
+            row
             onOpen={onTopic}
           />
         </li>
@@ -281,7 +302,7 @@ function TopicTree({
         top={top}
         open={isOpen}
         onToggle={() => {
-          const next = new Set(open);
+          const next = new Set(top || isOpen ? open : regionsOpen());
           if (isOpen) next.delete(node.id);
           else next.add(node.id);
           setOpen(next);
@@ -289,7 +310,7 @@ function TopicTree({
           if (top && !isOpen) onRegion(node.id as BodyRegion);
         }}
       >
-        <ul className="flex flex-col gap-2 pt-1 pb-2 pl-2">
+        <ul className={cx('flex flex-col pt-1 pb-2 pl-2', top ? 'gap-1' : 'gap-px')}>
           {node.children.map((child) => render(child, false))}
         </ul>
       </Branch>

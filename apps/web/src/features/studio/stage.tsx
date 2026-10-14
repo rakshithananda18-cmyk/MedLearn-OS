@@ -128,15 +128,14 @@ export function ModelView(props: Readonly<ModelViewProps>) {
 }
 
 const pressed = (on: boolean) =>
-  cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong');
+  cx('pointer-events-auto', on && 'bg-primary-subtle text-primary-strong ring-1 ring-primary/40');
 
 /**
  * Round buttons for the view: see-through, only the picked structure, a section through the
- * model, the topic's X-ray films, back to the guided view, then the layers beside the settings. A column down the left on phones,
- * a row beside the title where docked.
+ * model, the topic's X-ray films, back to the guided view, then the layers beside the settings.
+ * A column down the model's left edge.
  */
 export function ViewTools({
-  row,
   layers,
   xray,
   films,
@@ -154,7 +153,6 @@ export function ViewTools({
   onReset,
   onSettings,
 }: Readonly<{
-  row: boolean;
   /** Whether the layers sheet is open. */
   layers: boolean;
   xray: boolean | null;
@@ -181,12 +179,8 @@ export function ViewTools({
     <div
       role="toolbar"
       aria-label="View"
-      aria-orientation={row ? 'horizontal' : 'vertical'}
-      className={cx(
-        GLASS,
-        'pointer-events-auto flex gap-1 rounded-full p-1',
-        row ? 'flex-row' : 'flex-col',
-      )}
+      aria-orientation="vertical"
+      className={cx(GLASS, 'pointer-events-auto flex flex-col gap-1 rounded-full p-1')}
     >
       {xray === null ? null : (
         <>
@@ -329,19 +323,6 @@ export function PhoneHeader({
   );
 }
 
-/**
- * The top of the studio where the panels are docked: the title in gold, then the cards beside the
- * view tools (the best "Find it" streak and the guided views), wrapping under it when narrow.
- */
-export function DockedHeader({ title, tools }: Readonly<{ title: string; tools: ReactNode }>) {
-  return (
-    <header className="flex flex-wrap items-center justify-between gap-3 px-2">
-      <h1 className="text-gold line-clamp-2 font-display text-3xl tracking-display">{title}</h1>
-      <div className="flex flex-wrap items-center justify-end gap-2">{tools}</div>
-    </header>
-  );
-}
-
 /** Plays the guided views as a tour, or pauses it. */
 export function TourButton({
   touring,
@@ -442,7 +423,6 @@ export function GuideCard({
   );
 }
 
-/** The best "Find it" streak on the open topic, as a card by the guided views. */
 /** Starts "Find it" on the whole body, in the region chosen, with the systems switched on. */
 export function FindItButton({
   region,
@@ -470,30 +450,13 @@ export function FindItButton({
   );
 }
 
-export function BestCard({ best }: Readonly<{ best: number }>) {
-  return (
-    <p
-      className={cx(
-        GLASS,
-        'pointer-events-auto flex h-12 items-center gap-2 rounded-full px-4 text-sm font-semibold text-ink',
-      )}
-    >
-      <span className="text-gold font-display text-2xl">{best}</span>
-      <span className="flex flex-col leading-tight">
-        <span>Best streak</span>
-        <span className="text-xs font-normal text-fg-muted">in Find it</span>
-      </span>
-    </p>
-  );
-}
-
 /** The sheet along the bottom of a phone: a grip, then the mode switch and what the mode shows. */
 export function BottomSheet({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="pointer-events-auto flex max-h-sheet flex-col gap-3 overflow-y-auto *:shrink-0 rounded-t-xl border-t border-glass-border bg-surface/95 px-4 pt-2 pb-4 shadow-overlay backdrop-blur-md md:mx-auto md:mb-3 md:w-full md:max-w-2xl md:rounded-xl md:border short:absolute short:top-20 short:right-3 short:bottom-3 short:m-0 short:max-h-none short:w-sheet short:max-w-none">
+    <div className="pointer-events-auto flex max-h-sheet flex-col gap-3 overflow-y-auto *:shrink-0 rounded-t-xl border-t border-border/80 bg-surface/98 px-4 pt-2 pb-4 shadow-overlay backdrop-blur-md md:mx-auto md:mb-3 md:w-full md:max-w-2xl md:rounded-xl md:border short:absolute short:top-20 short:right-3 short:bottom-3 short:m-0 short:max-h-none short:w-sheet short:max-w-none">
       <span
         aria-hidden="true"
-        className="h-1 w-12 shrink-0 self-center rounded-full bg-border-strong"
+        className="h-1 w-12 shrink-0 self-center rounded-full bg-border-strong/80"
       />
       {children}
     </div>

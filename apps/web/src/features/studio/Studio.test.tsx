@@ -263,19 +263,17 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
-  it('docks the topics and search, the guided views by the tools, and the structure', async () => {
+  it('docks the topics and search, the modes by the title, the guided views and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');
     expect(screen.queryByRole('button', { name: 'Search structures' })).not.toBeInTheDocument();
     const topics = screen.getByRole('region', { name: 'Topics' });
-    expect(screen.getByText('Best streak')).toBeInTheDocument();
     const guide = screen.getByRole('group', { name: 'Guided views' });
     expect(guide).toHaveTextContent('1/');
     await userEvent.click(within(guide).getByRole('button', { name: 'Next view' }));
     expect(guide).toHaveTextContent('2/');
-    const side = screen.getByRole('complementary', { name: 'About the model' });
-    // The layers open from beside the settings, not in the side panel.
-    expect(within(side).queryByRole('region', { name: 'Layers' })).not.toBeInTheDocument();
+    // Nothing on the right until a structure is picked; the layers open from the tools.
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
     expect(screen.getByRole('switch', { name: 'Muscles', checked: true })).toBeInTheDocument();
@@ -285,12 +283,14 @@ describe('Studio on a wide screen', () => {
       'serr',
     );
     await userEvent.click(within(topics).getByRole('button', { name: 'Serratus anterior' }));
+    const side = screen.getByRole('complementary', { name: 'About the model' });
     const card = within(side).getByRole('region', { name: 'Serratus anterior' });
     // Docked, the card shows everything at once.
     expect(within(card).getByText('Long thoracic nerve injury.')).toBeInTheDocument();
     await expectNoA11yViolations(container);
 
-    await userEvent.click(within(side).getByRole('button', { name: 'Find it' }));
+    const header = screen.getByRole('banner');
+    await userEvent.click(within(header).getByRole('button', { name: 'Find it', pressed: false }));
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
   });
 
@@ -467,17 +467,30 @@ describe('Studio on a wide screen', () => {
     );
   });
 
-  it('folds either panel away and brings it back', async () => {
+  it('folds the topics away and back, and opens the structure card only for a tap', async () => {
     wideScreen();
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Hide the topics' }));
     expect(screen.queryByRole('region', { name: 'Topics' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Hide the model panel' }));
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Show the topics' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Show the model panel' }));
     expect(screen.getByRole('region', { name: 'Topics' })).toBeInTheDocument();
-    expect(screen.getByRole('complementary', { name: 'About the model' })).toBeInTheDocument();
+
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    tap('serratus');
+    const side = screen.getByRole('complementary', { name: 'About the model' });
+    await userEvent.click(within(side).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  });
+
+  it('keeps one book section open at a time in the topics', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    const tree = screen.getByRole('list', { name: 'Regions and topics' });
+    const axilla = within(tree).getByRole('button', { name: /^Axilla\s?\d/, expanded: true });
+    await userEvent.click(within(tree).getByRole('button', { name: /^Back\s?\d/ }));
+    expect(axilla).toHaveAttribute('aria-expanded', 'false');
+    // Other regions stay as they were.
+    expect(within(tree).getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
   });
 
   it('shows the topic as its flat diagram when the student picks 2D in the settings', async () => {

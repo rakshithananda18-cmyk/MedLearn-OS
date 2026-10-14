@@ -29,9 +29,15 @@ const MODES: Array<{ mode: Mode; label: string }> = [
 export function ModeSwitch({
   mode,
   onMode,
-}: Readonly<{ mode: Mode; onMode: (mode: Mode) => void }>) {
+  className = 'rounded-md bg-surface-muted',
+}: Readonly<{
+  mode: Mode;
+  onMode: (mode: Mode) => void;
+  /** The switch's own surface: a tray in a sheet, or glass over the model. */
+  className?: string;
+}>) {
   return (
-    <fieldset className="grid grid-cols-3 gap-1 rounded-md bg-surface-muted p-1">
+    <fieldset className={cx('grid grid-cols-3 gap-1 p-1', className)}>
       <legend className="sr-only">Mode</legend>
       {MODES.map((item) => (
         <button
@@ -42,7 +48,7 @@ export function ModeSwitch({
             if (mode !== item.mode) onMode(item.mode);
           }}
           className={cx(
-            'h-12 rounded-sm text-sm font-semibold transition-colors duration-150',
+            'h-12 rounded-sm px-4 text-sm font-semibold transition-colors duration-150',
             mode === item.mode
               ? 'bg-surface text-ink shadow-raised'
               : 'text-fg-muted hover:text-fg',
