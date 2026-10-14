@@ -492,14 +492,21 @@
 }
 
 /* A panel that folds open and shut smoothly: its one child needs min-h-0 and overflow-hidden. */
+/* A closed fold skips its contents altogether: clipped content still counted towards the page
+   height in Chrome, leaving empty space below a folded list. The switch waits for the closing
+   slide to end (allow-discrete), so nothing vanishes early. */
 @utility fold {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 250ms var(--ease-standard);
+  content-visibility: hidden;
+  transition:
+    grid-template-rows 250ms var(--ease-standard),
+    content-visibility 250ms allow-discrete;
 }
 
 @utility fold-open {
   grid-template-rows: 1fr;
+  content-visibility: visible;
 }
 
 /* The same model as a stage beside the page on laptops: the window's height, less the gutters. */

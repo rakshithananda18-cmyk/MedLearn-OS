@@ -42,7 +42,11 @@ function SubjectTabs({
   onPick,
 }: Readonly<{ subjects: LibrarySubject[]; current: string; onPick: (slug: string) => void }>) {
   return (
-    <fieldset aria-label="Subjects" className="flex min-w-0 gap-2 overflow-x-auto pb-1">
+    // Phones give the subjects a line of their own, so the view switch never covers them.
+    <fieldset
+      aria-label="Subjects"
+      className="flex min-w-0 basis-full gap-2 overflow-x-auto pb-1 sm:basis-auto"
+    >
       {subjects.map((subject) => {
         const on = subject.slug === current;
         const count = subject.nodes.flatMap(topicsUnder).length;
@@ -191,7 +195,7 @@ export function Library({
               First year · {all.filter((topic) => learnt.has(topic.slug)).length} of {all.length}{' '}
               learnt
             </Eyebrow>
-            <Display size="lg">
+            <Display size="md">
               Your <em>library</em>
             </Display>
           </div>
@@ -218,7 +222,7 @@ export function Library({
         ) : null}
         {view === 'topics' && current ? (
           <>
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <SubjectTabs subjects={subjects} current={current.slug} onPick={setTab} />
               <ViewSwitch view={view} onView={changeView} />
             </div>

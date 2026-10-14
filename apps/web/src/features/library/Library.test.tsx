@@ -72,6 +72,20 @@ describe('Library', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('starts short: other regions folded, and one book section open at a time', async () => {
+    screenWidth(true);
+    renderLibrary();
+    expect(screen.getByRole('button', { name: /^Upper limb/, expanded: true })).toBeVisible();
+    expect(screen.getByRole('button', { name: /^Thorax/, expanded: false })).toBeVisible();
+    expect(screen.getByRole('button', { name: /^Lower limb/, expanded: false })).toBeVisible();
+
+    const pectoral = screen.getByRole('button', { name: /^Pectoral region/, expanded: true });
+    const axilla = screen.getByRole('button', { name: /^Axilla/, expanded: false });
+    await userEvent.click(axilla);
+    expect(axilla).toHaveAttribute('aria-expanded', 'true');
+    expect(pectoral).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('slides in a preview of the picked topic, keeps it in the address, and closes it', async () => {
     screenWidth(true);
     renderLibrary();

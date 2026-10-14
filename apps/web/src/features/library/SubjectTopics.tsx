@@ -100,16 +100,33 @@ export function Chevron({ open }: Readonly<{ open: boolean }>) {
   );
 }
 
+/** Which book section is open: one at a time across the subject, so the list stays short. */
+interface Folds {
+  open: string | null;
+  onToggle: (id: string) => void;
+}
+
+/** The section holding the selected topic, else the next one: the one open on arrival. */
+function startingSection(nodes: LibraryNode[], state: TopicsState): string | null {
+  const sections = nodes.flatMap((node) =>
+    node.kind === 'branch' ? node.children.filter((child) => child.kind === 'branch') : [],
+  );
+  const holding = (slug: string | null) =>
+    sections.find((section) => topicsUnder(section).some((topic) => topic.slug === slug));
+  return (holding(state.selected) ?? holding(state.next))?.id ?? null;
+}
+
 /** A book section: a ring for how much is learnt, and its topics folding open underneath. */
-function Section({ section, state }: Readonly<{ section: LibraryBranch; state: TopicsState }>) {
+function Section({
+  section,
+  state,
+  folds,
+}: Readonly<{ section: LibraryBranch; state: TopicsState; folds: Folds }>) {
   const id = useId();
   const topics = topicsUnder(section);
   const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   const holdsNext = topics.some((topic) => topic.slug === state.next);
-  const holdsSelected = topics.some((topic) => topic.slug === state.selected);
-  // Folded until the student opens it, unless it holds the next or the selected topic.
-  const [toggled, setToggled] = useState<boolean | null>(null);
-  const open = toggled ?? (holdsNext || holdsSelected);
+  const open = folds.open === section.id;
   const minutes = topics.reduce((total, topic) => total + topic.minutes, 0);
   return (
     <div
@@ -122,7 +139,7 @@ function Section({ section, state }: Readonly<{ section: LibraryBranch; state: T
         type="button"
         aria-expanded={open}
         aria-controls={id}
-        onClick={() => setToggled(!open)}
+        onClick={() => folds.onToggle(section.id)}
         className="flex min-h-12 w-full items-center gap-3 rounded-lg px-4 py-3 text-left"
       >
         <span aria-hidden="true" className="flex shrink-0">
@@ -164,18 +181,22 @@ function Section({ section, state }: Readonly<{ section: LibraryBranch; state: T
 }
 
 /**
- * A body region: its name and how far through it the student is, folding its book sections away
- * when the student wants the page clear.
+ * A body region: its name and how far through it the student is. Only the region the student is
+ * working in starts open; the others stay folded so the page starts short.
  */
-function Region({ region, state }: Readonly<{ region: LibraryBranch; state: TopicsState }>) {
+function Region({
+  region,
+  state,
+  folds,
+}: Readonly<{ region: LibraryBranch; state: TopicsState; folds: Folds }>) {
   const id = useId();
-  const [open, setOpen] = useState(true);
   const topics = topicsUnder(region);
-  const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   const sections = region.children.filter((node) => node.kind === 'branch');
+  const [open, setOpen] = useState(() => sections.some((section) => section.id === folds.open));
+  const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   return (
-    <section aria-labelledby={`${id}-name`} className="flex flex-col gap-3">
-      <h2 id={`${id}-name`} className="font-display text-3xl tracking-display text-ink">
+    <section aria-labelledby={`${id}-name`} className="flex flex-col gap-2">
+      <h2 id={`${id}-name`} className="font-display text-2xl tracking-display text-ink">
         <button
           type="button"
           aria-expanded={open}
@@ -205,7 +226,7 @@ function Region({ region, state }: Readonly<{ region: LibraryBranch; state: Topi
           <ul className="flex flex-col gap-2 pt-1">
             {sections.map((section) => (
               <li key={section.id}>
-                <Section section={section} state={state} />
+                <Section section={section} state={state} folds={folds} />
               </li>
             ))}
           </ul>
@@ -225,6 +246,11 @@ export function SubjectTopics({
 }: Readonly<{ subject: LibrarySubject; state: TopicsState }>) {
   const regions = subject.nodes.filter((node) => node.kind === 'branch');
   const loose = subject.nodes.filter((node) => node.kind === 'topic');
+  const [openSection, setOpenSection] = useState(() => startingSection(subject.nodes, state));
+  const folds: Folds = {
+    open: openSection,
+    onToggle: (id) => setOpenSection((current) => (current === id ? null : id)),
+  };
   if (subject.nodes.length === 0) {
     return (
       <div className="rounded-lg border border-glass-border bg-glass p-6 shadow-glass">
@@ -233,9 +259,9 @@ export function SubjectTopics({
     );
   }
   return (
-    <div className="flex animate-rise flex-col gap-8">
+    <div className="flex animate-rise flex-col gap-6">
       {regions.map((region) => (
-        <Region key={region.id} region={region} state={state} />
+        <Region key={region.id} region={region} state={state} folds={folds} />
       ))}
       {loose.length > 0 ? (
         <section aria-label={`${subject.name} topics`} className="flex flex-col gap-3">
