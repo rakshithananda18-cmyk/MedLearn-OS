@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { NOTE_MAX_LENGTH } from './limits';
+import { NAME_MAX_LENGTH, NOTE_MAX_LENGTH } from './limits';
 
 // Validates learner progress at the API boundary. The limits keep one learner's row small.
 const MAX_ITEMS = 5000;
@@ -30,6 +30,8 @@ export const StudyProfileInput = z.object({
   /** Confirmed 18 or older; only adults' progress leaves the phone before parental consent. */
   adult: z.boolean(),
   books: z.array(ItemId).max(50).optional(),
+  /** What the student likes to be called: their initials and greeting. */
+  name: z.string().trim().min(1).max(NAME_MAX_LENGTH).optional(),
 });
 
 /** One day of study activity, as stored. */

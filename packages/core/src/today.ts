@@ -13,6 +13,8 @@ export interface StudyProfile {
   adult: boolean;
   /** The standard books this student follows (book ids); missing until they choose. */
   books?: string[];
+  /** What the student likes to be called, for their initials; missing until they say. */
+  name?: string;
 }
 
 /**

@@ -1,6 +1,8 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+
+import { resetProgress, saveProfile } from '@/features/progress/store';
 
 import { AppNav } from './AppNav';
 
@@ -31,5 +33,28 @@ describe('AppNav', () => {
     pathname.current = '/revise';
     render(<AppNav />);
     expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it("leads to the student's profile from their initials", () => {
+    pathname.current = '/profile';
+    act(() =>
+      saveProfile({
+        year: 1,
+        examDate: null,
+        dailyMinutes: 20,
+        adult: false,
+        name: 'Rakshith Ananda',
+      }),
+    );
+    render(<AppNav />);
+    // The rail's mark from tablet width, the last tab on phones.
+    const links = screen.getAllByRole('link', { name: /profile/i });
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link).toHaveAttribute('href', '/profile');
+      expect(link).toHaveAttribute('aria-current', 'page');
+    }
+    expect(screen.getAllByText('RA')).toHaveLength(2);
+    act(() => resetProgress());
   });
 });
