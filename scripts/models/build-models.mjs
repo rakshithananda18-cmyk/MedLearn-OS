@@ -52,8 +52,8 @@ const zParts = (file, rows) =>
   }));
 const visceral = (rows) => zParts('VisceralSystem100.fbx', rows);
 const PLEURA = { file: 'VisceralSystem100.fbx', names: ['Pleura'] };
-// Nerves of the right hip and thigh, from Z-Anatomy: BodyParts3D has almost no limb nerves. The
-// saphenous nerve is cut at the knee, where the hip and thigh model ends.
+// Nerves of the right hip and thigh, from Z-Anatomy: BodyParts3D has almost no limb nerves. Those
+// that go on into the leg are cut below the knee, where the hip and thigh model ends.
 const KNEE_DOWN = { clipZ: [250, Infinity] };
 const HIP_THIGH_NERVES = zParts('NervousSystem100.fbx', [
   [
@@ -93,6 +93,15 @@ const HIP_THIGH_NERVES = zParts('NervousSystem100.fbx', [
   ],
   ['superior-gluteal-nerve', 'Right superior gluteal nerve', 0.35],
   ['pudendal-nerve', 'Right pudendal nerve', 0.3],
+  ['tibial-nerve', 'Right tibial nerve', 0.4, KNEE_DOWN],
+  [
+    'common-peroneal-nerve',
+    ['Right common fibular nerve', 'Right superficial fibular nerve', 'Right deep fibular nerve'],
+    0.4,
+    KNEE_DOWN,
+  ],
+  ['medial-sural-cutaneous-nerve', 'Right medial sural cutaneous nerve', 0.5],
+  ['sural-communicating-nerve', 'Right sural communicating branch of common fibular nerve', 0.5],
 ]);
 const LOBES = visceral([
   ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
@@ -634,7 +643,7 @@ export const MODELS = [
   {
     name: 'hip-thigh',
     // The right hip and thigh, from the iliac crest to just below the knee: bones, gluteal and
-    // thigh muscles, vessels and nerves (lower limb batch 1). BodyParts3D has no profunda
+    // thigh muscles, the popliteal fossa, vessels and nerves (lower limb batches 1 and 2). BodyParts3D has no profunda
     // femoris, gluteal or obturator arteries; their veins show where they run.
     maxTriangles: 150_000,
     error: 0.003,
@@ -687,6 +696,13 @@ export const MODELS = [
       },
       { id: 'semitendinosus', concept: 'right semitendinosus', ratio: 0.5 },
       { id: 'semimembranosus', concept: 'right semimembranosus', ratio: 0.4 },
+      // The popliteal fossa's lower boundaries and floor, cut below the knee.
+      ...[
+        ['gastrocnemius-medial-head', 'medial head of right gastrocnemius'],
+        ['gastrocnemius-lateral-head', 'lateral head of right gastrocnemius'],
+        ['plantaris', 'right plantaris'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 0.6, ...KNEE_DOWN })),
+      { id: 'popliteus', concept: 'right popliteus', ratio: 1 },
       // Arteries.
       { id: 'external-iliac-artery', concept: 'right external iliac artery', ratio: 1 },
       { id: 'femoral-artery', concept: 'right femoral artery', ratio: 1 },
@@ -707,6 +723,26 @@ export const MODELS = [
         ratio: 0.2,
       },
       { id: 'popliteal-artery', concept: 'right popliteal artery', ratio: 0.1 },
+      // The genicular branches of the popliteal artery round the knee.
+      ...[
+        ['superior-medial-genicular-artery', 'right medial superior genicular artery'],
+        ['superior-lateral-genicular-artery', 'right lateral superior genicular artery'],
+        ['middle-genicular-artery', 'right middle genicular artery'],
+        ['inferior-medial-genicular-artery', 'right inferior medial genicular artery'],
+        ['inferior-lateral-genicular-artery', 'right inferior lateral genicular artery'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 0.4 })),
+      {
+        id: 'anterior-tibial-artery',
+        concept: 'right anterior tibial artery',
+        ratio: 0.2,
+        ...KNEE_DOWN,
+      },
+      {
+        id: 'posterior-tibial-artery',
+        concept: 'right posterior tibial artery',
+        ratio: 0.3,
+        ...KNEE_DOWN,
+      },
       // Veins.
       { id: 'external-iliac-vein', concept: 'right external iliac vein', ratio: 1 },
       { id: 'femoral-vein', concept: 'right femoral vein', ratio: 1 },
@@ -736,6 +772,12 @@ export const MODELS = [
       { id: 'inferior-gluteal-vein', concept: 'right inferior gluteal vein', ratio: 0.15 },
       { id: 'obturator-vein', concept: 'right obturator vein', ratio: 0.3 },
       { id: 'popliteal-vein', concept: 'right popliteal vein', ratio: 0.1 },
+      {
+        id: 'small-saphenous-vein',
+        concept: 'right small saphenous vein',
+        ratio: 0.15,
+        ...KNEE_DOWN,
+      },
       // Nerves.
       ...HIP_THIGH_NERVES,
     ],

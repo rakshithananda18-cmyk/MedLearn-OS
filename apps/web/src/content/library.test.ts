@@ -53,7 +53,13 @@ describe('libraryTree', () => {
     expect(lowerLimb).toMatchObject({ kind: 'branch', label: 'Lower limb' });
     if (lowerLimb?.kind !== 'branch') throw new Error('no lower limb');
     expect(lowerLimb.children.map((section) => section.kind === 'branch' && section.label)).toEqual(
-      ['Front of thigh', 'Medial side of thigh', 'Gluteal region'],
+      [
+        'Front of thigh',
+        'Medial side of thigh',
+        'Gluteal region',
+        'Popliteal fossa',
+        'Back of thigh',
+      ],
     );
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));
