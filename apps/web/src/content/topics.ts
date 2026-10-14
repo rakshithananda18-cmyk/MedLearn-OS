@@ -16,10 +16,14 @@ import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
+import { femoralTriangle } from './femoral-triangle';
+import { femoralVesselsNerve } from './femoral-vessels-nerve';
 import { fetalCirculation } from './fetal-circulation';
 import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
+import { glutealMuscles } from './gluteal-muscles';
+import { glutealNervesVessels } from './gluteal-nerves-vessels';
 import { handMuscles } from './hand-muscles';
 import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
@@ -46,6 +50,9 @@ import { skinVeinsLymph } from './skin-veins-lymph';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { surfaceMarking } from './surface-marking';
 import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
+import { thighFrontMuscles } from './thigh-front-muscles';
+import { thighMedial } from './thigh-medial';
+import { thighSuperficial } from './thigh-superficial';
 import { thoracicDuct } from './thoracic-duct';
 import { thoracicJointsRespiration } from './thoracic-joints-respiration';
 import { thoraxIntroduction } from './thorax-introduction';
@@ -115,6 +122,13 @@ export const TOPICS: Topic[] = [
   oesophagus,
   thoracicDuct,
   thoraxSurfaceXray,
+  thighSuperficial,
+  femoralTriangle,
+  femoralVesselsNerve,
+  thighFrontMuscles,
+  thighMedial,
+  glutealMuscles,
+  glutealNervesVessels,
   oxygenCurve,
 ];
 

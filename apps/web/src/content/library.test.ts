@@ -48,6 +48,13 @@ describe('libraryTree', () => {
       'Trachea, oesophagus and thoracic duct',
       'Surface marking and X-rays',
     ]);
+    // Volume 2 restarts the chapter numbers for the lower limb.
+    const lowerLimb = tree[2];
+    expect(lowerLimb).toMatchObject({ kind: 'branch', label: 'Lower limb' });
+    if (lowerLimb?.kind !== 'branch') throw new Error('no lower limb');
+    expect(lowerLimb.children.map((section) => section.kind === 'branch' && section.label)).toEqual(
+      ['Front of thigh', 'Medial side of thigh', 'Gluteal region'],
+    );
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
     expect(new Set(all)).toEqual(new Set(bySubject('anatomy').map((topic) => topic.slug)));
     expect(all).toHaveLength(bySubject('anatomy').length);

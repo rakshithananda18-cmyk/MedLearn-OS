@@ -25,10 +25,13 @@ const NOTED = 'The Noted Anatomist';
 const BLUELINK = 'BlueLink Anatomy';
 const MEDICOSIS = 'Medicosis Perfectionalis';
 const ARMANDO = 'Armando Hasudungan';
+const BHANU = 'Dr G Bhanu Prakash';
+const SANYAL = 'Sanjoy Sanyal';
+const TONY = 'Tony’s Tutorial';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax on 13 and 14 Oct 2026); each
+ * thorax and lower limb on 13 and 14 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -59,12 +62,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   ],
   'arm-front': [
     video('fPx5Sl-j8oI', 'The front compartment of the arm', CATALYST, 845),
-    video(
-      'W6UQNlR9x-M',
-      'Coracobrachialis, brachialis and biceps (animation)',
-      'Dr G Bhanu Prakash',
-      114,
-    ),
+    video('W6UQNlR9x-M', 'Coracobrachialis, brachialis and biceps (animation)', BHANU, 114),
   ],
   'arm-back-radial': [
     video('3M6dzH1i-GI', 'The radial nerve', ANATOMY_ZONE, 421),
@@ -171,7 +169,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   'internal-thoracic-azygos': [
     video('D4vcdePoRX4', 'Vessels of the thorax', DAVINCI, 1072),
     video('KXNsaZO9B1Q', 'Internal thoracic artery', 'Human Anatomy Lessons', 266),
-    video('_H4gu8lnkoM', 'Azygos and hemiazygos veins', 'Dr G Bhanu Prakash', 343),
+    video('_H4gu8lnkoM', 'Azygos and hemiazygos veins', BHANU, 343),
   ],
   pleura: [
     video('FXp0EywEbFA', 'Anatomy of the pleura', 'Dr Adel Bondok Anatomy Channel', 670),
@@ -193,7 +191,7 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('41CVqLbPh-0', 'Anatomy of the mediastinum', 'Ninja Nerd', 2228),
     video('RBQyxZ0FOW4', 'The mediastinum: superior and inferior', MEDICOSIS, 1980),
   ],
-  pericardium: [video('pKjx5Iqi2jQ', 'Pericardium, its cavity and sinuses', 'Sanjoy Sanyal', 516)],
+  pericardium: [video('pKjx5Iqi2jQ', 'Pericardium, its cavity and sinuses', SANYAL, 516)],
   'heart-external-features': [
     video('NsBQSY-Ynws', 'Surfaces and borders of the heart', BLUELINK, 720),
     video('fCOZTNeB7kA', 'External features of the heart', 'Med Master Class', 391),
@@ -243,18 +241,41 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   ],
   'thoracic-duct': [
     video('qaw5VHOW_Ig', 'Thoracic duct in the posterior mediastinum', BLUELINK, 334),
-    video(
-      'FfHouZJ9IH4',
-      'Thoracic duct: course, relations and tributaries',
-      'Dr G Bhanu Prakash',
-      329,
-    ),
+    video('FfHouZJ9IH4', 'Thoracic duct: course, relations and tributaries', BHANU, 329),
     video('dqRGzbEUBHA', 'Thoracic duct', KNOWLEDGE, 147),
   ],
   'thorax-surface-xray': [
     video('C52UENd2xZU', 'Anatomy of the chest X-ray', 'The Radiologist', 1147),
     video('L6bnD2wOEmg', 'Reading a chest X-ray: method and anatomy', 'Strong Medicine', 611),
     video('sHFmxtxQelA', 'Surface anatomy of the thorax', 'sqadia.com', 295),
+  ],
+  'thigh-superficial': [
+    video('urcNdYka2FI', 'Sensory nerves of the lower limb', 'Knockout Anatomy', 710),
+    video('Kv6cQEc_Ijg', 'Superficial veins of the lower limb', KENHUB, 197),
+  ],
+  'femoral-triangle': [
+    video('xBIjoo4lBcA', 'Femoral triangle', 'Angelina Issac', 1002),
+    video('NMXdU4UIu9Y', 'Femoral triangle, canal and sheath', BHANU, 822),
+  ],
+  'femoral-vessels-nerve': [
+    video('y6HEdcgR1i0', 'Femoral artery, vein, nerve and profunda femoris', SANYAL, 567),
+    video('X6HPU4_5LME', 'Femoral nerve', BHANU, 239),
+    video('wNRr37lZVaA', 'Femoral artery: course, branches and relations', BHANU, 234),
+  ],
+  'thigh-front-muscles': [
+    video('BljfaN9tmTA', 'Anterior thigh muscles', NOTED, 293),
+    video('8yZBBpOx-mU', 'Boundaries of the adductor canal', KENHUB, 236),
+  ],
+  'thigh-medial': [
+    video('kXpD4xblBUI', 'Medial side of thigh and adductor canal', 'Dr Ahmed Farid', 3301),
+    video('bYzIQfzlBRA', 'Muscles of the adductor compartment', TONY, 2025),
+  ],
+  'gluteal-muscles': [
+    video('9dLw2mYcjt0', 'Muscles of the gluteal region', TONY, 1854),
+    video('cF0zy4ub1V4', 'Muscles of the gluteal region', ANATOMY_ZONE, 856),
+  ],
+  'gluteal-nerves-vessels': [
+    video('C8D-04qegXo', 'Gluteal region: greater and lesser sciatic foramina', KNOWLEDGE, 162),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),

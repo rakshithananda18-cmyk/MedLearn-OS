@@ -48,6 +48,11 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     20: 'Trachea, oesophagus and thoracic duct',
     21: 'Surface marking and X-rays',
   },
+  'lower-limb': {
+    3: 'Front of thigh',
+    4: 'Medial side of thigh',
+    5: 'Gluteal region',
+  },
 };
 
 /** The BD Chaurasia chapter a topic is read in, when it has one. */

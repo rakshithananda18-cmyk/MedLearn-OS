@@ -74,6 +74,13 @@ export const POSTERS = [
   { name: 'oesophagus', path: '/studio?topic=oesophagus' },
   { name: 'thoracic-duct', path: '/studio?topic=thoracic-duct' },
   { name: 'thorax-surface-xray', path: '/studio?topic=thorax-surface-xray' },
+  { name: 'thigh-superficial', path: '/studio?topic=thigh-superficial' },
+  { name: 'femoral-triangle', path: '/studio?topic=femoral-triangle' },
+  { name: 'femoral-vessels-nerve', path: '/studio?topic=femoral-vessels-nerve' },
+  { name: 'thigh-front-muscles', path: '/studio?topic=thigh-front-muscles' },
+  { name: 'thigh-medial', path: '/studio?topic=thigh-medial' },
+  { name: 'gluteal-muscles', path: '/studio?topic=gluteal-muscles' },
+  { name: 'gluteal-nerves-vessels', path: '/studio?topic=gluteal-nerves-vessels' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
