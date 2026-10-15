@@ -1,3 +1,5 @@
+export { AngleExplorer, type AngleExplorerProps } from './AngleExplorer';
+export { type AngleId, ANGLES, type AngleSpec, type AngleZone, zoneAt } from './angles';
 export { DiagramTrainer, type DiagramTrainerProps } from './DiagramTrainer';
 export {
   CURVE_PRESETS,

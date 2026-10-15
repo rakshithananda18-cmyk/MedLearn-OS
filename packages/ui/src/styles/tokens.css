@@ -626,3 +626,8 @@
 @utility max-h-sheet {
   max-height: 45dvh;
 }
+
+/* A lesson's interactive drawing: never more than half the screen tall, so its slider shows. */
+@utility max-h-figure {
+  max-height: 50dvh;
+}

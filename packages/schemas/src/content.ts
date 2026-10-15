@@ -142,6 +142,8 @@ export const LessonStep = z.object({
   focus: z.array(Id).default([]),
   /** Curve state shown for this step (curve visuals). */
   conditions: CurveConditions.optional(),
+  /** An angle the student sets with a slider, shown in place of the visual for this step. */
+  interactive: z.enum(['neck-shaft', 'carrying']).optional(),
 });
 export type LessonStep = z.infer<typeof LessonStep>;
 

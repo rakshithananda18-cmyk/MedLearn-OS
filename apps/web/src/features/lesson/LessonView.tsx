@@ -4,6 +4,8 @@ import type { LessonStep, PathVisual, Topic } from '@medlearn/schemas';
 import { ActionBar, Button, Display, Eyebrow, Heading, Text, ToggleChip } from '@medlearn/ui';
 import { ArrowRight, ChevronLeft, CircleCheck } from '@medlearn/ui/icons';
 import {
+  AngleExplorer,
+  ANGLES,
   type BloodConditions,
   DissociationCurve,
   NORMAL_BLOOD,
@@ -148,7 +150,10 @@ export function LessonView({ topic }: Readonly<{ topic: Topic }>) {
         </>
       }
       stage={
-        visual.kind === 'path' ? (
+        // A step that names an angle hands the student its slider in place of the diagram.
+        step.interactive ? (
+          <AngleExplorer key={step.id} spec={ANGLES[step.interactive]} />
+        ) : visual.kind === 'path' ? (
           <PathLesson key={step.id} topic={topic} visual={visual} step={step} explore={isLast} />
         ) : (
           <CurveLesson key={step.id} topic={topic} step={step} explore={isLast} />
