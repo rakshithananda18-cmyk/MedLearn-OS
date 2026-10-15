@@ -419,6 +419,52 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('EYCoaCtz9Is', 'Limb development', 'SCRUBS BSOM', 1019),
     video('eCY-KE3xxHA', 'Limb development and muscle migration', 'Lecturio', 630),
   ],
+  'lumbar-vertebrae-sacrum': [
+    video('cJcvFU83cSc', 'The vertebral column: thoracic and lumbar vertebrae', 'Rob Swatski', 427),
+    video('7MD_nZdPA-Y', 'Lumbar vertebrae, sacrum and coccyx', 'Learn Medicine Asap', 128),
+  ],
+  'intervertebral-disc': [
+    video(
+      'wxL8K8hZUyU',
+      'The nucleus pulposus and annulus fibrosus, and annular tears',
+      'Douglas Gillard',
+      1875,
+    ),
+  ],
+  'bony-pelvis': [
+    video(
+      'SyLYjNh-E2Y',
+      'Differences between the male and female bony pelvis',
+      'Student Friendly Anatomy',
+      903,
+    ),
+    video('n8rguEXAyd4', 'Male and female pelvis differences', 'Let’s Talk Anatomy', 429),
+  ],
+  'abdominal-regions': [
+    video('IvIF2cRnV8c', 'Planes, regions and quadrants of the abdomen', 'Doc Jana', 181),
+  ],
+  'abdominal-wall-superficial': [
+    video('4lVllncF73E', 'Superficial veins of the abdominal wall', KENHUB, 155),
+    video('lprR429VFdg', 'Caput medusae and the paraumbilical veins', 'Dr Sushant', 475),
+    video('zexQzpjyHjo', 'The anterior abdominal wall', 'More Than Skin Deep', 211),
+  ],
+  'abdominal-wall-muscles': [
+    video('vZQTtRrDFmY', 'Anterolateral abdominal wall muscles', 'Sam Webster', 1351),
+    video('6XTSK0BLAg4', 'Anterior abdominal wall: dissection', 'Human Anatomy Education', 621),
+  ],
+  'rectus-sheath': [
+    video(
+      '7ZyUOuvR2Kk',
+      'Muscles of the anterior abdominal wall and the rectus sheath',
+      'Prof. Sanjaya Adikari',
+      425,
+    ),
+    video('aALGL0CDcLA', 'The arcuate line and the rectus sheath', 'Sam Webster', 829),
+  ],
+  'inguinal-canal': [
+    video('Bu_1wh7ycVA', 'Inguinal canal and spermatic cord', 'The Noted Anatomist', 549),
+    video('_gU8HJ-VSOE', 'Inguinal canal anatomy and hernias', 'DaVinci Academy', 833),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

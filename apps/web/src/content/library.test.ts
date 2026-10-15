@@ -48,8 +48,16 @@ describe('libraryTree', () => {
       'Trachea, oesophagus and thoracic duct',
       'Surface marking and X-rays',
     ]);
+    // Volume 2's abdomen continues the lower limb's chapter numbers; the region comes first.
+    const abdomen = tree[2];
+    expect(abdomen).toMatchObject({ kind: 'branch', label: 'Abdomen' });
+    if (abdomen?.kind !== 'branch') throw new Error('no abdomen');
+    expect(abdomen.children.map((section) => section.kind === 'branch' && section.label)).toEqual([
+      'Introduction and osteology',
+      'Anterior abdominal wall',
+    ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
-    const lowerLimb = tree[2];
+    const lowerLimb = tree[3];
     expect(lowerLimb).toMatchObject({ kind: 'branch', label: 'Lower limb' });
     if (lowerLimb?.kind !== 'branch') throw new Error('no lower limb');
     expect(lowerLimb.children.map((section) => section.kind === 'branch' && section.label)).toEqual(

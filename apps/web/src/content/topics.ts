@@ -1,6 +1,9 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { abdominalRegions } from './abdominal-regions';
+import { abdominalWallMuscles } from './abdominal-wall-muscles';
+import { abdominalWallSuperficial } from './abdominal-wall-superficial';
 import { ankleTibiofibularJoints } from './ankle-tibiofibular-joints';
 import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
@@ -10,6 +13,7 @@ import { axilla } from './axilla';
 import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
 import { backMuscles } from './back-muscles';
+import { bonyPelvis } from './bony-pelvis';
 import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
 import { calfMuscles } from './calf-muscles';
@@ -35,8 +39,10 @@ import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
 import { heartValvesConduction } from './heart-valves-conduction';
 import { hipJoint } from './hip-joint';
+import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
+import { intervertebralDisc } from './intervertebral-disc';
 import { kneeAnastomoses } from './knee-anastomoses';
 import { kneeJoint } from './knee-joint';
 import { legFrontMuscles } from './leg-front-muscles';
@@ -49,6 +55,7 @@ import { lowerLimbNerveInjuries } from './lower-limb-nerve-injuries';
 import { lowerLimbSurfaceMarking } from './lower-limb-surface-marking';
 import { lowerLimbVeins } from './lower-limb-veins';
 import { lowerLimbXrays } from './lower-limb-xrays';
+import { lumbarVertebraeSacrum } from './lumbar-vertebrae-sacrum';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
@@ -65,6 +72,7 @@ import { poplitealFossa } from './popliteal-fossa';
 import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
 import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
 import { radioulnarJoints } from './radioulnar-joints';
+import { rectusSheath } from './rectus-sheath';
 import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
 import { sciaticNerveThigh } from './sciatic-nerve-thigh';
@@ -183,6 +191,14 @@ export const TOPICS: Topic[] = [
   lowerLimbXrays,
   lowerLimbNerveInjuries,
   lowerLimbDevelopment,
+  lumbarVertebraeSacrum,
+  intervertebralDisc,
+  bonyPelvis,
+  abdominalRegions,
+  abdominalWallSuperficial,
+  abdominalWallMuscles,
+  rectusSheath,
+  inguinalCanal,
   oxygenCurve,
 ];
 

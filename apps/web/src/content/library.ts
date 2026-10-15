@@ -67,6 +67,11 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     14: 'Surface marking and X-rays',
     [APPENDIX + 1]: 'Nerves, arteries and clinical terms',
   },
+  // Volume 2, Section 2 goes on with the chapter numbers from the lower limb.
+  abdomen: {
+    15: 'Introduction and osteology',
+    16: 'Anterior abdominal wall',
+  },
 };
 
 /**
