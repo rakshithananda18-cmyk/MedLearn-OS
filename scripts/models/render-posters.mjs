@@ -123,6 +123,15 @@ export const POSTERS = [
   { name: 'peritoneal-folds', path: '/studio?topic=peritoneal-folds' },
   { name: 'lesser-sac', path: '/studio?topic=lesser-sac' },
   { name: 'peritoneal-spaces', path: '/studio?topic=peritoneal-spaces' },
+  { name: 'stomach', path: '/studio?topic=stomach' },
+  { name: 'stomach-supply', path: '/studio?topic=stomach-supply' },
+  { name: 'duodenum', path: '/studio?topic=duodenum' },
+  { name: 'jejunum-ileum', path: '/studio?topic=jejunum-ileum' },
+  { name: 'large-intestine', path: '/studio?topic=large-intestine' },
+  { name: 'appendix', path: '/studio?topic=appendix' },
+  { name: 'coeliac-trunk', path: '/studio?topic=coeliac-trunk' },
+  { name: 'mesenteric-vessels', path: '/studio?topic=mesenteric-vessels' },
+  { name: 'portal-vein', path: '/studio?topic=portal-vein' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.
