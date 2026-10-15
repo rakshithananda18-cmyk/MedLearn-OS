@@ -30,6 +30,7 @@ import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
 import { LiveSearch } from '@/features/search/LiveSearch';
 
+import { DAY_TIP, greeting, partOfDay } from './greeting';
 import { GoalsCard, PlanCard, StreakCard, StreakPill, TimeRing, UpNext, WeakSpots } from './parts';
 
 const HEADLINE = {
@@ -46,6 +47,12 @@ const HEADLINE = {
   exam: (
     <>
       Exam ahead, <em>stay steady</em>
+    </>
+  ),
+  // Once the day's minutes are in, whatever the mode.
+  met: (
+    <>
+      Goal met, <em>well done</em>
     </>
   ),
 } as const;
@@ -215,6 +222,12 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const done = doneToday(progress, topics, now);
   const week = lastDays(progress.activity, now);
   const streak = currentStreak(progress.activity, now);
+  const minutesToday = dayOf(progress.activity, now).minutes;
+  const goalMet = plan.dailyMinutes > 0 && minutesToday >= plan.dailyMinutes;
+  const part = partOfDay(now.getHours());
+  let tip = DAY_TIP[part];
+  if (plan.examPhase) tip = PHASE_TIP[plan.examPhase];
+  else if (goalMet) tip = 'Anything more today is a bonus; a little recall keeps it.';
 
   return (
     <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
@@ -222,12 +235,14 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         <div className="flex flex-col gap-1">
           {/* The server renders in its own time zone; the browser's date wins. */}
           <Eyebrow suppressHydrationWarning>{longDate(now)}</Eyebrow>
-          <Display size="lg">{HEADLINE[plan.mode]}</Display>
-          {plan.examPhase ? (
-            <Text size="sm" tone="muted">
-              {PHASE_TIP[plan.examPhase]}
-            </Text>
-          ) : null}
+          {/* The greeting and the tip follow the student's clock, their name and their day. */}
+          <p className="text-sm font-semibold text-ink" suppressHydrationWarning>
+            {greeting(part, progress.profile?.name)}
+          </p>
+          <Display size="lg">{HEADLINE[goalMet ? 'met' : plan.mode]}</Display>
+          <p className="text-sm text-fg-muted" suppressHydrationWarning>
+            {tip}
+          </p>
         </div>
         <div className="relative flex items-center gap-2 max-md:w-full">
           {plan.examInDays === null ? null : (
@@ -289,7 +304,7 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
 
       <aside aria-label="Your progress" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
         <StreakCard streak={streak} best={bestStreak(progress.activity)} week={week} />
-        <TimeRing minutes={dayOf(progress.activity, now).minutes} goal={plan.dailyMinutes} />
+        <TimeRing minutes={minutesToday} goal={plan.dailyMinutes} />
         <GoalsCard goals={upcomingGoals(progress, now)} />
         <WeakSpots spots={weakSpots(progress, topics)} />
       </aside>

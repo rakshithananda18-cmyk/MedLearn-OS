@@ -211,4 +211,14 @@ describe('Library', () => {
       screen.getByRole('button', { name: /^Brachial plexus.*1 to recall.*Learnt · \d+%/ }),
     ).toBeVisible();
   });
+
+  it('marks what today’s plan has the student do, as Today does', async () => {
+    screenWidth(true);
+    // Learnt yesterday: today brings its next-day revisit.
+    act(() => completeLesson('brachial-plexus', 10, new Date(Date.now() - 86_400_000)));
+    renderLibrary();
+    await userEvent.click(screen.getByRole('button', { name: /^Upper limb/, expanded: false }));
+    await userEvent.click(screen.getByRole('button', { name: /^Axilla/, expanded: false }));
+    expect(screen.getByRole('button', { name: /^Brachial plexus.*Revisit today/ })).toBeVisible();
+  });
 });

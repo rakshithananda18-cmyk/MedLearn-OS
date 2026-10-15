@@ -30,6 +30,8 @@ export interface TopicsState {
   selected: string | null;
   /** How each topic is going, by slug. */
   mastery: ReadonlyMap<string, TopicMastery>;
+  /** What today's plan has the student do with a topic ("Revisit today"), by slug. */
+  today?: ReadonlyMap<string, string>;
   /** Where a preview sits beside the list, picking a topic shows it there; else topics are links. */
   onSelect?: (slug: string) => void;
 }
@@ -51,6 +53,7 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const learnt = state.learnt.has(topic.slug);
   const mastery = state.mastery.get(topic.slug);
   const weak = mastery?.weakSpots ?? 0;
+  const today = state.today?.get(topic.slug);
   const className = cx(
     'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
     selected
@@ -60,7 +63,13 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const content = (
     <>
       <span className="min-w-0 flex-1">{topic.title}</span>
-      {weak > 0 ? (
+      {/* Today's plan comes first; its practice is what clears the cards to recall. */}
+      {today ? (
+        <span className="shrink-0 rounded-full bg-primary-subtle px-2 py-1 text-xs font-semibold text-primary-strong">
+          {today}
+        </span>
+      ) : null}
+      {weak > 0 && !today ? (
         <span className="shrink-0 rounded-full bg-gloss px-2 py-1 text-xs font-semibold text-gold-ink">
           {weak} to recall
         </span>
