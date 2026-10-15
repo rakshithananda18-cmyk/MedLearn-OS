@@ -1,6 +1,7 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { ankleTibiofibularJoints } from './ankle-tibiofibular-joints';
 import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
 import { armBackRadial } from './arm-back-radial';
@@ -22,6 +23,7 @@ import { femoralTriangle } from './femoral-triangle';
 import { femoralVesselsNerve } from './femoral-vessels-nerve';
 import { fetalCirculation } from './fetal-circulation';
 import { footArches } from './foot-arches';
+import { footJoints } from './foot-joints';
 import { forearmExtensors } from './forearm-extensors';
 import { forearmFlexors } from './forearm-flexors';
 import { forearmVesselsNerves } from './forearm-vessels-nerves';
@@ -32,9 +34,11 @@ import { handMuscles } from './hand-muscles';
 import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
 import { heartValvesConduction } from './heart-valves-conduction';
+import { hipJoint } from './hip-joint';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { kneeAnastomoses } from './knee-anastomoses';
+import { kneeJoint } from './knee-joint';
 import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
@@ -169,6 +173,10 @@ export const TOPICS: Topic[] = [
   lowerLimbVeins,
   lowerLimbLymphatics,
   lowerLimbDermatomes,
+  hipJoint,
+  kneeJoint,
+  ankleTibiofibularJoints,
+  footJoints,
   footArches,
   lowerLimbSurfaceMarking,
   lowerLimbNerveInjuries,

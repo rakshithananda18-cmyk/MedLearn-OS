@@ -79,6 +79,9 @@ const PART_LAYERS: Array<{ kind: PartKind; name: string }> = [
   { kind: 'artery', name: 'Arteries' },
   { kind: 'vein', name: 'Veins' },
   { kind: 'nerve', name: 'Nerves' },
+  { kind: 'capsule', name: 'Capsules' },
+  { kind: 'ligament', name: 'Ligaments' },
+  { kind: 'cartilage', name: 'Cartilage' },
   { kind: 'bone', name: 'Bones' },
 ];
 const BODY_KEY = 'body';

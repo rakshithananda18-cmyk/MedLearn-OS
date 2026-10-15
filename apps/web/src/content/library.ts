@@ -62,6 +62,7 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     10: 'Sole of foot',
     1: 'Introduction and development',
     11: 'Drainage and innervation',
+    12: 'Joints',
     13: 'Arches of foot',
     14: 'Surface marking and X-rays',
     [APPENDIX + 1]: 'Nerves, arteries and clinical terms',

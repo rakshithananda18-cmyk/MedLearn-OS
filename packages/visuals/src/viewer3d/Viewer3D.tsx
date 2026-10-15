@@ -167,14 +167,18 @@ const PART_COLOUR: Record<PartKind, string> = {
   airway: '--color-anat-airway',
   membrane: '--color-anat-membrane',
   valve: '--color-anat-valve',
+  ligament: '--color-anat-ligament',
+  capsule: '--color-anat-capsule',
+  cartilage: '--color-anat-cartilage',
 };
 const TRACE_COLOUR: Record<ModelTrace['kind'], string> = {
   nerve: '--color-anat-nerve',
   lymph: '--color-anat-lymph',
   outline: '--color-fg-muted',
 };
-// Muscles, skin, organs and membranes are see-through, so what lies in them stays visible: the
-// vessels under a muscle, the bronchi in a lung, the lung in its pleura.
+// Muscles, skin, organs, membranes and joint capsules are see-through, so what lies in them stays
+// visible: the vessels under a muscle, the bronchi in a lung, the lung in its pleura, the cruciate
+// ligaments in the knee's capsule.
 const PART_OPACITY: Record<PartKind, number> = {
   bone: 1,
   muscle: 0.45,
@@ -186,6 +190,9 @@ const PART_OPACITY: Record<PartKind, number> = {
   airway: 1,
   membrane: 0.2,
   valve: 1,
+  ligament: 0.9,
+  capsule: 0.25,
+  cartilage: 1,
 };
 
 const LAYER_COLOUR: Record<LayerKind, string> = {

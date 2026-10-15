@@ -66,6 +66,11 @@ export const PartKind = z.enum([
   'airway',
   'membrane',
   'valve',
+  // A joint's ligaments; its capsule, thin and see-through so what lies inside shows.
+  'ligament',
+  'capsule',
+  // Fibrocartilage inside a joint: the menisci, the labrum.
+  'cartilage',
 ]);
 export type PartKind = z.infer<typeof PartKind>;
 

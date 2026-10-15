@@ -64,6 +64,7 @@ describe('libraryTree', () => {
         'Back of leg',
         'Sole of foot',
         'Drainage and innervation',
+        'Joints',
         'Arches of foot',
         'Surface marking and X-rays',
         'Nerves, arteries and clinical terms',
