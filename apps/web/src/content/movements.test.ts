@@ -1,7 +1,8 @@
 import type { Point3 } from '@medlearn/schemas';
 import { describe, expect, it } from 'vitest';
 
-import { JOINT_MOVEMENTS, type Movement, MOVEMENTS, movementsFor, phaseAt } from './movements';
+import { JOINT_MOVEMENTS, movementsFor } from './joint-movements';
+import { type Movement, MOVEMENTS, phaseAt } from './movements';
 import { TOPICS } from './topics';
 
 // Centres from the body index (BodyParts3D millimetres).

@@ -1,3 +1,8 @@
+import { FILM_BONES, type FilmRegion, XRAY_CREDIT } from './xray-basics';
+
+// The films' bones and credit live apart so the 3D studio can use them without these notes.
+export { FILM_BONES, XRAY_CREDIT };
+
 /** A structure marked on a film: where it is, as a share of the film's width and height. */
 export interface XrayMark {
   label: string;
@@ -8,7 +13,7 @@ export interface XrayMark {
 /** One radiograph, with what to look for on it. */
 export interface XrayFilm {
   id: string;
-  region: 'shoulder' | 'elbow' | 'wrist' | 'hand' | 'hip' | 'ankle';
+  region: FilmRegion;
   /** The joint or part, and the view: "Elbow, lateral". */
   title: string;
   width: number;
@@ -21,28 +26,6 @@ export interface XrayFilm {
   /** Who made the film and its licence, when it is not one of XRAY_CREDIT's. */
   credit?: string;
 }
-
-const rightBones = (...names: string[]) => names.map((name) => `skeleton/right-${name}`);
-const CARPALS = ['scaphoid', 'lunate', 'pisiform', 'trapezium', 'trapezoid', 'capitate', 'hamate'];
-const METACARPALS = ['first', 'second', 'third', 'fourth', 'fifth'].map(
-  (place) => `${place}-metacarpal-bone`,
-);
-
-/**
- * The bones each region's films show, on the one body (its right side, like the topic models):
- * lit while a film is open on the whole body, and where the camera turns.
- */
-export const FILM_BONES: Record<XrayFilm['region'], string[]> = {
-  shoulder: rightBones('humerus', 'scapula', 'clavicle'),
-  elbow: rightBones('humerus', 'radius', 'ulna'),
-  wrist: rightBones('radius', 'ulna', ...CARPALS),
-  hand: rightBones(...CARPALS, ...METACARPALS),
-  hip: rightBones('hip-bone', 'femur'),
-  ankle: rightBones('tibia', 'fibula', 'talus', 'calcaneus'),
-};
-
-/** Who made the films, and their licence: shown under every film. */
-export const XRAY_CREDIT = 'Radiographs: Mikael Häggström, CC0, via Wikimedia Commons';
 
 const commons = (file: string) =>
   `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replaceAll(' ', '_'))}`;

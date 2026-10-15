@@ -17,6 +17,7 @@ import { BODY_MODEL, BODY_REGIONS } from '@/content/body';
 import { libraryTree } from '@/content/library';
 import { studioTopics } from '@/content/studio';
 import { TOPICS } from '@/content/topics';
+import { XRAYS } from '@/content/xrays';
 
 const capability = vi.hoisted(() => ({ supported: true }));
 // What the 3D view last received, so a test can tap the model or draw as a finger would.
@@ -77,6 +78,7 @@ async function renderStudio(initialTopic: string | null = null, initialTour = fa
       tree={libraryTree(TOPICS.filter((topic) => topic.subjectSlug === 'anatomy'))}
       regions={BODY_REGIONS}
       body={BODY_MODEL}
+      films={XRAYS}
       initialTopic={initialTopic}
       initialTour={initialTour}
     />,
