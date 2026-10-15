@@ -39,7 +39,10 @@ import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
 import { lowerLimbDermatomes } from './lower-limb-dermatomes';
+import { lowerLimbDevelopment } from './lower-limb-development';
 import { lowerLimbLymphatics } from './lower-limb-lymphatics';
+import { lowerLimbNerveInjuries } from './lower-limb-nerve-injuries';
+import { lowerLimbSurfaceMarking } from './lower-limb-surface-marking';
 import { lowerLimbVeins } from './lower-limb-veins';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
@@ -167,6 +170,9 @@ export const TOPICS: Topic[] = [
   lowerLimbLymphatics,
   lowerLimbDermatomes,
   footArches,
+  lowerLimbSurfaceMarking,
+  lowerLimbNerveInjuries,
+  lowerLimbDevelopment,
   oxygenCurve,
 ];
 

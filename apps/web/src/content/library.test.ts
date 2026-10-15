@@ -54,6 +54,7 @@ describe('libraryTree', () => {
     if (lowerLimb?.kind !== 'branch') throw new Error('no lower limb');
     expect(lowerLimb.children.map((section) => section.kind === 'branch' && section.label)).toEqual(
       [
+        'Introduction and development',
         'Front of thigh',
         'Medial side of thigh',
         'Gluteal region',
@@ -64,6 +65,8 @@ describe('libraryTree', () => {
         'Sole of foot',
         'Drainage and innervation',
         'Arches of foot',
+        'Surface marking and X-rays',
+        'Nerves, arteries and clinical terms',
       ],
     );
     const all = tree.flatMap(topicsUnder).map((topic) => topic.slug);
