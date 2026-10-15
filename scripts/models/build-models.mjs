@@ -42,13 +42,20 @@ import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
  * (CC BY-SA 4.0; see build-z-anatomy.mjs), for what BodyParts3D lacks, such as the thoracic nerves.
  * `clipX` and `clipZ` keep only the triangles whose centre lies in [min, max) along that axis.
  * `shift` moves a part by [x, y, z] millimetres, to sit a Z-Anatomy structure on the BodyParts3D
- * bones where the two models differ.
+ * bones where the two models differ. `warp` does it only low down: `shift` in full at and below
+ * `below` (Z), fading to nothing at `above`, with x turned outwards on each side; for parts that
+ * fit the ribs but not the pelvis.
  */
 // Pectoralis minor lies in front of the axillary artery from X -137 to -107 (measured from the
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
 const PEC_MINOR_X = { lateral: -137, medial: -107 };
 
 /** Parts from a Z-Anatomy file, from rows of [part id, Z-Anatomy names, ratio, extras]. */
+// Z-Anatomy's abdominal wall fits the BodyParts3D ribs but sits about 2.5 cm forward and low at
+// the pelvis: fitted on the inguinal ligaments and the lower ends of rectus abdominis and
+// pyramidalis against the hip bones (mean gap 25 mm before, about 8 after), and faded out between
+// the iliac crests and the umbilicus.
+const PELVIC_FIT = { warp: { shift: [3, 24, 16], below: 860, above: 1010 } };
 const zParts = (file, rows) =>
   rows.map(([id, names, ratio, extras]) => ({
     id,
@@ -1272,6 +1279,147 @@ export const MODELS = [
     ],
   },
   {
+    name: 'abdominal-wall',
+    // The anterior abdominal wall over its skeleton, both sides, with the right inguinal region in
+    // detail (abdomen batch 1: lumbar vertebrae, sacrum and bony pelvis; landmarks and regions;
+    // the wall's layers, muscles, rectus sheath and inguinal canal). BodyParts3D has only the
+    // external oblique of the wall's muscles, so they all come from Z-Anatomy; neither has a
+    // coccyx, a cremaster or a separate rectus sheath (the flat muscles' aponeuroses form it here).
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Bones.
+      ...[
+        ['first-lumbar-vertebra', 'first lumbar vertebra'],
+        ['second-lumbar-vertebra', 'second lumbar vertebra'],
+        ['third-lumbar-vertebra', 'third lumbar vertebra'],
+        ['fourth-lumbar-vertebra', 'fourth lumbar vertebra'],
+        ['fifth-lumbar-vertebra', 'fifth lumbar vertebra'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 0.4 })),
+      {
+        id: 'lumbar-discs',
+        concepts: ['first', 'second', 'third', 'fourth', 'fifth'].map(
+          (n) => `intervertebral disk of ${n} lumbar vertebra`,
+        ),
+        ratio: 0.5,
+      },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.4 },
+      { id: 'hip-bones', concepts: ['right hip bone', 'left hip bone'], ratio: 0.4 },
+      // The heads and necks of the femurs, in their sockets.
+      {
+        id: 'femurs',
+        concepts: ['right femur', 'left femur'],
+        ratio: 0.5,
+        clipZ: [700, Infinity],
+      },
+      {
+        id: 'lower-ribs',
+        concepts: ['seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'].map(
+          (n) => `${n} rib`,
+        ),
+        ratio: 0.15,
+      },
+      // The costal margin: the lower cartilages, and the sternum below the fifth cartilage.
+      {
+        id: 'costal-cartilages',
+        concept: 'costal cartilage',
+        ratio: 0.25,
+        clipZ: [-Infinity, 1240],
+      },
+      {
+        id: 'sternum',
+        concepts: ['body of sternum', 'xiphoid process'],
+        ratio: 0.5,
+        clipZ: [-Infinity, 1240],
+      },
+      // Muscles, from Z-Anatomy; psoas from BodyParts3D, on the lumbar vertebrae behind.
+      ...zParts('MuscularSystem100.fbx', [
+        [
+          'external-oblique',
+          ['Right external abdominal oblique muscle', 'Left external abdominal oblique muscle'],
+          0.06,
+        ],
+        [
+          'internal-oblique',
+          ['Right internal abdominal oblique muscle', 'Left internal abdominal oblique muscle'],
+          0.06,
+        ],
+        [
+          'transversus-abdominis',
+          ['Right transversus abdominis muscle', 'Left transversus abdominis muscle'],
+          0.05,
+        ],
+        [
+          'rectus-abdominis',
+          ['Right rectus abdominis muscle', 'Left rectus abdominis muscle'],
+          0.08,
+        ],
+        ['pyramidalis', ['Right pyramidalis muscle', 'Left pyramidalis muscle'], 0.3],
+        ['inguinal-ligament', ['Right inguinal ligament', 'Left inguinal ligament'], 0.3],
+        ['linea-alba', 'Linea alba', 1],
+        ['transversalis-fascia', 'Transversalis fascia', 0.1],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      { id: 'psoas-major', concepts: ['right psoas major', 'left psoas major'], ratio: 0.3 },
+      // Vessels of the wall, right side.
+      ...[
+        ['superior-epigastric-artery', 'right superior epigastric artery'],
+        ['musculophrenic-artery', 'right musculophrenic artery'],
+        ['inferior-epigastric-artery', 'right inferior epigastric artery'],
+        ['inferior-epigastric-vein', 'right inferior epigastric vein'],
+        ['superficial-epigastric-artery', 'right superficial epigastric artery'],
+        ['superficial-epigastric-vein', 'right superficial epigastric vein'],
+        ['external-iliac-artery', 'right external iliac artery'],
+        ['external-iliac-vein', 'right external iliac vein'],
+        ['testicular-artery', 'right testicular artery'],
+        ['testicular-vein', 'right testicular vein'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 0.5 })),
+      {
+        id: 'femoral-vessels',
+        concepts: ['right femoral artery', 'right femoral vein'],
+        ratio: 0.5,
+        clipZ: [700, Infinity],
+      },
+      // Nerves of the wall, from Z-Anatomy: the lower intercostal nerves in the wall only.
+      ...zParts('NervousSystem100.fbx', [
+        [
+          'thoracoabdominal-nerves',
+          ['Right intercostal nerves', 'Left intercostal nerves'],
+          0.06,
+          { clipZ: [880, 1180] },
+        ],
+        [
+          'iliohypogastric-nerve',
+          ['Right iliohypogastric nerve', 'Left iliohypogastric nerve'],
+          0.3,
+        ],
+        ['ilioinguinal-nerve', ['Right ilio-inguinal nerve', 'Left ilio-inguinal nerve'], 0.3],
+        [
+          'genitofemoral-nerve',
+          ['Right genitofemoral nerve', 'Right genital branch of genitofemoral nerve'],
+          0.3,
+        ],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      // The right testis and the ductus deferens, which runs through the inguinal canal.
+      ...visceral([
+        ['testis', 'Right testis', 0.5],
+        ['epididymis', 'Right epididymis', 0.5],
+        ['ductus-deferens', 'Right ductus deferens', 0.3],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      // The nine regions of the front of the abdomen, as patches of skin.
+      ...zParts('Regions of human body100.fbx', [
+        ['epigastric-region', ['Right epigastric region', 'Left epigastric region'], 1],
+        ['right-hypochondriac-region', 'Right hypochondriac region', 1],
+        ['left-hypochondriac-region', 'Left hypochondriac region', 1],
+        ['umbilical-region', ['Right umbilical region', 'Left umbilical region'], 1],
+        ['right-lumbar-region', 'Right lateral region of abdomen', 1],
+        ['left-lumbar-region', 'Left lateral region of abdomen', 1],
+        ['hypogastric-region', ['Right hypogastric region', 'Left hypogastric region'], 1],
+        ['right-iliac-region', 'Right inguinal region', 1],
+        ['left-iliac-region', 'Left inguinal region', 1],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+    ],
+  },
+  {
     name: 'body',
     maxTriangles: 50_000,
     // The body is seen whole, so it tolerates coarser surfaces.
@@ -1284,6 +1432,21 @@ export const MODELS = [
 ];
 
 const MAX_BYTES = 1.5 * 1024 * 1024;
+
+/**
+ * Moves points by `shift` at and below Z `below`, by less and less up to `above`, and not above it;
+ * x moves outwards from the midline on either side.
+ */
+export function warped(positions, { shift: [x, y, z], below, above }) {
+  const out = Float32Array.from(positions);
+  for (let i = 0; i < out.length; i += 3) {
+    const share = Math.min(1, Math.max(0, (above - out[i + 2]) / (above - below)));
+    out[i] += share * x * Math.sign(out[i]);
+    out[i + 1] += share * y;
+    out[i + 2] += share * z;
+  }
+  return out;
+}
 
 /** Vertex positions and triangle indices from a BodyParts3D OBJ ("f a//a b//b c//c"). */
 export function parseObj(text) {
@@ -1388,6 +1551,7 @@ async function build(model, sourceDir, concepts, io) {
     if (part.clipX) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipX, 0));
     if (part.clipZ) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipZ, 2));
     if (part.shift) positions = positions.map((value, index) => value + part.shift[index % 3]);
+    if (part.warp) positions = warped(positions, part.warp);
     const primitive = document
       .createPrimitive()
       .setMaterial(material)

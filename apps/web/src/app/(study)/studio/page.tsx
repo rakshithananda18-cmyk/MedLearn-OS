@@ -4,6 +4,7 @@ import { BODY_MODEL, BODY_REGIONS } from '@/content/body';
 import { libraryTree } from '@/content/library';
 import { studioTopics } from '@/content/studio';
 import { TOPICS } from '@/content/topics';
+import { XRAYS } from '@/content/xrays';
 import { Studio } from '@/features/studio/Studio';
 
 export const metadata: Metadata = { title: '3D studio | MedLearn OS' };
@@ -21,6 +22,7 @@ export default async function StudioPage({ searchParams }: Props) {
       tree={libraryTree(TOPICS.filter((topic) => topic.subjectSlug === 'anatomy'))}
       regions={BODY_REGIONS}
       body={BODY_MODEL}
+      films={XRAYS}
       initialTopic={typeof topic === 'string' ? topic : null}
       initialTour={tour === '1'}
     />

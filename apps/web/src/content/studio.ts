@@ -1,6 +1,8 @@
 import type { StudioTopic } from '@/features/studio/knowledge';
 
+import { movementsFor } from './joint-movements';
 import { DRILL_MINUTES, hasDrill, posterOf, TOPICS } from './topics';
+import { filmsFor } from './xrays';
 
 /** Every topic as the 3D studio sees it: its model, diagram and the lesson text it draws on. */
 export function studioTopics(): StudioTopic[] {
@@ -25,5 +27,7 @@ export function studioTopics(): StudioTopic[] {
             nodeIds,
           }))
         : [],
+    filmIds: filmsFor(topic.slug).map((film) => film.id),
+    movements: movementsFor(topic.slug),
   }));
 }

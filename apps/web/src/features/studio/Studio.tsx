@@ -10,8 +10,9 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { bestMatches, searchTerms } from '@/content/match';
-import { MOVEMENTS, movementsFor, type Twist } from '@/content/movements';
-import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
+import { MOVEMENTS, type Twist } from '@/content/movements';
+import { FILM_BONES } from '@/content/xray-basics';
+import type { XrayFilm } from '@/content/xrays';
 import { useProgress } from '@/features/progress/store';
 import { SearchBox, type SearchGroup } from '@/features/search/SearchBox';
 import { useHydrated } from '@/features/shell/media';
@@ -93,6 +94,8 @@ export interface StudioProps {
   regions: BodyRegionInfo[];
   /** The whole body, shown when no topic is open. */
   body: Model3D;
+  /** Every X-ray film, in order; each topic names its own. */
+  films: XrayFilm[];
   initialTopic: string | null;
   /** Start the open topic's guided tour straight away (from "Watch the 3D tour"). */
   initialTour?: boolean;
@@ -120,6 +123,7 @@ function useStudio({
   topics,
   regions,
   body,
+  films,
   initialTopic,
   initialTour = false,
 }: Readonly<StudioProps>) {
@@ -170,7 +174,7 @@ function useStudio({
       }
     },
     // A topic's films, or on the whole body every film, each beside the bones it shows.
-    films: topic ? filmsFor(topic.slug) : XRAYS,
+    films: topic ? films.filter((item) => topic.filmIds.includes(item.id)) : films,
     settings,
     changeSettings: (next: StudioSettings) => {
       setSettings(next);
@@ -395,7 +399,7 @@ function StudioModel({
   const moving = session.movement;
   const movement = topic ? undefined : MOVEMENTS.find((item) => item.id === moving?.id);
   const joint = useMemo(
-    () => (topic ? movementsFor(topic.slug).find((item) => item.id === moving?.id) : undefined),
+    () => topic?.movements.find((item) => item.id === moving?.id),
     [topic, moving?.id],
   );
   const parts = useMemo(() => {
@@ -495,7 +499,7 @@ function Tools({ studio }: Readonly<{ studio: StudioState }>) {
       onSection={() => studio.togglePanel('section')}
       // Movements are measured on the whole body's skeleton, and on the joints model.
       movement={
-        studio.topic && movementsFor(studio.topic.slug).length === 0
+        studio.topic && studio.topic.movements.length === 0
           ? null
           : session.movement !== null || session.panel === 'movement'
       }
@@ -714,7 +718,7 @@ function jointMovements(studio: StudioState) {
   const parts = studio.model.parts;
   const named = (ids: string[]) =>
     ids.flatMap((id) => parts.find((part) => part.id === id)?.name ?? []);
-  return movementsFor(studio.topic?.slug ?? '').map((movement) => ({
+  return (studio.topic?.movements ?? []).map((movement) => ({
     ...movement,
     taut: { start: named(movement.taut.start), end: named(movement.taut.end) },
   }));
@@ -730,7 +734,7 @@ function Moves({ studio }: Readonly<{ studio: StudioState }>) {
       movement={session.movement}
       onChange={(movement) => {
         // Choosing a joint in a topic turns the camera to the view it is best watched from.
-        const view = movementsFor(studio.topic?.slug ?? '').find(
+        const view = studio.topic?.movements.find(
           (item) => item.id === movement?.id && item.id !== session.movement?.id,
         )?.stop;
         const stopIndex = studio.model.stops.findIndex((stop) => stop.id === view);

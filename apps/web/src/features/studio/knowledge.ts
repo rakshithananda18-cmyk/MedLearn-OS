@@ -9,6 +9,8 @@ import type {
 } from '@medlearn/schemas';
 import { affectedBy, pathThrough } from '@medlearn/visuals';
 
+import type { JointMovement } from '@/content/movements';
+
 /** What the studio knows about a topic: its model and the lesson text it can draw on. */
 export interface StudioTopic {
   slug: string;
@@ -26,6 +28,10 @@ export interface StudioTopic {
   diagram: PathDiagram | null;
   lesson: Array<Pick<LessonStep, 'title' | 'body' | 'focus'>>;
   lesions: Array<Pick<Lesion, 'label' | 'explanation' | 'nodeIds'>>;
+  /** The X-ray films that go with the topic, by id. */
+  filmIds: string[];
+  /** The joints it can move in its own model. */
+  movements: JointMovement[];
 }
 
 export interface StructureInfo {

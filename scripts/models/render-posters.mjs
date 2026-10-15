@@ -108,6 +108,14 @@ export const POSTERS = [
   { name: 'lower-limb-xrays', path: '/studio?topic=lower-limb-xrays' },
   { name: 'lower-limb-nerve-injuries', path: '/studio?topic=lower-limb-nerve-injuries' },
   { name: 'lower-limb-development', path: '/studio?topic=lower-limb-development' },
+  { name: 'lumbar-vertebrae-sacrum', path: '/studio?topic=lumbar-vertebrae-sacrum' },
+  { name: 'intervertebral-disc', path: '/studio?topic=intervertebral-disc' },
+  { name: 'bony-pelvis', path: '/studio?topic=bony-pelvis' },
+  { name: 'abdominal-regions', path: '/studio?topic=abdominal-regions' },
+  { name: 'abdominal-wall-superficial', path: '/studio?topic=abdominal-wall-superficial' },
+  { name: 'abdominal-wall-muscles', path: '/studio?topic=abdominal-wall-muscles' },
+  { name: 'rectus-sheath', path: '/studio?topic=rectus-sheath' },
+  { name: 'inguinal-canal', path: '/studio?topic=inguinal-canal' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

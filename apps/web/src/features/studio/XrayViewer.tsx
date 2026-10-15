@@ -4,7 +4,8 @@ import { cx, Icon, IconButton } from '@medlearn/ui';
 import { Check, Contrast, ExternalLink, X } from '@medlearn/ui/icons';
 import { useState } from 'react';
 
-import { XRAY_CREDIT, type XrayFilm } from '@/content/xrays';
+import { XRAY_CREDIT } from '@/content/xray-basics';
+import type { XrayFilm } from '@/content/xrays';
 
 /**
  * A topic's radiographs, one at a time: the film with its structures numbered (when names are on),
