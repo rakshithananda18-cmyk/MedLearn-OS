@@ -1,6 +1,6 @@
 'use client';
 
-import { topicMastery } from '@medlearn/core';
+import { buildTodayPlan, type TodayItem, topicMastery } from '@medlearn/core';
 import { cx, Display, Drawer, Eyebrow, Icon, type IconGlyph, Tooltip } from '@medlearn/ui';
 import { Activity, BookMarked, BookOpen, Droplet, PersonStanding } from '@medlearn/ui/icons';
 import Link from 'next/link';
@@ -14,6 +14,14 @@ import { useHydrated, useWide } from '@/features/shell/media';
 
 import { ProgressStrip } from './ProgressStrip';
 import { type LibrarySubject, nextTopic, SubjectTopics } from './SubjectTopics';
+
+/** What today's plan has the student do with a topic, beside its name in the list. */
+const TODAY: Record<Exclude<TodayItem['kind'], 'review' | 'learn'>, string> = {
+  practice: 'Practise today',
+  drill: 'Draw today',
+  revisit: 'Revisit today',
+  goal: 'For your test',
+};
 import { type PreviewStatus, TopicPreview, type TopicPreviewData } from './TopicPreview';
 
 const SUBJECT_ICON: Record<string, IconGlyph> = {
@@ -115,6 +123,19 @@ export function Library({
   const next = nextTopic(subjects, learnt);
   const all = subjects.flatMap((subject) => subject.nodes.flatMap(topicsUnder));
   const now = new Date();
+  // The day's plan as Today builds it (the previews keep Today's topic order), so each row can say
+  // what is due today.
+  const plan = buildTodayPlan(
+    Object.values(previews).map((item) => item.topic),
+    progress,
+    now,
+  );
+  // A topic can be in the plan more than once (revisit, practise, draw): the first comes first.
+  const today = new Map<string, string>();
+  for (const item of plan.items) {
+    if (item.kind === 'review' || item.kind === 'learn' || today.has(item.topicSlug)) continue;
+    today.set(item.topicSlug, TODAY[item.kind]);
+  }
   const mastery = all.flatMap((topic) => {
     const summary = previews[topic.slug]?.topic;
     return summary ? [topicMastery(summary, progress, now)] : [];
@@ -187,6 +208,7 @@ export function Library({
                 next,
                 selected: chosen,
                 mastery: new Map(mastery.map((item) => [item.slug, item])),
+                today,
                 onSelect: pick,
               }}
             />

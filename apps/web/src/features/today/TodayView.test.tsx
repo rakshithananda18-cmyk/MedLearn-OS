@@ -27,6 +27,23 @@ function seed(state: object) {
 }
 
 describe('TodayView', () => {
+  it('greets the student by name for the hour, and cheers once the day’s minutes are in', () => {
+    act(() =>
+      saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true, name: 'Asha Rao' }),
+    );
+    const { unmount } = render(<TodayView topics={PLANNABLE_TOPICS} />);
+    expect(
+      screen.getByText(/^(Good (morning|afternoon|evening)|Still up), Asha$/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Goal met/)).not.toBeInTheDocument();
+    unmount();
+
+    act(() => completeLesson('pectoral-region', 25));
+    render(<TodayView topics={PLANNABLE_TOPICS} />);
+    expect(screen.getByRole('heading', { name: 'Goal met, well done' })).toBeInTheDocument();
+    expect(screen.getByText(/Anything more today is a bonus/)).toBeInTheDocument();
+  });
+
   it('asks a student with a plan which books they follow, until they choose', () => {
     act(() => saveProfile({ year: 1, examDate: null, dailyMinutes: 20, adult: true }));
     const { unmount } = render(<TodayView topics={PLANNABLE_TOPICS} />);
