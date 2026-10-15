@@ -1,5 +1,5 @@
 import type { TodayItem } from '@medlearn/core';
-import { buttonClasses, cx, Eyebrow, Icon, Text } from '@medlearn/ui';
+import { buttonClasses, cx, Eyebrow, Icon, ringFill, Text } from '@medlearn/ui';
 import { Box, Check, ChevronRight, Flame, Play } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -308,8 +308,8 @@ export function TimeRing({
             fill="none"
             strokeWidth="9"
             strokeLinecap="round"
-            strokeDasharray={`${share * circumference} ${circumference}`}
-            className="stroke-primary"
+            style={ringFill(circumference, share)}
+            className="ring-fill stroke-primary"
           />
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center">

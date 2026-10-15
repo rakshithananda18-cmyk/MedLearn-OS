@@ -32,6 +32,7 @@ export {
   type ProgressBarProps,
   ProgressRing,
   type ProgressRingProps,
+  ringFill,
 } from './Progress';
 export { QuestionCard, type QuestionCardProps } from './QuestionCard';
 export { RecallCard, type RecallCardProps, type RecallRating } from './RecallCard';
