@@ -253,7 +253,7 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         </div>
       </header>
 
-      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
+      <div className="stagger flex min-w-0 flex-col gap-4 xl:col-span-2">
         {progress.profile ? null : (
           <Prompt
             id="setup-title"
@@ -302,7 +302,10 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         ) : null}
       </div>
 
-      <aside aria-label="Your progress" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
+      <aside
+        aria-label="Your progress"
+        className="stagger flex min-w-0 flex-col gap-4 xl:sticky xl:top-8"
+      >
         <StreakCard streak={streak} best={bestStreak(progress.activity)} week={week} />
         <TimeRing minutes={minutesToday} goal={plan.dailyMinutes} />
         <GoalsCard goals={upcomingGoals(progress, now)} />

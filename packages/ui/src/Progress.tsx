@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 function percentOf(value: number, max: number): number {
   if (max <= 0) return 0;
   return Math.min(100, Math.max(0, Math.round((value / max) * 100)));
@@ -34,6 +36,14 @@ export function ProgressBar({ value, max = 100, label, showValue = false }: Prog
       </div>
     </div>
   );
+}
+
+/** The custom properties a `ring-fill` arc reads: its whole length, and the part left empty. */
+export function ringFill(circumference: number, share: number): CSSProperties {
+  return {
+    '--ring-full': `${circumference}`,
+    '--ring-gap': `${circumference * (1 - Math.min(1, Math.max(0, share)))}`,
+  } as CSSProperties;
 }
 
 const RING = {
@@ -90,9 +100,8 @@ export function ProgressRing({ value, max = 100, label, size = 'md' }: ProgressR
           fill="none"
           strokeWidth={stroke}
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - percent / 100)}
-          className="stroke-primary transition-all duration-250 ease-standard"
+          style={ringFill(circumference, percent / 100)}
+          className="ring-fill stroke-primary"
         />
       </svg>
       {size === 'sm' ? null : (

@@ -552,6 +552,50 @@
   /* A drawer rising from the bottom and its scrim, animated in and out as Radix opens and closes
      them (it waits for the closing animation before removing them). Transform and opacity only,
      so the phone's graphics chip does the work. */
+  /* A progress ring's arc fills from empty when it first appears, then eases to each new value.
+     Its circle sets --ring-full (the circumference) and --ring-gap (what is left unfilled). */
+  .ring-fill {
+    stroke-dasharray: var(--ring-full);
+    stroke-dashoffset: var(--ring-gap);
+    transition: stroke-dashoffset 0.9s var(--ease-arrive);
+  }
+
+  @starting-style {
+    .ring-fill {
+      stroke-dashoffset: var(--ring-full);
+    }
+  }
+
+  /* Cards in a column rise in one after another as the screen opens. */
+  .stagger > * {
+    animation: var(--animate-rise);
+  }
+
+  .stagger > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .stagger > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .stagger > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .stagger > :nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+
+  /* Buttons give a little under a finger or a click, and spring back. */
+  .press {
+    transition-property: color, background-color, border-color, box-shadow, transform;
+  }
+
+  .press:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
   .drawer[data-state='open'] {
     animation: sheet-in 0.32s var(--ease-arrive) both;
   }

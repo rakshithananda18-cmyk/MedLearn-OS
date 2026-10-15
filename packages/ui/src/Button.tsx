@@ -8,7 +8,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'md' | 'sm';
 
 const BASE =
-  'inline-flex select-none items-center justify-center gap-2 rounded-md font-semibold transition-colors duration-150 ease-standard disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex select-none items-center justify-center gap-2 rounded-md font-semibold press duration-150 ease-standard disabled:cursor-not-allowed disabled:opacity-50';
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-on-primary hover:bg-primary-hover',
