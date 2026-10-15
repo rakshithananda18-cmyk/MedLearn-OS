@@ -20,6 +20,8 @@ describe('X-ray films', () => {
         expect(mark.y).toBeLessThan(1);
       }
       expect(film.source).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+      // Only the CC0 films share the default credit; any other licence names its own.
+      if (film.credit) expect(film.credit).toMatch(/CC BY/);
     }
   });
 
@@ -30,10 +32,25 @@ describe('X-ray films', () => {
       'elbow-external-oblique',
       'elbow-internal-oblique',
     ]);
-    expect(filmsFor('upper-limb-xrays')).toHaveLength(XRAYS.length);
+    expect(filmsFor('upper-limb-xrays')).toHaveLength(11);
+    expect(filmsFor('lower-limb-xrays').map((film) => film.id)).toEqual([
+      'hip-ap',
+      'ankle-ap',
+      'ankle-lateral',
+      'ankle-oblique',
+    ]);
+    expect(filmsFor('upper-limb-xrays').length + filmsFor('lower-limb-xrays').length).toBe(
+      XRAYS.length,
+    );
     expect(filmsFor('brachial-plexus')).toEqual([]);
     const slugs = new Set(TOPICS.map((topic) => topic.slug));
-    for (const topic of ['shoulder-joint', 'carpal-tunnel', 'hand-muscles']) {
+    for (const topic of [
+      'shoulder-joint',
+      'carpal-tunnel',
+      'hand-muscles',
+      'hip-joint',
+      'foot-joints',
+    ]) {
       expect(slugs).toContain(topic);
       expect(filmsFor(topic).length).toBeGreaterThan(0);
     }

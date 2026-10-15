@@ -405,6 +405,11 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('JNczJx2ju3I', 'Arteries of the lower limb: an overview', ANATOMY_ZONE, 315),
     video('6EsHOruv2SM', 'Feeling the lower limb pulses', 'Geeky Medics', 130),
   ],
+  'lower-limb-xrays': [
+    video('baiuVGGwXmQ', 'Lower limb X-rays: hip, knee, ankle and foot', 'Anatomy Decoded', 445),
+    video('2fNmJHQYHMs', 'How to read a hip X-ray', 'Medicine Made Simple', 677),
+    video('OqXgq7C_CYk', 'Interpreting X-rays of the knee', 'TeachMeAnatomy', 706),
+  ],
   'lower-limb-nerve-injuries': [
     video('TpyGVLHp-g0', 'Lower limb nerve injuries', 'Sam Webster', 976),
     video('DnBJhTfUVgs', 'Foot drop: common peroneal nerve injury', EBRAHEIM, 403),
