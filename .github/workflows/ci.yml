@@ -34,6 +34,9 @@ jobs:
     # Fail fast instead of GitHub's 6-hour default if anything hangs.
     timeout-minutes: 20
     steps:
+      # Supabase's ports (54320-54329) sit in Linux's range for outgoing connections, so an image
+      # download could take 54322 and the database could not start. Reserve them before anything runs.
+      - run: sudo sysctl -w net.ipv4.ip_local_reserved_ports=54320-54329
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -56,6 +59,9 @@ jobs:
       matrix:
         project: [phone, tablet, desktop]
     steps:
+      # Supabase's ports (54320-54329) sit in Linux's range for outgoing connections, so an image
+      # download could take 54322 and the database could not start. Reserve them before anything runs.
+      - run: sudo sysctl -w net.ipv4.ip_local_reserved_ports=54320-54329
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
