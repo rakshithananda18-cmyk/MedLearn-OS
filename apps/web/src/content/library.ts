@@ -71,6 +71,8 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
   abdomen: {
     15: 'Introduction and osteology',
     16: 'Anterior abdominal wall',
+    17: 'Male external genital organs',
+    18: 'Abdominal cavity and peritoneum',
   },
 };
 

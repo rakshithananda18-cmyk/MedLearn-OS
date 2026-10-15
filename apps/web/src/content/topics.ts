@@ -48,6 +48,7 @@ import { kneeJoint } from './knee-joint';
 import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
+import { lesserSac } from './lesser-sac';
 import { lowerLimbDermatomes } from './lower-limb-dermatomes';
 import { lowerLimbDevelopment } from './lower-limb-development';
 import { lowerLimbLymphatics } from './lower-limb-lymphatics';
@@ -65,7 +66,11 @@ import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pectoralRegion } from './pectoral-region';
+import { penis } from './penis';
 import { pericardium } from './pericardium';
+import { peritonealFolds } from './peritoneal-folds';
+import { peritonealSpaces } from './peritoneal-spaces';
+import { peritoneum } from './peritoneum';
 import { plantarVesselsNerves } from './plantar-vessels-nerves';
 import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
@@ -76,6 +81,7 @@ import { rectusSheath } from './rectus-sheath';
 import { ribs } from './ribs';
 import { scapularSpaces } from './scapular-spaces';
 import { sciaticNerveThigh } from './sciatic-nerve-thigh';
+import { scrotumTestis } from './scrotum-testis';
 import { shoulderGirdle } from './shoulder-girdle';
 import { shoulderJoint } from './shoulder-joint';
 import { skinVeinsLymph } from './skin-veins-lymph';
@@ -85,6 +91,7 @@ import { soleSkinFascia } from './sole-skin-fascia';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { surfaceMarking } from './surface-marking';
 import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
+import { testisDescent } from './testis-descent';
 import { thighFrontMuscles } from './thigh-front-muscles';
 import { thighMedial } from './thigh-medial';
 import { thighSuperficial } from './thigh-superficial';
@@ -199,6 +206,13 @@ export const TOPICS: Topic[] = [
   abdominalWallMuscles,
   rectusSheath,
   inguinalCanal,
+  penis,
+  scrotumTestis,
+  testisDescent,
+  peritoneum,
+  peritonealFolds,
+  lesserSac,
+  peritonealSpaces,
   oxygenCurve,
 ];
 

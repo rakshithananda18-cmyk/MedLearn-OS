@@ -207,6 +207,19 @@
   --color-anat-capsule: #b7cbd8;
   --color-anat-cartilage: #6db6c6;
   --color-anat-taut: #d9822b;
+  /* The abdominal organs, each its own colour so the viscera read apart in 3D. */
+  --color-viscus-liver: #8a3b2f;
+  --color-viscus-gallbladder: #5e8c4a;
+  --color-viscus-stomach: #d98f8a;
+  --color-viscus-spleen: #6b3a58;
+  --color-viscus-pancreas: #dcb877;
+  --color-viscus-small-bowel: #e3a7a2;
+  --color-viscus-colon: #c08a6c;
+  --color-viscus-kidney: #9a4b3d;
+  --color-viscus-suprarenal: #d9a441;
+  --color-viscus-ureter: #e2c47c;
+  --color-viscus-bladder: #d6c56c;
+  --color-viscus-omentum: #ecd27c;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;

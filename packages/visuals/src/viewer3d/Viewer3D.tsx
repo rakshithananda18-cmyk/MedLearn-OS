@@ -541,12 +541,15 @@ function Parts({
       node.visible = !hiddenKinds.has(part.kind) && !hiddenIds.has(part.id);
       const lit = highlight.has(part.id);
       const opacity =
-        PART_OPACITY[part.kind] * (selecting && !lit ? DIMMED : 1) * (xray && !lit ? XRAY : 1);
+        (part.opacity ?? PART_OPACITY[part.kind]) *
+        (selecting && !lit ? DIMMED : 1) *
+        (xray && !lit ? XRAY : 1);
       node.traverse((child) => {
         const mesh = child as Mesh;
         if (!mesh.isMesh) return;
         if (!mesh.geometry.getAttribute('normal')) mesh.geometry.computeVertexNormals();
-        mesh.material = material(tokenColour(PART_COLOUR[part.kind]), lit, opacity, sectioned);
+        const colour = tokenColour(part.colour ?? PART_COLOUR[part.kind]);
+        mesh.material = material(colour, lit, opacity, sectioned);
         mesh.userData.partId = part.id;
       });
     }

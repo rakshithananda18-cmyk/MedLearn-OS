@@ -5,11 +5,11 @@ import type { CameraStop, ModelPart, ModelTrace } from '@medlearn/schemas';
 // millimetres, X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const ABDOMINAL_WALL_MODEL_SRC = '/models/abdominal-wall.glb?v=1';
+export const ABDOMINAL_WALL_MODEL_SRC = '/models/abdominal-wall.glb?v=2';
 
 /** Credit for the model, shown wherever it is. */
 export const ABDOMINAL_WALL_MODEL_CREDIT =
-  'Bones and vessels: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Muscles, inguinal ligament, linea alba, fascia transversalis, nerves, testis and the abdominal regions: Z-Anatomy, CC BY-SA 4.0, moved low down to sit on the BodyParts3D pelvis. Neither has a coccyx, a cremaster or a separate rectus sheath: the aponeuroses of the flat muscles form the sheath here.';
+  'Bones, vessels and the penis: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Muscles, inguinal ligament, linea alba, fascia transversalis, nerves, testis and the abdominal regions: Z-Anatomy, CC BY-SA 4.0, moved low down to sit on the BodyParts3D pelvis. Neither has a coccyx, a cremaster or a separate rectus sheath: the aponeuroses of the flat muscles form the sheath here.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what a
@@ -230,15 +230,46 @@ const PARTS = {
       'Its genital branch runs in the spermatic cord and supplies the cremaster: the motor side of the cremasteric reflex.',
   },
   testis: {
-    name: 'Right testis',
+    name: 'Testes',
     kind: 'organ',
     about:
-      'It develops in the lumbar region and descends through the inguinal canal behind the processus vaginalis, which is why an open processus means an indirect hernia.',
+      'Each develops in the lumbar region and descends through the inguinal canal behind the processus vaginalis, which is why an open processus means an indirect hernia.',
   },
   epididymis: {
-    name: 'Right epididymis',
+    name: 'Epididymis',
     kind: 'organ',
-    about: 'Along the back of the testis, continuing as the ductus deferens.',
+    about:
+      'A coiled tube along the lateral part of the back of each testis: head (the efferent ductules), body and tail, continuing as the ductus deferens. It stores the spermatozoa.',
+  },
+  'corpora-cavernosa': {
+    name: 'Corpora cavernosa',
+    kind: 'organ',
+    about:
+      'The two dorsal masses of erectile tissue, continuing forward from the crura on the pubic arch and ending under the glans. Each has a deep artery whose helicine branches fill it in erection.',
+  },
+  'corpus-spongiosum': {
+    name: 'Corpus spongiosum',
+    kind: 'organ',
+    about:
+      'The median erectile mass on the underside, continuing forward from the bulb, carrying the urethra, and expanding into the glans.',
+  },
+  'glans-penis': {
+    name: 'Glans penis',
+    kind: 'organ',
+    about:
+      'The expanded end of the corpus spongiosum; its rim is the corona, its lymph drains to the deep inguinal nodes (Cloquet’s node).',
+  },
+  'dorsal-arteries-of-penis': {
+    name: 'Dorsal arteries of the penis',
+    kind: 'artery',
+    about:
+      'Branches of the internal pudendal artery on the dorsum, deep to Buck’s fascia, either side of the deep dorsal vein, to the glans and the skin.',
+  },
+  'deep-dorsal-vein': {
+    name: 'Deep dorsal vein of the penis',
+    kind: 'vein',
+    about:
+      'Unpaired, in the midline deep to Buck’s fascia; it passes under the symphysis to the prostatic plexus.',
   },
   'ductus-deferens': {
     name: 'Ductus deferens',
@@ -463,6 +494,39 @@ export const PELVIS_ABOVE: CameraStop = {
     'Looking down into the true pelvis: the sacral promontory behind, the arcuate lines at the sides and the pubic crests in front ring the inlet.',
   target: [0, -70, 840],
   position: [0, -260, 1520],
+};
+
+export const MALE_GENITALIA: AbdominalWallPartId[] = [
+  'testis',
+  'epididymis',
+  'ductus-deferens',
+  'corpora-cavernosa',
+  'corpus-spongiosum',
+  'glans-penis',
+  'dorsal-arteries-of-penis',
+  'deep-dorsal-vein',
+  'testicular-artery',
+  'testicular-vein',
+];
+
+/** The external genitalia from the front. */
+export const GENITALIA_FRONT: CameraStop = {
+  id: 'genitalia-front',
+  title: 'The external genitalia from the front',
+  description:
+    'The penis below the pubic symphysis, the testes below and behind it, and each ductus deferens climbing from the epididymis to the superficial inguinal ring.',
+  target: [0, -150, 715],
+  position: [0, -640, 780],
+};
+
+/** The penis and testis from the side. */
+export const GENITALIA_SIDE: CameraStop = {
+  id: 'genitalia-side',
+  title: 'From the side',
+  description:
+    'The corpora cavernosa above, the corpus spongiosum below with the glans at its end; the testis hangs behind, the epididymis on its back.',
+  target: [0, -150, 715],
+  position: [-600, -190, 740],
 };
 
 /** The right inguinal region, close. */
