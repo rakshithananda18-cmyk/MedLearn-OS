@@ -1,6 +1,8 @@
+import { createServer } from 'node:net';
+
 import { describe, expect, it, vi } from 'vitest';
 
-import { lanAddresses, toShellCommand, waitFor } from './cli.mjs';
+import { isPortFree, lanAddresses, toShellCommand, waitFor } from './cli.mjs';
 import { upsertEnvText } from './env-file.mjs';
 
 describe('toShellCommand', () => {
@@ -53,6 +55,17 @@ describe('waitFor', () => {
 
   it('resolves false after the timeout', async () => {
     await expect(waitFor(() => false, { timeoutMs: 20, intervalMs: 5 })).resolves.toBe(false);
+  });
+});
+
+describe('isPortFree', () => {
+  it('is false while a server listens on the port and true once it closes', async () => {
+    const server = createServer();
+    await new Promise((resolve) => server.listen(0, '0.0.0.0', resolve));
+    const { port } = server.address();
+    await expect(isPortFree(port)).resolves.toBe(false);
+    await new Promise((resolve) => server.close(resolve));
+    await expect(isPortFree(port)).resolves.toBe(true);
   });
 });
 

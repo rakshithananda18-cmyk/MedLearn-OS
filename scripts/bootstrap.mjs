@@ -1,7 +1,7 @@
 // One-time (and repeatable) local setup: checks prerequisites, starts the local
 // Supabase stack, writes env files from it, rebuilds the database with seed data, and
 // installs the browser used by end-to-end tests. Re-running resets local data only.
-import { capture, fail, requireNode, run, step } from './lib/cli.mjs';
+import { capture, fail, isPortFree, requireNode, run, step, waitFor } from './lib/cli.mjs';
 import { ensureDocker } from './lib/docker.mjs';
 import { upsertEnvFile } from './lib/env-file.mjs';
 
@@ -22,11 +22,13 @@ await ensureDocker();
 // it runs. Add others back there when a milestone needs them (storage for media, studio for a GUI).
 step('Starting the local Supabase stack (first run downloads images; this can take a while)');
 if (run('pnpm', ['db:start'], { allowFailure: true }) !== 0) {
-  // Postgres's port 54322 sits in Linux's range for outgoing connections, so on a CI runner a
-  // download can briefly hold it ("address already in use"). A clean stop and one more try gets
-  // through.
-  step('The database did not start; stopping it and trying once more');
+  // Postgres's port 54322 sits in the range the system hands out for outgoing connections, so an
+  // image download can hold it ("address already in use"), and a closed connection keeps it for
+  // about a minute. CI reserves the ports (see ci.yml); here, show what holds it, wait, retry once.
+  step('The database did not start; waiting for its port 54322, then trying once more');
+  if (process.platform === 'linux') run('ss', ['-tan', 'sport = :54322'], { allowFailure: true });
   run('pnpm', ['exec', 'supabase', 'stop'], { allowFailure: true });
+  await waitFor(() => isPortFree(54322), { timeoutMs: 120_000, intervalMs: 2000 });
   run('pnpm', ['db:start']);
 }
 

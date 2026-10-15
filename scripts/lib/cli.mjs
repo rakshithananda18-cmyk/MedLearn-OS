@@ -1,5 +1,6 @@
 // Small helpers shared by the developer scripts (bootstrap, start).
 import { spawn, spawnSync } from 'node:child_process';
+import { createServer } from 'node:net';
 import { networkInterfaces } from 'node:os';
 
 export const isWindows = process.platform === 'win32';
@@ -68,6 +69,15 @@ export async function waitFor(check, { timeoutMs, intervalMs = 1000 }) {
     if (Date.now() + intervalMs > deadline) return false;
     await sleep(intervalMs);
   }
+}
+
+/** True when nothing on this computer holds `port`, so a server (or Docker) could listen on it. */
+export function isPortFree(port) {
+  return new Promise((resolve) => {
+    const server = createServer()
+      .once('error', () => resolve(false))
+      .listen(port, '0.0.0.0', () => server.close(() => resolve(true)));
+  });
 }
 
 /** Stops a spawned process and everything it started. */
