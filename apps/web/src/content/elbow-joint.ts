@@ -240,6 +240,7 @@ export const elbowJoint: Topic = {
       title: 'Carrying angle',
       body: 'With the elbow straight and the palm forward, the forearm points slightly away from the body, about 10 to 15 degrees, because the trochlea projects lower than the capitulum. It keeps a carried load clear of the hip, is a little larger in women, and vanishes when the elbow bends or the forearm is pronated.',
       focus: ['trochlea', 'ulna'],
+      interactive: 'carrying',
     },
     {
       id: 'movements',

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
+import { hipJoint } from '@/content/hip-joint';
 import { oxygenCurve } from '@/content/oxygen-curve';
 import { resetProgress } from '@/features/progress/store';
 
@@ -33,6 +34,15 @@ describe('LessonView', () => {
     expect(screen.getByRole('heading', { name: 'Three trunks' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('heading', { name: 'Five roots' })).toBeInTheDocument();
+  });
+
+  it('hands over a slider for a step that names an angle, then goes back to the diagram', async () => {
+    render(<LessonView topic={hipJoint} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByRole('heading', { name: 'The neck-shaft angle' })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /Neck-shaft angle/ })).toHaveValue('125');
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
   });
 
   it('lets the student trace a nerve and show a lesion on the last step', async () => {

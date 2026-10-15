@@ -226,6 +226,13 @@ export const hipJoint: Topic = {
       focus: ['hip', 'acetabular-labrum'],
     },
     {
+      id: 'neck-shaft',
+      title: 'The neck-shaft angle',
+      body: 'The neck meets the shaft at about 125 degrees in an adult, a little less in a woman and about 140 in a young child. The angle holds the shaft clear of the pelvis so the hip can swing, and its inner side is braced by the calcar femorale. Narrower is coxa vara; wider, in an adult, coxa valga. Move the slider to see each.',
+      focus: [],
+      interactive: 'neck-shaft',
+    },
+    {
       id: 'capsule',
       title: 'The capsule',
       body: 'On the hip bone it is attached round the acetabulum, to the labrum and the transverse ligament; on the femur to the intertrochanteric line in front but only about halfway along the neck behind. It is thick and taut in front and above, where standing loads it, and thin and loose behind and below. Its longitudinal fibres turn up along the neck as retinacula, carrying the arteries of the head.',
