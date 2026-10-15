@@ -10,6 +10,7 @@
 //  - leg-foot.glb: the right leg and foot from just above the knee, shared by the leg topics
 //  - lower-limb.glb: the whole right lower limb without its muscles, for surface marking, nerve
 //    injuries and development
+//  - lower-limb-joints.glb: its bones with the capsules, ligaments and menisci of its joints
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -40,6 +41,8 @@ import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
  * `concepts` those of several. `zAnatomy` takes named structures from a Z-Anatomy FBX instead
  * (CC BY-SA 4.0; see build-z-anatomy.mjs), for what BodyParts3D lacks, such as the thoracic nerves.
  * `clipX` and `clipZ` keep only the triangles whose centre lies in [min, max) along that axis.
+ * `shift` moves a part by [x, y, z] millimetres, to sit a Z-Anatomy structure on the BodyParts3D
+ * bones where the two models differ.
  */
 // Pectoralis minor lies in front of the axillary artery from X -137 to -107 (measured from the
 // meshes); the artery's first, second and third parts lie medial to, behind and lateral to it.
@@ -229,6 +232,131 @@ const LOWER_LIMB_NERVES = zParts('NervousSystem100.fbx', [
     0.3,
   ],
 ]);
+// Capsules, ligaments and menisci of the right lower limb's joints, from Z-Anatomy (lower limb
+// batch 7). BodyParts3D has none; Z-Anatomy has no patellar ligament or anterior tibiotalar part
+// of the deltoid ligament.
+// Z-Anatomy's hip and foot sit a little apart from BodyParts3D's bones, so those ligaments are
+// shifted onto them by the move that brought each group nearest the bones (measured 15 October
+// 2026: the mean gap fell from 16 to 4 mm at the hip and from 5 to 4 mm at the ankle and foot,
+// the lateral ankle ligaments most). The knee needed none.
+const HIP_FIT = { shift: [-4.7, 13.8, 23.6] };
+const ANKLE_FIT = { shift: [0.7, -9.5, -4.8] };
+const JOINT_FITS = Object.fromEntries([
+  ...[
+    'hip-capsule',
+    'iliofemoral-ligament',
+    'pubofemoral-ligament',
+    'ischiofemoral-ligament',
+    'ligament-of-head-of-femur',
+    'acetabular-labrum',
+    'transverse-acetabular-ligament',
+  ].map((id) => [id, HIP_FIT]),
+  ...[
+    'inferior-tibiofibular-ligaments',
+    'deltoid-ligament',
+    'anterior-talofibular-ligament',
+    'posterior-talofibular-ligament',
+    'calcaneofibular-ligament',
+    'interosseous-talocalcanean-ligament',
+    'talocalcanean-ligaments',
+    'spring-ligament',
+    'bifurcate-ligament',
+    'talonavicular-ligament',
+    'long-plantar-ligament',
+    'short-plantar-ligament',
+  ].map((id) => [id, ANKLE_FIT]),
+]);
+const LOWER_LIMB_JOINTS = zParts('Joints100.fbx', [
+  // Hip.
+  ['hip-capsule', 'Right articular capsule of hip joint', 1],
+  [
+    'iliofemoral-ligament',
+    [
+      'Right descending part of iliofemoral ligament',
+      'Right transverse part of iliofemoral ligament',
+    ],
+    1,
+  ],
+  ['pubofemoral-ligament', 'Right pubofemoral ligament', 1],
+  ['ischiofemoral-ligament', 'Right ischiofemoral ligament', 1],
+  ['ligament-of-head-of-femur', 'Right ligament of head of femur', 1],
+  ['acetabular-labrum', 'Right acetabular labrum', 1],
+  ['transverse-acetabular-ligament', 'Right transverse acetabular ligament', 1],
+  // Knee.
+  ['knee-capsule', 'Right articular capsule of knee joint', 1],
+  ['anterior-cruciate-ligament', 'Right anterior cruciate ligament', 1],
+  ['posterior-cruciate-ligament', 'Right posterior cruciate ligament', 1],
+  ['medial-meniscus', 'Right medial meniscus', 1],
+  ['lateral-meniscus', 'Right lateral meniscus', 1],
+  [
+    'coronary-ligaments',
+    [
+      'Right anterior meniscotibial ligament (Medial meniscus)',
+      'Right posterior meniscotibial ligament (Medial meniscus)',
+      'Right anterior meniscotibial ligament (Lateral meniscus)',
+      'Right posterior meniscotibial ligament (Lateral meniscus)',
+    ],
+    1,
+  ],
+  ['transverse-ligament-of-knee', 'Right transverse ligament of knee', 1],
+  [
+    'tibial-collateral-ligament',
+    [
+      'Right superficial part of tibial collateral ligament',
+      'Right deep part of tibial collateral ligament',
+    ],
+    1,
+  ],
+  ['fibular-collateral-ligament', 'Right fibular collateral ligament', 1],
+  ['oblique-popliteal-ligament', 'Right oblique popliteal ligament', 1],
+  ['arcuate-popliteal-ligament', 'Right arcuate popliteal ligament', 1],
+  // Tibiofibular joints.
+  [
+    'superior-tibiofibular-joint',
+    [
+      'Right articular capsule of superior tibiofibular joint',
+      'Right anterior ligament of fibular head',
+      'Right posterior ligament of fibular head',
+    ],
+    1,
+  ],
+  ['interosseous-membrane-of-leg', 'Right interosseous membrane of leg', 0.25],
+  [
+    'inferior-tibiofibular-ligaments',
+    ['Right anterior tibiofibular ligament', 'Right posterior tibiofibular ligament'],
+    1,
+  ],
+  // Ankle.
+  [
+    'deltoid-ligament',
+    [
+      'Right tibionavicular ligament',
+      'Right tibiocalcaneal ligament',
+      'Right posterior tibiotalar ligament',
+    ],
+    1,
+  ],
+  ['anterior-talofibular-ligament', 'Right anterior talofibular ligament', 1],
+  ['posterior-talofibular-ligament', 'Right posterior talofibular ligament', 1],
+  ['calcaneofibular-ligament', 'Right calcaneofibular ligament', 1],
+  // Joints of the foot.
+  ['interosseous-talocalcanean-ligament', 'Right talocalcaneal interosseous ligament', 1],
+  [
+    'talocalcanean-ligaments',
+    [
+      'Right anterior talocalcaneal ligament',
+      'Right lateral talocalcaneal ligament',
+      'Right medial talocalcaneal ligament',
+      'Right posterior talocalcaneal ligament',
+    ],
+    1,
+  ],
+  ['spring-ligament', 'Right plantar calcaneonavicular ligament', 1],
+  ['bifurcate-ligament', ['Right calcaneonavicular ligament', 'Right calcaneocuboid ligament'], 1],
+  ['talonavicular-ligament', 'Right talonavicular ligament', 1],
+  ['long-plantar-ligament', 'Right long plantar ligament', 0.6],
+  ['short-plantar-ligament', 'Right plantar calcaneocuboid ligament', 1],
+]).map((part) => ({ ...part, ...JOINT_FITS[part.id] }));
 const TOES = ['big', 'second', 'third', 'fourth', 'little'];
 const LOBES = visceral([
   ['right-upper-lobe', 'Superior lobe of right lung', 0.8],
@@ -1100,6 +1228,50 @@ export const MODELS = [
     ],
   },
   {
+    name: 'lower-limb-joints',
+    // The bones of the whole right lower limb with the capsules, ligaments and menisci of its
+    // joints, without muscles (lower limb batch 7: hip, knee, ankle and tibiofibular joints, and
+    // the joints of the foot).
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      { id: 'hip-bone', concept: 'right hip bone', ratio: 1 },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.2 },
+      ...[
+        ['femur', 'right femur'],
+        ['patella', 'right patella'],
+        ['tibia', 'right tibia'],
+        ['fibula', 'right fibula'],
+        ['talus', 'right talus'],
+        ['calcaneus', 'right calcaneus'],
+        ['navicular', 'navicular bone of right foot'],
+        ['cuboid', 'right cuboid bone'],
+      ].map(([id, concept]) => ({ id, concept, ratio: 1 })),
+      {
+        id: 'cuneiforms',
+        concepts: ['medial', 'intermediate', 'lateral'].map((c) => `right ${c} cuneiform bone`),
+        ratio: 1,
+      },
+      {
+        id: 'metatarsals',
+        concepts: ['first', 'second', 'third', 'fourth', 'fifth'].map(
+          (n) => `right ${n} metatarsal bone`,
+        ),
+        ratio: 1,
+      },
+      {
+        id: 'phalanges',
+        concepts: TOES.flatMap((toe) =>
+          ['proximal', 'middle', 'distal']
+            .filter((row) => toe !== 'big' || row !== 'middle')
+            .map((row) => `${row} phalanx of right ${toe} toe`),
+        ),
+        ratio: 1,
+      },
+      ...LOWER_LIMB_JOINTS,
+    ],
+  },
+  {
     name: 'body',
     maxTriangles: 50_000,
     // The body is seen whole, so it tolerates coarser surfaces.
@@ -1215,6 +1387,7 @@ async function build(model, sourceDir, concepts, io) {
     let { positions, indices } = mergeMeshes(meshes);
     if (part.clipX) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipX, 0));
     if (part.clipZ) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipZ, 2));
+    if (part.shift) positions = positions.map((value, index) => value + part.shift[index % 3]);
     const primitive = document
       .createPrimitive()
       .setMaterial(material)

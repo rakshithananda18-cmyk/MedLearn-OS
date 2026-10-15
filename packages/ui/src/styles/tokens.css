@@ -203,6 +203,9 @@
   --color-anat-airway: #d5dde2;
   --color-anat-membrane: #b9d3e0;
   --color-anat-valve: #f3ead2;
+  --color-anat-ligament: #5d87a8;
+  --color-anat-capsule: #b7cbd8;
+  --color-anat-cartilage: #6db6c6;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;

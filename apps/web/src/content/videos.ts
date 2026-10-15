@@ -373,6 +373,25 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('SzAyUsA25MQ', 'Dermatomes of the lower limb', 'Physiotutors', 231),
     video('ptO9ZvsUPDg', 'Myotomes of the lower limb', 'Physiotutors', 174),
   ],
+  'hip-joint': [
+    video('RhDOCdZf1Fk', 'Hip joint: bones, ligaments, blood and nerve supply', KENHUB, 419),
+    video(
+      'G4w3lK_s63E',
+      'Hip joint: ligaments, supply, movements and clinical anatomy',
+      'Medical Research Foundation',
+      688,
+    ),
+  ],
+  'knee-joint': [
+    video('ScVcCZP87xE', 'Anatomy of the knee joint', 'Human Anatomy Education', 1396),
+    video('VvQig6CaPcE', 'Knee joint and its ligaments', 'Prof. Sanjaya Adikari', 761),
+    video('fuEc_hSuX5Y', 'Locking and unlocking of the knee', 'medCampus', 149),
+  ],
+  'ankle-tibiofibular-joints': [video('2q0pG88bp0c', 'Ankle joint anatomy', 'Sam Webster', 1156)],
+  'foot-joints': [
+    video('QFGLp6rrxAE', 'Subtalar and transverse tarsal joints', TONY, 2081),
+    video('tWMi-fi3KZo', 'Ankle and foot: muscle actions', 'Dr Jacob Goodin', 708),
+  ],
   'foot-arches': [
     video('4VCecnBw_6E', 'Arches of the foot', 'Angelina Issac', 1235),
     video(
