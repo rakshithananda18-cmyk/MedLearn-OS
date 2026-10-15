@@ -10,7 +10,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { bestMatches, searchTerms } from '@/content/match';
-import { MOVEMENTS } from '@/content/movements';
+import { MOVEMENTS, movementsFor, type Twist } from '@/content/movements';
 import { FILM_BONES, filmsFor, XRAYS } from '@/content/xrays';
 import { useProgress } from '@/features/progress/store';
 import { SearchBox, type SearchGroup } from '@/features/search/SearchBox';
@@ -389,21 +389,39 @@ function StudioModel({
     () => new Set([...litIn(session, topic, studio.context.pool), ...filmBones]),
     [session, topic, filmBones, studio.context.pool],
   );
-  // A joint moving on the whole body: what turns, about its axis, by its angle.
-  const moving = topic ? null : session.movement;
-  const movement = MOVEMENTS.find((item) => item.id === moving?.id);
-  const pose = useMemo(() => {
-    if (!moving || !movement || !index) return null;
+  // A joint moving. On the whole body: what its rule picks turns about the axis. In a joint
+  // topic: the parts it lists turn, the ligaments crossing the joint stretch, and warm as they
+  // tighten. The sets are kept per movement, so moving the slider does not redo the stretching.
+  const moving = session.movement;
+  const movement = topic ? undefined : MOVEMENTS.find((item) => item.id === moving?.id);
+  const joint = useMemo(
+    () => (topic ? movementsFor(topic.slug).find((item) => item.id === moving?.id) : undefined),
+    [topic, moving?.id],
+  );
+  const parts = useMemo(() => {
+    if (joint)
+      return {
+        ids: new Set(joint.turns),
+        stretch: new Set(joint.stretches),
+        taut: { start: new Set(joint.taut.start), end: new Set(joint.taut.end) },
+      };
+    if (!movement || !index) return null;
     const ids = index.filter((entry) => movement.moves(entry.id, entry.centre));
+    return { ids: new Set(ids.map((entry) => entry.id)) };
+  }, [joint, movement, index]);
+  const pose = useMemo(() => {
+    const shown = joint ?? movement;
+    if (!moving || !shown || !parts) return null;
     return {
-      ids: new Set(ids.map((entry) => entry.id)),
-      pivot: movement.pivot,
-      axis: movement.axis,
+      ...parts,
+      pivot: shown.pivot,
+      axis: shown.axis,
+      twist: shown.twist ? radians(shown.twist) : undefined,
       angle: (moving.angle * Math.PI) / 180,
-      range: (movement.range * Math.PI) / 180,
+      range: (shown.range * Math.PI) / 180,
       playing: moving.playing,
     };
-  }, [moving, movement, index]);
+  }, [moving, joint, movement, parts]);
   const focus = useMemo(() => {
     if (filmBones.length > 0) return focusOn(filmBones, index ?? []);
     // Choosing a joint turns the camera to it (moving it does not).
@@ -450,6 +468,12 @@ function StudioModel({
   );
 }
 
+/** A twist for the viewer, its angles turned from degrees to radians. */
+function radians(twist: Twist) {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  return { ...twist, angle: toRadians(twist.degrees), over: toRadians(twist.over) };
+}
+
 /** The view tools, as a column down the model's left edge. */
 function Tools({ studio }: Readonly<{ studio: StudioState }>) {
   const { session, update } = studio;
@@ -469,8 +493,12 @@ function Tools({ studio }: Readonly<{ studio: StudioState }>) {
       onFilms={() => studio.setFilm(studio.film === null ? 0 : null)}
       onIsolate={() => update({ isolate: !session.isolate })}
       onSection={() => studio.togglePanel('section')}
-      // Movements are measured on the whole body's skeleton.
-      movement={studio.topic ? null : session.movement !== null || session.panel === 'movement'}
+      // Movements are measured on the whole body's skeleton, and on the joints model.
+      movement={
+        studio.topic && movementsFor(studio.topic.slug).length === 0
+          ? null
+          : session.movement !== null || session.panel === 'movement'
+      }
       onMovement={() => studio.togglePanel('movement')}
       onReset={studio.resetView}
       onSettings={() => studio.togglePanel('settings')}
@@ -681,15 +709,33 @@ function Section({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
+/** A joint topic's movements, with its ligaments named as the model names them. */
+function jointMovements(studio: StudioState) {
+  const parts = studio.model.parts;
+  const named = (ids: string[]) =>
+    ids.flatMap((id) => parts.find((part) => part.id === id)?.name ?? []);
+  return movementsFor(studio.topic?.slug ?? '').map((movement) => ({
+    ...movement,
+    taut: { start: named(movement.taut.start), end: named(movement.taut.end) },
+  }));
+}
+
 /** The movement sheet, while open. */
 function Moves({ studio }: Readonly<{ studio: StudioState }>) {
   const { session, update } = studio;
   if (session.panel !== 'movement') return null;
   return (
     <MovementPanel
-      movements={MOVEMENTS}
+      movements={studio.topic ? jointMovements(studio) : MOVEMENTS}
       movement={session.movement}
-      onChange={(movement) => update({ movement })}
+      onChange={(movement) => {
+        // Choosing a joint in a topic turns the camera to the view it is best watched from.
+        const view = movementsFor(studio.topic?.slug ?? '').find(
+          (item) => item.id === movement?.id && item.id !== session.movement?.id,
+        )?.stop;
+        const stopIndex = studio.model.stops.findIndex((stop) => stop.id === view);
+        update(stopIndex >= 0 ? { movement, stopIndex } : { movement });
+      }}
       onClose={() => update({ panel: null })}
     />
   );

@@ -1,7 +1,8 @@
 import type { Point3 } from '@medlearn/schemas';
 import { describe, expect, it } from 'vitest';
 
-import { type Movement, MOVEMENTS } from './movements';
+import { JOINT_MOVEMENTS, type Movement, MOVEMENTS, movementsFor, phaseAt } from './movements';
+import { TOPICS } from './topics';
 
 // Centres from the body index (BodyParts3D millimetres).
 const CENTRES: Record<string, Point3> = {
@@ -85,5 +86,46 @@ describe('joint movements', () => {
     const knee = movement('knee-flexion');
     expect(moving(knee)).toEqual(['skeleton/right-tibia']);
     expect(turned(knee, CENTRES['skeleton/right-tibia'] as Point3, 90)[1]).toBeGreaterThan(50);
+  });
+});
+
+describe('joint movements in their topics', () => {
+  it('lists parts the topic shows, views it has, and phases that cover the range', () => {
+    for (const topic of TOPICS) {
+      const model = topic.visual.kind === 'path' ? topic.visual.model3d : undefined;
+      for (const movement of movementsFor(topic.slug)) {
+        expect(model, topic.slug).toBeDefined();
+        const shown = new Set([
+          ...(model?.parts.map((part) => part.id) ?? []),
+          ...(model?.traces.map((trace) => trace.id) ?? []),
+        ]);
+        // What stretches and what is named taut is on show; nothing both turns and stretches.
+        for (const id of [...movement.stretches, ...movement.taut.start, ...movement.taut.end]) {
+          expect(shown, `${topic.slug} ${id}`).toContain(id);
+        }
+        for (const id of [...movement.taut.start, ...movement.taut.end]) {
+          expect(movement.stretches).toContain(id);
+        }
+        expect(movement.turns.filter((id) => movement.stretches.includes(id))).toEqual([]);
+        expect(model?.stops.map((stop) => stop.id)).toContain(movement.stop);
+        const ends = movement.phases.map((phase) => phase.upTo);
+        expect(ends).toEqual([...ends].sort((a, b) => a - b));
+        expect(ends.at(-1)).toBe(movement.range);
+      }
+    }
+    expect(movementsFor('knee-joint').map((movement) => movement.id)).toEqual(['knee-flexion']);
+    expect(movementsFor('axilla')).toEqual([]);
+    // Every joint movement is shown in some topic.
+    for (const movement of JOINT_MOVEMENTS) {
+      expect(TOPICS.some((topic) => movementsFor(topic.slug).includes(movement))).toBe(true);
+    }
+  });
+
+  it('tells what the joint is doing at an angle', () => {
+    const knee = movementsFor('knee-joint')[0];
+    if (!knee) throw new Error('knee');
+    expect(phaseAt(knee, 0)).toMatch(/^Locked/);
+    expect(phaseAt(knee, 20)).toMatch(/^Unlocking/);
+    expect(phaseAt(knee, 135)).toMatch(/^Fully bent/);
   });
 });

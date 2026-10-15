@@ -6,6 +6,7 @@ import {
   ANKLE_LATERAL,
   FOOT_BELOW,
   FOOT_LIGAMENTS,
+  HEEL_BACK,
   LOWER_LIMB_JOINTS_MODEL_CREDIT,
   LOWER_LIMB_JOINTS_MODEL_SRC,
   lowerLimbJointParts,
@@ -214,7 +215,11 @@ export const footJoints: Topic = {
     model3d: {
       src: LOWER_LIMB_JOINTS_MODEL_SRC,
       credit: LOWER_LIMB_JOINTS_MODEL_CREDIT,
-      parts: lowerLimbJointParts([...FOOT_LIGAMENTS, 'deltoid-ligament']),
+      parts: lowerLimbJointParts([
+        ...FOOT_LIGAMENTS,
+        'deltoid-ligament',
+        'calcaneofibular-ligament',
+      ]),
       traces: [],
       stops: [
         {
@@ -230,6 +235,7 @@ export const footJoints: Topic = {
             'From the medial side: the spring ligament slung from the sustentaculum tali to the navicular, holding up the head of the talus.',
         },
         FOOT_BELOW,
+        HEEL_BACK,
       ],
     },
   },

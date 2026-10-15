@@ -276,6 +276,15 @@ export const HIP_FRONT: CameraStop = {
 };
 
 /** The hip from behind. */
+export const HIP_SIDE: CameraStop = {
+  id: 'hip-side',
+  title: 'The hip from the side',
+  description:
+    'From the lateral side: the greater trochanter nearest you, the iliofemoral ligament over the front of the joint. Bend the hip from here to watch the thigh come forward.',
+  target: [-88, -330, 660],
+  position: [-1500, -330, 680],
+};
+
 export const HIP_BACK: CameraStop = {
   id: 'hip-back',
   title: 'The hip from behind',
@@ -336,6 +345,16 @@ export const ANKLE_INSIDE: CameraStop = {
 };
 
 /** The foot from below and the medial side. */
+/** The heel from behind, where inversion tilts the calcaneus under the talus. */
+export const HEEL_BACK: CameraStop = {
+  id: 'heel-back',
+  title: 'The heel from behind',
+  description:
+    'From behind: the calcaneus under the talus, and the calcaneofibular ligament running down from the tip of the lateral malleolus to the heel. Turn the foot in from here to watch the heel tilt inwards under the talus.',
+  target: [-80, -60, -30],
+  position: [-100, 560, 20],
+};
+
 export const FOOT_BELOW: CameraStop = {
   id: 'foot-below',
   title: 'The sole from below',

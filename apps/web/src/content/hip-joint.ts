@@ -5,6 +5,7 @@ import {
   HIP_BACK,
   HIP_FRONT,
   HIP_LIGAMENTS,
+  HIP_SIDE,
   LOWER_LIMB_JOINTS_MODEL_CREDIT,
   LOWER_LIMB_JOINTS_MODEL_SRC,
   lowerLimbJointParts,
@@ -214,7 +215,7 @@ export const hipJoint: Topic = {
       credit: LOWER_LIMB_JOINTS_MODEL_CREDIT,
       parts: lowerLimbJointParts(HIP_LIGAMENTS),
       traces: [],
-      stops: [HIP_FRONT, HIP_BACK],
+      stops: [HIP_FRONT, HIP_BACK, HIP_SIDE],
     },
   },
   lesson: [
