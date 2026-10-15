@@ -6,6 +6,8 @@ import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber'
 import { type RefObject, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box3,
+  BufferAttribute,
+  type BufferGeometry,
   CatmullRomCurve3,
   Color,
   DoubleSide,
@@ -24,6 +26,7 @@ import {
   Vector3,
 } from 'three';
 
+import { poseMatrix, type PoseTwist, stretchWeights, tension } from './pose';
 import { MODEL_GROUP, toScene } from './scene';
 
 /** A tappable spot on the model, such as a body region on the whole-body map. */
@@ -72,6 +75,12 @@ export interface Viewer3DPose {
   angle: number;
   range: number;
   playing: boolean;
+  /** Parts that cross the joint (ligaments, a capsule): each point follows the nearer bone. */
+  stretch?: ReadonlySet<string>;
+  /** A turn about the moving bone's own axis over the first part of the movement. */
+  twist?: PoseTwist;
+  /** Ligaments tinted as they tighten: taut at the start of the movement, or at its end. */
+  taut?: { start: ReadonlySet<string>; end: ReadonlySet<string> };
 }
 
 /** The three anatomical planes a section can cut along. */
@@ -308,13 +317,98 @@ function drawn(hit: { object: Object3D; point: Vector3 }, planes: Plane[]): bool
   return shown(hit.object) && planes.every((plane) => plane.distanceToPoint(hit.point) >= 0);
 }
 
+/** A stretching part's mesh at rest: where its points were, and how far each follows the move. */
+interface Stretched {
+  mesh: Mesh;
+  position: BufferGeometry['attributes'][string];
+  normal: BufferGeometry['attributes'][string] | undefined;
+  /** Its points at rest in the model frame, and the way back into the mesh's own frame. */
+  points: Float32Array;
+  weights: Float32Array;
+  inverse: Matrix4;
+}
+
+/** A mesh's points in the model frame, placed by its resting matrix. */
+function restPoints(mesh: Mesh): Float32Array {
+  const matrix = (mesh.userData.rest as Matrix4 | undefined) ?? mesh.matrix;
+  const source = mesh.geometry.getAttribute('position');
+  const points = new Float32Array(source.count * 3);
+  const point = new Vector3();
+  for (let i = 0; i < source.count; i++) {
+    point.fromBufferAttribute(source, i).applyMatrix4(matrix);
+    points.set([point.x, point.y, point.z], i * 3);
+  }
+  return points;
+}
+
+/**
+ * Readies the parts that cross the joint: each point is weighted by how near it lies to the
+ * bones that turn and to those that stay, and the mesh gets its own points to bend.
+ */
+function stretchable(group: Group, pose: Viewer3DPose): Stretched[] {
+  const moving: number[] = [];
+  const fixed: number[] = [];
+  const meshes: Mesh[] = [];
+  group.traverse((child) => {
+    const mesh = child as Mesh;
+    const id = mesh.userData.partId as string | undefined;
+    if (!mesh.isMesh || !id) return;
+    if (pose.stretch?.has(id)) meshes.push(mesh);
+    else (pose.ids.has(id) ? moving : fixed).push(...restPoints(mesh));
+  });
+  return meshes.map((mesh) => {
+    const points = restPoints(mesh);
+    const { geometry } = mesh;
+    const position = geometry.getAttribute('position');
+    const normal = geometry.getAttribute('normal');
+    // Quantised files store small integers: bend a float copy, and put the original back after.
+    geometry.setAttribute('position', new BufferAttribute(new Float32Array(position.count * 3), 3));
+    return {
+      mesh,
+      position,
+      normal,
+      points,
+      weights: stretchWeights(points, moving, fixed),
+      inverse: mesh.matrix.clone().invert(),
+    };
+  });
+}
+
+/** Bends a stretching part: each point moves its weight's share of the way the bones move. */
+function bend(part: Stretched, turn: Matrix4) {
+  const { points, weights, inverse, mesh } = part;
+  const position = mesh.geometry.getAttribute('position') as BufferAttribute;
+  const rest = new Vector3();
+  const moved = new Vector3();
+  for (let i = 0; i < weights.length; i++) {
+    rest.fromArray(points, i * 3);
+    moved.copy(rest).applyMatrix4(turn);
+    rest.lerp(moved, weights[i] ?? 0).applyMatrix4(inverse);
+    position.setXYZ(i, rest.x, rest.y, rest.z);
+  }
+  position.needsUpdate = true;
+  mesh.geometry.computeVertexNormals();
+  mesh.geometry.computeBoundingSphere();
+}
+
+function unbend(part: Stretched) {
+  const { geometry } = part.mesh;
+  geometry.setAttribute('position', part.position);
+  if (part.normal) geometry.setAttribute('normal', part.normal);
+  else geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+}
+
 // A played movement goes there and back in this many seconds.
 const SWING_SECONDS = 4;
+// How far a fully taut ligament's colour moves towards the taut colour.
+const TAUT_TINT = 0.85;
 
 /**
  * Turns a movement's structures about its axis, as rigid parts: each keeps its resting place to
- * return to. Applied on every frame drawn while a movement shows, so systems switched on
- * meanwhile join in; playing, it swings by itself.
+ * return to. Parts that cross the joint bend with it, and its ligaments warm as they tighten.
+ * Applied on every frame drawn while a movement shows, so systems switched on meanwhile join in;
+ * playing, it swings by itself.
  */
 function Movement({
   pose,
@@ -323,7 +417,8 @@ function Movement({
   const { invalidate } = useThree();
   const posed = useRef(false);
   const turn = useMemo(() => new Matrix4(), []);
-  const step = useMemo(() => new Matrix4(), []);
+  const stretched = useRef<{ key: ReadonlySet<string>; parts: Stretched[] } | null>(null);
+  const taut = useMemo(() => tokenColour('--color-anat-taut'), []);
 
   useEffect(() => {
     invalidate();
@@ -332,16 +427,12 @@ function Movement({
   useFrame((state) => {
     const group = groupRef.current;
     if (!group || (!pose && !posed.current)) return;
-    if (pose) {
-      const angle = pose.playing
-        ? (pose.range * (1 - Math.cos((state.clock.elapsedTime * 2 * Math.PI) / SWING_SECONDS))) / 2
-        : pose.angle;
-      const [x, y, z] = pose.pivot;
-      turn
-        .makeTranslation(x, y, z)
-        .multiply(step.makeRotationAxis(new Vector3(...pose.axis).normalize(), angle))
-        .multiply(step.makeTranslation(-x, -y, -z));
+    let angle = pose?.angle ?? 0;
+    if (pose?.playing) {
+      const swing = (state.clock.elapsedTime * 2 * Math.PI) / SWING_SECONDS;
+      angle = (pose.range * (1 - Math.cos(swing))) / 2;
     }
+    if (pose) poseMatrix(pose, angle, turn);
     group.traverse((child) => {
       const id = child.userData.partId as string | undefined;
       const rest = child.userData.rest as Matrix4 | undefined;
@@ -354,7 +445,30 @@ function Movement({
         child.matrixAutoUpdate = true;
         delete child.userData.rest;
       }
+      // A ligament's colour: warmer the tighter it is, back to its own when the joint rests.
+      const material = (child as Mesh).material as MeshStandardMaterial | undefined;
+      if (!id || !material?.color) return;
+      const start = pose?.taut?.start.has(id) ?? false;
+      if (pose && (start || pose.taut?.end.has(id))) {
+        material.userData.colour ??= material.color.clone();
+        // Squared, so a half-taut ligament keeps most of its own colour rather than a muddy mix.
+        const level = tension(angle, pose.range, start) ** 2 * TAUT_TINT;
+        material.color.lerpColors(material.userData.colour as Color, taut, level);
+      } else if (material.userData.colour) {
+        material.color.copy(material.userData.colour as Color);
+        delete material.userData.colour;
+      }
     });
+    // Parts crossing the joint: readied once for each movement, bent on every frame.
+    const key = pose?.stretch;
+    if (stretched.current && stretched.current.key !== key) {
+      stretched.current.parts.forEach(unbend);
+      stretched.current = null;
+    }
+    if (pose && key?.size) {
+      stretched.current ??= { key, parts: stretchable(group, pose) };
+      for (const part of stretched.current.parts) bend(part, turn);
+    }
     posed.current = pose !== null;
     if (pose?.playing) invalidate();
   });

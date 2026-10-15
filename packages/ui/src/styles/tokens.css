@@ -206,6 +206,7 @@
   --color-anat-ligament: #5d87a8;
   --color-anat-capsule: #b7cbd8;
   --color-anat-cartilage: #6db6c6;
+  --color-anat-taut: #d9822b;
   /* Pens for drawing on 3D models: clear of the anatomical hues above. */
   --color-pen-ink: #1f2937;
   --color-pen-violet: #7c3aed;

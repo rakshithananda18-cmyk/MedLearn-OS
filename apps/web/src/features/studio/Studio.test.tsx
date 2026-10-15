@@ -643,6 +643,38 @@ describe('Studio on a wide screen', () => {
     expect(viewer.props?.pose).toBeNull();
   });
 
+  it('bends a joint in its topic: ligaments stretch, warm as they tighten, and the knee unlocks', async () => {
+    wideScreen();
+    const { container } = await renderStudio('knee-joint');
+    await userEvent.click(screen.getByRole('button', { name: 'Movement' }));
+    const sheet = screen.getByRole('region', { name: 'Movement' });
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Move a joint' }));
+    await vi.waitFor(() => expect(viewer.props?.pose).not.toBeNull());
+    const pose = viewer.props?.pose;
+    expect(pose?.ids).toContain('tibia');
+    expect(pose?.ids).not.toContain('femur');
+    expect(pose?.stretch).toContain('anterior-cruciate-ligament');
+    expect(pose?.taut?.end).toContain('posterior-cruciate-ligament');
+    expect(pose?.twist?.over).toBeCloseTo((30 * Math.PI) / 180);
+    // The camera turns to the side the knee is best watched bending from.
+    expect(viewer.props?.stopId).toBe('knee-medial');
+    // Halfway, the knee is bending; the lists name which ligaments are taut at either end.
+    expect(within(sheet).getByText(/^Bending:/)).toBeInTheDocument();
+    expect(within(sheet).getByText(/Posterior cruciate ligament/)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+
+    fireEvent.change(within(sheet).getByRole('slider', { name: /Angle/ }), {
+      target: { value: '0' },
+    });
+    expect(within(sheet).getByText(/^Locked:/)).toBeInTheDocument();
+  });
+
+  it('has no movement where the topic has no joint to move', async () => {
+    wideScreen();
+    await renderStudio('axilla');
+    expect(screen.queryByRole('button', { name: 'Movement' })).not.toBeInTheDocument();
+  });
+
   it('opens every X-ray on the whole body beside the bones it shows', async () => {
     wideScreen();
     vi.stubGlobal(

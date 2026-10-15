@@ -11,7 +11,7 @@ import { type ReactNode, useId, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 import { type LibraryNode, toggledTrail, topicsUnder } from '@/content/library';
-import type { MovementId } from '@/content/movements';
+import { type MovementId, type MovementPhase, phaseAt } from '@/content/movements';
 import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
 
@@ -41,8 +41,11 @@ function Sheet({
   label: string;
   side: 'left' | 'right';
   place: Place;
-  /** A floating sheet only as tall as its content, rather than down to the bottom bar. */
-  compact?: boolean;
+  /**
+   * A floating sheet only as tall as its content, rather than down to the bottom bar; on 'phone'
+   * only there, so the model keeps half the small screen.
+   */
+  compact?: boolean | 'phone';
   /** A button beside the title where docked, such as folding the panel away. */
   action?: ReactNode;
   onClose: () => void;
@@ -57,7 +60,9 @@ function Sheet({
           cx(
             GLASS,
             'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto p-4 max-sm:inset-x-3 max-sm:w-auto',
-            compact ? 'max-h-sheet' : 'bottom-24',
+            compact === true && 'max-h-sheet',
+            compact === 'phone' && 'max-md:max-h-sheet md:bottom-24',
+            !compact && 'bottom-24',
             side === 'left' ? 'left-3' : 'right-3',
           ),
         // Docked, the panel is only as tall as what is unfolded in it (its list scrolls past the
@@ -414,24 +419,44 @@ export function MovementPanel({
   onChange,
   onClose,
 }: Readonly<{
-  movements: Array<{ id: MovementId; name: string; joint: string; range: number }>;
+  movements: Array<{
+    id: MovementId;
+    name: string;
+    joint: string;
+    range: number;
+    /** In a joint topic: what the joint does along the way, and its ligaments taut at each end. */
+    phases?: MovementPhase[];
+    taut?: { start: string[]; end: string[] };
+    ends?: [string, string];
+  }>;
   movement: MovementState | null;
   onChange: (movement: MovementState | null) => void;
   onClose: () => void;
 }>) {
-  const shown = movements.find((item) => item.id === movement?.id) ?? movements[0];
+  // A movement left on from elsewhere (the whole body) does not belong to this list.
+  const current = movements.some((item) => item.id === movement?.id) ? movement : null;
+  const shown = movements.find((item) => item.id === current?.id) ?? movements[0];
   if (!shown) return null;
+  const ligaments = shown.taut && shown.ends ? shown : null;
   const halfway = (range: number) => Math.round(range / 2);
   return (
-    <Sheet label="Movement" side="right" place="float" compact onClose={onClose}>
+    // With a joint's ligaments to list, the sheet takes the height down to the bottom bar, except
+    // on a phone, where the joint has to stay in sight.
+    <Sheet
+      label="Movement"
+      side="right"
+      place="float"
+      compact={ligaments ? 'phone' : true}
+      onClose={onClose}
+    >
       <Switch
         label="Move a joint"
-        checked={movement !== null}
+        checked={current !== null}
         onCheckedChange={(on) =>
           onChange(on ? { id: shown.id, angle: halfway(shown.range), playing: false } : null)
         }
       />
-      {movement ? (
+      {current ? (
         <>
           <fieldset className="grid grid-cols-2 gap-1 rounded-md bg-surface-muted p-1">
             <legend className="sr-only">Joint</legend>
@@ -439,11 +464,11 @@ export function MovementPanel({
               <button
                 key={item.id}
                 type="button"
-                aria-pressed={item.id === movement.id}
-                onClick={() => onChange({ ...movement, id: item.id, angle: halfway(item.range) })}
+                aria-pressed={item.id === current.id}
+                onClick={() => onChange({ ...current, id: item.id, angle: halfway(item.range) })}
                 className={cx(
                   'flex min-h-12 flex-col justify-center rounded-sm px-2 text-left text-sm font-semibold leading-tight transition-colors duration-150',
-                  item.id === movement.id
+                  item.id === current.id
                     ? 'bg-surface text-ink shadow-raised'
                     : 'text-fg-muted hover:text-fg',
                 )}
@@ -457,39 +482,96 @@ export function MovementPanel({
             <span className="flex justify-between text-sm">
               <span className="font-semibold text-ink">Angle</span>
               <span className="text-fg-muted">
-                {movement.playing ? 'Playing' : `${movement.angle}°`} of {shown.range}°
+                {current.playing ? 'Playing' : `${current.angle}°`} of {shown.range}°
               </span>
             </span>
             <input
               type="range"
               min={0}
               max={shown.range}
-              value={movement.angle}
-              disabled={movement.playing}
-              onChange={(event) => onChange({ ...movement, angle: Number(event.target.value) })}
+              value={current.angle}
+              disabled={current.playing}
+              onChange={(event) => onChange({ ...current, angle: Number(event.target.value) })}
               className="h-12 w-full cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </label>
           <button
             type="button"
-            aria-pressed={movement.playing}
-            onClick={() => onChange({ ...movement, playing: !movement.playing })}
-            className="flex h-12 items-center justify-center gap-2 rounded-md border border-border-strong text-sm font-semibold text-ink hover:bg-surface-muted"
+            aria-pressed={current.playing}
+            onClick={() => onChange({ ...current, playing: !current.playing })}
+            className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-md border border-border-strong text-sm font-semibold text-ink hover:bg-surface-muted"
           >
-            <Icon icon={movement.playing ? Pause : Play} size="sm" />
-            {movement.playing ? 'Pause' : 'Play the movement'}
+            <Icon icon={current.playing ? Pause : Play} size="sm" />
+            {current.playing ? 'Pause' : 'Play the movement'}
           </button>
-          <Text size="xs" tone="muted">
-            The bones turn as rigid parts: muscles that cross the joint stay where they are.
-          </Text>
+          {ligaments ? (
+            <JointReadout movement={ligaments} state={current} />
+          ) : (
+            <Text size="xs" tone="muted">
+              The bones turn as rigid parts: muscles that cross the joint stay where they are.
+            </Text>
+          )}
         </>
       ) : (
         <Text size="sm" tone="muted">
-          See a joint move: bend the elbow, turn the forearm over, lift the arm out to the side or
-          bend the knee.
+          {ligaments
+            ? 'Move the joint and watch its ligaments: they stretch with it, and warm as they tighten.'
+            : 'See a joint move: bend the elbow, turn the forearm over, lift the arm out to the side or bend the knee.'}
         </Text>
       )}
     </Sheet>
+  );
+}
+
+/** What a moving joint is doing, and which of its ligaments are taut at either end. */
+function JointReadout({
+  movement,
+  state,
+}: Readonly<{
+  movement: {
+    phases?: MovementPhase[];
+    taut?: { start: string[]; end: string[] };
+    ends?: [string, string];
+    range: number;
+  };
+  state: MovementState;
+}>) {
+  const { taut, ends, phases = [], range } = movement;
+  if (!taut || !ends) return null;
+  // Past halfway the ligaments taut at the end are the ones tightening.
+  const late = state.angle > range / 2;
+  const groups = [
+    { names: taut.start, end: ends[0], now: !state.playing && !late },
+    { names: taut.end, end: ends[1], now: !state.playing && late },
+  ].filter((group) => group.names.length > 0);
+  return (
+    <div className="flex flex-col gap-3">
+      <p aria-live="polite" className="text-sm text-fg">
+        {state.playing
+          ? 'Watch the ligaments warm as they tighten and cool as they slacken.'
+          : phaseAt({ phases }, state.angle)}
+      </p>
+      <dl className="flex flex-col gap-2 text-sm">
+        {groups.map((group) => (
+          <div
+            key={group.end}
+            className={cx(
+              'rounded-md px-3 py-2 transition-colors duration-200',
+              group.now ? 'bg-anat-taut/15' : 'bg-surface-muted',
+            )}
+          >
+            <dt className="flex items-center gap-2 text-xs font-semibold text-fg-muted">
+              <span aria-hidden="true" className="size-3 shrink-0 rounded-full bg-anat-taut" />
+              Taut {group.end}
+            </dt>
+            <dd className="text-ink">{group.names.join(', ')}</dd>
+          </div>
+        ))}
+      </dl>
+      <Text size="xs" tone="muted">
+        Ligaments that cross the joint stretch with it; the warmer one is the tighter.
+      </Text>
+    </div>
   );
 }
 
