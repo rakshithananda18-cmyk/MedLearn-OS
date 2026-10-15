@@ -48,6 +48,7 @@ import { lowerLimbLymphatics } from './lower-limb-lymphatics';
 import { lowerLimbNerveInjuries } from './lower-limb-nerve-injuries';
 import { lowerLimbSurfaceMarking } from './lower-limb-surface-marking';
 import { lowerLimbVeins } from './lower-limb-veins';
+import { lowerLimbXrays } from './lower-limb-xrays';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
@@ -179,6 +180,7 @@ export const TOPICS: Topic[] = [
   footJoints,
   footArches,
   lowerLimbSurfaceMarking,
+  lowerLimbXrays,
   lowerLimbNerveInjuries,
   lowerLimbDevelopment,
   oxygenCurve,

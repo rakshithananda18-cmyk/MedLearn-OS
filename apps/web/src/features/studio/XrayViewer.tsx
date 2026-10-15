@@ -160,7 +160,7 @@ export function XrayViewer({
         </ul>
       ) : null}
       <p className="flex flex-wrap items-center gap-1 text-xs opacity-75">
-        {XRAY_CREDIT}
+        {film.credit ?? XRAY_CREDIT}
         <a
           href={film.source}
           target="_blank"

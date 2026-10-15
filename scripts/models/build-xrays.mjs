@@ -1,7 +1,8 @@
 // Builds the X-ray films in apps/web/public/xrays from the originals on Wikimedia Commons.
 //
 // Source: the "X-ray of normal …" series by Mikael Häggström, released as CC0 (checked on each
-// file page on 30 September 2026). The originals stay out of git, in models-src/xrays; each film
+// file page on 30 September 2026; the ankle films on 15 October 2026). The hip film is by M A Modi,
+// A D Mate, Amrit Nasta and A K Gvalani, CC BY 3.0, credited on the film in the app. The originals stay out of git, in models-src/xrays; each film
 // here is resized to at most 1400 pixels on its long side and saved as WebP.
 //
 // Usage: node scripts/models/build-xrays.mjs [folder with the originals, default models-src/xrays]
@@ -26,6 +27,10 @@ export const FILMS = {
   'hand-pa': 'X-ray of normal hand by dorsoplantar projection.jpg',
   'hand-lateral': 'X-ray of normal hand by lateral projection.jpg',
   'hand-oblique': 'X-ray of normal hand by oblique projection.jpg',
+  'hip-ap': 'X-ray of normal hip.jpg',
+  'ankle-ap': 'X-ray of normal ankle - frontal.jpg',
+  'ankle-lateral': 'X-ray of normal ankle - lateral.jpg',
+  'ankle-oblique': 'X-ray of normal ankle - lateral oblique.jpg',
 };
 
 const source = process.argv[2] ?? 'models-src/xrays';

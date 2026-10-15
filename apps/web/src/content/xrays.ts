@@ -8,7 +8,7 @@ export interface XrayMark {
 /** One radiograph, with what to look for on it. */
 export interface XrayFilm {
   id: string;
-  region: 'shoulder' | 'elbow' | 'wrist' | 'hand';
+  region: 'shoulder' | 'elbow' | 'wrist' | 'hand' | 'hip' | 'ankle';
   /** The joint or part, and the view: "Elbow, lateral". */
   title: string;
   width: number;
@@ -18,6 +18,8 @@ export interface XrayFilm {
   marks: XrayMark[];
   /** The original on Wikimedia Commons. */
   source: string;
+  /** Who made the film and its licence, when it is not one of XRAY_CREDIT's. */
+  credit?: string;
 }
 
 const rightBones = (...names: string[]) => names.map((name) => `skeleton/right-${name}`);
@@ -35,6 +37,8 @@ export const FILM_BONES: Record<XrayFilm['region'], string[]> = {
   elbow: rightBones('humerus', 'radius', 'ulna'),
   wrist: rightBones('radius', 'ulna', ...CARPALS),
   hand: rightBones(...CARPALS, ...METACARPALS),
+  hip: rightBones('hip-bone', 'femur'),
+  ankle: rightBones('tibia', 'fibula', 'talus', 'calcaneus'),
 };
 
 /** Who made the films, and their licence: shown under every film. */
@@ -234,6 +238,85 @@ export const XRAYS: XrayFilm[] = [
     marks: [],
     source: commons('X-ray of normal hand by oblique projection.jpg'),
   },
+  {
+    id: 'hip-ap',
+    region: 'hip',
+    title: 'Hip, AP',
+    width: 328,
+    height: 370,
+    lookFor: [
+      'Follow Shenton’s line: the upper border of the obturator foramen runs on smoothly into the lower border of the femoral neck. A step means the head has moved.',
+      'The neck meets the shaft at about 125 degrees in an adult; the greater trochanter stands out laterally, the lesser trochanter medially below the neck.',
+      'The head sits deep in the acetabulum with an even joint space all round.',
+    ],
+    marks: [
+      { label: 'Head of femur', x: 0.6, y: 0.24 },
+      { label: 'Neck of femur', x: 0.72, y: 0.33 },
+      { label: 'Greater trochanter', x: 0.87, y: 0.35 },
+      { label: 'Lesser trochanter', x: 0.655, y: 0.51 },
+      { label: 'Shaft of femur', x: 0.73, y: 0.78 },
+      { label: 'Obturator foramen', x: 0.36, y: 0.41 },
+      { label: 'Pubic symphysis', x: 0.15, y: 0.42 },
+    ],
+    source: commons('X-ray of normal hip.jpg'),
+    credit:
+      'Radiograph: M A Modi, A D Mate, Amrit Nasta and A K Gvalani, CC BY 3.0, via Wikimedia Commons; resized',
+  },
+  {
+    id: 'ankle-ap',
+    region: 'ankle',
+    title: 'Ankle, AP',
+    width: 625,
+    height: 1400,
+    lookFor: [
+      'The talus sits square under the tibia, with an even joint space over its dome and down both sides between the malleoli.',
+      'The lateral malleolus reaches lower than the medial one.',
+      'Just above the joint the fibula overlaps the tibia; if the two have drawn apart, suspect a torn inferior tibiofibular ligament.',
+    ],
+    marks: [
+      { label: 'Tibia', x: 0.44, y: 0.25 },
+      { label: 'Fibula', x: 0.715, y: 0.3 },
+      { label: 'Medial malleolus', x: 0.16, y: 0.7 },
+      { label: 'Lateral malleolus', x: 0.76, y: 0.74 },
+      { label: 'Talus', x: 0.46, y: 0.74 },
+    ],
+    source: commons('X-ray of normal ankle - frontal.jpg'),
+  },
+  {
+    id: 'ankle-lateral',
+    region: 'ankle',
+    title: 'Ankle, lateral',
+    width: 778,
+    height: 1400,
+    lookFor: [
+      'The dome of the talus sits evenly under the tibia, with the same joint space from front to back.',
+      'Along the top of the calcaneus, the lines from the back of the bone and from its front to the top of the joint with the talus make Böhler’s angle, about 20 to 40 degrees; a fall from a height that crushes the calcaneus flattens it.',
+      'A small rounded bone behind the talus is an os trigonum, a normal variant, not a fracture.',
+    ],
+    marks: [
+      { label: 'Tibia', x: 0.47, y: 0.2 },
+      { label: 'Talus', x: 0.36, y: 0.56 },
+      { label: 'Navicular', x: 0.1, y: 0.62 },
+      { label: 'Calcaneus', x: 0.62, y: 0.76 },
+    ],
+    source: commons('X-ray of normal ankle - lateral.jpg'),
+  },
+  {
+    id: 'ankle-oblique',
+    region: 'ankle',
+    title: 'Ankle, oblique',
+    width: 593,
+    height: 929,
+    lookFor: [
+      'Turning the foot moves the bones out of the overlap of the AP and lateral views, so a break hidden on those can show here.',
+    ],
+    marks: [
+      { label: 'Tibia', x: 0.37, y: 0.2 },
+      { label: 'Fibula', x: 0.55, y: 0.2 },
+      { label: 'Calcaneus', x: 0.72, y: 0.72 },
+    ],
+    source: commons('X-ray of normal ankle - lateral oblique.jpg'),
+  },
 ];
 
 /** Which films each topic shows, by the region of the limb it covers. */
@@ -259,6 +342,10 @@ const REGIONS_BY_TOPIC: Record<string, XrayFilm['region'][]> = {
   'hand-muscles': ['hand'],
   'palm-spaces': ['hand'],
   'palm-vessels-nerves': ['hand'],
+  'hip-joint': ['hip'],
+  'ankle-tibiofibular-joints': ['ankle'],
+  'foot-joints': ['ankle'],
+  'lower-limb-xrays': ['hip', 'ankle'],
 };
 
 export function filmsFor(slug: string): XrayFilm[] {

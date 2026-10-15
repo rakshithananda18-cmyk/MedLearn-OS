@@ -105,6 +105,7 @@ export const POSTERS = [
   { name: 'foot-joints', path: '/studio?topic=foot-joints' },
   { name: 'foot-arches', path: '/studio?topic=foot-arches' },
   { name: 'lower-limb-surface-marking', path: '/studio?topic=lower-limb-surface-marking' },
+  { name: 'lower-limb-xrays', path: '/studio?topic=lower-limb-xrays' },
   { name: 'lower-limb-nerve-injuries', path: '/studio?topic=lower-limb-nerve-injuries' },
   { name: 'lower-limb-development', path: '/studio?topic=lower-limb-development' },
 ];
