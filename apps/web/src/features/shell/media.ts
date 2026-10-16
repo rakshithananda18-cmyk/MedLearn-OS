@@ -16,6 +16,9 @@ export function mediaQuery(query: string) {
 /** Tablets held sideways and laptops (the xl breakpoint): room for side-by-side panels. */
 export const useWide = mediaQuery('(min-width: 64rem)');
 
+/** Screens 640 pixels tall or less (a short phone, a phone on its side, a small window). */
+export const useShortScreen = mediaQuery('(max-height: 40rem)');
+
 const noSubscription = () => () => {};
 
 /** False during the server render and hydration, then true: for what only the browser knows. */

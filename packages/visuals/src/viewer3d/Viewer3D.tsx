@@ -144,6 +144,8 @@ export interface Viewer3DProps {
   insetRight?: number;
   /** The same for a sheet over the bottom edge (phones): the model keeps above it. */
   insetBottom?: number;
+  /** The same for a header over the top edge (phones): the model keeps below it. */
+  insetTop?: number;
   /** One finger or the left button moves the model instead of turning it (the right turns it). */
   pan?: boolean;
 }
@@ -159,6 +161,12 @@ const TAP_SLOP_PX = 6;
 const dragged = (event: ThreeEvent<MouseEvent>) => event.delta > TAP_SLOP_PX;
 /** How far past the model's bounds the view may be moved, in metres. */
 const PAN_MARGIN_M = 0.05;
+/**
+ * The angle the guided views were framed to fill: the shorter side of the uncovered view on a
+ * laptop. A narrower view (a phone held upright, half under its sheet) zooms out until its shorter
+ * side spans as much, so a view keeps its whole model instead of cropping it twice as close.
+ */
+const FRAMED_VIEW_DEG = 25;
 const DIMMED = 0.3;
 const XRAY = 0.3;
 const NONE: ReadonlySet<string> = new Set();
@@ -678,6 +686,7 @@ function LabelTracker({
   useFrame(() => {
     const group = groupRef.current;
     if (!group) return;
+    const placed: Array<{ node: HTMLElement; x: number; y: number }> = [];
     for (const [id, anchor] of anchors) {
       const node = nodesRef.current.get(id);
       if (!node) continue;
@@ -688,10 +697,48 @@ function LabelTracker({
       const shown =
         anchor !== null && point.z < 1 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1;
       node.style.visibility = shown ? 'visible' : 'hidden';
-      node.style.transform = `translate(${((point.x + 1) / 2) * size.width}px, ${((1 - point.y) / 2) * size.height}px)`;
+      const x = ((point.x + 1) / 2) * size.width;
+      const y = ((1 - point.y) / 2) * size.height;
+      node.style.transform = `translate(${x}px, ${y}px)`;
+      if (shown) placed.push({ node, x, y });
     }
+    separateLabels(placed);
   });
   return null;
+}
+
+/** The leader line's length (w-6) and the room kept between two names. */
+const LEADER_PX = 24;
+const LABEL_GAP_PX = 4;
+
+/**
+ * Names whose structures sit close together on the screen would overlap: top to bottom, each pill
+ * that would cover one already placed moves down until it is clear, and its leader line turns to
+ * still meet it. The dots stay on their structures.
+ */
+function separateLabels(labels: Array<{ node: HTMLElement; x: number; y: number }>) {
+  const taken: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+  for (const { node, x, y } of labels.toSorted((a, b) => a.y - b.y)) {
+    const line = node.children[1] as HTMLElement | undefined;
+    const pill = node.children[2] as HTMLElement | undefined;
+    if (!line || !pill) continue;
+    const half = pill.offsetHeight / 2;
+    const left = x + LEADER_PX;
+    const right = left + pill.offsetWidth;
+    let shift = 0;
+    for (const other of taken.toSorted((a, b) => a.top - b.top)) {
+      const top = y + shift - half;
+      const bottom = y + shift + half;
+      if (left < other.right && right > other.left && top < other.bottom && bottom > other.top) {
+        shift = other.bottom + LABEL_GAP_PX + half - y;
+      }
+    }
+    taken.push({ left, right, top: y + shift - half, bottom: y + shift + half });
+    pill.style.transform = shift ? `translateY(${shift}px)` : '';
+    line.style.transformOrigin = '0 50%';
+    line.style.width = shift ? `${Math.hypot(LEADER_PX, shift)}px` : '';
+    line.style.transform = shift ? `rotate(${Math.atan2(shift, LEADER_PX)}rad)` : '';
+  }
 }
 
 /** The names themselves: a dot on the structure, a short line, and a pill. */
@@ -841,31 +888,46 @@ function easeToward(from: number, goal: number, delta: number, reducedMotion: bo
  * Keeps the model in the middle of the view left uncovered: a panel over the right edge shifts
  * the picture left by half its width, a sheet over the bottom shifts it up by half its height,
  * easing there and back (at once when motion is reduced). The camera's own view is shifted, so
- * the model keeps its size and taps still land true.
+ * taps still land true. When the uncovered view is narrower than the guided views were framed for
+ * (FRAMED_VIEW_DEG), the camera zooms out to match; pinch and wheel zoom still work on top.
  */
 function ViewInset({
   right,
   bottom,
+  top,
   reducedMotion,
-}: Readonly<{ right: number; bottom: number; reducedMotion: boolean }>) {
-  const { camera, size, invalidate } = useThree();
+}: Readonly<{ right: number; bottom: number; top: number; reducedMotion: boolean }>) {
+  const { size, invalidate } = useThree();
   const shift = useRef({ x: 0, y: 0 });
-  const applied = useRef({ x: 0, y: 0, width: 0, height: 0 });
-  useEffect(() => invalidate(), [right, bottom, invalidate]);
-  useFrame((_, delta) => {
-    const goal = { x: right / 2, y: bottom / 2 };
+  const applied = useRef({ x: 0, y: 0, width: 0, height: 0, zoom: 1 });
+  useEffect(() => invalidate(), [right, bottom, top, invalidate]);
+  // The frame's own camera, so the projection is set where the frame is drawn.
+  useFrame((state, delta) => {
+    // A header over the top pushes the middle down as a sheet over the bottom pushes it up.
+    const goal = { x: right / 2, y: (bottom - top) / 2 };
     const x = easeToward(shift.current.x, goal.x, delta, reducedMotion);
     const y = easeToward(shift.current.y, goal.y, delta, reducedMotion);
     shift.current = { x, y };
     if (x !== goal.x || y !== goal.y) invalidate();
+    const view = state.camera as PerspectiveCamera;
+    const uncovered = Math.max(1, Math.min(size.width - 2 * x, size.height - bottom - top));
+    const spans = (view.fov * uncovered) / Math.max(1, size.height);
+    const zoom = Math.min(1, spans / FRAMED_VIEW_DEG);
     const last = applied.current;
-    if (last.x === x && last.y === y && last.width === size.width && last.height === size.height) {
+    if (
+      last.x === x &&
+      last.y === y &&
+      last.width === size.width &&
+      last.height === size.height &&
+      last.zoom === zoom
+    ) {
       return;
     }
-    const view = camera as PerspectiveCamera;
+    view.zoom = zoom;
+    // Both of these update the projection, the zoom with it.
     if (x === 0 && y === 0) view.clearViewOffset();
     else view.setViewOffset(size.width, size.height, x, y, size.width, size.height);
-    applied.current = { x, y, width: size.width, height: size.height };
+    applied.current = { x, y, width: size.width, height: size.height, zoom };
   });
   return null;
 }
@@ -950,6 +1012,7 @@ export default function Viewer3D({
   pose = null,
   insetRight = 0,
   insetBottom = 0,
+  insetTop = 0,
   pan = false,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
@@ -1095,7 +1158,12 @@ export default function Viewer3D({
           }
         />
         <PanLimit groupRef={group} />
-        <ViewInset right={insetRight} bottom={insetBottom} reducedMotion={reducedMotion} />
+        <ViewInset
+          right={insetRight}
+          bottom={insetBottom}
+          top={insetTop}
+          reducedMotion={reducedMotion}
+        />
         <CameraRig
           model={model}
           stopId={stopId}

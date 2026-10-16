@@ -502,6 +502,11 @@
   max-height: min(60dvh, 36rem);
 }
 
+/* A column whose own control shows there is more (the studio's tools): no scrollbar beside it. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+}
+
 /* A row that scrolls sideways (tags, chips), with the app's thin scrollbar (set in the base). */
 @utility scroll-row {
   overflow-x: auto;
