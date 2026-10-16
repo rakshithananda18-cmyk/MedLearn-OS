@@ -21,7 +21,7 @@ export const spleen: Topic = {
     'Where the spleen lies and how big it is, its ends, borders, surfaces and hilum, the impressions on its visceral surface, its ligaments and vessels, what it does, and how it behaves when enlarged or torn.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

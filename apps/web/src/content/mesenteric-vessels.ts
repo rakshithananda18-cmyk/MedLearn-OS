@@ -22,7 +22,7 @@ export const mesentericVessels: Topic = {
     'The arteries of the midgut and hindgut: where each arises, its course and relations, its branches to the intestine, the marginal artery that joins them along the colon, and the veins that go with them.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

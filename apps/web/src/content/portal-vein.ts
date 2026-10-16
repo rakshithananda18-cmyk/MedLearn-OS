@@ -20,7 +20,7 @@ export const portalVein: Topic = {
     'How the portal vein forms, its three parts and their relations, its branches and tributaries, and the places where portal and systemic veins meet, which swell when portal pressure rises.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

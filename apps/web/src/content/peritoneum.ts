@@ -23,7 +23,7 @@ export const peritoneum: Topic = {
     'The serous sac of the abdomen: its parietal and visceral layers and why they hurt differently, which organs lie inside it and which behind it, what it does, and fluid, air and infection in the cavity.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

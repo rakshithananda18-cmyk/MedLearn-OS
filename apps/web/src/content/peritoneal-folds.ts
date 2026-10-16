@@ -25,7 +25,7 @@ export const peritonealFolds: Topic = {
     'Where the folds come from (the mesenteries of the embryonic gut), and each in turn: greater and lesser omentum, the mesentery and its root, the mesoappendix, the transverse and sigmoid mesocolons and the falciform ligament.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

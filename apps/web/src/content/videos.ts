@@ -589,6 +589,35 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
       506,
     ),
   ],
+  'suprarenal-gland': [
+    video('0SwNu0_b0eA', 'The suprarenal (adrenal) gland', 'Dr Sumit Gupta', 2209),
+    video('jbjK1uaRZQE', 'The adrenal gland', NOTED, 1170),
+  ],
+  diaphragm: [
+    video('oDq8UDGw2P0', 'Diaphragm: origins, openings and coverings', TAIM, 426),
+    video('6IK-YHK1ToM', 'The diaphragm', KENHUB, 272),
+  ],
+  'abdominal-aorta': [
+    video('y2YfD7elRPo', 'The abdominal aorta', 'Dr Sumit Gupta', 2391),
+    video('xKBqenJNtRY', 'Abdominal aorta: course, branches and mnemonics', TAIM, 546),
+  ],
+  'inferior-vena-cava': [
+    video('V6kgaQkepI4', 'The inferior vena cava and its tributaries', TAIM, 274),
+    video('CcSNk_jBfss', 'The inferior vena cava and its tributaries', KNOWLEDGE, 162),
+  ],
+  'posterior-abdominal-wall': [
+    video('ovQYBAiv8cI', 'Muscles of the posterior abdominal wall in 3D', ANATOMY_ZONE, 450),
+    video('AJ15tcu16Mw', 'Posterior abdominal wall muscles', 'Sam Webster', 490),
+    video('tqd4dkurTog', 'The thoracolumbar fascia', 'Dr Sumit Gupta', 1687),
+  ],
+  'lumbar-plexus': [
+    video('UmIDCHd0Ai4', 'The lumbar plexus: structure and branches', ANATOMY_ZONE, 575),
+    video('CZ0t2mZL3os', 'The lumbar plexus', 'Ninja Nerd', 1550),
+  ],
+  'abdominal-autonomic-nerves': [
+    video('WXO_nyFY9oM', 'Autonomic nerves of the abdomen', 'Access Anatomy', 665),
+    video('3Oh5hp8Lt6Y', 'The coeliac plexus and ganglia', 'Sam Webster', 695),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

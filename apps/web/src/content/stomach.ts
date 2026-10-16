@@ -21,7 +21,7 @@ export const stomach: Topic = {
     'The short abdominal oesophagus, then the stomach: its two orifices, two curvatures and two parts, its peritoneum, what lies in front of it, and the stomach bed behind.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
