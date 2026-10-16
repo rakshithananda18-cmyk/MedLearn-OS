@@ -74,6 +74,8 @@ export interface ModelViewProps {
   flat: boolean;
   /** How much of the view's right edge a panel covers, in pixels: the model keeps beside it. */
   insetRight: number;
+  /** How much of the view's bottom edge a sheet covers, in pixels (phones). */
+  insetBottom: number;
   /** A plain drag moves the model instead of turning it. */
   pan: boolean;
   onPick: (id: string | null) => void;
@@ -114,6 +116,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         focusId={props.focusId}
         pose={props.pose}
         insetRight={props.insetRight}
+        insetBottom={props.insetBottom}
         pan={props.pan}
       />
     );

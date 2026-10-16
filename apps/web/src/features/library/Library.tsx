@@ -1,7 +1,7 @@
 'use client';
 
 import { buildTodayPlan, type TodayItem, topicMastery } from '@medlearn/core';
-import { cx, Display, Drawer, Eyebrow, Icon, type IconGlyph, Tooltip } from '@medlearn/ui';
+import { cx, Display, Drawer, Eyebrow, Icon, type IconGlyph } from '@medlearn/ui';
 import { Activity, BookMarked, BookOpen, Droplet, PersonStanding } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -30,18 +30,20 @@ const SUBJECT_ICON: Record<string, IconGlyph> = {
   biochemistry: Droplet,
 };
 
-/** A round way in beside the search: an icon, named for screen readers and in a tooltip. */
+/**
+ * A round way in beside the search: an icon, named for screen readers and in the browser's own
+ * tooltip (a scripted one would add 14 KB to the library's first load).
+ */
 function WayIn({ href, icon, label }: Readonly<{ href: string; icon: IconGlyph; label: string }>) {
   return (
-    <Tooltip content={label}>
-      <Link
-        href={href}
-        aria-label={label}
-        className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gloss text-gold-ink shadow-glass transition-transform duration-150 hover:-translate-y-px"
-      >
-        <Icon icon={icon} />
-      </Link>
-    </Tooltip>
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gloss text-gold-ink shadow-glass transition-transform duration-150 hover:-translate-y-px"
+    >
+      <Icon icon={icon} />
+    </Link>
   );
 }
 
@@ -55,7 +57,7 @@ function SubjectTabs({
     // Phones give the subjects a line of their own, so what is due never covers them.
     <fieldset
       aria-label="Subjects"
-      className="flex min-w-0 basis-full gap-2 overflow-x-auto pb-1 md:basis-auto"
+      className="flex min-w-0 basis-full flex-wrap gap-2 pb-1 md:basis-auto"
     >
       {subjects.map((subject) => {
         const on = subject.slug === current;

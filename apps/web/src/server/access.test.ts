@@ -9,6 +9,14 @@ describe('access list', () => {
     expect(isAllowed(null, null)).toBe(true);
   });
 
+  it('closes a production server without a list, unless it is opened on purpose', () => {
+    const closed = getAccessList({ NODE_ENV: 'production' });
+    expect(closed?.size).toBe(0);
+    expect(isAllowed(closed, 'asha@example.com')).toBe(false);
+    expect(getAccessList({ NODE_ENV: 'production', ACCESS_OPEN: 'true' })).toBeNull();
+    expect(getAccessList({ NODE_ENV: 'development' })).toBeNull();
+  });
+
   it('allows only listed emails, ignoring spaces and case', () => {
     const list = getAccessList({ ACCESS_EMAILS: ' Asha@Example.com ,ravi@example.com' });
     expect(isAllowed(list, 'asha@example.com')).toBe(true);

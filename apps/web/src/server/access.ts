@@ -2,15 +2,18 @@ type Env = Record<string, string | undefined>;
 
 /**
  * The emails allowed to use the app, from ACCESS_EMAILS (comma-separated), or null when the app is
- * open to everyone (local development and the test suites). Set it wherever the app holds content
- * that must stay private, such as notes drawn from textbooks.
+ * open to everyone. Development is open without a list; a production server is closed to everyone
+ * unless it has a list or ACCESS_OPEN=true says, on purpose, that it is public. So a deploy that
+ * forgets the list keeps the textbook notes private instead of publishing them.
  */
 export function getAccessList(env: Env = process.env): ReadonlySet<string> | null {
   const emails = (env.ACCESS_EMAILS ?? '')
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
-  return emails.length > 0 ? new Set(emails) : null;
+  if (emails.length > 0) return new Set(emails);
+  const open = env.ACCESS_OPEN === 'true' || env.NODE_ENV !== 'production';
+  return open ? null : new Set();
 }
 
 /** What someone not on the access list is told when they try to sign up or sign in. */

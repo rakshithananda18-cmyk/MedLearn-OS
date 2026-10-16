@@ -6,3 +6,9 @@ packages:
 allowBuilds:
   # Prebuilt native binding ships as a regular dependency; the script is only a download fallback.
   unrs-resolver: false
+
+# Security fixes for packages that build tools pull in (pnpm audit, 16 Oct 2026).
+overrides:
+  source-map-js: ^1.2.2
+  basic-ftp: ^6.2.1
+  sharp: 0.35.5

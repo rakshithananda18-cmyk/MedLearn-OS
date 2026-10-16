@@ -373,6 +373,7 @@ function StudioModel({
   labels,
   className = 'absolute inset-0',
   insetRight = 0,
+  insetBottom = 0,
 }: Readonly<{
   studio: StudioState;
   regions: BodyRegionInfo[];
@@ -381,6 +382,8 @@ function StudioModel({
   className?: string;
   /** How much of the view's right edge a panel covers, in pixels. */
   insetRight?: number;
+  /** How much of the view's bottom edge a sheet covers, in pixels (phones). */
+  insetBottom?: number;
 }>) {
   const { session, topic, model, update, settings } = studio;
   const systemReducedMotion = useReducedMotion();
@@ -462,6 +465,7 @@ function StudioModel({
         pose={pose}
         flat={settings.flat}
         insetRight={insetRight}
+        insetBottom={insetBottom}
         pan={studio.pan}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -888,9 +892,38 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
   );
 }
 
+/**
+ * The height a footer covers at the bottom of the screen, for the model to keep above it; nothing
+ * when it is not along the bottom (a phone held sideways puts the sheet down the right).
+ */
+function useBottomCover(onCover: (height: number) => void) {
+  return useCallback(
+    (node: HTMLElement | null) => {
+      if (!node) {
+        onCover(0);
+        return;
+      }
+      const measure = () => {
+        const { top, width } = node.getBoundingClientRect();
+        const alongBottom = width > window.innerWidth * 0.6;
+        onCover(alongBottom ? Math.max(0, window.innerHeight - top) : 0);
+      };
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [onCover],
+  );
+}
+
 /** Phones and tablets held upright: everything floats over the model, sheets open on demand. */
-function PhoneOverlay(props: Readonly<OverlayProps>) {
+function PhoneOverlay({
+  onCover,
+  ...props
+}: Readonly<OverlayProps & { onCover: (height: number) => void }>) {
   const { studio, topics, tree, regions } = props;
+  const measureFooter = useBottomCover(onCover);
   const { session, topic } = studio;
   const title = topic?.title ?? 'Whole body';
   const quiz = session.mode === 'quiz' ? session.quiz : null;
@@ -917,7 +950,9 @@ function PhoneOverlay(props: Readonly<OverlayProps>) {
           <Tools studio={studio} />
         </div>
       )}
-      <PhoneFooter {...props} />
+      <div ref={measureFooter} className="flex flex-col">
+        <PhoneFooter {...props} />
+      </div>
 
       {topic && session.panel === 'topics' ? (
         <TopicsPanel
@@ -1170,6 +1205,8 @@ export function Studio(props: Readonly<StudioProps>) {
   // alone, so a laptop never shows the phone's layout first.
   const hydrated = useHydrated();
   const overlay = { studio, topics, tree, regions, capable };
+  // How much of a phone's screen the footer sheet covers, so the model keeps above it.
+  const [coverBottom, setCoverBottom] = useState(0);
   const stage = (insetRight = 0) => (
     <StudioModel
       studio={studio}
@@ -1177,6 +1214,7 @@ export function Studio(props: Readonly<StudioProps>) {
       capable={capable}
       labels={labelsFor(studio, topics, regions)}
       insetRight={insetRight}
+      insetBottom={docked ? 0 : coverBottom}
       // Docked, the model sits between the header row and the guided views; on phones it fills
       // the screen.
       className={
@@ -1198,7 +1236,7 @@ export function Studio(props: Readonly<StudioProps>) {
       )}
     >
       {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
-      {hydrated && !docked ? <PhoneOverlay {...overlay} /> : null}
+      {hydrated && !docked ? <PhoneOverlay {...overlay} onCover={setCoverBottom} /> : null}
     </section>
   );
 }
