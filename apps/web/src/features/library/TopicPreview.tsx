@@ -130,14 +130,18 @@ export function TopicPreview({
           <Tally icon={RotateCcw} value={topic.cardIds.length} label="recall cards" />
         </ul>
 
-        <div className="flex items-center gap-2">
-          <Link href={`/learn/${topic.slug}/lesson`} className={buttonClasses({ fullWidth: true })}>
+        {/* Each label stays on one line; on a narrow phone the buttons wrap onto their own rows. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/learn/${topic.slug}/lesson`}
+            className={cx(buttonClasses(), 'flex-1 whitespace-nowrap')}
+          >
             <Icon icon={Play} size="sm" />
             {status === 'learnt' ? 'Go over the lesson' : 'Start lesson'}
           </Link>
           <Link
             href={`/learn/${topic.slug}`}
-            className={buttonClasses({ variant: 'secondary', fullWidth: true })}
+            className={cx(buttonClasses({ variant: 'secondary' }), 'flex-1 whitespace-nowrap')}
           >
             Open topic
           </Link>

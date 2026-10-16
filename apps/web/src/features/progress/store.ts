@@ -5,6 +5,7 @@ import {
   firstRevisit,
   type LearnerProgress,
   logActivity,
+  MAX_REMOVED_GOALS,
   nextRevisit,
   type ReviewRating,
   scheduleReview,
@@ -126,8 +127,8 @@ export function completeRevisit(topicSlug: string, share: number, now = new Date
   const current = revisits[topicSlug];
   if (!current) return;
   const next = nextRevisit(current, share, dayKey(now));
-  const rest = Object.fromEntries(Object.entries(revisits).filter(([slug]) => slug !== topicSlug));
-  commit({ revisits: next ? { ...rest, [topicSlug]: next } : rest }, now);
+  // After the last one the topic keeps a finished marker, which a sync cannot undo.
+  if (next) commit({ revisits: { ...revisits, [topicSlug]: next } }, now);
 }
 
 export function completeDrill(topicSlug: string, minutes = 0): void {
@@ -185,7 +186,12 @@ export function addGoal(
 }
 
 export function removeGoal(goalId: string): void {
-  commit({ goals: read().goals.filter((goal) => goal.id !== goalId) });
+  const { goals, removedGoals } = read();
+  // Remembered, so the copy in the account or on another phone cannot bring it back.
+  commit({
+    goals: goals.filter((goal) => goal.id !== goalId),
+    removedGoals: addOnce(removedGoals, goalId).slice(-MAX_REMOVED_GOALS),
+  });
 }
 
 /** Counts a topic as gone over for a goal, after a practice session on it. */

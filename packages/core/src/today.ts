@@ -67,7 +67,15 @@ export interface LearnerProgress {
   activity: Activity;
   /** Class tests and revisits the student asked for. */
   goals: StudyGoal[];
-  /** Each learnt topic's next spaced revisit, by slug; gone once the last one is done. */
+  /**
+   * Ids of goals the student removed (the newest MAX_REMOVED_GOALS), so a copy on another phone or
+   * in the account cannot bring them back when the two are merged.
+   */
+  removedGoals: string[];
+  /**
+   * Each learnt topic's next spaced revisit, by slug. Once the last is done the topic keeps a
+   * finished marker (see finishedRevisit) rather than disappearing, so a merge cannot revive it.
+   */
   revisits: Record<string, TopicRevisit>;
   /** Last change (ISO time); the newer copy wins when the device and the server differ. */
   updatedAt: string | null;
@@ -85,9 +93,13 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   notes: {},
   activity: {},
   goals: [],
+  removedGoals: [],
   revisits: {},
   updatedAt: null,
 };
+
+/** How many removed goal ids are remembered; ids are unique, so older ones never come back. */
+export const MAX_REMOVED_GOALS = 200;
 
 /** The parts of a topic the planner needs. */
 export interface PlannableTopic {
@@ -201,6 +213,14 @@ export function addDays(day: string, days: number): string {
   return dayKey(new Date(Date.parse(`${day}T12:00:00`) + days * DAY_MS));
 }
 
+/** The day a finished topic's marker is "due": never. */
+const NEVER = '9999-12-31';
+
+/** A topic whose revisits are all done: past the last step, and never due. */
+export function finishedRevisit(): TopicRevisit {
+  return { step: REVISIT_DAYS.length, due: NEVER };
+}
+
 /** A topic's first revisit, due the day after its lesson. */
 export function firstRevisit(today: string): TopicRevisit {
   return { step: 0, due: addDays(today, REVISIT_DAYS[0]) };
@@ -215,10 +235,11 @@ export function nextRevisit(
   share: number,
   today: string,
 ): TopicRevisit | null {
+  if (current.step >= REVISIT_DAYS.length) return null;
   if (share < REVISIT_PASS) return { step: current.step, due: addDays(today, 1) };
   const step = current.step + 1;
   const gap = REVISIT_DAYS[step];
-  return gap === undefined ? null : { step, due: addDays(today, gap) };
+  return gap === undefined ? finishedRevisit() : { step, due: addDays(today, gap) };
 }
 
 /** The recall card made from a question the student got wrong. */

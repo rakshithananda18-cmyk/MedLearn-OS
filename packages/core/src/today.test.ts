@@ -8,6 +8,7 @@ import {
   daysBetween,
   dueCardIds,
   EMPTY_PROGRESS,
+  finishedRevisit,
   firstRevisit,
   goalToday,
   type LearnerProgress,
@@ -260,7 +261,11 @@ describe('spaced revisits of learnt topics', () => {
       due: '2026-11-03',
     });
     // The last one done well ends them; a poor one comes back tomorrow at the same step.
-    expect(nextRevisit({ step: 2, due: '2026-11-03' }, 0.9, '2026-11-03')).toBeNull();
+    // After the last one, a finished marker that is never due (and that a sync keeps).
+    expect(nextRevisit({ step: 2, due: '2026-11-03' }, 0.9, '2026-11-03')).toEqual(
+      finishedRevisit(),
+    );
+    expect(nextRevisit(finishedRevisit(), 1, '2026-11-03')).toBeNull();
     expect(nextRevisit({ step: 1, due: '2026-10-04' }, 0.4, '2026-10-04')).toEqual({
       step: 1,
       due: '2026-10-05',

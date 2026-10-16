@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import type { SearchKind, SearchResult } from '@/content/search';
 import { useProgress } from '@/features/progress/store';
 
+import { fetchSearch, searchFailedMessage, wasCancelled } from './fetchSearch';
 import { SearchBox, type SearchGroup as Group, type SearchOption as Option } from './SearchBox';
 
 /** What the box needs to know about each topic for its suggestions. */
@@ -101,7 +102,13 @@ export function LiveSearch({
 }: Readonly<{ topics: SearchTopic[]; defaultValue?: string; className?: string }>) {
   const progress = useProgress();
   const [query, setQuery] = useState(defaultValue);
-  const [found, setFound] = useState<{ query: string; results: SearchResult[] } | null>(null);
+  const [found, setFound] = useState<{
+    query: string;
+    results: SearchResult[];
+    failed: boolean;
+  } | null>(null);
+  // Bumped to ask again after a failure, when the connection comes back.
+  const [attempt, setAttempt] = useState(0);
   const terms = words(query);
   const typed = terms.length > 0;
 
@@ -110,16 +117,25 @@ export function LiveSearch({
     if (!typed) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
-        .then((response) => response.json() as Promise<{ data?: { results: SearchResult[] } }>)
-        .then((body) => setFound({ query, results: body.data?.results ?? [] }))
-        .catch(() => undefined);
+      fetchSearch(query, controller.signal)
+        .then((results) => setFound({ query, results, failed: false }))
+        .catch((error: unknown) => {
+          if (!wasCancelled(error)) setFound({ query, results: [], failed: true });
+        });
     }, DEBOUNCE_MS);
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, typed]);
+  }, [query, typed, attempt]);
+
+  const failed = typed && found?.query === query && found.failed;
+  useEffect(() => {
+    if (!failed) return;
+    const retry = () => setAttempt((current) => current + 1);
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, [failed]);
 
   const titleOf = new Map(topics.map((topic) => [topic.slug, topic.title]));
   const notes = Object.entries(progress.notes)
@@ -203,6 +219,7 @@ export function LiveSearch({
   const options = groups.flatMap((group) => group.options);
   let status: string | null = null;
   if (typed && found?.query !== query) status = 'Searching…';
+  else if (failed) status = searchFailedMessage();
   else if (typed && options.length === 1) {
     status = 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.';
   }
