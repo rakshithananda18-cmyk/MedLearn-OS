@@ -5,7 +5,6 @@ import {
   ABDOMINAL_ORGANS_MODEL_SRC,
   abdominalOrgansParts,
   LESSER_OMENTUM_VIEW,
-  ORGANS_SKELETON,
   PORTAL_BACK,
 } from './abdominal-organs-3d';
 import { bookSource } from './books';
@@ -38,7 +37,7 @@ export const portalVein: Topic = {
     ),
     {
       title: 'Z-Anatomy',
-      detail: 'Liver, bile duct and lesser omentum in the 3D view',
+      detail: 'Liver and lesser omentum in the 3D view',
       url: 'https://github.com/LluisV/Z-Anatomy',
       licence: 'CC BY-SA 4.0',
     },
@@ -233,7 +232,9 @@ export const portalVein: Topic = {
       credit: ABDOMINAL_ORGANS_MODEL_CREDIT,
       parts: abdominalOrgansParts(
         [
-          ...ORGANS_SKELETON,
+          'lumbar-spine',
+          'sacrum',
+          'hip-bones',
           'liver',
           'gallbladder',
           'bile-duct',

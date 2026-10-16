@@ -14,6 +14,7 @@ import { axilla } from './axilla';
 import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
 import { backMuscles } from './back-muscles';
+import { biliaryApparatus } from './biliary-apparatus';
 import { bonyPelvis } from './bony-pelvis';
 import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
@@ -47,6 +48,7 @@ import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { intervertebralDisc } from './intervertebral-disc';
 import { jejunumIleum } from './jejunum-ileum';
+import { kidney } from './kidney';
 import { kneeAnastomoses } from './knee-anastomoses';
 import { kneeJoint } from './knee-joint';
 import { largeIntestine } from './large-intestine';
@@ -54,6 +56,8 @@ import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
 import { lesserSac } from './lesser-sac';
+import { liver } from './liver';
+import { liverSegments } from './liver-segments';
 import { lowerLimbDermatomes } from './lower-limb-dermatomes';
 import { lowerLimbDevelopment } from './lower-limb-development';
 import { lowerLimbLymphatics } from './lower-limb-lymphatics';
@@ -71,6 +75,7 @@ import { oesophagus } from './oesophagus';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
+import { pancreas } from './pancreas';
 import { pectoralRegion } from './pectoral-region';
 import { penis } from './penis';
 import { pericardium } from './pericardium';
@@ -95,6 +100,7 @@ import { skinVeinsLymph } from './skin-veins-lymph';
 import { soleLayersOneTwo } from './sole-layers-1-2';
 import { soleLayersThreeFour } from './sole-layers-3-4';
 import { soleSkinFascia } from './sole-skin-fascia';
+import { spleen } from './spleen';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { stomach } from './stomach';
 import { stomachSupply } from './stomach-supply';
@@ -111,6 +117,7 @@ import { thoraxSurfaceXray } from './thorax-surface-xray';
 import { trachea } from './trachea';
 import { upperLimbDevelopment } from './upper-limb-development';
 import { upperLimbXrays } from './upper-limb-xrays';
+import { ureter } from './ureter';
 import { wristBack } from './wrist-back';
 import { wristHandJoints } from './wrist-hand-joints';
 
@@ -231,6 +238,13 @@ export const TOPICS: Topic[] = [
   coeliacTrunk,
   mesentericVessels,
   portalVein,
+  biliaryApparatus,
+  spleen,
+  pancreas,
+  liver,
+  liverSegments,
+  kidney,
+  ureter,
   oxygenCurve,
 ];
 

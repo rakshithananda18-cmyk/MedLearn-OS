@@ -76,6 +76,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     19: 'Abdominal part of oesophagus and stomach',
     20: 'Small and large intestines',
     21: 'Large blood vessels of the gut',
+    22: 'Extrahepatic biliary apparatus',
+    23: 'Spleen, pancreas and liver',
+    24: 'Kidney and ureter',
   },
 };
 

@@ -129,7 +129,7 @@ describe('POST /api/reports', () => {
   });
 
   it('rejects unknown topics and kinds', async () => {
-    expect((await report(json('POST', { ...body, topicSlug: 'spleen' }))).status).toBe(404);
+    expect((await report(json('POST', { ...body, topicSlug: 'no-such-topic' }))).status).toBe(404);
     expect((await report(json('POST', { ...body, kind: 'rant' }))).status).toBe(400);
   });
 });

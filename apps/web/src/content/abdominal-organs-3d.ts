@@ -5,11 +5,11 @@ import type { CameraStop, ModelPart } from '@medlearn/schemas';
 // X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=2';
+export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=3';
 
 /** Credit for the model, shown wherever it is. */
 export const ABDOMINAL_ORGANS_MODEL_CREDIT =
-  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver, bile duct, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled.';
+  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver and its segments, pancreatic ducts, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what a
@@ -61,10 +61,69 @@ const PARTS = {
       'Under the right lobe of the liver, its fundus at the tip of the ninth costal cartilage.',
   },
   'bile-duct': {
-    name: 'Bile duct',
+    name: 'Common hepatic and bile duct',
     kind: 'organ',
     about:
-      'Down the free margin of the lesser omentum, behind the first part of the duodenum and through the head of the pancreas, to open with the pancreatic duct on the major papilla of the second part.',
+      'The common hepatic duct (about 3 cm) is joined by the cystic duct to form the bile duct (8 cm), which runs down the free margin of the lesser omentum, behind the first part of the duodenum and through the head of the pancreas, to open with the pancreatic duct on the major papilla.',
+  },
+  'hepatic-ducts': {
+    name: 'Right and left hepatic ducts',
+    kind: 'organ',
+    about: 'Leave the liver at the porta hepatis, in front of the hepatic artery and portal vein.',
+  },
+  'cystic-duct': {
+    name: 'Cystic duct',
+    kind: 'organ',
+    about:
+      '3 to 4 cm from the neck of the gallbladder to the common hepatic duct; its lining forms the spiral valve of Heister.',
+  },
+  'pancreatic-ducts': {
+    name: 'Main and accessory pancreatic ducts',
+    kind: 'organ',
+    about:
+      'The main duct runs the length of the gland to join the bile duct at the major papilla; the accessory duct drains the upper head to the minor papilla.',
+  },
+  'liver-segment-1': {
+    name: 'Segment I (caudate lobe)',
+    kind: 'organ',
+    about:
+      'The caudate lobe, on the back between the IVC and the fissure for the ligamentum venosum; its veins drain straight into the IVC.',
+  },
+  'liver-segment-2': {
+    name: 'Segment II',
+    kind: 'organ',
+    about: 'Left lateral, upper: left of the falciform ligament.',
+  },
+  'liver-segment-3': {
+    name: 'Segment III',
+    kind: 'organ',
+    about: 'Left lateral, lower: left of the falciform ligament.',
+  },
+  'liver-segment-4': {
+    name: 'Segment IV',
+    kind: 'organ',
+    about:
+      'Left medial: between the falciform ligament and the gallbladder line; it includes the quadrate lobe.',
+  },
+  'liver-segment-5': {
+    name: 'Segment V',
+    kind: 'organ',
+    about: 'Right anterior, lower, beside the gallbladder.',
+  },
+  'liver-segment-6': {
+    name: 'Segment VI',
+    kind: 'organ',
+    about: 'Right posterior, lower.',
+  },
+  'liver-segment-7': {
+    name: 'Segment VII',
+    kind: 'organ',
+    about: 'Right posterior, upper, under the dome of the diaphragm.',
+  },
+  'liver-segment-8': {
+    name: 'Segment VIII',
+    kind: 'organ',
+    about: 'Right anterior, upper.',
   },
   'abdominal-oesophagus': {
     name: 'Abdominal oesophagus',
@@ -359,6 +418,47 @@ const PARTS = {
     kind: 'vein',
     about: 'Along the lesser curvature to the portal vein; it receives the prepyloric vein.',
   },
+  'hepatic-veins': {
+    name: 'Hepatic veins',
+    kind: 'vein',
+    about:
+      'Right, middle and left, running between the segments to open straight into the IVC behind the liver; they help hold the liver in place.',
+  },
+  'renal-arteries': {
+    name: 'Renal arteries',
+    kind: 'artery',
+    about:
+      'From the aorta at L2; each divides into an anterior division (four segmental arteries) and a posterior division (one), all end arteries.',
+  },
+  'renal-veins': {
+    name: 'Renal veins',
+    kind: 'vein',
+    about:
+      'In front of the arteries at the hilum, to the IVC; the longer left vein crosses in front of the aorta below the superior mesenteric artery.',
+  },
+  'testicular-arteries': {
+    name: 'Testicular arteries',
+    kind: 'artery',
+    about:
+      'From the aorta below the renal arteries, down the posterior wall, crossing in front of the ureters, to the deep inguinal rings.',
+  },
+  'testicular-veins': {
+    name: 'Testicular veins',
+    kind: 'vein',
+    about:
+      'Up beside the arteries, in front of the ureters; the left ends in the left renal vein, the right in the IVC.',
+  },
+  'common-iliac-vessels': {
+    name: 'Common iliac vessels',
+    kind: 'artery',
+    about:
+      'The ureter enters the pelvis by crossing in front of the end of the common iliac artery.',
+  },
+  'psoas-major': {
+    name: 'Psoas major',
+    kind: 'muscle',
+    about: 'Behind the kidneys and the ureters, which run down on its front.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type AbdominalOrgansPartId = keyof typeof PARTS;
@@ -372,6 +472,18 @@ const LOOK: Partial<Record<AbdominalOrgansPartId, Pick<ModelPart, 'colour' | 'op
   gallbladder: solid('gallbladder'),
   'bile-duct': solid('gallbladder'),
   'abdominal-oesophagus': solid('stomach'),
+  'hepatic-ducts': solid('gallbladder'),
+  'cystic-duct': solid('gallbladder'),
+  'pancreatic-ducts': solid('gallbladder'),
+  // Eight segments in eight colours, so their borders show.
+  'liver-segment-1': solid('suprarenal'),
+  'liver-segment-2': solid('spleen'),
+  'liver-segment-3': solid('stomach'),
+  'liver-segment-4': solid('pancreas'),
+  'liver-segment-5': solid('gallbladder'),
+  'liver-segment-6': solid('kidney'),
+  'liver-segment-7': solid('colon'),
+  'liver-segment-8': solid('liver'),
   stomach: solid('stomach'),
   spleen: solid('spleen'),
   pancreas: solid('pancreas'),
@@ -593,4 +705,105 @@ export const PORTAL_BACK: CameraStop = {
     'Seen from behind: the splenic vein runs along the back of the pancreas and meets the superior mesenteric vein behind its neck, at L2, to form the portal vein.',
   target: [-10, -125, 1060],
   position: [-350, 650, 1200],
+};
+
+/** The liver's eight segments, I to VIII. */
+export const LIVER_SEGMENTS: AbdominalOrgansPartId[] = [
+  'liver-segment-1',
+  'liver-segment-2',
+  'liver-segment-3',
+  'liver-segment-4',
+  'liver-segment-5',
+  'liver-segment-6',
+  'liver-segment-7',
+  'liver-segment-8',
+];
+
+/** The bile ducts from the porta hepatis to the duodenum, with the pancreatic ducts. */
+export const BILIARY_TREE: AbdominalOrgansPartId[] = [
+  'gallbladder',
+  'hepatic-ducts',
+  'cystic-duct',
+  'bile-duct',
+  'pancreatic-ducts',
+];
+
+/** The porta hepatis and gallbladder from below and in front, the liver lifted in the mind. */
+export const BILIARY_VIEW: CameraStop = {
+  id: 'biliary',
+  title: 'The bile ducts',
+  description:
+    'The hepatic ducts leave the porta hepatis and join; the cystic duct from the gallbladder meets them, and the bile duct runs down behind the duodenum to the head of the pancreas.',
+  target: [-25, -135, 1060],
+  position: [-230, -640, 900],
+};
+
+/** The left upper abdomen from the left: the spleen against the diaphragm. */
+export const SPLEEN_VIEW: CameraStop = {
+  id: 'spleen-side',
+  title: 'The spleen',
+  description:
+    'Tucked under the left ribs 9 to 11, along the tenth rib, against the diaphragm, with the stomach in front, the left kidney behind and the splenic flexure below.',
+  target: [80, -100, 1085],
+  position: [720, -420, 1170],
+};
+
+/** The pancreas across the posterior wall, from the front. */
+export const PANCREAS_FRONT: CameraStop = {
+  id: 'pancreas-front',
+  title: 'The pancreas',
+  description:
+    'Across the back wall at L1 and L2: the head in the curve of the duodenum, the neck in front of the portal vein, the body over the aorta and left kidney, the tail to the spleen.',
+  target: [10, -120, 1045],
+  position: [0, -780, 1070],
+};
+
+/** The liver from the front. */
+export const LIVER_FRONT: CameraStop = {
+  id: 'liver-front',
+  title: 'The liver',
+  description:
+    'Filling the right hypochondrium and most of the epigastrium under the diaphragm, the falciform ligament dividing its right and left lobes in front.',
+  target: [-15, -125, 1105],
+  position: [-60, -900, 1160],
+};
+
+/** The liver's underside from below and in front. */
+export const LIVER_BELOW: CameraStop = {
+  id: 'liver-below',
+  title: 'The inferior surface',
+  description:
+    'From below: the gallbladder fossa, the porta hepatis with its ducts and vessels, and the impressions of the stomach, duodenum, colon and right kidney.',
+  target: [-20, -125, 1090],
+  position: [-60, -520, 700],
+};
+
+/** Both kidneys from the front, the bowel set aside. */
+export const KIDNEYS_FRONT: CameraStop = {
+  id: 'kidneys-front',
+  title: 'The kidneys',
+  description:
+    'On the posterior wall from T12 to L3, the right a little lower; their hila face forwards and medially, the renal veins in front of the arteries and the pelvis behind.',
+  target: [0, -90, 1030],
+  position: [0, -820, 1045],
+};
+
+/** Both kidneys from behind. */
+export const KIDNEYS_BACK: CameraStop = {
+  id: 'kidneys-back',
+  title: 'From behind',
+  description:
+    'Behind the kidneys: the diaphragm and the twelfth rib above (and the eleventh on the left), then psoas, quadratus lumborum and transversus abdominis.',
+  target: [0, -80, 1030],
+  position: [0, 760, 1070],
+};
+
+/** The ureters from the kidneys to the bladder. */
+export const URETERS_FRONT: CameraStop = {
+  id: 'ureters-front',
+  title: 'The ureters',
+  description:
+    'Down on the psoas and the tips of the transverse processes, over the end of the common iliac artery into the pelvis, and forward to the bladder.',
+  target: [0, -90, 915],
+  position: [0, -960, 935],
 };

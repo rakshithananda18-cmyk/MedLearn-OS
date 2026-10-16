@@ -34,12 +34,6 @@ export const duodenum: Topic = {
     ),
     bookSource('grays-anatomy', 'Chapter 4 Abdomen: duodenum, pages 309 to 312'),
     {
-      title: 'Z-Anatomy',
-      detail: 'Bile duct in the 3D view',
-      url: 'https://github.com/LluisV/Z-Anatomy',
-      licence: 'CC BY-SA 4.0',
-    },
-    {
       title: 'BodyParts3D (DBCLS)',
       detail: 'Duodenum, pancreas, vessels and bones in the 3D view',
       url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
