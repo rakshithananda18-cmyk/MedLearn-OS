@@ -73,6 +73,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     16: 'Anterior abdominal wall',
     17: 'Male external genital organs',
     18: 'Abdominal cavity and peritoneum',
+    19: 'Abdominal part of oesophagus and stomach',
+    20: 'Small and large intestines',
+    21: 'Large blood vessels of the gut',
   },
 };
 

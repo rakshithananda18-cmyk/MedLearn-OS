@@ -33,7 +33,7 @@ const EBRAHEIM = 'Dr Nabil Ebraheim';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax and lower limb on 13 to 15 Oct 2026); each
+ * thorax and lower limb on 13 to 15 Oct 2026, the abdomen from 15 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -501,6 +501,46 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
       827,
     ),
     video('1LbWgFzVJtM', 'The right and left paracolic gutters', 'Crystal Clear Anatomy', 503),
+  ],
+  stomach: [
+    video('rIibe60_iJI', 'Stomach and duodenum anatomy', 'DaVinci Academy', 847),
+    video('KR8yCSB-RXc', 'The oesophagus and stomach in 3D', 'AnatomyZone', 359),
+  ],
+  'stomach-supply': [
+    video('wHhpTSxghYQ', 'The stomach: parts, supply and histology', 'EasyMedEdHub', 567),
+    video(
+      'KGD_0-LwH68',
+      'The coeliac trunk: arterial supply to the stomach',
+      'Anatomy Knowledge',
+      430,
+    ),
+  ],
+  duodenum: [
+    video('hzMM6TTWRI8', 'The duodenum', 'Dr Ahmed Farid', 2293),
+    video('jUS8usSbHkI', 'Duodenum: gross anatomy', 'Sam Webster', 1110),
+  ],
+  'jejunum-ileum': [video('FoUPBToJ6uo', 'The jejunum and ileum', 'Dr Ahmed Farid', 700)],
+  'large-intestine': [
+    video('BPS6g0arS0w', 'Large intestine: parts, topography and layers', 'Taim Talks Med', 1296),
+    video('bH1gnPbbWXA', 'Anatomy of the caecum and appendix', 'Anatomy 4 Students', 1833),
+  ],
+  appendix: [
+    video('E1fn1IJQGPo', 'Anatomy of the vermiform appendix', 'Dr Yusuf', 1393),
+    video('bH1gnPbbWXA', 'Anatomy of the caecum and appendix', 'Anatomy 4 Students', 1833),
+  ],
+  'coeliac-trunk': [
+    video('u3AtYI2_JIw', 'The coeliac trunk and its branches in 3D', 'AnatomyZone', 488),
+    video('9NrtTj2Zrs4', 'The coeliac trunk in 4 minutes', 'AnatomySimplified', 239),
+  ],
+  'mesenteric-vessels': [
+    video('VyqBPOCzbP4', 'Superior and inferior mesenteric arteries', 'Dr Adel Bondok', 1472),
+    video('9UCJS98ibRQ', 'The inferior mesenteric artery', 'Dr Ahmed Farid', 1207),
+    video('oSOqovLNYrA', 'The mesenteric arteries', 'Anatomy Knowledge', 221),
+  ],
+  'portal-vein': [
+    video('k1UaVpXIq54', 'The portal vein and portacaval anastomoses', 'Dr Yusuf', 2236),
+    video('VhZWLmAmPO0', 'The portal venous system', 'Dr Adel Bondok', 1439),
+    video('YDY2UUmqrLg', 'Portocaval anastomoses in 8 minutes', 'Eva Sweeney', 472),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),

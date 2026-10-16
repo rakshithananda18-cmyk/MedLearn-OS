@@ -1460,6 +1460,9 @@ export const MODELS = [
       // Organs.
       ...zParts('VisceralSystem100.fbx', [['liver', 'Liver', 0.15]]),
       { id: 'gallbladder', concept: 'gallbladder', ratio: 0.5 },
+      ...zParts('VisceralSystem100.fbx', [['bile-duct', 'Bile duct', 0.5]]),
+      // The oesophagus below the hiatus, with a little of the thoracic part above it.
+      { id: 'abdominal-oesophagus', concept: 'esophagus', ratio: 1, clipZ: [-Infinity, 1175] },
       { id: 'stomach', concept: 'stomach', ratio: 1 },
       { id: 'spleen', concept: 'spleen', ratio: 1 },
       { id: 'pancreas', concept: 'pancreas', ratio: 0.6 },
@@ -1478,6 +1481,7 @@ export const MODELS = [
       { id: 'appendix', concept: 'appendix', ratio: 1 },
       { id: 'transverse-colon', concept: 'transverse colon', ratio: 0.6 },
       { id: 'descending-colon', concept: 'descending colon', ratio: 0.5 },
+      { id: 'taeniae-coli', concept: 'taenia coli', ratio: 0.06 },
       ...zParts('VisceralSystem100.fbx', [['sigmoid-colon', 'Sigmoid colon', 0.15]]).map(
         (part) => ({ ...part, ...PELVIC_FIT }),
       ),
@@ -1509,6 +1513,62 @@ export const MODELS = [
       { id: 'splenic-vein', concept: 'splenic vein', ratio: 0.5 },
       { id: 'superior-mesenteric-vein', concept: 'superior mesenteric vein', ratio: 0.6 },
       { id: 'inferior-mesenteric-vein', concept: 'inferior mesenteric vein', ratio: 0.6 },
+      // Their branches and tributaries (abdomen batch 3).
+      { id: 'left-gastric-artery', concept: 'left gastric artery', ratio: 0.5 },
+      {
+        id: 'hepatic-artery',
+        concepts: ['common hepatic artery', 'hepatic artery proper'],
+        ratio: 0.6,
+      },
+      { id: 'gastroduodenal-artery', concept: 'trunk of gastroduodenal artery', ratio: 1 },
+      { id: 'right-gastric-artery', concept: 'right gastric artery', ratio: 0.6 },
+      { id: 'right-gastroepiploic-artery', concept: 'right gastro-epiploic artery', ratio: 0.3 },
+      { id: 'left-gastroepiploic-artery', concept: 'left gastro-epiploic artery', ratio: 0.3 },
+      {
+        id: 'superior-pancreaticoduodenal-arteries',
+        concepts: [
+          'anterior superior pancreaticoduodenal artery',
+          'posterior superior pancreaticoduodenal artery',
+        ],
+        ratio: 0.6,
+      },
+      {
+        id: 'inferior-pancreaticoduodenal-artery',
+        concept: 'inferior pancreaticoduodenal artery',
+        ratio: 1,
+      },
+      { id: 'middle-colic-artery', concept: 'middle colic artery', ratio: 0.4 },
+      { id: 'right-colic-artery', concept: 'right colic artery', ratio: 0.5 },
+      {
+        id: 'ileocolic-artery',
+        concepts: [
+          'ileocolic artery',
+          'ileal branch of inferior branch of ileocolic artery',
+          'ascending branch of inferior branch of ileocolic artery',
+          'anterior cecal artery',
+          'posterior cecal artery',
+        ],
+        ratio: 0.4,
+      },
+      { id: 'appendicular-artery', concept: 'appendicular artery', ratio: 0.6 },
+      {
+        id: 'marginal-artery',
+        concepts: ['marginal artery of colon', 'marginal colic artery'],
+        ratio: 0.3,
+      },
+      {
+        id: 'left-colic-artery',
+        concepts: [
+          'left colic artery',
+          'ascending branch of left colic artery',
+          'descending branch of left colic artery',
+        ],
+        ratio: 0.6,
+      },
+      { id: 'sigmoid-arteries', concept: 'sigmoid artery', ratio: 0.4 },
+      { id: 'superior-rectal-artery', concept: 'superior rectal artery', ratio: 0.6 },
+      { id: 'left-gastric-vein', concept: 'left gastric vein', ratio: 0.5 },
+      { id: 'right-gastric-vein', concept: 'right gastric vein', ratio: 0.6 },
     ],
   },
   {

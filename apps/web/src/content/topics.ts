@@ -7,6 +7,7 @@ import { abdominalWallSuperficial } from './abdominal-wall-superficial';
 import { ankleTibiofibularJoints } from './ankle-tibiofibular-joints';
 import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
+import { appendix } from './appendix';
 import { armBackRadial } from './arm-back-radial';
 import { armFront } from './arm-front';
 import { axilla } from './axilla';
@@ -18,9 +19,11 @@ import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
 import { calfMuscles } from './calf-muscles';
 import { carpalTunnel } from './carpal-tunnel';
+import { coeliacTrunk } from './coeliac-trunk';
 import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
+import { duodenum } from './duodenum';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
 import { femoralTriangle } from './femoral-triangle';
@@ -43,8 +46,10 @@ import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { intervertebralDisc } from './intervertebral-disc';
+import { jejunumIleum } from './jejunum-ileum';
 import { kneeAnastomoses } from './knee-anastomoses';
 import { kneeJoint } from './knee-joint';
+import { largeIntestine } from './large-intestine';
 import { legFrontMuscles } from './leg-front-muscles';
 import { legLateralMedial } from './leg-lateral-medial';
 import { legSuperficial } from './leg-superficial';
@@ -60,6 +65,7 @@ import { lumbarVertebraeSacrum } from './lumbar-vertebrae-sacrum';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { mediastinum } from './mediastinum';
+import { mesentericVessels } from './mesenteric-vessels';
 import { nerveInjuries } from './nerve-injuries';
 import { oesophagus } from './oesophagus';
 import { oxygenCurve } from './oxygen-curve';
@@ -75,6 +81,7 @@ import { plantarVesselsNerves } from './plantar-vessels-nerves';
 import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
 import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
+import { portalVein } from './portal-vein';
 import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
 import { radioulnarJoints } from './radioulnar-joints';
 import { rectusSheath } from './rectus-sheath';
@@ -89,6 +96,8 @@ import { soleLayersOneTwo } from './sole-layers-1-2';
 import { soleLayersThreeFour } from './sole-layers-3-4';
 import { soleSkinFascia } from './sole-skin-fascia';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
+import { stomach } from './stomach';
+import { stomachSupply } from './stomach-supply';
 import { surfaceMarking } from './surface-marking';
 import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
 import { testisDescent } from './testis-descent';
@@ -213,6 +222,15 @@ export const TOPICS: Topic[] = [
   peritonealFolds,
   lesserSac,
   peritonealSpaces,
+  stomach,
+  stomachSupply,
+  duodenum,
+  jejunumIleum,
+  largeIntestine,
+  appendix,
+  coeliacTrunk,
+  mesentericVessels,
+  portalVein,
   oxygenCurve,
 ];
 

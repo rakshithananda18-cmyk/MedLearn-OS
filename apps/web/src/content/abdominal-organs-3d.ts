@@ -5,11 +5,11 @@ import type { CameraStop, ModelPart } from '@medlearn/schemas';
 // X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=1';
+export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=2';
 
 /** Credit for the model, shown wherever it is. */
 export const ABDOMINAL_ORGANS_MODEL_CREDIT =
-  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled.';
+  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver, bile duct, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what a
@@ -59,6 +59,18 @@ const PARTS = {
     kind: 'organ',
     about:
       'Under the right lobe of the liver, its fundus at the tip of the ninth costal cartilage.',
+  },
+  'bile-duct': {
+    name: 'Bile duct',
+    kind: 'organ',
+    about:
+      'Down the free margin of the lesser omentum, behind the first part of the duodenum and through the head of the pancreas, to open with the pancreatic duct on the major papilla of the second part.',
+  },
+  'abdominal-oesophagus': {
+    name: 'Abdominal oesophagus',
+    kind: 'organ',
+    about:
+      'About 1.25 cm long, from the hiatus at T10 to the cardiac orifice at T11. A site of portosystemic anastomosis: its veins drain both to the left gastric (portal) and to the azygos (systemic).',
   },
   stomach: {
     name: 'Stomach',
@@ -118,6 +130,12 @@ const PARTS = {
     kind: 'organ',
     about:
       'Partly covered by peritoneum, its mesentery lost; the left paracolic gutter runs along its lateral side down into the pelvis.',
+  },
+  'taeniae-coli': {
+    name: 'Taeniae coli',
+    kind: 'muscle',
+    about:
+      'Three ribbons of longitudinal muscle that pucker the colon into sacculations. They meet at the base of the appendix, a guide to finding it at operation, and spread out again at the end of the sigmoid colon.',
   },
   'sigmoid-colon': {
     name: 'Sigmoid colon',
@@ -238,6 +256,109 @@ const PARTS = {
     kind: 'vein',
     about: 'Up behind the peritoneum; it lies in the fold beside the paraduodenal recess.',
   },
+  'left-gastric-artery': {
+    name: 'Left gastric artery',
+    kind: 'artery',
+    about:
+      'The smallest branch of the coeliac trunk: up to the cardiac end, giving oesophageal branches, then down the lesser curvature in the lesser omentum to meet the right gastric.',
+  },
+  'hepatic-artery': {
+    name: 'Common and proper hepatic artery',
+    kind: 'artery',
+    about:
+      'The common hepatic runs right to the first part of the duodenum; after giving the gastroduodenal it goes up as the proper hepatic in the free margin of the lesser omentum, left of the bile duct and in front of the portal vein.',
+  },
+  'gastroduodenal-artery': {
+    name: 'Gastroduodenal artery',
+    kind: 'artery',
+    about:
+      'Behind the first part of the duodenum, where a posterior duodenal ulcer can erode it; it ends as the right gastroepiploic and superior pancreaticoduodenal arteries.',
+  },
+  'right-gastric-artery': {
+    name: 'Right gastric artery',
+    kind: 'artery',
+    about: 'From the proper hepatic artery, left along the lesser curvature to the left gastric.',
+  },
+  'right-gastroepiploic-artery': {
+    name: 'Right gastroepiploic artery',
+    kind: 'artery',
+    about:
+      'From the gastroduodenal, along the greater curvature in the greater omentum, supplying both and meeting the left gastroepiploic.',
+  },
+  'left-gastroepiploic-artery': {
+    name: 'Left gastroepiploic artery',
+    kind: 'artery',
+    about: 'From the end of the splenic artery, down the greater curvature to the right one.',
+  },
+  'superior-pancreaticoduodenal-arteries': {
+    name: 'Superior pancreaticoduodenal arteries',
+    kind: 'artery',
+    about:
+      'Anterior and posterior, from the gastroduodenal, down the groove between the duodenum and the head of the pancreas: the foregut supply of the duodenum.',
+  },
+  'inferior-pancreaticoduodenal-artery': {
+    name: 'Inferior pancreaticoduodenal artery',
+    kind: 'artery',
+    about:
+      'The first branch of the superior mesenteric, up in the same groove to meet the superior arteries: foregut meets midgut at the major papilla.',
+  },
+  'middle-colic-artery': {
+    name: 'Middle colic artery',
+    kind: 'artery',
+    about:
+      'From the superior mesenteric just below the pancreas, forward in the transverse mesocolon to the right two-thirds of the transverse colon.',
+  },
+  'right-colic-artery': {
+    name: 'Right colic artery',
+    kind: 'artery',
+    about: 'Behind the peritoneum to the ascending colon and the right colic flexure.',
+  },
+  'ileocolic-artery': {
+    name: 'Ileocolic artery',
+    kind: 'artery',
+    about:
+      'The last branch on the right of the superior mesenteric: to the end of the ileum, the caecum (anterior and posterior caecal arteries), the start of the ascending colon and, through the appendicular artery, the appendix.',
+  },
+  'appendicular-artery': {
+    name: 'Appendicular artery',
+    kind: 'artery',
+    about:
+      'From the lower division of the ileocolic, behind the end of the ileum and along the free edge of the mesoappendix. An end artery: if it clots, the appendix becomes gangrenous.',
+  },
+  'marginal-artery': {
+    name: 'Marginal artery',
+    kind: 'artery',
+    about:
+      'The arcade along the inner border of the colon joining the ileocolic, right, middle and left colic and sigmoid arteries; it can carry the supply of a colon whose main artery is tied.',
+  },
+  'left-colic-artery': {
+    name: 'Left colic artery',
+    kind: 'artery',
+    about:
+      'The first branch of the inferior mesenteric: up and left behind the peritoneum to the left third of the transverse colon and the descending colon.',
+  },
+  'sigmoid-arteries': {
+    name: 'Sigmoid arteries',
+    kind: 'artery',
+    about: 'Two to four, down and left in the sigmoid mesocolon to the sigmoid colon.',
+  },
+  'superior-rectal-artery': {
+    name: 'Superior rectal artery',
+    kind: 'artery',
+    about:
+      'The inferior mesenteric continued over the left common iliac vessels into the pelvis, to the rectum and the upper anal canal.',
+  },
+  'left-gastric-vein': {
+    name: 'Left gastric vein',
+    kind: 'vein',
+    about:
+      'Along the lesser curvature to the portal vein; it receives oesophageal veins, so it is the portal side of the anastomosis that swells into oesophageal varices.',
+  },
+  'right-gastric-vein': {
+    name: 'Right gastric vein',
+    kind: 'vein',
+    about: 'Along the lesser curvature to the portal vein; it receives the prepyloric vein.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type AbdominalOrgansPartId = keyof typeof PARTS;
@@ -249,6 +370,8 @@ const fold = (opacity: number) => ({ colour: '--color-viscus-omentum', opacity }
 const LOOK: Partial<Record<AbdominalOrgansPartId, Pick<ModelPart, 'colour' | 'opacity'>>> = {
   liver: solid('liver'),
   gallbladder: solid('gallbladder'),
+  'bile-duct': solid('gallbladder'),
+  'abdominal-oesophagus': solid('stomach'),
   stomach: solid('stomach'),
   spleen: solid('spleen'),
   pancreas: solid('pancreas'),
@@ -272,9 +395,20 @@ const LOOK: Partial<Record<AbdominalOrgansPartId, Pick<ModelPart, 'colour' | 'op
   mesoappendix: fold(0.5),
 };
 
-/** The model's parts with these ids, in this order. */
-export function abdominalOrgansParts(ids: AbdominalOrgansPartId[]): ModelPart[] {
-  return ids.map((id) => ({ id, ...PARTS[id], ...LOOK[id] }));
+/**
+ * The model's parts with these ids, in this order; those in `faint` see-through, so the vessels
+ * behind a solid organ show.
+ */
+export function abdominalOrgansParts(
+  ids: AbdominalOrgansPartId[],
+  faint: AbdominalOrgansPartId[] = [],
+): ModelPart[] {
+  return ids.map((id) => ({
+    id,
+    ...PARTS[id],
+    ...LOOK[id],
+    ...(faint.includes(id) && { opacity: 0.3 }),
+  }));
 }
 
 export const ORGANS_SKELETON: AbdominalOrgansPartId[] = [
@@ -327,6 +461,30 @@ export const GUT_VESSELS: AbdominalOrgansPartId[] = [
   'inferior-mesenteric-vein',
 ];
 
+/** The coeliac trunk's branches, which supply the stomach. */
+export const COELIAC_BRANCHES: AbdominalOrgansPartId[] = [
+  'left-gastric-artery',
+  'hepatic-artery',
+  'gastroduodenal-artery',
+  'right-gastric-artery',
+  'right-gastroepiploic-artery',
+  'left-gastroepiploic-artery',
+  'superior-pancreaticoduodenal-arteries',
+];
+
+/** The branches of the superior and inferior mesenteric arteries. */
+export const MESENTERIC_BRANCHES: AbdominalOrgansPartId[] = [
+  'inferior-pancreaticoduodenal-artery',
+  'middle-colic-artery',
+  'right-colic-artery',
+  'ileocolic-artery',
+  'appendicular-artery',
+  'marginal-artery',
+  'left-colic-artery',
+  'sigmoid-arteries',
+  'superior-rectal-artery',
+];
+
 /** The viscera from the front. */
 export const ORGANS_FRONT: CameraStop = {
   id: 'organs-front',
@@ -375,4 +533,64 @@ export const PELVIC_POUCHES: CameraStop = {
     'The rectum against the sacrum and the bladder behind the pubis: the peritoneum dips between them as the rectovesical pouch, the lowest part of the cavity in a man sitting up.',
   target: [0, -70, 815],
   position: [-650, -90, 860],
+};
+
+/** The stomach from in front and a little to the left. */
+export const STOMACH_FRONT: CameraStop = {
+  id: 'stomach-front',
+  title: 'The stomach',
+  description:
+    'J-shaped under the left costal margin: the oesophagus enters at the cardiac end, the fundus bulges above it, and the body and pyloric part curve down and right to the duodenum.',
+  target: [35, -150, 1095],
+  position: [110, -800, 1140],
+};
+
+/** The duodenal loop round the head of the pancreas. */
+export const DUODENUM_VIEW: CameraStop = {
+  id: 'duodenum-loop',
+  title: 'The duodenal loop',
+  description:
+    'A C round the head of the pancreas, from the pylorus at L1 down the right side of L2 and L3, across in front of the inferior vena cava and aorta, and up to the duodenojejunal flexure at L2.',
+  target: [-15, -130, 1030],
+  position: [-110, -720, 1010],
+};
+
+/** The right iliac fossa: the end of the ileum, the caecum and the appendix. */
+export const ILEOCAECAL_VIEW: CameraStop = {
+  id: 'ileocaecal',
+  title: 'The ileocaecal region',
+  description:
+    'The ileum joins the large intestine on its left, the caecum hangs below the junction, and the appendix leaves the caecum where its taeniae meet.',
+  target: [-55, -105, 860],
+  position: [-170, -600, 810],
+};
+
+/** The upper abdomen from below and in front: the coeliac trunk and its branches. */
+export const COELIAC_VIEW: CameraStop = {
+  id: 'coeliac',
+  title: 'The coeliac trunk',
+  description:
+    'A short trunk from the front of the aorta at T12 and L1, dividing at once into the left gastric (up), common hepatic (right) and splenic (left) arteries.',
+  target: [5, -130, 1075],
+  position: [40, -760, 960],
+};
+
+/** The mesenteric arteries from the front, the small intestine set aside. */
+export const MESENTERIC_VIEW: CameraStop = {
+  id: 'mesenteric',
+  title: 'The mesenteric arteries',
+  description:
+    'The superior mesenteric down into the root of the mesentery with its colic branches to the right; the inferior mesenteric down and left to the descending and sigmoid colon.',
+  target: [-5, -130, 975],
+  position: [0, -980, 1000],
+};
+
+/** From behind and to the right: the portal vein forming behind the pancreas. */
+export const PORTAL_BACK: CameraStop = {
+  id: 'portal-back',
+  title: 'Behind the pancreas',
+  description:
+    'Seen from behind: the splenic vein runs along the back of the pancreas and meets the superior mesenteric vein behind its neck, at L2, to form the portal vein.',
+  target: [-10, -125, 1060],
+  position: [-350, 650, 1200],
 };
