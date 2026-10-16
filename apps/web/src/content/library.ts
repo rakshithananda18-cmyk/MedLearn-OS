@@ -83,6 +83,11 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     26: 'Diaphragm',
     27: 'Posterior abdominal wall',
   },
+  // The perineum and pelvis go on with Volume 2's chapter numbers.
+  pelvis: {
+    28: 'Perineum',
+    29: 'Boundaries and contents of the pelvis',
+  },
 };
 
 /**
