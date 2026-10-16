@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { contentSecurityPolicy, securityHeaders } from './security-headers';
+import { contentSecurityPolicy, securityHeaders } from '../next.config';
 
 describe('security headers', () => {
   it('lets in only the app, the lecture player and its thumbnails, and forbids framing', () => {
