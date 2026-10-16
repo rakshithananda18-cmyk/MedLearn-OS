@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 import { bodyStructure } from '@/content/body';
 import type { SearchResult } from '@/content/search';
+import { fetchSearch, searchFailedMessage, wasCancelled } from '@/features/search/fetchSearch';
 
 import { LAYER_DOT } from './panels';
 
@@ -18,27 +19,33 @@ const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
  */
 export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: () => void }>) {
   const { system, name, search } = bodyStructure(id);
-  const [found, setFound] = useState<{ id: string; topics: SearchResult[] } | null>(null);
+  const [found, setFound] = useState<{
+    id: string;
+    topics: SearchResult[];
+    failed: boolean;
+  } | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`/api/search?q=${encodeURIComponent(search)}`, { signal: controller.signal })
-      .then((response) => response.json() as Promise<{ data?: { results: SearchResult[] } }>)
-      .then((body) => {
-        const results = body.data?.results ?? [];
+    fetchSearch(search, controller.signal)
+      .then((results) => {
         // One link per topic: its own title first, then where the structure is drawn.
         const topics = results.filter(
           (result, index) =>
             (result.kind === 'Topic' || result.kind === 'Structure') &&
             results.findIndex((other) => other.topicSlug === result.topicSlug) === index,
         );
-        setFound({ id, topics: topics.slice(0, 6) });
+        setFound({ id, topics: topics.slice(0, 6), failed: false });
       })
-      .catch(() => undefined);
+      .catch((error: unknown) => {
+        if (!wasCancelled(error)) setFound({ id, topics: [], failed: true });
+      });
     return () => controller.abort();
-  }, [id, search]);
+  }, [id, search, attempt]);
 
-  const topics = found?.id === id ? found.topics : null;
+  const failed = found?.id === id && found.failed;
+  const topics = found?.id === id && !found.failed ? found.topics : null;
   return (
     <section aria-label={name} className="pointer-events-auto flex animate-rise flex-col gap-3">
       <div className="flex items-start gap-2">
@@ -58,10 +65,24 @@ export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: ()
       </div>
       <div className="flex flex-col gap-1">
         <h3 className={LABEL}>In your topics</h3>
-        {topics === null ? (
+        {topics === null && !failed ? (
           <Text size="sm" tone="muted">
             Looking…
           </Text>
+        ) : null}
+        {failed ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Text size="sm" tone="muted">
+              {searchFailedMessage()}
+            </Text>
+            <button
+              type="button"
+              onClick={() => setAttempt((current) => current + 1)}
+              className="inline-flex h-8 items-center rounded-full border border-border-strong px-3 text-xs font-semibold text-ink hover:border-gold"
+            >
+              Try again
+            </button>
+          </div>
         ) : null}
         {topics?.length === 0 ? (
           <Text size="sm" tone="muted">

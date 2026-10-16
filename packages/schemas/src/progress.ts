@@ -77,6 +77,8 @@ export const LearnerProgressInput = z.object({
     .default({}),
   // Missing from progress saved before class tests and revisits could be planned.
   goals: z.array(StudyGoalInput).max(100).default([]),
+  // Missing from progress saved before removed goals were remembered.
+  removedGoals: z.array(ItemId).max(200).default([]),
   // Missing from progress saved before spaced revisits of learnt topics.
   revisits: z
     .record(ItemId, z.object({ step: z.number().int().min(0).max(10), due: LocalDate }))

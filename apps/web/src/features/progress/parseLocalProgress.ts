@@ -171,6 +171,7 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
     Array.isArray(data.goals) && data.goals.length <= 100 && data.goals.every(isGoal),
     [],
   );
+  const removedGoals = or<string[]>(data.removedGoals, isIdList(data.removedGoals, 200), []);
   const revisits = or<Record<string, TopicRevisit>>(
     data.revisits,
     isRecordOf(data.revisits, MAX_ITEMS, isId, isRevisit),
@@ -245,6 +246,7 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
       done: [...goal.done],
       createdAt: goal.createdAt,
     })),
+    removedGoals: [...removedGoals],
     revisits: Object.fromEntries(
       safeEntries(revisits).map(([slug, revisit]) => [
         slug,

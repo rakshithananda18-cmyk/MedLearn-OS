@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { mergeProgress } from './merge';
 import { scheduleReview } from './review';
-import { EMPTY_PROGRESS, type LearnerProgress } from './today';
+import { EMPTY_PROGRESS, finishedRevisit, type LearnerProgress } from './today';
 
 const NOW = new Date('2026-09-27T12:00:00.000Z');
 const EARLY = new Date('2026-09-20T09:00:00.000Z');
@@ -89,5 +89,33 @@ describe('mergeProgress', () => {
       ['g1', ['b', 'a']],
       ['g2', []],
     ]);
+  });
+
+  it('keeps a goal removed on either side removed, whichever copy is newer', () => {
+    const goal = {
+      id: 'g1',
+      kind: 'test' as const,
+      title: 'Class test',
+      topics: ['a'],
+      date: '2026-10-01',
+      done: [],
+      createdAt: EARLY.toISOString(),
+    };
+    const removedHere = progress({ goals: [], removedGoals: ['g1'] });
+    const account = progress({ goals: [goal] });
+    for (const merged of [
+      mergeProgress(removedHere, account, NOW),
+      mergeProgress(account, removedHere, NOW),
+    ]) {
+      expect(merged.goals).toEqual([]);
+      expect(merged.removedGoals).toEqual(['g1']);
+    }
+  });
+
+  it('keeps a topic whose revisits are finished finished, whichever copy is newer', () => {
+    const finishedHere = progress({ revisits: { axilla: finishedRevisit() } });
+    const account = progress({ revisits: { axilla: { step: 2, due: '2026-10-20' } } });
+    expect(mergeProgress(finishedHere, account, NOW).revisits.axilla).toEqual(finishedRevisit());
+    expect(mergeProgress(account, finishedHere, NOW).revisits.axilla).toEqual(finishedRevisit());
   });
 });

@@ -1,6 +1,6 @@
 import { mergeActivity } from './activity';
 import type { ReviewState } from './review';
-import type { LearnerProgress, StudyGoal } from './today';
+import { type LearnerProgress, MAX_REMOVED_GOALS, type StudyGoal } from './today';
 
 const union = (a: string[], b: string[]) => [...new Set([...a, ...b])];
 
@@ -12,7 +12,10 @@ const later = (a: string | null, b: string | null) => {
   return Date.parse(a) >= Date.parse(b) ? a : b;
 };
 
-/** Each topic keeps the revisit further along (the later one when both are on the same step). */
+/**
+ * Each topic keeps the revisit further along (the later one when both are on the same step); a
+ * finished marker is furthest of all, so a topic finished on one side stays finished.
+ */
 function mergeRevisits(
   local: LearnerProgress['revisits'],
   account: LearnerProgress['revisits'],
@@ -46,12 +49,16 @@ export function mergeProgress(
     const mine = reviews[id];
     if (!mine || reviewedAt(review) > reviewedAt(mine)) reviews[id] = review;
   }
-  // Goals are joined by id; a topic gone over on either side counts as done.
+  // Goals are joined by id; a topic gone over on either side counts as done, and a goal removed
+  // on either side stays removed.
+  const removedGoals = union(account.removedGoals, local.removedGoals).slice(-MAX_REMOVED_GOALS);
+  const removed = new Set(removedGoals);
   const goals = new Map<string, StudyGoal>(local.goals.map((goal) => [goal.id, goal]));
   for (const goal of account.goals) {
     const mine = goals.get(goal.id);
     goals.set(goal.id, mine ? { ...goal, done: union(goal.done, mine.done) } : goal);
   }
+  for (const id of removed) goals.delete(id);
   const notes = { ...local.notes };
   for (const [slug, note] of Object.entries(account.notes)) {
     const mine = notes[slug];
@@ -69,6 +76,7 @@ export function mergeProgress(
     notes,
     activity: mergeActivity(local.activity, account.activity),
     goals: [...goals.values()],
+    removedGoals,
     revisits: mergeRevisits(local.revisits, account.revisits),
     updatedAt: now.toISOString(),
   };
