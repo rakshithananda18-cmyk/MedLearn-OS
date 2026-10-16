@@ -1,5 +1,5 @@
 import { createReviewsRepository } from '@medlearn/db';
-import { Badge, Display, Eyebrow, Text } from '@medlearn/ui';
+import { Badge, buttonClasses, Display, Eyebrow, Text } from '@medlearn/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -52,6 +52,24 @@ export default async function ReviewTopicPage({ params }: PageProps<'/review/[sl
               <Badge tone={STATE[state].tone}>{STATE[state].label}</Badge>
               <Text tone="muted">{topic.summary}</Text>
             </header>
+            {/* The visuals are checked where students see them. */}
+            <nav aria-label="See it as students do" className="flex flex-wrap gap-2">
+              {[
+                { href: `/learn/${topic.slug}`, label: 'Topic page' },
+                { href: `/learn/${topic.slug}/lesson`, label: 'Lesson' },
+                { href: `/learn/${topic.slug}/draw`, label: 'Diagram' },
+                { href: `/studio?topic=${topic.slug}`, label: '3D' },
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
             <ReviewForm slug={topic.slug} version={topic.version} />
             <section
               aria-label="Review history"

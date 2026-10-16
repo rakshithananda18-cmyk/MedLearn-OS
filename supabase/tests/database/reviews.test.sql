@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(17);
 
 \set reviewer '00000000-0000-0000-0000-0000000000c1'
 \set student '00000000-0000-0000-0000-0000000000c2'
@@ -74,6 +74,15 @@ select results_eq(
   $$ select reviewer_email from public.topic_reviews order by id desc limit 1 $$,
   array['reviewer.test@example.com'],
   'the review records who made it'
+);
+select results_eq(
+  $$ insert into public.topic_reviews (topic_slug, content_version, decision, note,
+       reviewer_email, created_at)
+     values ('axilla', '0.1.0', 'changes-requested', 'Check the apex',
+       'someone.else@example.com', '2030-01-01')
+     returning reviewer_email || ' ' || (created_at < now() + interval '1 minute')::text $$,
+  array['reviewer.test@example.com true'],
+  'the database stamps who reviewed and when, whatever the insert says'
 );
 select lives_ok(
   $$ update public.content_reports set resolved_at = now(), resolved_by = auth.uid() $$,

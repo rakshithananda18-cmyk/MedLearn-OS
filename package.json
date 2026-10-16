@@ -26,6 +26,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:types": "node scripts/db-types.mjs",
+    "content:versions": "node scripts/content-versions.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

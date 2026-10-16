@@ -6,6 +6,8 @@ import { Check, PenLine } from '@medlearn/ui/icons';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { forgetStatuses } from './state';
+
 const CHECKS: { key: keyof ReviewChecks; label: string }[] = [
   { key: 'pages', label: 'The book chapters and pages match' },
   { key: 'facts', label: 'The key facts, lesson and cases are correct' },
@@ -52,6 +54,7 @@ export function ReviewForm({ slug, version }: Readonly<{ slug: string; version: 
       setMessage(decision === 'approved' ? 'Approved. Students see it now.' : 'Sent back.');
       setChecks(NONE);
       setNote('');
+      forgetStatuses();
       router.refresh();
     } catch {
       setMessage('Not saved: check the connection and try again.');

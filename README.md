@@ -149,6 +149,10 @@ insert into public.content_reviewers (email) values ('name@example.com');
 
 Locally, `reviewer@example.com` is a reviewer (from `supabase/seed.sql`); sign up with it.
 
+An approval covers one version of a topic. When you change a topic (its text, questions, diagram,
+3D labels or model file), bump its `version` and run `pnpm content:versions`; a test fails if
+content changes under an old version, so nothing unchecked ever carries an approval.
+
 ## Conventions
 
 - Every API route uses `withRoute` (`apps/web/src/server/route.ts`): request id, logging and the

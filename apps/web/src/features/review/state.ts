@@ -23,14 +23,21 @@ export function reviewState(version: string, latest: ReviewStatus | undefined): 
   return latest.decision === 'approved' ? 'approved' : 'changes-requested';
 }
 
+/** How long a loaded set of outcomes is trusted before it is asked for again. */
+export const STATUS_TTL_MS = 60_000;
+
 let statuses: Promise<Map<string, ReviewStatus>> | null = null;
+let loadedAt = 0;
 
 /**
- * Every topic's latest outcome, asked of the server once per page load (and refreshed on the
- * next). Offline or without a database it is empty, and the bundled flag stands.
+ * Every topic's latest outcome from the server, shared by everything on the page and asked for
+ * again once it is a minute old (or after forgetStatuses), so an app left open catches up with
+ * new decisions. Offline or without a database it is empty, and the bundled flag stands.
  */
-export function loadStatuses(): Promise<Map<string, ReviewStatus>> {
-  statuses ??= Promise.all([
+export function loadStatuses(now = Date.now()): Promise<Map<string, ReviewStatus>> {
+  if (statuses && now - loadedAt < STATUS_TTL_MS) return statuses;
+  loadedAt = now;
+  statuses = Promise.all([
     fetch('/api/reviews').then((response) => (response.ok ? response.json() : null)),
     // Loaded here rather than with the page, so the schema library is not in every download.
     import('@medlearn/schemas'),
@@ -45,7 +52,8 @@ export function loadStatuses(): Promise<Map<string, ReviewStatus>> {
   return statuses;
 }
 
-/** For tests: forget what was loaded. */
+/** Forgets what was loaded, so the next look asks the server (after a decision, and in tests). */
 export function forgetStatuses() {
   statuses = null;
+  loadedAt = 0;
 }

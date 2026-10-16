@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { forgetStatuses, loadStatuses, reviewState } from './state';
+import { forgetStatuses, loadStatuses, reviewState, STATUS_TTL_MS } from './state';
 
 const approved = {
   topicSlug: 'brachial-plexus',
@@ -39,5 +39,15 @@ describe('review state', () => {
       }),
     );
     expect((await loadStatuses()).size).toBe(0);
+  });
+
+  it('asks again once what it has is a minute old, so an open app catches up', async () => {
+    const fetch = vi.fn(async () => Response.json({ data: { statuses: [approved] } }));
+    vi.stubGlobal('fetch', fetch);
+    await loadStatuses(1_000);
+    await loadStatuses(1_000 + STATUS_TTL_MS - 1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await loadStatuses(1_000 + STATUS_TTL_MS);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,0 +1,478 @@
+{
+  "pectoral-region": {
+    "version": "0.1.0",
+    "digest": "88d9f009adcdd137"
+  },
+  "axilla": {
+    "version": "0.1.0",
+    "digest": "2faa780e6ced94b0"
+  },
+  "axillary-vessels": {
+    "version": "0.1.0",
+    "digest": "90ea420430cdd219"
+  },
+  "axillary-lymph-nodes": {
+    "version": "0.1.0",
+    "digest": "fa9a8088d3f6a9a1"
+  },
+  "brachial-plexus": {
+    "version": "0.1.0",
+    "digest": "4a093dfc96545a7e"
+  },
+  "back-muscles": {
+    "version": "0.1.0",
+    "digest": "ea8adb851ff9bf89"
+  },
+  "deltoid-rotator-cuff": {
+    "version": "0.1.0",
+    "digest": "e48bfdf7687acd6d"
+  },
+  "scapular-spaces": {
+    "version": "0.1.0",
+    "digest": "a27d1b8a3c997003"
+  },
+  "skin-veins-lymph": {
+    "version": "0.1.0",
+    "digest": "bd2b0fcc3f1388df"
+  },
+  "arm-front": {
+    "version": "0.1.0",
+    "digest": "9955fea9907c033a"
+  },
+  "arm-back-radial": {
+    "version": "0.1.0",
+    "digest": "b5b9e7b38b9e2a52"
+  },
+  "cubital-fossa": {
+    "version": "0.1.0",
+    "digest": "6ea4c28a2a553e03"
+  },
+  "forearm-flexors": {
+    "version": "0.1.0",
+    "digest": "02c2d03b2dbc9c42"
+  },
+  "forearm-vessels-nerves": {
+    "version": "0.1.0",
+    "digest": "f42eadfe00fb490a"
+  },
+  "carpal-tunnel": {
+    "version": "0.1.0",
+    "digest": "989ce4457f68d74f"
+  },
+  "hand-muscles": {
+    "version": "0.1.0",
+    "digest": "030d22970b1bf681"
+  },
+  "palm-vessels-nerves": {
+    "version": "0.1.0",
+    "digest": "2ec0dffd18339e6a"
+  },
+  "palm-spaces": {
+    "version": "0.1.0",
+    "digest": "36b6bfd0f405bb7e"
+  },
+  "wrist-back": {
+    "version": "0.1.0",
+    "digest": "3101007cd2878e5c"
+  },
+  "forearm-extensors": {
+    "version": "0.1.0",
+    "digest": "718e92d93e26e50f"
+  },
+  "shoulder-girdle": {
+    "version": "0.1.0",
+    "digest": "eb02b3f2ee47e325"
+  },
+  "shoulder-joint": {
+    "version": "0.1.0",
+    "digest": "0681004c58db3186"
+  },
+  "elbow-joint": {
+    "version": "0.1.0",
+    "digest": "7ea0489bc6e26348"
+  },
+  "radioulnar-joints": {
+    "version": "0.1.0",
+    "digest": "ffd948a09dfb48a9"
+  },
+  "wrist-hand-joints": {
+    "version": "0.1.0",
+    "digest": "db700308dd03fd03"
+  },
+  "surface-marking": {
+    "version": "0.1.0",
+    "digest": "09c4d4187324561c"
+  },
+  "upper-limb-xrays": {
+    "version": "0.1.0",
+    "digest": "b273633a9dc53d4e"
+  },
+  "nerve-injuries": {
+    "version": "0.1.0",
+    "digest": "d296d1816b8ce8f9"
+  },
+  "elbow-anastomosis": {
+    "version": "0.1.0",
+    "digest": "9757a29e287feaff"
+  },
+  "upper-limb-development": {
+    "version": "0.1.0",
+    "digest": "30a3a3a6023386f5"
+  },
+  "thorax-introduction": {
+    "version": "0.1.0",
+    "digest": "e8a1ad5fb703cd9e"
+  },
+  "ribs": {
+    "version": "0.1.0",
+    "digest": "5a3d83b04948b9e2"
+  },
+  "sternum-thoracic-vertebrae": {
+    "version": "0.1.0",
+    "digest": "5f7675fb702e1ef1"
+  },
+  "thoracic-joints-respiration": {
+    "version": "0.1.0",
+    "digest": "ed979fe961c999a7"
+  },
+  "intercostal-spaces": {
+    "version": "0.1.0",
+    "digest": "a8d5b3db78253afc"
+  },
+  "internal-thoracic-azygos": {
+    "version": "0.1.0",
+    "digest": "ece7e2f21b190190"
+  },
+  "pleura": {
+    "version": "0.1.0",
+    "digest": "107d0287e9d2e1f6"
+  },
+  "lungs": {
+    "version": "0.1.0",
+    "digest": "905531558dbfe533"
+  },
+  "lung-root-bronchial-tree": {
+    "version": "0.1.0",
+    "digest": "fa8beed78e733bbf"
+  },
+  "bronchopulmonary-segments": {
+    "version": "0.1.0",
+    "digest": "6f16911e07d90669"
+  },
+  "mediastinum": {
+    "version": "0.1.0",
+    "digest": "6c90075c5fed2095"
+  },
+  "pericardium": {
+    "version": "0.1.0",
+    "digest": "09f88ad10cd62d15"
+  },
+  "heart-external-features": {
+    "version": "0.1.0",
+    "digest": "24082c800392f516"
+  },
+  "heart-chambers": {
+    "version": "0.1.0",
+    "digest": "aa4a0c9dd494368f"
+  },
+  "heart-valves-conduction": {
+    "version": "0.1.0",
+    "digest": "860385ecb1aeda0f"
+  },
+  "coronary-circulation": {
+    "version": "0.1.0",
+    "digest": "8aea77457ea565dd"
+  },
+  "fetal-circulation": {
+    "version": "0.1.0",
+    "digest": "59156a376be99b68"
+  },
+  "svc-pulmonary-trunk": {
+    "version": "0.1.0",
+    "digest": "35493083b108b0a4"
+  },
+  "aorta": {
+    "version": "0.1.0",
+    "digest": "f908229677df76ea"
+  },
+  "trachea": {
+    "version": "0.1.0",
+    "digest": "d8a056c697206fa9"
+  },
+  "oesophagus": {
+    "version": "0.1.0",
+    "digest": "ba4759a5168b1ce6"
+  },
+  "thoracic-duct": {
+    "version": "0.1.0",
+    "digest": "86db04347765f595"
+  },
+  "thorax-surface-xray": {
+    "version": "0.1.0",
+    "digest": "df0b8ca536afd776"
+  },
+  "thigh-superficial": {
+    "version": "0.1.0",
+    "digest": "4dddaf83e3c02335"
+  },
+  "femoral-triangle": {
+    "version": "0.1.0",
+    "digest": "d11d7c2b17b0a08a"
+  },
+  "femoral-vessels-nerve": {
+    "version": "0.1.0",
+    "digest": "af04318c589ca91d"
+  },
+  "thigh-front-muscles": {
+    "version": "0.1.0",
+    "digest": "9c04a76ce816dc7d"
+  },
+  "thigh-medial": {
+    "version": "0.1.0",
+    "digest": "a1be6b15099ee8d7"
+  },
+  "gluteal-muscles": {
+    "version": "0.1.0",
+    "digest": "62f8f2eacda43e4b"
+  },
+  "gluteal-nerves-vessels": {
+    "version": "0.1.0",
+    "digest": "891b86362e94fbdc"
+  },
+  "popliteal-fossa": {
+    "version": "0.1.0",
+    "digest": "50b5913cc5b9a895"
+  },
+  "popliteal-vessels-nerves": {
+    "version": "0.1.0",
+    "digest": "23d9875a64169c19"
+  },
+  "knee-anastomoses": {
+    "version": "0.1.0",
+    "digest": "a69b4a873212d15c"
+  },
+  "hamstrings": {
+    "version": "0.1.0",
+    "digest": "61bd53b991381160"
+  },
+  "sciatic-nerve-thigh": {
+    "version": "0.1.0",
+    "digest": "d5891d77df48819a"
+  },
+  "leg-superficial": {
+    "version": "0.1.0",
+    "digest": "5efaa04a2dc7225b"
+  },
+  "leg-front-muscles": {
+    "version": "0.1.0",
+    "digest": "7cdf9565522f46ca"
+  },
+  "anterior-tibial-dorsalis-pedis": {
+    "version": "0.1.0",
+    "digest": "7035460a8f706b2c"
+  },
+  "leg-lateral-medial": {
+    "version": "0.1.0",
+    "digest": "5909fb229172268e"
+  },
+  "calf-muscles": {
+    "version": "0.1.0",
+    "digest": "c89f4e88ed93553a"
+  },
+  "posterior-tibial-tibial-nerve": {
+    "version": "0.1.0",
+    "digest": "e72b09bacb96454e"
+  },
+  "sole-skin-fascia": {
+    "version": "0.1.0",
+    "digest": "484a15115af44aa4"
+  },
+  "sole-layers-1-2": {
+    "version": "0.1.0",
+    "digest": "e92ec68c2bafcec7"
+  },
+  "sole-layers-3-4": {
+    "version": "0.1.0",
+    "digest": "4b231f84a50a7a1d"
+  },
+  "plantar-vessels-nerves": {
+    "version": "0.1.0",
+    "digest": "60ea5b2c0f7659f2"
+  },
+  "lower-limb-veins": {
+    "version": "0.1.0",
+    "digest": "d6cae5b0dad4daa9"
+  },
+  "lower-limb-lymphatics": {
+    "version": "0.1.0",
+    "digest": "139d486946e456f1"
+  },
+  "lower-limb-dermatomes": {
+    "version": "0.1.0",
+    "digest": "3eeedad7ab55402d"
+  },
+  "hip-joint": {
+    "version": "0.1.0",
+    "digest": "452c0f162608bbc3"
+  },
+  "knee-joint": {
+    "version": "0.1.0",
+    "digest": "44c34ac4aaee86fc"
+  },
+  "ankle-tibiofibular-joints": {
+    "version": "0.1.0",
+    "digest": "3da3e8c49709f14e"
+  },
+  "foot-joints": {
+    "version": "0.1.0",
+    "digest": "52b20c79e422c9ea"
+  },
+  "foot-arches": {
+    "version": "0.1.0",
+    "digest": "fbffe4db6f780a41"
+  },
+  "lower-limb-surface-marking": {
+    "version": "0.1.0",
+    "digest": "8adb45a5d3413c8a"
+  },
+  "lower-limb-xrays": {
+    "version": "0.1.0",
+    "digest": "6e8835ae37ce398f"
+  },
+  "lower-limb-nerve-injuries": {
+    "version": "0.1.0",
+    "digest": "a29287daec5dfdf7"
+  },
+  "lower-limb-development": {
+    "version": "0.1.0",
+    "digest": "197e10e2692bbca5"
+  },
+  "lumbar-vertebrae-sacrum": {
+    "version": "0.1.0",
+    "digest": "789775d58182745f"
+  },
+  "intervertebral-disc": {
+    "version": "0.1.0",
+    "digest": "d64bd0ed07d8916a"
+  },
+  "bony-pelvis": {
+    "version": "0.1.0",
+    "digest": "9251db828563c3ae"
+  },
+  "abdominal-regions": {
+    "version": "0.1.0",
+    "digest": "45b3421e0d44f495"
+  },
+  "abdominal-wall-superficial": {
+    "version": "0.1.0",
+    "digest": "7c3d534efbe2c2f6"
+  },
+  "abdominal-wall-muscles": {
+    "version": "0.1.0",
+    "digest": "68a331230da23ff6"
+  },
+  "rectus-sheath": {
+    "version": "0.1.0",
+    "digest": "0f62801c43cb9604"
+  },
+  "inguinal-canal": {
+    "version": "0.1.0",
+    "digest": "20b3285d89d62e1a"
+  },
+  "penis": {
+    "version": "0.1.0",
+    "digest": "e248b31f8171f2b0"
+  },
+  "scrotum-testis": {
+    "version": "0.1.0",
+    "digest": "01634a33ee6b1071"
+  },
+  "testis-descent": {
+    "version": "0.1.0",
+    "digest": "e63cf9dc21663e47"
+  },
+  "peritoneum": {
+    "version": "0.1.0",
+    "digest": "40a7ebb33259aa32"
+  },
+  "peritoneal-folds": {
+    "version": "0.1.0",
+    "digest": "12cbfde72be14d62"
+  },
+  "lesser-sac": {
+    "version": "0.1.0",
+    "digest": "985ff731a4835b76"
+  },
+  "peritoneal-spaces": {
+    "version": "0.1.0",
+    "digest": "5802c7cca2288f30"
+  },
+  "stomach": {
+    "version": "0.1.0",
+    "digest": "a2ecccce23c23457"
+  },
+  "stomach-supply": {
+    "version": "0.1.0",
+    "digest": "e364b5dc4a66b1bc"
+  },
+  "duodenum": {
+    "version": "0.1.0",
+    "digest": "427ec5ba0d4775cb"
+  },
+  "jejunum-ileum": {
+    "version": "0.1.0",
+    "digest": "c1b2bc52c0181017"
+  },
+  "large-intestine": {
+    "version": "0.1.0",
+    "digest": "96a462c8071744a9"
+  },
+  "appendix": {
+    "version": "0.1.0",
+    "digest": "703cb71762497820"
+  },
+  "coeliac-trunk": {
+    "version": "0.1.0",
+    "digest": "43cd4f661fe9135f"
+  },
+  "mesenteric-vessels": {
+    "version": "0.1.0",
+    "digest": "ed7814eb0942e0ba"
+  },
+  "portal-vein": {
+    "version": "0.1.0",
+    "digest": "7233a56dfa1cc428"
+  },
+  "biliary-apparatus": {
+    "version": "0.1.0",
+    "digest": "1a042b388694528d"
+  },
+  "spleen": {
+    "version": "0.1.0",
+    "digest": "da86806c005d0511"
+  },
+  "pancreas": {
+    "version": "0.1.0",
+    "digest": "848e60301ef978cd"
+  },
+  "liver": {
+    "version": "0.1.0",
+    "digest": "02056d41fbd08097"
+  },
+  "liver-segments": {
+    "version": "0.1.0",
+    "digest": "625dbb69935f80f3"
+  },
+  "kidney": {
+    "version": "0.1.0",
+    "digest": "54167d5d80d48237"
+  },
+  "ureter": {
+    "version": "0.1.0",
+    "digest": "0959432aa8e3d44c"
+  },
+  "oxygen-haemoglobin-curve": {
+    "version": "0.1.0",
+    "digest": "0050d23d107218ef"
+  }
+}
