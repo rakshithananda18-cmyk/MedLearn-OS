@@ -323,6 +323,9 @@ export function TopicStudy({
     <div className="flex min-w-0 flex-col gap-4">
       {poster ? null : back}
       {intro}
+      {/* The ways to study come before the optional lectures and tour, so the main action is on
+          a phone's first screen. */}
+      {study}
       {videos.length > 0 || poster ? (
         <Lectures
           idPrefix={idPrefix}
@@ -331,7 +334,6 @@ export function TopicStudy({
           onPlay={play}
         />
       ) : null}
-      {study}
       <TopicNotes topicSlug={slug} />
     </div>
   );

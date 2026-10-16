@@ -17,6 +17,7 @@ import { ContentTrust } from '@/features/content/ContentTrust';
 import { completeLesson } from '@/features/progress/store';
 import { FlowLayout, FlowProgress, STEP_LABEL, StepList } from '@/features/shell/Flow';
 
+import { clearLessonStep, saveLessonStep, useLessonStep } from './checkpoint';
 import { LessonWrapUp } from './LessonWrapUp';
 
 interface VisualProps {
@@ -96,17 +97,27 @@ function CurveLesson({ step, explore }: VisualProps) {
  * the step comes first, the visual under it.
  */
 export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: string }>) {
-  const [stepIndex, setStepIndex] = useState(0);
+  const total = topic.lesson.length;
+  // A lesson left part way opens where the student stopped, until they move or start over.
+  const saved = useLessonStep(topic.slug);
+  const resumeAt = saved === null ? null : Math.min(saved, total - 1);
+  const [picked, setPicked] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
+  const stepIndex = picked ?? resumeAt ?? 0;
   const step = topic.lesson[stepIndex] ?? topic.lesson[0];
   if (!step) return null;
   if (finished) return <LessonWrapUp topic={topic} />;
-  const isLast = stepIndex === topic.lesson.length - 1;
+  const isLast = stepIndex === total - 1;
   const { visual } = topic;
-  const total = topic.lesson.length;
+  const resumed = picked === null && resumeAt !== null && resumeAt > 0;
 
+  const go = (index: number) => {
+    setPicked(index);
+    saveLessonStep(topic.slug, index);
+  };
   // Finishing unlocks the topic's recall cards and practice, then shows the wrap-up.
   const finish = () => {
+    clearLessonStep(topic.slug);
     completeLesson(topic.slug, topic.estimatedMinutes);
     setFinished(true);
   };
@@ -133,6 +144,14 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
             <Eyebrow>Visual lesson</Eyebrow>
             <Display size="lg">{topic.title}</Display>
           </div>
+          {resumed ? (
+            <p className="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
+              Picked up where you left off.
+              <Button variant="ghost" size="sm" onClick={() => go(0)}>
+                Start over
+              </Button>
+            </p>
+          ) : null}
           <div key={step.id} className="flex animate-rise flex-col gap-2">
             <Heading level={2}>{step.title}</Heading>
             <Text>{step.body}</Text>
@@ -140,12 +159,7 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
           {/* Where this step sits in the lesson, on screens with room beside the visual. */}
           <div className="hidden flex-col gap-1 xl:flex">
             <h3 className={STEP_LABEL}>Steps</h3>
-            <StepList
-              label="Lesson steps"
-              steps={topic.lesson}
-              index={stepIndex}
-              onIndex={setStepIndex}
-            />
+            <StepList label="Lesson steps" steps={topic.lesson} index={stepIndex} onIndex={go} />
           </div>
         </>
       }
@@ -165,7 +179,7 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
             variant="ghost"
             iconStart={ChevronLeft}
             disabled={stepIndex === 0}
-            onClick={() => setStepIndex(stepIndex - 1)}
+            onClick={() => go(stepIndex - 1)}
           >
             Back
           </Button>
@@ -174,7 +188,7 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
               Finish lesson
             </Button>
           ) : (
-            <Button iconEnd={ArrowRight} onClick={() => setStepIndex(stepIndex + 1)}>
+            <Button iconEnd={ArrowRight} onClick={() => go(stepIndex + 1)}>
               Next
             </Button>
           )}

@@ -43,6 +43,17 @@ describe('QuestionCard', () => {
     expect(onAnswered).toHaveBeenCalledOnce();
   });
 
+  it('keeps focus on the chosen answer, so a keyboard user does not lose their place', async () => {
+    render(<QuestionCard {...question} />);
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
+    const chosen = screen.getByRole('button', { name: /Lateral cord/ });
+    expect(chosen).toHaveFocus();
+    expect(chosen).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: /Medial cord/ })).toHaveFocus();
+  });
+
   it('has no accessibility violations after answering', async () => {
     const { container } = render(<QuestionCard {...question} />);
     await userEvent.click(screen.getByRole('button', { name: 'Lateral cord' }));

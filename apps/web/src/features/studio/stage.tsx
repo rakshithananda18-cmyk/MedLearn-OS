@@ -30,7 +30,7 @@ import type {
   Viewer3DPose,
   Viewer3DSection,
 } from '@medlearn/visuals/viewer3d';
-import { type ReactNode, useId } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
@@ -195,8 +195,27 @@ export function ViewTools({
   onSettings: () => void;
 }>) {
   const instructions = useId();
+  // On a short screen the column scrolls; a labelled button at its foot says there is more and
+  // brings it into view, so the last tools (Layers, Settings) are found without guessing.
+  const column = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const element = column.current;
+    if (!element) return;
+    const check = () =>
+      setMore(element.scrollTop + element.clientHeight < element.scrollHeight - 4);
+    check();
+    element.addEventListener('scroll', check, { passive: true });
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(check);
+    resize?.observe(element);
+    return () => {
+      element.removeEventListener('scroll', check);
+      resize?.disconnect();
+    };
+  }, []);
   return (
     <div
+      ref={column}
       role="toolbar"
       aria-label="View"
       aria-orientation="vertical"
@@ -299,6 +318,20 @@ export function ViewTools({
         className={pressed(settings)}
         onClick={onSettings}
       />
+      {more ? (
+        // A fade under the cue hides whichever tool is half scrolled behind it.
+        <div className="sticky -bottom-1 -mx-1 -mb-1 flex shrink-0 justify-center rounded-b-full bg-linear-to-t from-surface from-60% to-transparent px-1 pt-6 pb-1">
+          <IconButton
+            icon={ChevronDown}
+            label="More tools"
+            title="More tools"
+            className="bg-surface shadow-glass"
+            onClick={() =>
+              column.current?.scrollBy({ top: column.current.clientHeight, behavior: 'smooth' })
+            }
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { lessonAction, useLessonStep } from '@/features/lesson/checkpoint';
+
 import { describe } from './describe';
 
 const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass';
@@ -58,7 +60,10 @@ export function UpNext({
   summary: string | null;
   className?: string;
 }>) {
-  const { title, meta, href, kind, action, icon: Glyph } = describe(item);
+  const { title, meta, href, kind, action: named, icon: Glyph } = describe(item);
+  const step = useLessonStep(item.kind === 'learn' ? item.topicSlug : null);
+  // Only unfinished lessons are offered here, so the lesson is either new or part way.
+  const action = item.kind === 'learn' ? lessonAction(false, step) : named;
   const heading = item.kind === 'learn' ? item.title : title;
   return (
     <section
@@ -127,21 +132,27 @@ export function UpNext({
 
 /**
  * Today's plan, the page's focus: what is done, ticked off, then each step left with its kind,
- * detail and minutes, the next one marked, and a bar for the minutes planned against the goal.
+ * detail and minutes, the next one marked. The bar fills with the minutes done out of the day's
+ * work (done and still planned), so it starts empty; the daily goal is a quieter number beside it.
  */
 export function PlanCard({
   done,
   items,
   planned,
+  studied,
   goal,
   className,
 }: Readonly<{
   done: string[];
   items: TodayItem[];
+  /** Minutes still planned. */
   planned: number;
+  /** Minutes done today (each finished step counts its estimate). */
+  studied: number;
   goal: number;
   className?: string;
 }>) {
+  const total = studied + planned;
   const row = 'flex min-h-16 items-center gap-3 border-t border-border px-2 py-2';
   return (
     <section aria-labelledby="plan-title" className={cx(GLASS, 'flex flex-col p-4', className)}>
@@ -149,14 +160,17 @@ export function PlanCard({
         <h2 id="plan-title" className="font-semibold text-ink">
           Today’s plan
         </h2>
-        <span className="text-sm font-semibold text-primary-strong">
-          {planned} of {goal} min
+        <span className="text-right text-sm">
+          <span className="font-semibold text-primary-strong">
+            {studied} of {total} min done
+          </span>
+          <span className="block text-xs text-fg-muted">{goal} min a day goal</span>
         </span>
       </div>
       <span aria-hidden="true" className="mb-3 h-1 overflow-hidden rounded-full bg-border">
         <span
           className="block h-full rounded-full bg-primary"
-          style={{ width: `${Math.min(100, (100 * planned) / Math.max(goal, 1))}%` }}
+          style={{ width: `${Math.min(100, (100 * studied) / Math.max(total, 1))}%` }}
         />
       </span>
       <ol aria-label="Today's plan">
@@ -188,7 +202,8 @@ export function PlanCard({
                   <Glyph size={16} strokeWidth={2} aria-hidden="true" />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-sm font-semibold text-ink">{title}</span>
+                  {/* Topic names carry the meaning: they wrap rather than lose their end. */}
+                  <span className="text-sm font-semibold text-pretty text-ink">{title}</span>
                   <span className="truncate text-xs text-fg-muted">{meta}</span>
                 </span>
                 <span

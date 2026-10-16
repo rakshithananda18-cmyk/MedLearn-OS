@@ -37,7 +37,8 @@ export function describe(item: TodayItem): {
       return {
         title: `Learn: ${item.title}`,
         meta: `${item.minutes} min · visual lesson`,
-        href: `/learn/${item.topicSlug}`,
+        // Straight into the lesson the action names; the topic page stays a tap away in it.
+        href: `/learn/${item.topicSlug}/lesson`,
         icon: BookOpen,
         kind: 'Learn',
         action: 'Start lesson',

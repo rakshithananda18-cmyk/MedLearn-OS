@@ -14,6 +14,12 @@ for (const viewport of [
     await page.goto('/studio?topic=knee-joint');
     const toolbar = page.getByRole('toolbar', { name: 'View' });
     const settings = toolbar.getByRole('button', { name: 'Settings', exact: true });
+    // When the column overflows, a labelled cue says so and brings the rest into view.
+    const more = toolbar.getByRole('button', { name: 'More tools' });
+    if (await more.isVisible()) {
+      await more.click();
+      await expect(more).toHaveCount(0);
+    }
     await settings.scrollIntoViewIfNeeded();
     await expect(settings).toBeInViewport();
     const target = await settings.boundingBox();

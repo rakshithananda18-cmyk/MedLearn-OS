@@ -12,16 +12,12 @@ test('Today → lesson → practice → revise, then the next topic', async ({ p
     page.getByRole('heading', { level: 1, name: 'Small steps, every day' }),
   ).toBeVisible();
   await expectAccessible(page);
+  // The plan's lesson goes straight into the lesson.
   await page.getByRole('link', { name: /Learn: Pectoral region and breast/ }).click();
 
-  // Topic hub.
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Pectoral region and breast' }),
-  ).toBeVisible();
-  await expect(page.getByText('Sample content, not medically reviewed')).toBeVisible();
-  await page.getByRole('link', { name: 'Start lesson' }).click();
-
   // Visual lesson: step through, then trace the lymph and show a spread pattern.
+  await expect(page).toHaveURL(/\/learn\/pectoral-region\/lesson$/);
+  await expect(page.getByText('Sample content, not medically reviewed')).toBeVisible();
   await expect(
     page.getByRole('heading', { level: 2, name: 'Where the breast lies' }),
   ).toBeVisible();

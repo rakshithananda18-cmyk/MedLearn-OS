@@ -59,7 +59,10 @@ export function QuestionCard({
               <button
                 type="button"
                 onClick={() => choose(option.id)}
-                disabled={answered}
+                // Not disabled: a disabled button drops focus to the page the moment it is
+                // answered. These stay focusable, ignore further presses (choose returns), and the
+                // status below announces the result.
+                aria-disabled={answered || undefined}
                 aria-pressed={option.id === chosen}
                 className={cx(
                   'flex min-h-12 w-full items-center justify-between gap-3 rounded-md border px-4 py-3 text-left text-base transition-colors duration-150',
