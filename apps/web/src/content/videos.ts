@@ -618,6 +618,31 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('WXO_nyFY9oM', 'Autonomic nerves of the abdomen', 'Access Anatomy', 665),
     video('3Oh5hp8Lt6Y', 'The coeliac plexus and ganglia', 'Sam Webster', 695),
   ],
+  perineum: [
+    video('AgRe2m-uaGI', 'The perineum: an overview', 'Dr Sumit Gupta', 3166),
+    video('LTCzTMkYBkU', 'Anatomy of the perineum in 3D', 'Geeky Medics', 629),
+  ],
+  'ischioanal-fossa': [
+    video('Nu9Dj2adtbs', 'The ischioanal fossa', 'Dr Sumit Gupta', 1630),
+    video('SFq0hA3PwK4', 'The ischiorectal fossa', KENHUB, 337),
+  ],
+  'male-urogenital-region': [
+    video('q0Ax3rLFc6M', 'The perineal membrane and deep perineal pouch in 3D', ANATOMY_ZONE, 437),
+    video('uWnfxv3JQAU', 'The perineum and perineal pouches', 'Let’s Talk Anatomy', 951),
+  ],
+  'female-perineum': [
+    video('0NFZUrDNadc', 'Female external genitalia in 3D', ANATOMY_ZONE, 264),
+    video('WNRV8jES2_A', 'Female external genitalia', 'OB-GYN Simplified', 765),
+  ],
+  'pudendal-nerve-vessels': [
+    video('EqMEpjMACYU', 'The pudendal nerve: course and branches', 'Dr Sumit Gupta', 1808),
+    video('vB95a3W-w-o', 'The pudendal nerve and arteries', 'Sam Webster', 935),
+  ],
+  'pelvic-cavity': [
+    video('NB0-8WCo9X4', 'The true pelvis: inlet and outlet', 'About Medicine', 275),
+    video('P3BBAMWm2Eo', 'The pelvic diaphragm in 3D', ANATOMY_ZONE, 626),
+    video('30m-27ZC5l0', 'Muscles of the pelvic walls', KENHUB, 222),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

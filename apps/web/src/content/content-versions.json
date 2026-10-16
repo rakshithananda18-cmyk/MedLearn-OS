@@ -499,6 +499,30 @@
     "version": "0.1.0",
     "digest": "53aa0aaead5f1890"
   },
+  "perineum": {
+    "version": "0.1.0",
+    "digest": "c23ea6d556d1572e"
+  },
+  "ischioanal-fossa": {
+    "version": "0.1.0",
+    "digest": "76af9092435504c4"
+  },
+  "male-urogenital-region": {
+    "version": "0.1.0",
+    "digest": "9bc923142a157ec6"
+  },
+  "female-perineum": {
+    "version": "0.1.0",
+    "digest": "9be4cf050d8771a0"
+  },
+  "pudendal-nerve-vessels": {
+    "version": "0.1.0",
+    "digest": "f64917cb19fc344c"
+  },
+  "pelvic-cavity": {
+    "version": "0.1.0",
+    "digest": "6fd0cb12e2dc006e"
+  },
   "oxygen-haemoglobin-curve": {
     "version": "0.1.0",
     "digest": "0050d23d107218ef"

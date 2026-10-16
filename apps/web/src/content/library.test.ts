@@ -67,8 +67,15 @@ describe('libraryTree', () => {
       'Diaphragm',
       'Posterior abdominal wall',
     ]);
+    const pelvis = tree[3];
+    expect(pelvis).toMatchObject({ kind: 'branch', label: 'Pelvis' });
+    if (pelvis?.kind !== 'branch') throw new Error('no pelvis');
+    expect(pelvis.children.map((section) => section.kind === 'branch' && section.label)).toEqual([
+      'Perineum',
+      'Boundaries and contents of the pelvis',
+    ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
-    const lowerLimb = tree[3];
+    const lowerLimb = tree[4];
     expect(lowerLimb).toMatchObject({ kind: 'branch', label: 'Lower limb' });
     if (lowerLimb?.kind !== 'branch') throw new Error('no lower limb');
     expect(lowerLimb.children.map((section) => section.kind === 'branch' && section.label)).toEqual(

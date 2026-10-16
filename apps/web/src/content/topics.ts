@@ -30,6 +30,7 @@ import { diaphragm } from './diaphragm';
 import { duodenum } from './duodenum';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
+import { femalePerineum } from './female-perineum';
 import { femoralTriangle } from './femoral-triangle';
 import { femoralVesselsNerve } from './femoral-vessels-nerve';
 import { fetalCirculation } from './fetal-circulation';
@@ -51,6 +52,7 @@ import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { intervertebralDisc } from './intervertebral-disc';
+import { ischioanalFossa } from './ischioanal-fossa';
 import { jejunumIleum } from './jejunum-ileum';
 import { kidney } from './kidney';
 import { kneeAnastomoses } from './knee-anastomoses';
@@ -73,6 +75,7 @@ import { lumbarPlexus } from './lumbar-plexus';
 import { lumbarVertebraeSacrum } from './lumbar-vertebrae-sacrum';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
+import { maleUrogenitalRegion } from './male-urogenital-region';
 import { mediastinum } from './mediastinum';
 import { mesentericVessels } from './mesenteric-vessels';
 import { nerveInjuries } from './nerve-injuries';
@@ -82,8 +85,10 @@ import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pancreas } from './pancreas';
 import { pectoralRegion } from './pectoral-region';
+import { pelvicCavity } from './pelvic-cavity';
 import { penis } from './penis';
 import { pericardium } from './pericardium';
+import { perineum } from './perineum';
 import { peritonealFolds } from './peritoneal-folds';
 import { peritonealSpaces } from './peritoneal-spaces';
 import { peritoneum } from './peritoneum';
@@ -94,6 +99,7 @@ import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
 import { portalVein } from './portal-vein';
 import { posteriorAbdominalWall } from './posterior-abdominal-wall';
 import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
+import { pudendalNerveVessels } from './pudendal-nerve-vessels';
 import { radioulnarJoints } from './radioulnar-joints';
 import { rectusSheath } from './rectus-sheath';
 import { ribs } from './ribs';
@@ -259,6 +265,12 @@ export const TOPICS: Topic[] = [
   posteriorAbdominalWall,
   lumbarPlexus,
   abdominalAutonomicNerves,
+  perineum,
+  ischioanalFossa,
+  maleUrogenitalRegion,
+  femalePerineum,
+  pudendalNerveVessels,
+  pelvicCavity,
   oxygenCurve,
 ];
 
