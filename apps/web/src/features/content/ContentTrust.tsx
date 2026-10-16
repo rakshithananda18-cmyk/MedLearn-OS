@@ -5,6 +5,7 @@ import { BookMarked, ExternalLink } from '@medlearn/ui/icons';
 import type { ReactNode } from 'react';
 
 import type { TopicTrust } from '@/content/topics';
+import { useReviewed } from '@/features/review/useReviewed';
 
 import { ReportIssueForm } from './ReportIssueForm';
 import { SampleContentBanner } from './SampleContentBanner';
@@ -18,16 +19,15 @@ export function ContentTrust({
   topic,
   children,
 }: Readonly<{ topic: TopicTrust; children?: ReactNode }>) {
+  const reviewed = useReviewed(topic);
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <SampleContentBanner reviewed={topic.reviewed} />
+      <SampleContentBanner reviewed={reviewed} />
       <div>
         <BottomSheet
           title="Sources"
           description={`${topic.title}, version ${topic.version}. ${
-            topic.reviewed
-              ? 'Approved by a medical reviewer.'
-              : 'Not yet reviewed by a medical reviewer.'
+            reviewed ? 'Approved by a medical reviewer.' : 'Not yet reviewed by a medical reviewer.'
           }`}
           trigger={
             <Button variant="ghost" size="sm" iconStart={BookMarked}>

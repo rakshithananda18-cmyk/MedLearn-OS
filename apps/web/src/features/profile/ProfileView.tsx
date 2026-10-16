@@ -146,9 +146,16 @@ function AccountSection({ adult }: Readonly<{ adult: boolean }>) {
     body = <Skeleton className="h-8 w-full" />;
   } else if (state.signedIn) {
     body = (
-      <Text size="sm">
-        Signed in as {state.account?.email}. Your progress follows you to any phone.
-      </Text>
+      <div className="flex flex-col gap-2">
+        <Text size="sm">
+          Signed in as {state.account?.email}. Your progress follows you to any phone.
+        </Text>
+        {state.account?.reviewer ? (
+          <Link href="/review" className={buttonClasses({ variant: 'primary', size: 'sm' })}>
+            Review topics
+          </Link>
+        ) : null}
+      </div>
     );
   } else {
     body = (

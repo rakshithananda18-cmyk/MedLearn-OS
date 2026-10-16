@@ -25,5 +25,7 @@ export type NewPassword = z.infer<typeof NewPassword>;
 export const AccountStatus = z.object({
   email: z.email().nullable(),
   anonymous: z.boolean(),
+  /** On the review team, so the profile leads to the review board. */
+  reviewer: z.boolean().optional(),
 });
 export type AccountStatus = z.infer<typeof AccountStatus>;
