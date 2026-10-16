@@ -38,6 +38,9 @@ export function useSearchResults(query: string, enabled = true, delay = 0) {
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
+    // Install before a response can settle; reconnecting refreshes the active query too.
+    const onOnline = () => setAttempt((value) => value + 1);
+    window.addEventListener('online', onOnline);
     const deadline = setTimeout(() => {
       controller.abort();
       setSettled({ query, attempt, results: null });
@@ -56,17 +59,12 @@ export function useSearchResults(query: string, enabled = true, delay = 0) {
       clearTimeout(timer);
       clearTimeout(deadline);
       controller.abort();
+      window.removeEventListener('online', onOnline);
     };
   }, [query, attempt, enabled, delay]);
   const current =
     enabled && settled?.query === query && settled.attempt === attempt ? settled : null;
   const error = current !== null && current.results === null;
-  useEffect(() => {
-    if (!error) return;
-    const retry = () => setAttempt((value) => value + 1);
-    window.addEventListener('online', retry);
-    return () => window.removeEventListener('online', retry);
-  }, [error]);
   return {
     results: current?.results ?? null,
     error,
