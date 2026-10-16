@@ -161,6 +161,8 @@ describe('Library', () => {
         name: /Axilla: walls and contents/,
       }),
     ).toBeInTheDocument();
+    // Closed regions render nothing until opened; open the upper limb to see the mark.
+    await userEvent.click(screen.getByRole('button', { name: /^Upper limb/ }));
     expect(
       screen.getByRole('button', { name: /^Axilla.*Up next/, expanded: false }),
     ).toBeInTheDocument();

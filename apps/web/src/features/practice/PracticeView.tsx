@@ -4,11 +4,13 @@ import { dayKey, dueCardIds, goalToday, REVISIT_QUESTIONS, type StudyGoal } from
 import { cx, Display, Eyebrow, Icon, IconButton, type IconGlyph, Text } from '@medlearn/ui';
 import { Dumbbell, Play, RotateCcw, Shuffle, Target, Timer, Trash2 } from '@medlearn/ui/icons';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import type { LibraryNode } from '@/content/library';
 import type { PracticeQuestion, TopicSummary } from '@/content/topics';
+import { Chevron } from '@/features/library/SubjectTopics';
 import { completeRevisit, markGoalTopic, removeGoal, useProgress } from '@/features/progress/store';
+import { FoldBody } from '@/features/shell/FoldBody';
 import { useHydrated } from '@/features/shell/media';
 
 import { GoalPlanner } from './GoalPlanner';
@@ -102,6 +104,92 @@ function sectionDetail(section: SectionStrength): string {
   return `${count} ${count === 1 ? 'topic' : 'topics'}`;
 }
 
+/** A region's book sections under its name, folding open one region at a time. */
+function StrengthGroup({
+  group,
+  sections,
+  open,
+  onToggle,
+  onPractise,
+}: Readonly<{
+  group: string;
+  sections: SectionStrength[];
+  open: boolean;
+  onToggle: () => void;
+  onPractise: (section: SectionStrength) => void;
+}>) {
+  const id = useId();
+  const weak = sections.filter((section) => section.strength === 'weak').length;
+  return (
+    <li className="flex flex-col border-t border-border first:border-t-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={onToggle}
+        className="flex min-h-12 w-full items-center gap-2 text-left"
+      >
+        <span className="min-w-0 flex-1 font-display text-xl text-ink">{group}</span>
+        <span className="shrink-0 text-xs text-fg-muted" suppressHydrationWarning>
+          {sections.length} {sections.length === 1 ? 'section' : 'sections'}
+          {weak > 0 ? ` · ${weak} weak` : ''}
+        </span>
+        <Chevron open={open} />
+      </button>
+      <FoldBody id={id} open={open}>
+        <ul className="flex flex-col pb-2">
+          {sections.map((section) => (
+            <StrengthRow key={section.id} section={section} onPractise={onPractise} />
+          ))}
+        </ul>
+      </FoldBody>
+    </li>
+  );
+}
+
+/** One book section: how it is going, and a button to practise just that section. */
+function StrengthRow({
+  section,
+  onPractise,
+}: Readonly<{ section: SectionStrength; onPractise: (section: SectionStrength) => void }>) {
+  return (
+    <li className="flex items-center gap-3 border-t border-border py-2 first:border-t-0">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-semibold text-ink">{section.label}</span>
+        <span className="text-xs text-fg-muted" suppressHydrationWarning>
+          {sectionDetail(section)}
+        </span>
+      </span>
+      <span
+        aria-hidden="true"
+        className="hidden h-2 w-1/5 overflow-hidden rounded-full bg-border md:block"
+      >
+        <span
+          className={cx('block h-full rounded-full', STRENGTH[section.strength].bar)}
+          style={{ width: `${Math.max(section.percent, 4)}%` }}
+        />
+      </span>
+      <span
+        className={cx(
+          'w-24 shrink-0 rounded-full px-2 py-1 text-center text-xs font-semibold',
+          STRENGTH[section.strength].tone,
+        )}
+        suppressHydrationWarning
+      >
+        {STRENGTH[section.strength].label}
+      </span>
+      <IconButton
+        icon={Play}
+        label={`Practise ${section.label}`}
+        title={`Practise ${section.label}`}
+        size="sm"
+        variant="secondary"
+        onClick={() => onPractise(section)}
+      />
+    </li>
+  );
+}
+
 /** Each book section with how it is going, and a button to practise just that section. */
 function Strengths({
   sections,
@@ -111,6 +199,16 @@ function Strengths({
     strength,
     count: sections.filter((section) => section.strength === strength).length,
   }));
+  // One region open at a time, like the library: first where there is work to do.
+  const groups = [...new Set(sections.map((section) => section.group))].map((group) => ({
+    group,
+    items: sections.filter((section) => section.group === group),
+  }));
+  const firstWork =
+    groups.find(({ items }) => items.some((section) => section.strength === 'weak')) ??
+    groups.find(({ items }) => items.some((section) => section.answered > 0)) ??
+    groups[0];
+  const [open, setOpen] = useState<string | null>(firstWork?.group ?? null);
   return (
     <section
       aria-labelledby="strengths-title"
@@ -135,44 +233,15 @@ function Strengths({
         </ul>
       </div>
       <ul className="flex flex-col">
-        {sections.map((section) => (
-          <li
-            key={section.id}
-            className="flex items-center gap-3 border-t border-border py-2 first:border-t-0"
-          >
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-semibold text-ink">{section.label}</span>
-              <span className="text-xs text-fg-muted" suppressHydrationWarning>
-                {sectionDetail(section)}
-              </span>
-            </span>
-            <span
-              aria-hidden="true"
-              className="hidden h-2 w-1/5 overflow-hidden rounded-full bg-border md:block"
-            >
-              <span
-                className={cx('block h-full rounded-full', STRENGTH[section.strength].bar)}
-                style={{ width: `${Math.max(section.percent, 4)}%` }}
-              />
-            </span>
-            <span
-              className={cx(
-                'w-24 shrink-0 rounded-full px-2 py-1 text-center text-xs font-semibold',
-                STRENGTH[section.strength].tone,
-              )}
-              suppressHydrationWarning
-            >
-              {STRENGTH[section.strength].label}
-            </span>
-            <IconButton
-              icon={Play}
-              label={`Practise ${section.label}`}
-              title={`Practise ${section.label}`}
-              size="sm"
-              variant="secondary"
-              onClick={() => onPractise(section)}
-            />
-          </li>
+        {groups.map(({ group, items }) => (
+          <StrengthGroup
+            key={group}
+            group={group}
+            sections={items}
+            open={open === group}
+            onToggle={() => setOpen(open === group ? null : group)}
+            onPractise={onPractise}
+          />
         ))}
       </ul>
     </section>

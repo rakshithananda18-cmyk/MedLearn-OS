@@ -60,7 +60,7 @@ describe('PathTracer', () => {
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('button', { name: 'C5 root' })).toHaveAttribute('aria-pressed', 'true');
     await userEvent.keyboard(' ');
-    expect(screen.getByText('Select a root or nerve to trace its path.')).toBeInTheDocument();
+    expect(screen.getByText('Select a box to trace its path.')).toBeInTheDocument();
   });
 
   it('lists what a lesion affects', () => {

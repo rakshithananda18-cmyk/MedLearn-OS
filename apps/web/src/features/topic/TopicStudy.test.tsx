@@ -66,6 +66,27 @@ describe('TopicStudy', () => {
     expect(screen.getByText('Ways to study')).toBeInTheDocument();
   });
 
+  it('shows two lectures and folds the rest behind "More lectures"', async () => {
+    const videos = videosOf('peritoneal-folds');
+    expect(videos.length).toBeGreaterThan(2);
+    render(
+      <TopicStudy
+        slug="peritoneal-folds"
+        title="Peritoneal folds"
+        poster="/posters/peritoneal-folds.webp"
+        videos={videos}
+        back={<a href="/subjects">Library</a>}
+        intro={<h1>Peritoneal folds</h1>}
+        study={<p>Ways to study</p>}
+        keyFacts={[]}
+      />,
+    );
+    const titles = videos.map((video) => video.title);
+    expect(screen.queryByRole('button', { name: new RegExp(titles[2] ?? '') })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: /More lectures/ }));
+    expect(screen.getByRole('button', { name: new RegExp(titles[2] ?? '') })).toBeInTheDocument();
+  });
+
   it('writes clock times as minutes and seconds', () => {
     expect(clockTime(0)).toBe('0:00');
     expect(clockTime(59.9)).toBe('0:59');

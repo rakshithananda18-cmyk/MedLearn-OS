@@ -108,16 +108,23 @@ function VideoRow({
   );
 }
 
+/** How many lectures show before "More lectures". */
+const LECTURES_SHOWN = 2;
+
 /** The topic's lectures, and its narrated 3D tour, above the ways to study it. */
 function Lectures({
   videos,
-  tourHref,
+  tour,
   onPlay,
 }: Readonly<{
   videos: TopicVideo[];
-  tourHref: string | null;
+  /** The narrated 3D tour: where it opens, and the topic's still for its picture. */
+  tour: { href: string; poster: string } | null;
   onPlay: (video: TopicVideo) => void;
 }>) {
+  // The first two lectures show; any more wait behind "More lectures".
+  const [all, setAll] = useState(false);
+  const shown = all ? videos : videos.slice(0, LECTURES_SHOWN);
   return (
     <section
       aria-labelledby="lectures-title"
@@ -130,14 +137,26 @@ function Lectures({
         Watch
       </h2>
       <ul className="flex flex-col">
-        {tourHref ? (
+        {tour ? (
           <li>
             <Link
-              href={tourHref}
+              href={tour.href}
               className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-2 transition-colors duration-150 hover:bg-surface"
             >
-              <span className="flex aspect-video w-1/4 shrink-0 items-center justify-center rounded-md bg-ink text-gold">
-                <Icon icon={Rotate3d} />
+              <span className="relative aspect-video w-1/4 shrink-0 overflow-hidden rounded-md bg-surface-muted">
+                <Image
+                  src={tour.poster}
+                  alt=""
+                  width={320}
+                  height={180}
+                  unoptimized
+                  className="size-full object-contain"
+                />
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-surface text-ink shadow-raised transition-transform duration-150 group-hover:scale-110">
+                    <Icon icon={Rotate3d} size="sm" />
+                  </span>
+                </span>
               </span>
               <span className="flex min-w-0 flex-col gap-1">
                 <span className="text-sm font-semibold text-ink">Watch the 3D tour</span>
@@ -148,12 +167,21 @@ function Lectures({
             </Link>
           </li>
         ) : null}
-        {videos.map((video) => (
+        {shown.map((video) => (
           <li key={video.id}>
             <VideoRow video={video} onPlay={() => onPlay(video)} />
           </li>
         ))}
       </ul>
+      {videos.length > LECTURES_SHOWN && !all ? (
+        <button
+          type="button"
+          onClick={() => setAll(true)}
+          className="self-start rounded-md px-2 py-1 text-sm font-semibold text-primary-strong hover:bg-surface"
+        >
+          More lectures ({videos.length - LECTURES_SHOWN})
+        </button>
+      ) : null}
     </section>
   );
 }
@@ -275,7 +303,7 @@ export function TopicStudy({
       {videos.length > 0 || poster ? (
         <Lectures
           videos={videos}
-          tourHref={poster ? `/studio?topic=${slug}&tour=1` : null}
+          tour={poster ? { href: `/studio?topic=${slug}&tour=1`, poster } : null}
           onPlay={play}
         />
       ) : null}

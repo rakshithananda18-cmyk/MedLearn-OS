@@ -10,10 +10,11 @@ import Link from 'next/link';
 import { type ReactNode, useId, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
-import { type LibraryNode, toggledTrail, topicsUnder } from '@/content/library';
+import { type LibraryNode, toggledTrail, topicsUnder, trailTo } from '@/content/library';
 import { type MovementId, type MovementPhase, phaseAt } from '@/content/movements';
 import { Chevron } from '@/features/library/SubjectTopics';
 import { useProgress } from '@/features/progress/store';
+import { FoldBody } from '@/features/shell/FoldBody';
 
 import type { StructureInfo, StudioTopic } from './knowledge';
 import type { Quality, StudioSettings } from './saved';
@@ -231,11 +232,7 @@ function Branch({
         </span>
         <Chevron open={open} />
       </button>
-      <div className={cx('fold', open && 'fold-open')}>
-        <div className="min-h-0 overflow-hidden" inert={!open}>
-          {children}
-        </div>
-      </div>
+      <FoldBody open={open}>{children}</FoldBody>
     </li>
   );
 }
@@ -263,7 +260,8 @@ function TopicTree({
   const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
   const next = topics.find((topic) => !learnt.has(topic.slug));
   const continueId = useId();
-  const [trail, setTrail] = useState<string[]>([]);
+  // Unfolded to the topic that is open, so the student sees where they are.
+  const [trail, setTrail] = useState<string[]>(() => trailTo(tree, current));
 
   const render = (node: LibraryNode, depth: number): ReactNode => {
     if (node.kind === 'topic') {

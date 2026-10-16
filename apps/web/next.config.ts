@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 
+import { securityHeaders } from './src/server/security-headers';
+
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -13,9 +15,11 @@ const config: NextConfig = {
     '@medlearn/visuals',
   ],
   serverExternalPackages: ['pino', 'pino-pretty'],
-  // The service worker must never be cached, or phones would keep an old one.
   async headers() {
     return [
+      { source: '/(.*)', headers: securityHeaders(process.env.NODE_ENV === 'development') },
+      // The service worker must never be cached, or phones would keep an old one. Listed last so
+      // its own policy wins over the one above.
       {
         source: '/sw.js',
         headers: [
