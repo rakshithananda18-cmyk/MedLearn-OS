@@ -199,7 +199,10 @@ export function ViewTools({
       role="toolbar"
       aria-label="View"
       aria-orientation="vertical"
-      className={cx(GLASS, 'pointer-events-auto flex flex-col gap-1 rounded-full p-1')}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex max-h-full flex-col gap-1 overflow-y-auto overscroll-contain rounded-full p-1',
+      )}
     >
       {xray === null ? null : (
         <>

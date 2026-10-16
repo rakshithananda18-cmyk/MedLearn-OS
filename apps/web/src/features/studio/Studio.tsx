@@ -920,8 +920,9 @@ function useBottomCover(onCover: (height: number) => void) {
 /** Phones and tablets held upright: everything floats over the model, sheets open on demand. */
 function PhoneOverlay({
   onCover,
+  coverBottom,
   ...props
-}: Readonly<OverlayProps & { onCover: (height: number) => void }>) {
+}: Readonly<OverlayProps & { onCover: (height: number) => void; coverBottom: number }>) {
   const { studio, topics, tree, regions } = props;
   const measureFooter = useBottomCover(onCover);
   const { session, topic } = studio;
@@ -946,7 +947,12 @@ function PhoneOverlay({
         )}
       </div>
       {quiz ? null : (
-        <div className="absolute top-20 left-3">
+        // Stops above the sheet along the bottom; on a short phone the tools scroll instead of
+        // hiding under it.
+        <div
+          className="absolute top-20 left-3 flex min-h-0 flex-col"
+          style={coverBottom > 0 ? { bottom: coverBottom + TOOLS_GAP_PX } : undefined}
+        >
           <Tools studio={studio} />
         </div>
       )}
@@ -1026,6 +1032,9 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
     </footer>
   );
 }
+
+/** The gap kept between a phone's tool column and the sheet below it, in pixels. */
+const TOOLS_GAP_PX = 12;
 
 /** The gap between the model's column and the card beside it (gap-4), in pixels. */
 const CARD_GAP_PX = 16;
@@ -1236,7 +1245,9 @@ export function Studio(props: Readonly<StudioProps>) {
       )}
     >
       {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
-      {hydrated && !docked ? <PhoneOverlay {...overlay} onCover={setCoverBottom} /> : null}
+      {hydrated && !docked ? (
+        <PhoneOverlay {...overlay} onCover={setCoverBottom} coverBottom={coverBottom} />
+      ) : null}
     </section>
   );
 }

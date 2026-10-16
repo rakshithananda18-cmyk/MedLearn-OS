@@ -119,6 +119,9 @@ describe('Studio on a phone', () => {
       .mockReturnValue({ top: window.innerHeight - 300, width: window.innerWidth } as DOMRect);
     await renderStudio('axilla');
     expect(viewer.props?.insetBottom).toBe(300);
+    // The tools stop above the sheet, so none hides under it on a short phone.
+    const tools = screen.getByRole('toolbar', { name: 'View' }).parentElement;
+    expect(tools?.style.bottom).toBe('312px');
     rect.mockRestore();
   });
 
