@@ -1,13 +1,17 @@
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { brachialPlexus } from '@/content/brachial-plexus';
+import { forgetStatuses } from '@/features/review/state';
 
 import { ContentTrust } from './ContentTrust';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  forgetStatuses();
+});
 
 async function openDrawer() {
   render(<ContentTrust topic={brachialPlexus} />);
@@ -40,13 +44,32 @@ describe('ContentTrust', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Send report' }));
 
     expect(await screen.findByText('Thank you')).toBeInTheDocument();
-    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const calls = fetchMock.mock.calls as unknown as [string, RequestInit][];
+    const [, init] = calls.find(([url]) => url === '/api/reports') ?? [];
+    if (!init) throw new Error('No report was sent');
     expect(JSON.parse(String(init.body))).toEqual({
       topicSlug: 'brachial-plexus',
       contentVersion: '0.1.0',
       kind: 'unclear',
       note: 'Step 3 is confusing',
     });
+  });
+
+  it('drops the sample label once the review team approves the version shown', async () => {
+    const approved = {
+      topicSlug: 'brachial-plexus',
+      contentVersion: brachialPlexus.version,
+      decision: 'approved',
+      decidedAt: '2026-10-16T09:00:00.000Z',
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ data: { statuses: [approved] } })),
+    );
+    render(<ContentTrust topic={brachialPlexus} />);
+    await waitFor(() =>
+      expect(screen.queryByText('Sample content, not medically reviewed')).toBeNull(),
+    );
   });
 
   it('says so when the report could not be sent', async () => {
