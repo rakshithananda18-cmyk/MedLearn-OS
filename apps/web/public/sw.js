@@ -147,10 +147,7 @@ async function studyContentFromCache(cache, requested) {
       const items = body?.data?.items;
       if (!Array.isArray(items) || items.length !== declared.size) continue;
       const ids = items.map((item) => studyItemId(kind, item));
-      if (
-        new Set(ids).size !== declared.size ||
-        ids.some((id) => id === null || !declared.has(id))
-      )
+      if (new Set(ids).size !== declared.size || ids.some((id) => id === null || !declared.has(id)))
         continue;
       items.forEach((item, index) => {
         const id = ids[index];
