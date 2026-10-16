@@ -11,6 +11,9 @@
 //  - lower-limb.glb: the whole right lower limb without its muscles, for surface marking, nerve
 //    injuries and development
 //  - lower-limb-joints.glb: its bones with the capsules, ligaments and menisci of its joints
+//  - abdominal-wall.glb: the anterior abdominal wall over its skeleton, with the inguinal region,
+//    testes and penis, shared by the abdomen's wall and male external genitalia topics
+//  - abdominal-organs.glb: the abdominal viscera with their peritoneal folds and gut vessels
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -1282,7 +1285,8 @@ export const MODELS = [
     name: 'abdominal-wall',
     // The anterior abdominal wall over its skeleton, both sides, with the right inguinal region in
     // detail (abdomen batch 1: lumbar vertebrae, sacrum and bony pelvis; landmarks and regions;
-    // the wall's layers, muscles, rectus sheath and inguinal canal). BodyParts3D has only the
+    // the wall's layers, muscles, rectus sheath and inguinal canal; batch 2: the penis, testes
+    // and their ducts). BodyParts3D has only the
     // external oblique of the wall's muscles, so they all come from Z-Anatomy; neither has a
     // coccyx, a cremaster or a separate rectus sheath (the flat muscles' aponeuroses form it here).
     maxTriangles: 150_000,
@@ -1401,10 +1405,16 @@ export const MODELS = [
       ]).map((part) => ({ ...part, ...PELVIC_FIT })),
       // The right testis and the ductus deferens, which runs through the inguinal canal.
       ...visceral([
-        ['testis', 'Right testis', 0.5],
-        ['epididymis', 'Right epididymis', 0.5],
-        ['ductus-deferens', 'Right ductus deferens', 0.3],
+        ['testis', ['Right testis', 'Left testis'], 0.5],
+        ['epididymis', ['Right epididymis', 'Left epididymis'], 0.5],
+        ['ductus-deferens', ['Right ductus deferens', 'Left ductus deferens'], 0.3],
       ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      // The penis and its dorsal vessels, from BodyParts3D (abdomen batch 2).
+      { id: 'corpora-cavernosa', concept: 'corpus cavernosum of penis', ratio: 1 },
+      { id: 'corpus-spongiosum', concept: 'corpus spongiosum of penis', ratio: 1 },
+      { id: 'glans-penis', concept: 'glans penis', ratio: 1 },
+      { id: 'dorsal-arteries-of-penis', concept: 'dorsal artery of penis', ratio: 0.3 },
+      { id: 'deep-dorsal-vein', concept: 'deep dorsal vein of penis', ratio: 0.5 },
       // The nine regions of the front of the abdomen, as patches of skin.
       ...zParts('Regions of human body100.fbx', [
         ['epigastric-region', ['Right epigastric region', 'Left epigastric region'], 1],
@@ -1417,6 +1427,88 @@ export const MODELS = [
         ['right-iliac-region', 'Right inguinal region', 1],
         ['left-iliac-region', 'Left inguinal region', 1],
       ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+    ],
+  },
+  {
+    name: 'abdominal-organs',
+    // The abdominal viscera in place with their peritoneal folds and the great vessels of the gut,
+    // over the lumbar spine, lower ribs and pelvis (abdomen batch 2 onwards). BodyParts3D for the
+    // organs and vessels; Z-Anatomy for the liver (BodyParts3D has it only in segments), the
+    // omenta and the transverse mesocolon, which fit BodyParts3D in the upper abdomen, and the
+    // sigmoid colon, which BodyParts3D lacks and which sits low like the rest of Z-Anatomy's pelvis.
+    maxTriangles: 150_000,
+    error: 0.003,
+    parts: [
+      // Skeleton.
+      { id: 'lumbar-spine', concept: 'lumbar vertebra', ratio: 0.2 },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.3 },
+      { id: 'hip-bones', concepts: ['right hip bone', 'left hip bone'], ratio: 0.3 },
+      {
+        id: 'lower-ribs',
+        concepts: ['seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'].map(
+          (n) => `${n} rib`,
+        ),
+        ratio: 0.12,
+      },
+      {
+        id: 'costal-cartilages',
+        concept: 'costal cartilage',
+        ratio: 0.2,
+        clipZ: [-Infinity, 1240],
+      },
+      { id: 'diaphragm', concept: 'diaphragm', ratio: 0.12 },
+      // Organs.
+      ...zParts('VisceralSystem100.fbx', [['liver', 'Liver', 0.15]]),
+      { id: 'gallbladder', concept: 'gallbladder', ratio: 0.5 },
+      { id: 'stomach', concept: 'stomach', ratio: 1 },
+      { id: 'spleen', concept: 'spleen', ratio: 1 },
+      { id: 'pancreas', concept: 'pancreas', ratio: 0.6 },
+      { id: 'duodenum', concept: 'duodenum', ratio: 1 },
+      {
+        id: 'jejunum',
+        concepts: ['proximal part of jejunum', 'middle part of jejunum', 'distal part of jejunum'],
+        ratio: 0.5,
+      },
+      {
+        id: 'ileum',
+        concepts: ['proximal part of ileum', 'middle part of ileum', 'distal part of ileum'],
+        ratio: 0.5,
+      },
+      { id: 'ascending-colon', concept: 'ascending colon', ratio: 0.6 },
+      { id: 'appendix', concept: 'appendix', ratio: 1 },
+      { id: 'transverse-colon', concept: 'transverse colon', ratio: 0.6 },
+      { id: 'descending-colon', concept: 'descending colon', ratio: 0.5 },
+      ...zParts('VisceralSystem100.fbx', [['sigmoid-colon', 'Sigmoid colon', 0.15]]).map(
+        (part) => ({ ...part, ...PELVIC_FIT }),
+      ),
+      { id: 'rectum', concept: 'rectum', ratio: 1 },
+      { id: 'kidneys', concepts: ['right kidney', 'left kidney'], ratio: 0.5 },
+      {
+        id: 'suprarenal-glands',
+        concepts: ['right adrenal gland', 'left adrenal gland'],
+        ratio: 0.4,
+      },
+      { id: 'ureters', concept: 'ureter', ratio: 0.4 },
+      { id: 'urinary-bladder', concept: 'urinary bladder', ratio: 1 },
+      // Peritoneal folds.
+      ...zParts('VisceralSystem100.fbx', [
+        ['greater-omentum', 'Greater omentum', 0.02],
+        ['lesser-omentum', 'Lesser omentum', 0.15],
+        ['transverse-mesocolon', 'Mesocolon', 0.05],
+      ]),
+      { id: 'mesentery', concept: 'mesentery of small intestine', ratio: 0.08 },
+      { id: 'mesoappendix', concept: 'mesoappendix', ratio: 1 },
+      // Vessels of the gut.
+      { id: 'abdominal-aorta', concept: 'abdominal aorta', ratio: 0.5 },
+      { id: 'inferior-vena-cava', concept: 'inferior vena cava', ratio: 0.5 },
+      { id: 'coeliac-trunk', concept: 'celiac trunk', ratio: 1 },
+      { id: 'splenic-artery', concept: 'splenic artery', ratio: 0.3 },
+      { id: 'superior-mesenteric-artery', concept: 'superior mesenteric artery', ratio: 0.4 },
+      { id: 'inferior-mesenteric-artery', concept: 'inferior mesenteric artery', ratio: 0.6 },
+      { id: 'portal-vein', concept: 'hepatic portal vein', ratio: 0.5 },
+      { id: 'splenic-vein', concept: 'splenic vein', ratio: 0.5 },
+      { id: 'superior-mesenteric-vein', concept: 'superior mesenteric vein', ratio: 0.6 },
+      { id: 'inferior-mesenteric-vein', concept: 'inferior mesenteric vein', ratio: 0.6 },
     ],
   },
   {

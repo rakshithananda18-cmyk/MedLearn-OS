@@ -465,6 +465,43 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('Bu_1wh7ycVA', 'Inguinal canal and spermatic cord', 'The Noted Anatomist', 549),
     video('_gU8HJ-VSOE', 'Inguinal canal anatomy and hernias', 'DaVinci Academy', 833),
   ],
+  penis: [
+    video('razkCzuRgak', 'The penis', 'AnatomyZone', 226),
+    video('7om6hv0wUHM', 'Anatomy of the penis', 'UroChannel', 513),
+  ],
+  'scrotum-testis': [
+    video('ty6a_WTSnoc', 'The testis', 'Sam Webster', 1139),
+    video('pU_ordJsXl4', 'Testes anatomy', 'DaVinci Academy', 1149),
+  ],
+  'testis-descent': [
+    video('r9pqhl_c66g', 'Descent of the testes: embryology', 'Dr Sumit Gupta', 1965),
+  ],
+  peritoneum: [
+    video('w2IIFHSw1dU', 'Intraperitoneal and retroperitoneal organs', 'AnatomyZone', 73),
+    video(
+      'i0vysDh9lo0',
+      'Intraperitoneal, extraperitoneal and retroperitoneal organs',
+      'Holly Peters',
+      177,
+    ),
+  ],
+  'peritoneal-folds': [
+    video('1LvksU4bapk', 'Greater and lesser omentum', 'Anatomy 4 Students', 696),
+    video('32do1LPhVd0', 'Structure and function of the greater omentum', KENHUB, 123),
+    video('QaFx-BNky34', 'The lesser omentum', 'Sam Webster', 889),
+  ],
+  'lesser-sac': [
+    video('_O10W3Xopc0', 'The lesser sac and epiploic foramen', 'Dr Sumit Gupta', 2310),
+  ],
+  'peritoneal-spaces': [
+    video(
+      '-rPaM_fBRuc',
+      'Subphrenic and subhepatic spaces and the hepatorenal recess',
+      'Anatomy 4 Students',
+      827,
+    ),
+    video('1LbWgFzVJtM', 'The right and left paracolic gutters', 'Crystal Clear Anatomy', 503),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),

@@ -116,6 +116,13 @@ export const POSTERS = [
   { name: 'abdominal-wall-muscles', path: '/studio?topic=abdominal-wall-muscles' },
   { name: 'rectus-sheath', path: '/studio?topic=rectus-sheath' },
   { name: 'inguinal-canal', path: '/studio?topic=inguinal-canal' },
+  { name: 'penis', path: '/studio?topic=penis' },
+  { name: 'scrotum-testis', path: '/studio?topic=scrotum-testis' },
+  { name: 'testis-descent', path: '/studio?topic=testis-descent' },
+  { name: 'peritoneum', path: '/studio?topic=peritoneum' },
+  { name: 'peritoneal-folds', path: '/studio?topic=peritoneal-folds' },
+  { name: 'lesser-sac', path: '/studio?topic=lesser-sac' },
+  { name: 'peritoneal-spaces', path: '/studio?topic=peritoneal-spaces' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

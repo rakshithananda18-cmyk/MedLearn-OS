@@ -55,6 +55,8 @@ describe('libraryTree', () => {
     expect(abdomen.children.map((section) => section.kind === 'branch' && section.label)).toEqual([
       'Introduction and osteology',
       'Anterior abdominal wall',
+      'Male external genital organs',
+      'Abdominal cavity and peritoneum',
     ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
     const lowerLimb = tree[3];

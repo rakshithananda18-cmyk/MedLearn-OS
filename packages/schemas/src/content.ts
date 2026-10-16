@@ -81,6 +81,15 @@ export const ModelPart = z.object({
   kind: PartKind,
   /** What it is and why it matters, in a sentence or two; shown when a student picks it. */
   about: z.string().min(1).optional(),
+  /**
+   * Its own colour token and opacity, where the kind's would not tell it apart: the organs of the
+   * abdomen, all of kind organ, each in its own colour.
+   */
+  colour: z
+    .string()
+    .regex(/^--color-[a-z-]+$/)
+    .optional(),
+  opacity: z.number().min(0).max(1).optional(),
 });
 export type ModelPart = z.infer<typeof ModelPart>;
 
