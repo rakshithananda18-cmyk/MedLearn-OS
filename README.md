@@ -17,6 +17,7 @@ standard textbooks and is still marked as not medically reviewed.
 | Practice  | Quick mix, weak spots, timed tests, strengths by book section, and planned class tests and revisits                                                                                                                                                                                                                                                                                                                           |
 | Revise    | Spaced-recall cards (FSRS)                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Account   | Progress is kept on the phone, and saved to the account for adults, merged safely across devices                                                                                                                                                                                                                                                                                                                              |
+| Review    | For the review team at `/review`: every topic's status, a sheet to check it against the book, approve or ask for changes, and students' reports to resolve; students see an approval at once                                                                                                                                                                                                                                  |
 
 Product and design decisions live in `docs/` (each version adds to the one before):
 
@@ -131,6 +132,26 @@ model page choose **Download 3D Model**, then **GLB** (or glTF), and save it int
 | Female Reproductive Organs (whole), CVallance        | https://sketchfab.com/3d-models/a7638a209026490fa3c8a3f9eecafcf9 | `reproductive-organs.glb` |
 
 All five were checked as CC BY and downloadable on 1 October 2026.
+
+## Reviewing topics
+
+Every topic shows "Sample content, not medically reviewed" until the review team approves the
+version students see. Reviewers sign in with an email on the team's list, open `/review` (or
+"Review topics" on their profile), check a topic against the book pages shown, then approve it
+(all four checks ticked) or ask for changes with a note. Approval reaches students straight away;
+changing a topic's `version` sends it back for another check.
+
+The list lives in the database, so adding a reviewer needs no deploy. In the Supabase SQL editor:
+
+```sql
+insert into public.content_reviewers (email) values ('name@example.com');
+```
+
+Locally, `reviewer@example.com` is a reviewer (from `supabase/seed.sql`); sign up with it.
+
+An approval covers one version of a topic. When you change a topic (its text, questions, diagram,
+3D labels or model file), bump its `version` and run `pnpm content:versions`; a test fails if
+content changes under an old version, so nothing unchecked ever carries an approval.
 
 ## Conventions
 

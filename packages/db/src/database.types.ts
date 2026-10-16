@@ -44,6 +44,8 @@ export type Database = {
           kind: string
           note: string | null
           reporter_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           topic_slug: string
         }
         Insert: {
@@ -53,6 +55,8 @@ export type Database = {
           kind: string
           note?: string | null
           reporter_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           topic_slug: string
         }
         Update: {
@@ -62,7 +66,24 @@ export type Database = {
           kind?: string
           note?: string | null
           reporter_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           topic_slug?: string
+        }
+        Relationships: []
+      }
+      content_reviewers: {
+        Row: {
+          added_at: string
+          email: string
+        }
+        Insert: {
+          added_at?: string
+          email: string
+        }
+        Update: {
+          added_at?: string
+          email?: string
         }
         Relationships: []
       }
@@ -108,11 +129,57 @@ export type Database = {
         }
         Relationships: []
       }
+      topic_reviews: {
+        Row: {
+          content_version: string
+          created_at: string
+          decision: string
+          facts_checked: boolean
+          id: number
+          note: string | null
+          pages_checked: boolean
+          questions_checked: boolean
+          reviewer_email: string
+          reviewer_id: string | null
+          topic_slug: string
+          visuals_checked: boolean
+        }
+        Insert: {
+          content_version: string
+          created_at?: string
+          decision: string
+          facts_checked?: boolean
+          id?: never
+          note?: string | null
+          pages_checked?: boolean
+          questions_checked?: boolean
+          reviewer_email?: string
+          reviewer_id?: string | null
+          topic_slug: string
+          visuals_checked?: boolean
+        }
+        Update: {
+          content_version?: string
+          created_at?: string
+          decision?: string
+          facts_checked?: boolean
+          id?: never
+          note?: string | null
+          pages_checked?: boolean
+          questions_checked?: boolean
+          reviewer_email?: string
+          reviewer_id?: string | null
+          topic_slug?: string
+          visuals_checked?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      is_reviewer: { Args: never; Returns: boolean }
       save_learner_progress: {
         Args: {
           p_check_version?: boolean
@@ -122,6 +189,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      topic_review_status: {
+        Args: never
+        Returns: {
+          content_version: string
+          decided_at: string
+          decision: string
+          topic_slug: string
+        }[]
       }
     }
     Enums: {

@@ -1,3 +1,4 @@
+import { createReviewsRepository } from '@medlearn/db';
 import type { AccountStatus } from '@medlearn/schemas';
 
 import { ok, withRoute } from '@/server/route';
@@ -5,9 +6,14 @@ import { getSessionDb } from '@/server/session';
 
 /** Who is signed in on this phone, or null when there is no session at all. */
 export const GET = withRoute('GET /api/account', async () => {
-  const { data } = await (await getSessionDb()).auth.getUser();
-  const status: AccountStatus | null = data.user
-    ? { email: data.user.email || null, anonymous: data.user.is_anonymous ?? false }
-    : null;
+  const db = await getSessionDb();
+  const { data } = await db.auth.getUser();
+  if (!data.user) return ok(null);
+  const anonymous = data.user.is_anonymous ?? false;
+  const status: AccountStatus = {
+    email: data.user.email || null,
+    anonymous,
+    ...(!anonymous && (await createReviewsRepository(db).isReviewer()) && { reviewer: true }),
+  };
   return ok(status);
 });
