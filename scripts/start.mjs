@@ -57,10 +57,13 @@ const nextBin = createRequire(`${process.cwd()}/${WEB_DIR}/package.json`).resolv
   'next/dist/bin/next',
 );
 const mode = PRODUCTION ? 'start' : 'dev';
+// A production server with no ACCESS_EMAILS lets nobody in. On this computer and its Wi-Fi it is
+// opened on purpose, as it always was; an ACCESS_EMAILS in apps/web/.env.local still limits it.
 const web = spawn(process.execPath, [nextBin, mode, '--port', String(PORT)], {
   cwd: WEB_DIR,
   stdio: 'inherit',
   detached: !isWindows,
+  env: { ...process.env, ACCESS_OPEN: process.env.ACCESS_OPEN ?? 'true' },
 });
 
 let stopping = false;
