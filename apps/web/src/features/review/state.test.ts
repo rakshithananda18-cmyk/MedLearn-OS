@@ -41,6 +41,15 @@ describe('review state', () => {
     expect((await loadStatuses()).size).toBe(0);
   });
 
+  it('drops entries without the fields it reads', async () => {
+    const odd = [approved, { topicSlug: 'axilla', decision: 'approved' }, null, 'approved'];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ data: { statuses: odd } })),
+    );
+    expect([...(await loadStatuses()).keys()]).toEqual(['brachial-plexus']);
+  });
+
   it('asks again once what it has is a minute old, so an open app catches up', async () => {
     const fetch = vi.fn(async () => Response.json({ data: { statuses: [approved] } }));
     vi.stubGlobal('fetch', fetch);

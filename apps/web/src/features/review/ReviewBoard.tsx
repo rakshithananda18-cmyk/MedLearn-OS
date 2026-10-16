@@ -38,7 +38,7 @@ type Filter = keyof typeof FILTERS;
  */
 export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
   const [filter, setFilter] = useState<Filter>('to-do');
-  const shown = topics.filter(FILTERS[filter].keep);
+  const shown = topics.filter((topic) => FILTERS[filter].keep(topic));
   const chapters = [...new Set(shown.map((topic) => topic.chapter))];
   const approved = topics.filter((topic) => topic.state === 'approved').length;
   return (
@@ -54,7 +54,7 @@ export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
       <fieldset aria-label="Show" className="flex flex-wrap gap-2">
         {(Object.keys(FILTERS) as Filter[]).map((key) => (
           <ToggleChip key={key} pressed={filter === key} onClick={() => setFilter(key)}>
-            {FILTERS[key].label} {topics.filter(FILTERS[key].keep).length}
+            {FILTERS[key].label} {topics.filter((topic) => FILTERS[key].keep(topic)).length}
           </ToggleChip>
         ))}
       </fieldset>
@@ -83,9 +83,8 @@ export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
                       <span className="text-sm font-semibold text-ink">{topic.title}</span>
                       <span className="text-xs text-fg-muted">
                         Version {topic.version}
-                        {topic.openReports > 0
-                          ? ` · ${topic.openReports} open ${topic.openReports === 1 ? 'report' : 'reports'}`
-                          : ''}
+                        {topic.openReports > 0 &&
+                          ` · ${topic.openReports} open ${topic.openReports === 1 ? 'report' : 'reports'}`}
                       </span>
                     </span>
                     <Badge tone={STATE[topic.state].tone}>{STATE[topic.state].label}</Badge>

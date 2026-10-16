@@ -1,4 +1,3 @@
-import type * as Schemas from '@medlearn/schemas';
 import type { ReviewStatus } from '@medlearn/schemas';
 import type { BadgeTone } from '@medlearn/ui';
 
@@ -26,6 +25,19 @@ export function reviewState(version: string, latest: ReviewStatus | undefined): 
 /** How long a loaded set of outcomes is trusted before it is asked for again. */
 export const STATUS_TTL_MS = 60_000;
 
+/**
+ * Checks the fields this page reads, by hand: the schema library is heavy to start on a phone and
+ * held up the lesson page (total blocking time 267 ms against a budget of 200).
+ */
+function isStatus(value: unknown): value is ReviewStatus {
+  const status = value as Partial<ReviewStatus> | null;
+  return (
+    typeof status?.topicSlug === 'string' &&
+    typeof status.contentVersion === 'string' &&
+    (status.decision === 'approved' || status.decision === 'changes-requested')
+  );
+}
+
 let statuses: Promise<Map<string, ReviewStatus>> | null = null;
 let loadedAt = 0;
 
@@ -37,16 +49,16 @@ let loadedAt = 0;
 export function loadStatuses(now = Date.now()): Promise<Map<string, ReviewStatus>> {
   if (statuses && now - loadedAt < STATUS_TTL_MS) return statuses;
   loadedAt = now;
-  statuses = Promise.all([
-    fetch('/api/reviews').then((response) => (response.ok ? response.json() : null)),
-    // Loaded here rather than with the page, so the schema library is not in every download.
-    import('@medlearn/schemas'),
-  ])
-    .then(([body, schemas]: [unknown, typeof Schemas]) => {
-      const list = schemas.ReviewStatus.array().safeParse(
-        (body as { data?: { statuses?: unknown } } | null)?.data?.statuses,
+  statuses = fetch('/api/reviews')
+    .then((response) => (response.ok ? response.json() : null))
+    .then((body: { data?: { statuses?: unknown } } | null) => {
+      const list = body?.data?.statuses;
+      return new Map(
+        (Array.isArray(list)
+          ? list.filter((item): item is ReviewStatus => isStatus(item))
+          : []
+        ).map((status) => [status.topicSlug, status]),
       );
-      return new Map((list.success ? list.data : []).map((status) => [status.topicSlug, status]));
     })
     .catch(() => new Map<string, ReviewStatus>());
   return statuses;
