@@ -40,3 +40,6 @@ Thumbs.db
 # Next.js generated types
 next-env.d.ts
 models-src/
+
+# Scan reports list security weak spots, so they stay on this computer
+docs/*Scan_Security*

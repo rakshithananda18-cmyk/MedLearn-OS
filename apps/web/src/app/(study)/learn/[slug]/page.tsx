@@ -11,6 +11,7 @@ import {
   PLANNABLE_TOPICS,
   posterOf,
   TOPICS,
+  trustOf,
 } from '@/content/topics';
 import { videosOf } from '@/content/videos';
 import { WhereToRead } from '@/features/books/WhereToRead';
@@ -109,7 +110,7 @@ export default async function TopicPage({ params }: Props) {
             </Eyebrow>
             <Display size="lg">{topic.title}</Display>
             <Text tone="muted">{topic.summary}</Text>
-            <ContentTrust topic={topic}>
+            <ContentTrust topic={trustOf(topic)}>
               <WhereToRead readings={readings} />
             </ContentTrust>
           </div>

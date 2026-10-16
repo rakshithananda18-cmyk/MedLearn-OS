@@ -3,6 +3,7 @@ import {
   EMPTY_PROGRESS,
   type LearnerProgress,
   type ReviewState,
+  REVISIT_DAYS,
   type StudyGoal,
   type StudyProfile,
   type TopicRevisit,
@@ -171,12 +172,26 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
     Array.isArray(data.goals) && data.goals.length <= 100 && data.goals.every(isGoal),
     [],
   );
-  const removedGoals = or<string[]>(data.removedGoals, isIdList(data.removedGoals, 200), []);
   const revisits = or<Record<string, TopicRevisit>>(
     data.revisits,
     isRecordOf(data.revisits, MAX_ITEMS, isId, isRevisit),
     {},
   );
+  // An API limit must fail a save, never erase valid local removals after a reload.
+  const markers = (field: unknown) =>
+    or<string[]>(field, isIdList(field, Number.MAX_SAFE_INTEGER), []);
+  // Canonical name from released clients, plus the temporary pre-reconciliation alias.
+  const removedGoals = [
+    ...new Set([...markers(data.removedGoals), ...markers(value.deletedGoalIds)]),
+  ];
+  const completedRevisits = [
+    ...new Set([
+      ...markers(data.completedRevisits),
+      ...safeEntries(revisits)
+        .filter(([, revisit]) => revisit.step >= REVISIT_DAYS.length)
+        .map(([slug]) => slug),
+    ]),
+  ];
   // As with the API schema, discard unknown fields instead of carrying arbitrary storage data
   // into later sync requests. Keep optional legacy fields optional.
   return {
@@ -237,22 +252,24 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         },
       ]),
     ),
-    goals: goals.map((goal) => ({
-      id: goal.id,
-      kind: goal.kind,
-      title: goal.title,
-      topics: [...goal.topics],
-      date: goal.date,
-      done: [...goal.done],
-      createdAt: goal.createdAt,
-    })),
+    goals: goals
+      .filter((goal) => !removedGoals.includes(goal.id))
+      .map((goal) => ({
+        id: goal.id,
+        kind: goal.kind,
+        title: goal.title,
+        topics: [...goal.topics],
+        date: goal.date,
+        done: [...goal.done],
+        createdAt: goal.createdAt,
+      })),
     removedGoals: [...removedGoals],
     revisits: Object.fromEntries(
-      safeEntries(revisits).map(([slug, revisit]) => [
-        slug,
-        { step: revisit.step, due: revisit.due },
-      ]),
+      safeEntries(revisits)
+        .filter(([slug]) => !completedRevisits.includes(slug))
+        .map(([slug, revisit]) => [slug, { step: revisit.step, due: revisit.due }]),
     ),
+    completedRevisits: [...completedRevisits],
     updatedAt: or<string | null>(data.updatedAt, nullable(data.updatedAt, isIsoTime), null),
   };
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getTopic, TOPICS } from '@/content/topics';
 import { LessonView } from '@/features/lesson/LessonView';
 import { Screen } from '@/features/shell/Screen';
+import { topicReviewDigest } from '@/server/review-digest';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,7 +25,7 @@ export default async function LessonPage({ params }: Props) {
 
   return (
     <Screen width="wide">
-      <LessonView topic={topic} />
+      <LessonView topic={topic} digest={topicReviewDigest(topic)} />
     </Screen>
   );
 }

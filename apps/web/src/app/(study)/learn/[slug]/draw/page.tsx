@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { DRILL_MINUTES, getTopic, hasDrill, TOPICS } from '@/content/topics';
+import { DRILL_MINUTES, getTopic, hasDrill, TOPICS, trustOf } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { DrillView } from '@/features/drill/DrillView';
 import { Screen } from '@/features/shell/Screen';
@@ -31,7 +31,7 @@ export default async function DrawPage({ params }: Props) {
         diagram={topic.visual.diagram}
         steps={topic.visual.drill}
         minutes={DRILL_MINUTES}
-        trust={<ContentTrust topic={topic} />}
+        trust={<ContentTrust topic={trustOf(topic)} />}
       />
     </Screen>
   );

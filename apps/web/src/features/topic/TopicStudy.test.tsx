@@ -92,4 +92,15 @@ describe('TopicStudy', () => {
     expect(clockTime(59.9)).toBe('0:59');
     expect(clockTime(3725)).toBe('62:05');
   });
+
+  it('moves keyboard focus into a lecture and restores it to the overview on return', async () => {
+    renderTopic();
+    const title = 'Brachial plexus: structure and location';
+    const button = screen.getByRole('button', { name: new RegExp(title) });
+    button.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(screen.getByRole('heading', { level: 1, name: title })).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Back to the topic' }));
+    expect(screen.getByRole('button', { name: new RegExp(title) })).toHaveFocus();
+  });
 });

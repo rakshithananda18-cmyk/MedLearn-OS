@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { mergeProgress } from './merge';
 import { scheduleReview } from './review';
-import { EMPTY_PROGRESS, finishedRevisit, type LearnerProgress } from './today';
+import { EMPTY_PROGRESS, type LearnerProgress } from './today';
 
 const NOW = new Date('2026-09-27T12:00:00.000Z');
 const EARLY = new Date('2026-09-20T09:00:00.000Z');
@@ -91,31 +91,75 @@ describe('mergeProgress', () => {
     ]);
   });
 
-  it('keeps a goal removed on either side removed, whichever copy is newer', () => {
-    const goal = {
-      id: 'g1',
-      kind: 'test' as const,
-      title: 'Class test',
-      topics: ['a'],
-      date: '2026-10-01',
-      done: [],
-      createdAt: EARLY.toISOString(),
-    };
-    const removedHere = progress({ goals: [], removedGoals: ['g1'] });
-    const account = progress({ goals: [goal] });
-    for (const merged of [
-      mergeProgress(removedHere, account, NOW),
-      mergeProgress(account, removedHere, NOW),
-    ]) {
+  it('keeps removed goals and finished revisits removed across either merge order', () => {
+    const older = progress({
+      goals: [
+        {
+          id: 'removed',
+          kind: 'test',
+          title: 'Old plan',
+          topics: ['axilla'],
+          date: '2026-10-01',
+          done: [],
+          createdAt: EARLY.toISOString(),
+        },
+      ],
+      revisits: { axilla: { step: 2, due: '2026-10-01' }, plexus: { step: 0, due: '2026-10-02' } },
+      // A newer unrelated edit on a stale phone cannot revive an older plan.
+      updatedAt: '2040-01-01T00:00:00.000Z',
+    });
+    const finished = progress({ removedGoals: ['removed'], completedRevisits: ['axilla'] });
+    for (const [local, account] of [
+      [older, finished],
+      [finished, older],
+    ] as const) {
+      const merged = mergeProgress(local, account, NOW);
       expect(merged.goals).toEqual([]);
-      expect(merged.removedGoals).toEqual(['g1']);
+      expect(merged.revisits).toEqual({ plexus: { step: 0, due: '2026-10-02' } });
+      expect(merged.removedGoals).toEqual(['removed']);
+      expect(merged.completedRevisits).toEqual(['axilla']);
+      expect(mergeProgress(merged, older, new Date('2050-01-01')).goals).toEqual([]);
+      expect(mergeProgress(merged, older, new Date('2050-01-01')).revisits).toEqual(
+        merged.revisits,
+      );
     }
   });
 
-  it('keeps a topic whose revisits are finished finished, whichever copy is newer', () => {
-    const finishedHere = progress({ revisits: { axilla: finishedRevisit() } });
-    const account = progress({ revisits: { axilla: { step: 2, due: '2026-10-20' } } });
-    expect(mergeProgress(finishedHere, account, NOW).revisits.axilla).toEqual(finishedRevisit());
-    expect(mergeProgress(account, finishedHere, NOW).revisits.axilla).toEqual(finishedRevisit());
+  it('joins completion markers and advances active revisits without losing another topic', () => {
+    const local = progress({
+      removedGoals: ['a'],
+      completedRevisits: ['done-a'],
+      revisits: { axilla: { step: 0, due: '2026-10-01' }, plexus: { step: 1, due: '2026-10-01' } },
+    });
+    const account = progress({
+      removedGoals: ['b', 'a'],
+      completedRevisits: ['done-b', 'done-a'],
+      revisits: { axilla: { step: 1, due: '2026-10-02' }, plexus: { step: 1, due: '2026-10-03' } },
+    });
+    const merged = mergeProgress(local, account, NOW);
+    expect(merged.removedGoals).toEqual(['a', 'b']);
+    expect(merged.completedRevisits).toEqual(['done-a', 'done-b']);
+    expect(merged.revisits).toEqual({
+      axilla: { step: 1, due: '2026-10-02' },
+      plexus: { step: 1, due: '2026-10-03' },
+    });
+  });
+
+  it('converts a released terminal revisit into completion in either merge direction', () => {
+    const legacy = progress({
+      removedGoals: Array.from({ length: 201 }, (_, index) => `removed-${index}`),
+      revisits: { axilla: { step: 3, due: '9999-12-31' } },
+    });
+    const old = progress({ revisits: { axilla: { step: 0, due: '2026-10-01' } } });
+    for (const [local, account] of [
+      [legacy, old],
+      [old, legacy],
+    ] as const) {
+      const merged = mergeProgress(local, account, NOW);
+      expect(merged.revisits).toEqual({});
+      expect(merged.completedRevisits).toEqual(['axilla']);
+      expect(merged.removedGoals).toHaveLength(201);
+      expect(mergeProgress(merged, old, NOW).revisits).toEqual({});
+    }
   });
 });

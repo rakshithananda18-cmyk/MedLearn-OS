@@ -56,14 +56,14 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const weak = mastery?.weakSpots ?? 0;
   const today = state.today?.get(topic.slug);
   const className = cx(
-    'flex min-h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm transition-colors duration-150',
+    'flex min-h-12 w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md px-3 py-2 text-left text-sm transition-colors duration-150',
     selected
       ? 'bg-primary-subtle font-semibold text-primary-strong'
       : 'text-fg hover:bg-surface-muted',
   );
   const content = (
     <>
-      <span className="min-w-0 flex-1">{topic.title}</span>
+      <span className="min-w-0 basis-full md:flex-1 md:basis-0">{topic.title}</span>
       {/* Today's plan comes first; its practice is what clears the cards to recall. */}
       {today ? (
         <span className="shrink-0 rounded-full bg-primary-subtle px-2 py-1 text-xs font-semibold text-primary-strong">
@@ -205,7 +205,7 @@ function Region({
           aria-expanded={open}
           aria-controls={id}
           onClick={() => folds.onToggle(0, region.id)}
-          className="flex min-h-12 w-full items-end justify-between gap-3 text-left"
+          className="flex min-h-12 w-full flex-wrap items-end justify-between gap-x-3 gap-y-1 text-left"
         >
           {region.label}
           <span className="flex items-center gap-2 pb-1 font-sans text-sm font-semibold tracking-normal text-fg-muted">

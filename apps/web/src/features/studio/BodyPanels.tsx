@@ -1,13 +1,11 @@
 'use client';
 
-import { cx, IconButton, Text } from '@medlearn/ui';
+import { Button, cx, IconButton, Text } from '@medlearn/ui';
 import { X } from '@medlearn/ui/icons';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 import { bodyStructure } from '@/content/body';
-import type { SearchResult } from '@/content/search';
-import { fetchSearch, searchFailedMessage, wasCancelled } from '@/features/search/fetchSearch';
+import { SEARCH_UNAVAILABLE, useSearchResults } from '@/features/search/useSearchResults';
 
 import { LAYER_DOT } from './panels';
 
@@ -19,33 +17,14 @@ const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
  */
 export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: () => void }>) {
   const { system, name, search } = bodyStructure(id);
-  const [found, setFound] = useState<{
-    id: string;
-    topics: SearchResult[];
-    failed: boolean;
-  } | null>(null);
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchSearch(search, controller.signal)
-      .then((results) => {
-        // One link per topic: its own title first, then where the structure is drawn.
-        const topics = results.filter(
-          (result, index) =>
-            (result.kind === 'Topic' || result.kind === 'Structure') &&
-            results.findIndex((other) => other.topicSlug === result.topicSlug) === index,
-        );
-        setFound({ id, topics: topics.slice(0, 6), failed: false });
-      })
-      .catch((error: unknown) => {
-        if (!wasCancelled(error)) setFound({ id, topics: [], failed: true });
-      });
-    return () => controller.abort();
-  }, [id, search, attempt]);
-
-  const failed = found?.id === id && found.failed;
-  const topics = found?.id === id && !found.failed ? found.topics : null;
+  const found = useSearchResults(search);
+  const topics = found.results
+    ?.filter(
+      (result, index, results) =>
+        (result.kind === 'Topic' || result.kind === 'Structure') &&
+        results.findIndex((other) => other.topicSlug === result.topicSlug) === index,
+    )
+    .slice(0, 6);
   return (
     <section aria-label={name} className="pointer-events-auto flex animate-rise flex-col gap-3">
       <div className="flex items-start gap-2">
@@ -65,23 +44,19 @@ export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: ()
       </div>
       <div className="flex flex-col gap-1">
         <h3 className={LABEL}>In your topics</h3>
-        {topics === null && !failed ? (
+        {found.loading ? (
           <Text size="sm" tone="muted">
             Looking…
           </Text>
         ) : null}
-        {failed ? (
-          <div className="flex flex-wrap items-center gap-2">
+        {found.error ? (
+          <div role="status" className="flex flex-col gap-2">
             <Text size="sm" tone="muted">
-              {searchFailedMessage()}
+              {SEARCH_UNAVAILABLE}
             </Text>
-            <button
-              type="button"
-              onClick={() => setAttempt((current) => current + 1)}
-              className="inline-flex h-8 items-center rounded-full border border-border-strong px-3 text-xs font-semibold text-ink hover:border-gold"
-            >
-              Try again
-            </button>
+            <Button variant="secondary" className="self-start" onClick={found.retry}>
+              Retry search
+            </Button>
           </div>
         ) : null}
         {topics?.length === 0 ? (

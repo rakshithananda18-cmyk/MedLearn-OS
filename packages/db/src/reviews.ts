@@ -4,7 +4,7 @@ import type { ReportRecord, ReviewInput, ReviewRecord, ReviewStatus } from '@med
 import type { DbClient } from './client';
 
 const REVIEW_COLUMNS =
-  'id, topic_slug, content_version, decision, pages_checked, facts_checked, questions_checked, visuals_checked, note, reviewer_email, created_at';
+  'id, topic_slug, content_version, content_digest, decision, pages_checked, facts_checked, questions_checked, visuals_checked, note, reviewer_email, created_at';
 
 /**
  * Reviews of topics by the review team, and the students' reports they work through. Row-level
@@ -28,6 +28,7 @@ export function createReviewsRepository(db: DbClient) {
       return data.map((row) => ({
         topicSlug: row.topic_slug,
         contentVersion: row.content_version,
+        contentDigest: row.content_digest,
         decision: row.decision as ReviewStatus['decision'],
         decidedAt: row.decided_at,
       }));
@@ -37,6 +38,7 @@ export function createReviewsRepository(db: DbClient) {
       const { error } = await db.from('topic_reviews').insert({
         topic_slug: review.topicSlug,
         content_version: review.contentVersion,
+        content_digest: review.contentDigest,
         decision: review.decision,
         pages_checked: review.checks.pages,
         facts_checked: review.checks.facts,
@@ -55,12 +57,13 @@ export function createReviewsRepository(db: DbClient) {
         .from('topic_reviews')
         .select(REVIEW_COLUMNS)
         .eq('topic_slug', topicSlug)
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: false });
       if (error) throw new AppError('INTERNAL', 'Failed to load reviews', { cause: error });
       return data.map((row) => ({
         id: row.id,
         topicSlug: row.topic_slug,
         contentVersion: row.content_version,
+        contentDigest: row.content_digest,
         decision: row.decision as ReviewRecord['decision'],
         decidedAt: row.created_at,
         checks: {

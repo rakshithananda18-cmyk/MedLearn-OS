@@ -25,13 +25,16 @@ export default async function PracticePage({ searchParams }: Props) {
   const { topic, goal, revisit } = await searchParams;
   if (studyTopic(topic) === null || studyTopic(revisit) === null) notFound();
   const start = { topic: one(topic), goal: one(goal), revisit: one(revisit) };
+  const selected = start.revisit ?? start.topic;
   return (
     <Screen width="wide">
       <PracticeView
         // A new address (from Today's plan) starts afresh.
         key={`${start.topic ?? ''}-${start.goal ?? ''}-${start.revisit ?? ''}`}
         topics={PLANNABLE_TOPICS}
-        questions={practiceQuestions()}
+        questions={
+          selected ? practiceQuestions().filter((item) => item.topic.slug === selected) : []
+        }
         tree={libraryTree(TOPICS)}
         start={start}
       />

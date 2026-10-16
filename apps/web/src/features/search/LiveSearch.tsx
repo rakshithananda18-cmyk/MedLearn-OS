@@ -1,6 +1,6 @@
 'use client';
 
-import type { IconGlyph } from '@medlearn/ui';
+import { Button, type IconGlyph } from '@medlearn/ui';
 import {
   BookOpen,
   Box,
@@ -12,13 +12,13 @@ import {
   Search,
   Target,
 } from '@medlearn/ui/icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { SearchKind, SearchResult } from '@/content/search';
 import { useProgress } from '@/features/progress/store';
 
-import { fetchSearch, searchFailedMessage, wasCancelled } from './fetchSearch';
 import { SearchBox, type SearchGroup as Group, type SearchOption as Option } from './SearchBox';
+import { SEARCH_UNAVAILABLE, useSearchResults } from './useSearchResults';
 
 /** What the box needs to know about each topic for its suggestions. */
 export interface SearchTopic {
@@ -102,40 +102,9 @@ export function LiveSearch({
 }: Readonly<{ topics: SearchTopic[]; defaultValue?: string; className?: string }>) {
   const progress = useProgress();
   const [query, setQuery] = useState(defaultValue);
-  const [found, setFound] = useState<{
-    query: string;
-    results: SearchResult[];
-    failed: boolean;
-  } | null>(null);
-  // Bumped to ask again after a failure, when the connection comes back.
-  const [attempt, setAttempt] = useState(0);
   const terms = words(query);
   const typed = terms.length > 0;
-
-  // Results arrive a moment after typing stops; an older request never overwrites a newer one.
-  useEffect(() => {
-    if (!typed) return;
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetchSearch(query, controller.signal)
-        .then((results) => setFound({ query, results, failed: false }))
-        .catch((error: unknown) => {
-          if (!wasCancelled(error)) setFound({ query, results: [], failed: true });
-        });
-    }, DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, typed, attempt]);
-
-  const failed = typed && found?.query === query && found.failed;
-  useEffect(() => {
-    if (!failed) return;
-    const retry = () => setAttempt((current) => current + 1);
-    window.addEventListener('online', retry);
-    return () => window.removeEventListener('online', retry);
-  }, [failed]);
+  const found = useSearchResults(query, typed, DEBOUNCE_MS);
 
   const titleOf = new Map(topics.map((topic) => [topic.slug, topic.title]));
   const notes = Object.entries(progress.notes)
@@ -154,7 +123,7 @@ export function LiveSearch({
         href: `/learn/${slug}`,
         icon: FileText,
       }));
-    const results = found?.query === query ? found.results : [];
+    const results = found.results ?? [];
     const [topicGroup, structureGroup, insideGroup] = resultGroups(results) as [
       Group,
       Group,
@@ -218,8 +187,8 @@ export function LiveSearch({
   }
   const options = groups.flatMap((group) => group.options);
   let status: string | null = null;
-  if (typed && found?.query !== query) status = 'Searching…';
-  else if (failed) status = searchFailedMessage();
+  if (found.error) status = SEARCH_UNAVAILABLE;
+  else if (found.loading) status = 'Searching…';
   else if (typed && options.length === 1) {
     status = 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.';
   }
@@ -235,7 +204,13 @@ export function LiveSearch({
       action="/search"
       className={className}
       footer={
-        typed ? null : (
+        typed ? (
+          found.error ? (
+            <Button variant="secondary" className="mx-3 self-start" onClick={found.retry}>
+              Retry search
+            </Button>
+          ) : null
+        ) : (
           <div className="flex flex-col gap-2 px-3 pt-1 pb-2">
             <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
               Try searching

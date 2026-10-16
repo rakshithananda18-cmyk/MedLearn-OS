@@ -4,7 +4,7 @@ import { cx, Icon, IconButton } from '@medlearn/ui';
 import { ArrowLeft, Check, Play, Rotate3d } from '@medlearn/ui/icons';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { type TopicVideo, videoMinutes } from '@/content/videos';
 import { clockTime, TopicNotes } from '@/features/notes/TopicNotes';
@@ -66,13 +66,15 @@ function LecturePlayer({
 
 /** A lecture to watch: its still, length, title and channel, all one button. */
 function VideoRow({
+  id,
   video,
   playing = false,
   onPlay,
-}: Readonly<{ video: TopicVideo; playing?: boolean; onPlay: () => void }>) {
+}: Readonly<{ id?: string; video: TopicVideo; playing?: boolean; onPlay: () => void }>) {
   return (
     <button
       type="button"
+      id={id}
       aria-pressed={playing}
       onClick={onPlay}
       className={cx(
@@ -113,10 +115,12 @@ const LECTURES_SHOWN = 2;
 
 /** The topic's lectures, and its narrated 3D tour, above the ways to study it. */
 function Lectures({
+  idPrefix,
   videos,
   tour,
   onPlay,
 }: Readonly<{
+  idPrefix: string;
   videos: TopicVideo[];
   /** The narrated 3D tour: where it opens, and the topic's still for its picture. */
   tour: { href: string; poster: string } | null;
@@ -127,11 +131,12 @@ function Lectures({
   const shown = all ? videos : videos.slice(0, LECTURES_SHOWN);
   return (
     <section
-      aria-labelledby="lectures-title"
+      aria-labelledby={`${idPrefix}-title`}
       className="flex flex-col gap-1 rounded-xl border border-glass-border bg-glass p-2 shadow-glass"
     >
       <h2
-        id="lectures-title"
+        id={`${idPrefix}-title`}
+        tabIndex={-1}
         className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink px-2 pt-1"
       >
         Watch
@@ -169,7 +174,7 @@ function Lectures({
         ) : null}
         {shown.map((video) => (
           <li key={video.id}>
-            <VideoRow video={video} onPlay={() => onPlay(video)} />
+            <VideoRow id={`${idPrefix}-${video.id}`} video={video} onPlay={() => onPlay(video)} />
           </li>
         ))}
       </ul>
@@ -218,8 +223,24 @@ export function TopicStudy({
 }: Readonly<TopicStudyProps>) {
   const [watching, setWatching] = useState<TopicVideo | null>(null);
   const time = useRef<number | null>(null);
+  const lectureTitle = useRef<HTMLHeadingElement>(null);
+  const lastVideo = useRef<string | null>(null);
+  const idPrefix = useId();
+  useEffect(() => {
+    if (watching) {
+      lectureTitle.current?.focus({ preventScroll: true });
+    } else if (lastVideo.current) {
+      // A new overview is mounted on return. Find its matching lecture button, or the Watch
+      // heading when that lecture is folded away, instead of leaving focus on the removed player.
+      const target =
+        document.getElementById(`${idPrefix}-${lastVideo.current}`) ??
+        document.getElementById(`${idPrefix}-title`);
+      target?.focus();
+    }
+  }, [watching, idPrefix]);
   const play = (video: TopicVideo | null) => {
     time.current = null;
+    if (video) lastVideo.current = video.id;
     setWatching(video);
     window.scrollTo({ top: 0 });
   };
@@ -239,7 +260,9 @@ export function TopicStudy({
               onClick={() => play(null)}
             />
             <div className="flex min-w-0 flex-col">
-              <span className="truncate font-semibold text-ink">{watching.title}</span>
+              <h1 ref={lectureTitle} tabIndex={-1} className="font-semibold text-ink">
+                {watching.title}
+              </h1>
               <span className="text-xs text-fg-muted">
                 {watching.channel} · {videoMinutes(watching)} min · {title}
               </span>
@@ -302,6 +325,7 @@ export function TopicStudy({
       {intro}
       {videos.length > 0 || poster ? (
         <Lectures
+          idPrefix={idPrefix}
           videos={videos}
           tour={poster ? { href: `/studio?topic=${slug}&tour=1`, poster } : null}
           onPlay={play}

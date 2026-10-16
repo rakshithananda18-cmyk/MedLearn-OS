@@ -54,7 +54,7 @@ describe('ReviewForm', () => {
   it('approves only once every check is ticked, and saves the decision', async () => {
     const fetch = vi.fn(async () => Response.json({ data: { saved: true } }, { status: 201 }));
     vi.stubGlobal('fetch', fetch);
-    render(<ReviewForm slug="axilla" version="0.1.0" />);
+    render(<ReviewForm slug="axilla" version="0.1.0" digest={'a'.repeat(64)} />);
     const form = screen.getByRole('region', { name: 'Your review' });
     const approve = within(form).getByRole('button', { name: 'Approve' });
     expect(approve).toBeDisabled();
@@ -67,6 +67,7 @@ describe('ReviewForm', () => {
     expect(JSON.parse(String(init?.body))).toEqual({
       topicSlug: 'axilla',
       contentVersion: '0.1.0',
+      contentDigest: 'a'.repeat(64),
       decision: 'approved',
       checks: { pages: true, facts: true, questions: true, visuals: true },
     });
@@ -83,7 +84,7 @@ describe('ReviewForm', () => {
         ),
       ),
     );
-    render(<ReviewForm slug="axilla" version="0.1.0" />);
+    render(<ReviewForm slug="axilla" version="0.1.0" digest={'a'.repeat(64)} />);
     await userEvent.type(screen.getByLabelText(/Notes/), 'Step 2 misses the lateral wall');
     await userEvent.click(screen.getByRole('button', { name: 'Ask for changes' }));
     expect(await screen.findByText(/has changed since you opened it/)).toBeInTheDocument();

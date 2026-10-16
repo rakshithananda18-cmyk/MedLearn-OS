@@ -27,7 +27,9 @@ export function ContentTrust({
         <BottomSheet
           title="Sources"
           description={`${topic.title}, version ${topic.version}. ${
-            reviewed ? 'Approved by a medical reviewer.' : 'Not yet reviewed by a medical reviewer.'
+            reviewed
+              ? 'Approved by the review team.'
+              : 'A current review-team approval could not be confirmed.'
           }`}
           trigger={
             <Button variant="ghost" size="sm" iconStart={BookMarked}>

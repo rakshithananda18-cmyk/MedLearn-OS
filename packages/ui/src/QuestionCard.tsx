@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { cx } from './cx';
 import { Icon } from './Icon';
@@ -12,6 +12,8 @@ export interface QuestionCardProps {
   answerId: string;
   explanation: string;
   onAnswered?: (correct: boolean) => void;
+  /** A new practice question is a new task, so focus its prompt. */
+  autoFocusPrompt?: boolean;
 }
 
 /** A multiple-choice question: pick once, then see whether it was right and why. */
@@ -21,7 +23,12 @@ export function QuestionCard({
   answerId,
   explanation,
   onAnswered,
+  autoFocusPrompt = false,
 }: QuestionCardProps) {
+  const promptRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (autoFocusPrompt) promptRef.current?.focus();
+  }, [autoFocusPrompt]);
   const [chosen, setChosen] = useState<string | null>(null);
   const promptId = useId();
   const answered = chosen !== null;
@@ -35,7 +42,12 @@ export function QuestionCard({
 
   return (
     <section aria-labelledby={promptId} className="flex flex-col gap-4">
-      <p id={promptId} className="text-lg font-semibold text-ink">
+      <p
+        ref={promptRef}
+        tabIndex={autoFocusPrompt ? -1 : undefined}
+        id={promptId}
+        className="text-lg font-semibold text-ink outline-none"
+      >
         {prompt}
       </p>
       <ul className="flex flex-col gap-2">

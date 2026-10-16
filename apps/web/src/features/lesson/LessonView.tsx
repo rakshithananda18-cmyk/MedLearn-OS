@@ -95,7 +95,7 @@ function CurveLesson({ step, explore }: VisualProps) {
  * step reads on the right and the visual fills a stage on the left on wide screens; on phones
  * the step comes first, the visual under it.
  */
-export function LessonView({ topic }: Readonly<{ topic: Topic }>) {
+export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: string }>) {
   const [stepIndex, setStepIndex] = useState(0);
   const [finished, setFinished] = useState(false);
   const step = topic.lesson[stepIndex] ?? topic.lesson[0];
@@ -124,7 +124,7 @@ export function LessonView({ topic }: Readonly<{ topic: Topic }>) {
             done={stepIndex + 1}
             total={total}
           />
-          <ContentTrust topic={topic} />
+          <ContentTrust topic={{ ...topic, contentDigest: digest }} />
         </>
       }
       panel={

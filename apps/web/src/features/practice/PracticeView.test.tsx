@@ -52,9 +52,13 @@ describe('PracticeView', () => {
     renderPractice();
     await userEvent.click(screen.getByRole('button', { name: /Quick mix/ }));
     expect(screen.getByText('1 of 10')).toBeInTheDocument();
+    const firstPrompt = document.activeElement?.textContent;
     await answerRight();
     await answerRight().catch(() => undefined);
     expect(readProgress().correctAnswers.length).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Next question' }));
+    expect(document.activeElement?.textContent).not.toBe(firstPrompt);
+    expect(document.activeElement?.tagName).toBe('P');
 
     await userEvent.click(screen.getByRole('button', { name: 'End the session' }));
     expect(screen.getByRole('button', { name: /Quick mix/ })).toBeInTheDocument();

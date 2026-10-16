@@ -12,6 +12,18 @@ const showing = (topic: { questions: Array<{ prompt: string }> }) =>
   topic.questions.some((question) => screen.queryByText(question.prompt));
 
 describe('topic practice navigation', () => {
+  it('serializes only the selected topic questions, and no full bank for the hub', async () => {
+    const scoped = await PracticePage({
+      searchParams: Promise.resolve({ topic: oxygenCurve.slug }),
+    });
+    const hub = await PracticePage({ searchParams: Promise.resolve({}) });
+    expect(
+      scoped.props.children.props.questions.map(
+        (item: { topic: { slug: string } }) => item.topic.slug,
+      ),
+    ).toEqual(oxygenCurve.questions.map(() => oxygenCurve.slug));
+    expect(hub.props.children.props.questions).toEqual([]);
+  });
   it('keeps a chosen topic separate even when both lessons are complete', async () => {
     act(() => {
       completeLesson(brachialPlexus.slug);

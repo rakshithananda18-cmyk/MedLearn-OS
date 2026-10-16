@@ -54,6 +54,21 @@ describe('LearnerProgressInput', () => {
     expect(LearnerProgressInput.safeParse(badProfile).success).toBe(false);
   });
 
+  it('defaults legacy removal markers and validates durable markers', () => {
+    const legacy = LearnerProgressInput.parse(progress);
+    expect(legacy.removedGoals).toEqual([]);
+    expect(legacy.completedRevisits).toEqual([]);
+    const markers = { removedGoals: ['goal-old'], completedRevisits: ['axilla'] };
+    expect(LearnerProgressInput.parse({ ...progress, ...markers })).toMatchObject(markers);
+    for (const field of ['removedGoals', 'completedRevisits']) {
+      expect(LearnerProgressInput.safeParse({ ...progress, [field]: [''] }).success).toBe(false);
+      expect(LearnerProgressInput.safeParse({ ...progress, [field]: [42] }).success).toBe(false);
+      expect(
+        LearnerProgressInput.safeParse({ ...progress, [field]: Array(5001).fill('old') }).success,
+      ).toBe(false);
+    }
+  });
+
   it("keeps the student's name trimmed, and refuses an empty or overlong one", () => {
     const named = (name: string) => ({ ...progress, profile: { ...progress.profile, name } });
     expect(LearnerProgressInput.parse(named('  Rakshith Ananda ')).profile?.name).toBe(
@@ -61,6 +76,35 @@ describe('LearnerProgressInput', () => {
     );
     expect(LearnerProgressInput.safeParse(named('   ')).success).toBe(false);
     expect(LearnerProgressInput.safeParse(named('a'.repeat(41))).success).toBe(false);
+  });
+
+  it('normalizes released terminal revisits and the temporary goal-marker alias', () => {
+    const parsed = LearnerProgressInput.parse({
+      ...progress,
+      removedGoals: ['main-goal'],
+      deletedGoalIds: ['codex-goal'],
+      completedRevisits: ['prior'],
+      revisits: {
+        finished: { step: 3, due: '9999-12-31' },
+        'finished-later-step': { step: 4, due: '2026-10-17' },
+        active: { step: 2, due: '2026-10-18' },
+      },
+    });
+    expect(parsed.removedGoals).toEqual(['main-goal', 'codex-goal']);
+    expect(parsed).not.toHaveProperty('deletedGoalIds');
+    expect(parsed.completedRevisits).toEqual(['prior', 'finished', 'finished-later-step']);
+    expect(parsed.revisits).toEqual({ active: { step: 2, due: '2026-10-18' } });
+    expect(
+      LearnerProgressInput.safeParse({
+        ...progress,
+        completedRevisits: Array.from({ length: 5000 }, (_, index) => `done-${index}`),
+        revisits: { 'one-more': { step: 3, due: '9999-12-31' } },
+      }).success,
+    ).toBe(false);
+    expect(
+      LearnerProgressInput.parse({ ...progress, removedGoals: Array(201).fill('old') })
+        .removedGoals,
+    ).toEqual(['old']);
   });
 });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from './Button';
 
@@ -22,13 +22,28 @@ export interface RecallCardProps {
 /** Active recall: try to answer, reveal, then rate how well you remembered. */
 export function RecallCard({ front, back, onRate }: RecallCardProps) {
   const [revealed, setRevealed] = useState(false);
+  const prompt = useRef<HTMLParagraphElement>(null);
+  const answer = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    // The reveal button and ratings unmount as the task changes. Keep keyboard and screen-reader
+    // users at the answer or the next prompt, with the next action one Tab away.
+    (revealed ? answer.current : prompt.current)?.focus({ preventScroll: true });
+  }, [front, revealed]);
 
   return (
     <section aria-label="Recall card" className="flex flex-col gap-4">
-      <p className="text-lg font-semibold text-ink">{front}</p>
+      <p ref={prompt} tabIndex={-1} className="text-lg font-semibold text-ink">
+        {front}
+      </p>
       {revealed ? (
         <>
-          <p className="rounded-md bg-surface-muted p-4 text-base text-fg">{back}</p>
+          <p
+            ref={answer}
+            tabIndex={-1}
+            className="rounded-md bg-surface-muted p-4 text-base text-fg"
+          >
+            {back}
+          </p>
           <div
             role="group"
             aria-label="How well did you remember?"

@@ -69,7 +69,7 @@ export function XrayViewer({
           className="min-h-0 w-full flex-1 md:h-full"
         >
           <image
-            href={`/xrays/${film.id}.webp`}
+            href={film.src ?? `/xrays/${film.id}.webp`}
             width={film.width}
             height={film.height}
             className={cx(inverted && 'invert')}

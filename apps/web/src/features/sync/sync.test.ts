@@ -5,7 +5,9 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 
 import {
   completeLesson,
+  completeRevisit,
   readProgress,
+  removeGoal,
   replaceProgress,
   resetProgress,
   saveNote,
@@ -203,6 +205,8 @@ describe('progress sync', () => {
       completedDrills: ['drill-10', 'drill-2'],
       correctAnswers: ['answer-10', 'answer-2'],
       mistakes: ['mistake-10', 'mistake-2'],
+      removedGoals: ['goal-10', 'goal-2'],
+      completedRevisits: ['topic-10', 'topic-2'],
       activity: { '2026-09-28': day },
     });
     replaceProgress(
@@ -211,6 +215,8 @@ describe('progress sync', () => {
         completedDrills: [...remote.completedDrills].reverse(),
         correctAnswers: [...remote.correctAnswers].reverse(),
         mistakes: [...remote.mistakes].reverse(),
+        removedGoals: [...remote.removedGoals].reverse(),
+        completedRevisits: [...remote.completedRevisits].reverse(),
         activity: {
           '2026-09-28': {
             ...day,
@@ -226,6 +232,95 @@ describe('progress sync', () => {
     await flushProgressSync();
     expect(puts()).toHaveLength(0);
     expect(readProgress()).toEqual(remote);
+  });
+
+  it('syncs deleted goals and final revisits, then protects them from a stale second device', async () => {
+    const oldDevice = copy({
+      goals: [
+        {
+          id: 'goal-old',
+          kind: 'test',
+          title: 'Old test',
+          topics: ['axilla'],
+          date: '2026-10-20',
+          done: [],
+          createdAt: EARLY,
+        },
+      ],
+      revisits: { axilla: { step: 2, due: '2026-10-16' } },
+      completedLessons: ['axilla'],
+    });
+    saved = stored(oldDevice);
+    replaceProgress(oldDevice);
+    removeGoal('goal-old');
+    completeRevisit('axilla', 1, new Date('2026-10-16T08:00:00.000Z'));
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(saved?.progress).toMatchObject({
+      goals: [],
+      revisits: {},
+      removedGoals: ['goal-old'],
+      completedRevisits: ['axilla'],
+    });
+    stop();
+
+    // The second phone has newer unrelated work, but its plan predates the removals.
+    resetProgress();
+    replaceProgress({ ...oldDevice, updatedAt: LATE, correctAnswers: ['new-answer'] });
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(saved?.progress).toMatchObject({
+      goals: [],
+      revisits: {},
+      correctAnswers: ['new-answer'],
+      removedGoals: ['goal-old'],
+      completedRevisits: ['axilla'],
+    });
+    expect(readProgress()).toEqual(saved?.progress);
+    const writes = puts().length;
+    globalThis.dispatchEvent(new Event('online'));
+    await flushProgressSync();
+    expect(puts()).toHaveLength(writes);
+  });
+
+  it('keeps removal markers when a conflicting save brings an old plan back', async () => {
+    replaceProgress(copy({ removedGoals: ['gone'], completedRevisits: ['axilla'] }));
+    let conflicted = false;
+    fetchMock.mockImplementation(async (url, init) => {
+      if (init?.method === 'PUT' && !conflicted) {
+        conflicted = true;
+        saved = stored(
+          copy({
+            goals: [
+              {
+                id: 'gone',
+                kind: 'test',
+                title: 'Old test',
+                topics: ['axilla'],
+                date: '2026-10-20',
+                done: [],
+                createdAt: EARLY,
+              },
+            ],
+            revisits: { axilla: { step: 2, due: '2026-10-16' } },
+            completedDrills: ['remote-drill'],
+            updatedAt: LATE,
+          }),
+        );
+        return new Response(null, { status: 409 });
+      }
+      return defaultFetch(url, init);
+    });
+    stop = startProgressSync();
+    await flushProgressSync();
+    expect(puts()).toHaveLength(2);
+    expect(saved?.progress).toMatchObject({
+      goals: [],
+      revisits: {},
+      removedGoals: ['gone'],
+      completedRevisits: ['axilla'],
+      completedDrills: ['remote-drill'],
+    });
   });
 
   it('merges a competing save before retrying with the new database version', async () => {

@@ -4,12 +4,14 @@ import { dueCardIds } from '@medlearn/core';
 import { buttonClasses, Card, Display, EmptyState, Eyebrow, RecallCard, Text } from '@medlearn/ui';
 import { CircleCheck } from '@medlearn/ui/icons';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { DeckCard, TopicSummary } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { rateCard, useProgress } from '@/features/progress/store';
 import { TaskColumns } from '@/features/shell/Screen';
+import { StudyLoadState } from '@/features/study/StudyLoadState';
+import { useStudyContent } from '@/features/study/useStudyContent';
 
 interface ReviseViewProps {
   topics: TopicSummary[];
@@ -103,23 +105,35 @@ function reviewEmptyDescription({
 }
 
 function ReviseEmpty(props: Readonly<ReviseEmptyProps>) {
+  const focus = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    focus.current?.focus();
+  }, []);
   const { sessionComplete, lessonDone, topic, backHref, backLabel } = props;
   const needsLesson = topic && !lessonDone;
   const actionHref = needsLesson ? `/learn/${topic.slug}/lesson` : backHref;
   const actionLabel = needsLesson ? 'Start this lesson' : backLabel;
   return (
-    <Card tone="glass">
-      <EmptyState
-        icon={CircleCheck}
-        title={sessionComplete ? 'Review session complete' : 'No reviews due'}
-        description={reviewEmptyDescription(props)}
-        action={
-          <Link href={actionHref} className={buttonClasses({ variant: 'secondary' })}>
-            {actionLabel}
-          </Link>
-        }
-      />
-    </Card>
+    <div
+      ref={focus}
+      role="group"
+      tabIndex={-1}
+      aria-label={sessionComplete ? 'Review session complete' : 'No reviews due'}
+      className="outline-none"
+    >
+      <Card tone="glass">
+        <EmptyState
+          icon={CircleCheck}
+          title={sessionComplete ? 'Review session complete' : 'No reviews due'}
+          description={reviewEmptyDescription(props)}
+          action={
+            <Link href={actionHref} className={buttonClasses({ variant: 'secondary' })}>
+              {actionLabel}
+            </Link>
+          }
+        />
+      </Card>
+    </div>
   );
 }
 
@@ -132,8 +146,9 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
   const due = dueCardIds(topics, progress, new Date());
   const queue = limit === undefined ? due : (session ?? due.slice(0, limit));
   const remaining = queue.filter((id) => due.includes(id));
-  const showing = cards.find((card) => card.id === remaining[0]);
-  const sessionComplete = limit !== undefined && session !== null && !showing;
+  const content = useStudyContent('recall', remaining.slice(0, 20), cards);
+  const showing = remaining[0] ? content.items.get(remaining[0]) : undefined;
+  const sessionComplete = limit !== undefined && session !== null && remaining.length === 0;
   const lessonDone = topics.some((item) => progress.completedLessons.includes(item.slug));
   const backHref = topic ? `/learn/${topic.slug}` : '/today';
   const backLabel = topic ? `Back to ${topic.title}` : 'Back to Today';
@@ -151,7 +166,9 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
         />
       }
     >
-      {showing ? (
+      {content.loading || content.error ? (
+        <StudyLoadState error={content.error} onRetry={content.retry} />
+      ) : showing ? (
         <Card tone="glass" className="flex flex-col gap-3">
           {showing.fromMistake ? <Eyebrow>From a question you missed</Eyebrow> : null}
           <RecallCard

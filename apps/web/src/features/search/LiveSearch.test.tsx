@@ -24,6 +24,59 @@ afterEach(() => {
 const renderSearch = () => render(<LiveSearch topics={PLANNABLE_TOPICS} />);
 
 describe('LiveSearch', () => {
+  it.each(['network', 'http', 'invalid'])(
+    'offers a retry instead of empty results after a %s failure',
+    async (failure) => {
+      const request = vi
+        .fn()
+        .mockImplementationOnce(() => {
+          if (failure === 'network') return Promise.reject(new Error('offline'));
+          if (failure === 'http')
+            return Promise.resolve(Response.json({ error: {} }, { status: 503 }));
+          return Promise.resolve(Response.json({ data: { results: [null] } }));
+        })
+        .mockResolvedValue(Response.json({ data: { results: searchTopics('axilla') } }));
+      vi.stubGlobal('fetch', request);
+      renderSearch();
+      await userEvent.type(screen.getByRole('combobox'), 'axilla');
+      const retry = await screen.findByRole('button', { name: 'Retry search' });
+      expect(screen.getByText(/Search is unavailable/)).toBeInTheDocument();
+      expect(screen.queryByText('Searching…')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Nothing matches/)).not.toBeInTheDocument();
+      await userEvent.click(retry);
+      expect(await screen.findByRole('group', { name: 'Topics' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Retry search' })).not.toBeInTheDocument();
+    },
+  );
+
+  it('ignores an old response even when the transport does not honor cancellation', async () => {
+    let finishOld: (value: Response) => void = () => undefined;
+    const request = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishOld = resolve;
+          }),
+      )
+      .mockImplementation(() =>
+        Promise.resolve(Response.json({ data: { results: searchTopics('axilla') } })),
+      );
+    vi.stubGlobal('fetch', request);
+    renderSearch();
+    const box = screen.getByRole('combobox');
+    await userEvent.type(box, 'brachial');
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
+    await userEvent.clear(box);
+    await userEvent.type(box, 'axilla');
+    const topics = await screen.findByRole('group', { name: 'Topics' });
+    const before = topics.textContent;
+    await act(async () =>
+      finishOld(Response.json({ data: { results: searchTopics('brachial') } })),
+    );
+    expect(topics.textContent).toBe(before);
+  });
+
   it('suggests the next topic, weak spots, recent notes and common searches when empty', async () => {
     act(() => {
       recordAnswer(PLANNABLE_TOPICS[1]?.questionIds[0] ?? '', false);
@@ -93,14 +146,14 @@ describe('LiveSearch', () => {
     });
     renderSearch();
     await userEvent.type(screen.getByRole('combobox', { name: /Search topics/ }), 'axilla');
-    expect(await screen.findByText(/Search did not answer/)).toBeInTheDocument();
+    expect(await screen.findByText(/Search is unavailable/)).toBeInTheDocument();
     expect(screen.queryByText('Searching…')).toBeNull();
 
     answer = true;
     act(() => {
       window.dispatchEvent(new Event('online'));
     });
-    await waitFor(() => expect(screen.queryByText(/Search did not answer/)).toBeNull());
-    expect(asked).toBe(2);
+    await waitFor(() => expect(screen.queryByText(/Search is unavailable/)).toBeNull());
+    await waitFor(() => expect(asked).toBe(2));
   });
 });

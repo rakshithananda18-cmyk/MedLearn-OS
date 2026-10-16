@@ -7,7 +7,7 @@ import type { Stroke, Viewer3DLabel } from '@medlearn/visuals/viewer3d';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure } from '@/content/body';
+import { BODY_SYSTEMS, type BodyRegionInfo, bodyStructure, type BodySystem } from '@/content/body';
 import type { LibraryNode } from '@/content/library';
 import { bestMatches, searchTerms } from '@/content/match';
 import { MOVEMENTS, type Twist } from '@/content/movements';
@@ -94,6 +94,9 @@ export interface StudioProps {
   regions: BodyRegionInfo[];
   /** The whole body, shown when no topic is open. */
   body: Model3D;
+  /** File addresses versioned by the server, without shipping its asset manifest. */
+  systems?: BodySystem[];
+  bodyIndexSrc?: string;
   /** Every X-ray film, in order; each topic names its own. */
   films: XrayFilm[];
   initialTopic: string | null;
@@ -123,6 +126,8 @@ function useStudio({
   topics,
   regions,
   body,
+  systems = BODY_SYSTEMS,
+  bodyIndexSrc,
   films,
   initialTopic,
   initialTour = false,
@@ -139,7 +144,7 @@ function useStudio({
   const [film, setFilm] = useState<number | null>(null);
   const topic = withModel(topics, session.topicSlug);
   const structures = useMemo(() => (topic ? structuresOf(topic) : []), [topic]);
-  const index = useBodyIndex(topic === null);
+  const index = useBodyIndex(topic === null, bodyIndexSrc);
   // What "Find it" asks for: the topic's structures, or on the body the region's structures of
   // the systems switched on.
   const pool = useMemo(
@@ -182,6 +187,7 @@ function useStudio({
     },
     topic,
     model: topic?.model ?? body,
+    systems,
     structures,
     context,
     nameOf,
@@ -340,9 +346,9 @@ function isolatedOnBody(session: Session): [string, string] | null {
  * The body's systems switched on, as layers of the viewer (the skin is in the body file); while
  * isolating, only the picked structure of its system.
  */
-function bodyLayers(session: Session) {
+function bodyLayers(session: Session, systems: BodySystem[]) {
   const isolated = isolatedOnBody(session);
-  return BODY_SYSTEMS.flatMap((system) => {
+  return systems.flatMap((system) => {
     if (!system.src) return [];
     if (isolated) {
       return system.id === isolated[0]
@@ -458,7 +464,7 @@ function StudioModel({
         labels={labels}
         resetToken={session.reset}
         dpr={pixelRatio(settings.quality)}
-        layers={topic ? [] : bodyLayers(session)}
+        layers={topic ? [] : bodyLayers(session, studio.systems)}
         section={session.section}
         focus={topic ? null : focus}
         focusId={quizFocus(session.mode === 'quiz' ? session.quiz : null)}
@@ -922,7 +928,7 @@ function PhoneOverlay({
   onCover,
   coverBottom,
   ...props
-}: Readonly<OverlayProps & { onCover: (height: number) => void; coverBottom: number }>) {
+}: Readonly<OverlayProps & { coverBottom: number; onCover: (height: number) => void }>) {
   const { studio, topics, tree, regions } = props;
   const measureFooter = useBottomCover(onCover);
   const { session, topic } = studio;
@@ -947,11 +953,9 @@ function PhoneOverlay({
         )}
       </div>
       {quiz ? null : (
-        // Stops above the sheet along the bottom; on a short phone the tools scroll instead of
-        // hiding under it.
         <div
-          className="absolute top-20 left-3 flex min-h-0 flex-col"
-          style={coverBottom > 0 ? { bottom: coverBottom + TOOLS_GAP_PX } : undefined}
+          className="absolute top-20 left-3 z-10 flex min-h-0 items-start"
+          style={{ bottom: Math.max(12, coverBottom + 12) }}
         >
           <Tools studio={studio} />
         </div>
@@ -1032,9 +1036,6 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
     </footer>
   );
 }
-
-/** The gap kept between a phone's tool column and the sheet below it, in pixels. */
-const TOOLS_GAP_PX = 12;
 
 /** The gap between the model's column and the card beside it (gap-4), in pixels. */
 const CARD_GAP_PX = 16;
@@ -1184,7 +1185,12 @@ function DockedOverlay({
           </div>
           {/* The view tools down the model's left edge: level with the topics' top, or under their
               pill when they are folded away. */}
-          <div className={cx('absolute left-0', topicsShown || quiz ? 'top-0' : 'top-16')}>
+          <div
+            className={cx(
+              'absolute bottom-0 left-0 flex min-h-0 items-start',
+              topicsShown || quiz ? 'top-0' : 'top-16',
+            )}
+          >
             <Tools studio={studio} />
           </div>
         </div>
@@ -1246,7 +1252,7 @@ export function Studio(props: Readonly<StudioProps>) {
     >
       {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
       {hydrated && !docked ? (
-        <PhoneOverlay {...overlay} onCover={setCoverBottom} coverBottom={coverBottom} />
+        <PhoneOverlay {...overlay} coverBottom={coverBottom} onCover={setCoverBottom} />
       ) : null}
     </section>
   );

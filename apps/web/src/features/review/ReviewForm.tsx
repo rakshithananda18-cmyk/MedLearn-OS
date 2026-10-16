@@ -6,7 +6,7 @@ import { Check, PenLine } from '@medlearn/ui/icons';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { forgetStatuses } from './state';
+import { invalidateStatuses } from './state';
 
 const CHECKS: { key: keyof ReviewChecks; label: string }[] = [
   { key: 'pages', label: 'The book chapters and pages match' },
@@ -21,7 +21,11 @@ const NONE: ReviewChecks = { pages: false, facts: false, questions: false, visua
  * The reviewer's decision on this version: approve once every check is ticked, or say what needs
  * changing. Saved to the server, after which the page reloads its history.
  */
-export function ReviewForm({ slug, version }: Readonly<{ slug: string; version: string }>) {
+export function ReviewForm({
+  slug,
+  version,
+  digest,
+}: Readonly<{ slug: string; version: string; digest: string }>) {
   const router = useRouter();
   const [checks, setChecks] = useState<ReviewChecks>(NONE);
   const [note, setNote] = useState('');
@@ -39,6 +43,7 @@ export function ReviewForm({ slug, version }: Readonly<{ slug: string; version: 
         body: JSON.stringify({
           topicSlug: slug,
           contentVersion: version,
+          contentDigest: digest,
           decision,
           checks,
           ...(note.trim() ? { note: note.trim() } : {}),
@@ -54,7 +59,7 @@ export function ReviewForm({ slug, version }: Readonly<{ slug: string; version: 
       setMessage(decision === 'approved' ? 'Approved. Students see it now.' : 'Sent back.');
       setChecks(NONE);
       setNote('');
-      forgetStatuses();
+      invalidateStatuses();
       router.refresh();
     } catch {
       setMessage('Not saved: check the connection and try again.');
@@ -69,6 +74,10 @@ export function ReviewForm({ slug, version }: Readonly<{ slug: string; version: 
       className="flex flex-col gap-3 rounded-xl border border-gold bg-glass p-4 shadow-glass"
     >
       <h2 className="font-semibold text-ink">Your review of version {version}</h2>
+      <Text size="sm" tone="muted">
+        The decision covers the teaching content and visual files shown here. Team access does not
+        certify professional credentials.
+      </Text>
       <div className="flex flex-col gap-2">
         {CHECKS.map(({ key, label }) => (
           <Checkbox

@@ -3,6 +3,7 @@ import { createReviewsRepository } from '@medlearn/db';
 import { ReviewInput } from '@medlearn/schemas';
 
 import { getTopic } from '@/content/topics';
+import { topicReviewDigest } from '@/server/review-digest';
 import { ok, parseJson, withRoute } from '@/server/route';
 import { getSessionDb, requireUserId } from '@/server/session';
 
@@ -11,7 +12,14 @@ import { getSessionDb, requireUserId } from '@/server/session';
  * moment a reviewer approves it.
  */
 export const GET = withRoute('GET /api/reviews', async () => {
-  const statuses = await createReviewsRepository(await getSessionDb()).statuses();
+  const outcomes = await createReviewsRepository(await getSessionDb()).statuses();
+  const statuses = outcomes.map((status) => {
+    const topic = getTopic(status.topicSlug);
+    return {
+      ...status,
+      currentContent: Boolean(topic && status.contentDigest === topicReviewDigest(topic)),
+    };
+  });
   return ok({ statuses }, { headers: { 'cache-control': 'no-store' } });
 });
 
@@ -21,7 +29,10 @@ export const POST = withRoute('POST /api/reviews', async (request, { log }) => {
   const topic = getTopic(review.topicSlug);
   if (!topic) throw new AppError('NOT_FOUND', 'Unknown topic');
   // A review is of what students see now; an older copy open in another tab is turned away.
-  if (topic.version !== review.contentVersion) {
+  if (
+    topic.version !== review.contentVersion ||
+    topicReviewDigest(topic) !== review.contentDigest
+  ) {
     throw new AppError('CONFLICT', 'This topic has changed since you opened it. Reload it.');
   }
   const db = await getSessionDb();

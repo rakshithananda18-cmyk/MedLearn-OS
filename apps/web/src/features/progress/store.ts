@@ -5,9 +5,9 @@ import {
   firstRevisit,
   type LearnerProgress,
   logActivity,
-  MAX_REMOVED_GOALS,
   nextRevisit,
   type ReviewRating,
+  REVISIT_DAYS,
   scheduleReview,
   type StudyGoal,
   type StudyProfile,
@@ -106,12 +106,14 @@ export function saveProfile(profile: StudyProfile): void {
  * time, the topic's spaced revisits start: the first is due tomorrow.
  */
 export function completeLesson(topicSlug: string, minutes = 0, now = new Date()): void {
-  const { completedLessons, revisits } = read();
+  const { completedLessons, revisits, completedRevisits } = read();
   recordActivity(
     {
       completedLessons: addOnce(completedLessons, topicSlug),
       revisits:
-        topicSlug in revisits ? revisits : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
+        topicSlug in revisits || completedRevisits.includes(topicSlug)
+          ? revisits
+          : { ...revisits, [topicSlug]: firstRevisit(dayKey(now)) },
     },
     { kind: 'lesson', topicSlug, minutes },
     now,
@@ -123,12 +125,19 @@ export function completeLesson(topicSlug: string, minutes = 0, now = new Date())
  * its next, longer gap (the last one done ends them); too few brings it back tomorrow.
  */
 export function completeRevisit(topicSlug: string, share: number, now = new Date()): void {
-  const { revisits } = read();
+  const { revisits, completedRevisits } = read();
   const current = revisits[topicSlug];
   if (!current) return;
   const next = nextRevisit(current, share, dayKey(now));
-  // After the last one the topic keeps a finished marker, which a sync cannot undo.
-  if (next) commit({ revisits: { ...revisits, [topicSlug]: next } }, now);
+  const active = next !== null && next.step < REVISIT_DAYS.length ? next : null;
+  const rest = Object.fromEntries(Object.entries(revisits).filter(([slug]) => slug !== topicSlug));
+  commit(
+    {
+      revisits: active ? { ...rest, [topicSlug]: active } : rest,
+      completedRevisits: active ? completedRevisits : addOnce(completedRevisits, topicSlug),
+    },
+    now,
+  );
 }
 
 export function completeDrill(topicSlug: string, minutes = 0): void {
@@ -175,9 +184,14 @@ export function addGoal(
   goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date'>,
   now = new Date(),
 ): StudyGoal {
+  // getRandomValues also works on a phone opening a local development server over HTTP.
+  const randomId = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
   const added: StudyGoal = {
     ...goal,
-    id: `goal-${now.getTime().toString(36)}`,
+    // A new goal must never reuse the id of a deleted goal, even on another device.
+    id: `goal-${randomId}`,
     done: [],
     createdAt: now.toISOString(),
   };
@@ -187,10 +201,9 @@ export function addGoal(
 
 export function removeGoal(goalId: string): void {
   const { goals, removedGoals } = read();
-  // Remembered, so the copy in the account or on another phone cannot bring it back.
   commit({
     goals: goals.filter((goal) => goal.id !== goalId),
-    removedGoals: addOnce(removedGoals, goalId).slice(-MAX_REMOVED_GOALS),
+    removedGoals: addOnce(removedGoals, goalId),
   });
 }
 
