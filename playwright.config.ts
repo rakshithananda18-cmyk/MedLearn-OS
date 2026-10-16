@@ -5,6 +5,8 @@ const PORT = Number(process.env.PLAYWRIGHT_PORT ?? '3100');
 
 export default defineConfig({
   testDir: 'e2e',
+  // Keep runner cleanup separate from other diagnostic captures and isolated test services.
+  outputDir: 'test-results/playwright',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

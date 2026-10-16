@@ -9,7 +9,7 @@ test('a student reports an issue from the topic hub', async ({ page }) => {
   await expect(
     drawer.getByRole('link', { name: /OpenStax Anatomy and Physiology 2e/ }),
   ).toBeVisible();
-  await expect(drawer).toContainText('Not yet reviewed by a medical reviewer');
+  await expect(drawer).toContainText('A current review-team approval could not be confirmed.');
   await expectAccessible(page);
 
   await drawer.getByText('Hard to understand').click();
