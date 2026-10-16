@@ -7,7 +7,7 @@ comment on column public.topic_reviews.content_digest is
 
 -- Defaults are caller-overridable. Stamp all new review audit values from the signed session,
 -- even when a reviewer writes directly through PostgREST instead of the app route.
-create function public.stamp_topic_review()
+create or replace function public.stamp_topic_review()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -27,9 +27,7 @@ end;
 $$;
 
 revoke all on function public.stamp_topic_review() from public, anon, authenticated;
-create trigger stamp_topic_review
-  before insert on public.topic_reviews
-  for each row execute function public.stamp_topic_review();
+-- 130000 already installed the insert trigger; replacing its function hardens that same hook.
 
 drop function public.topic_review_status();
 create function public.topic_review_status()

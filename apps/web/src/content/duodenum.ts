@@ -21,7 +21,7 @@ export const duodenum: Topic = {
     'The C-shaped first part of the small intestine round the head of the pancreas: its four parts and their relations, the papillae, the suspensory muscle, and its supply from foregut and midgut.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

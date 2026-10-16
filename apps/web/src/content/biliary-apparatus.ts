@@ -22,7 +22,7 @@ export const biliaryApparatus: Topic = {
     'The extrahepatic biliary apparatus: the hepatic, cystic and bile ducts, the gallbladder and its parts, the four parts of the bile duct and its sphincters, the cystic artery in Calot’s triangle, and where gallbladder pain is felt.',
   estimatedMinutes: 13,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

@@ -5,11 +5,11 @@ import type { CameraStop, ModelPart } from '@medlearn/schemas';
 // X towards the right side (negative), Y towards the back (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=3';
+export const ABDOMINAL_ORGANS_MODEL_SRC = '/models/abdominal-organs.glb?v=4';
 
 /** Credit for the model, shown wherever it is. */
 export const ABDOMINAL_ORGANS_MODEL_CREDIT =
-  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver and its segments, pancreatic ducts, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled.';
+  'Organs, vessels, mesentery and bones: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Liver and its segments, pancreatic ducts, greater and lesser omentum, transverse mesocolon and sigmoid colon: Z-Anatomy, CC BY-SA 4.0. Lumbar plexus nerves, sympathetic trunks, thoracolumbar fascia and lymph nodes: Z-Anatomy, CC BY-SA 4.0. The parietal peritoneum and the small folds and recesses are not modelled; the lumbar sympathetic chains, the cisterna chyli and quadratus lumborum, which neither set has, are drawn as lines.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what a
@@ -457,7 +457,116 @@ const PARTS = {
   'psoas-major': {
     name: 'Psoas major',
     kind: 'muscle',
-    about: 'Behind the kidneys and the ureters, which run down on its front.',
+    about:
+      'From the sides of T12 to L5, their discs and the lumbar transverse processes, down over the pelvic brim to the lesser trochanter. The kidneys and ureters lie on it; the lumbar plexus forms inside it.',
+  },
+  iliacus: {
+    name: 'Iliacus',
+    kind: 'muscle',
+    about:
+      'Fills the iliac fossa and joins the psoas tendon to the lesser trochanter: together, iliopsoas, the strongest flexor of the hip. Supplied by the femoral nerve.',
+  },
+  'inferior-phrenic-arteries': {
+    name: 'Inferior phrenic arteries',
+    kind: 'artery',
+    about:
+      'The first branches of the abdominal aorta, just above the coeliac trunk; up on the crura to the diaphragm, giving the superior suprarenal arteries.',
+  },
+  'suprarenal-arteries': {
+    name: 'Middle and inferior suprarenal arteries',
+    kind: 'artery',
+    about:
+      'The middle from the aorta beside the superior mesenteric artery, the inferior from the renal artery; with the superior (from the inferior phrenic), three arteries to each gland.',
+  },
+  'suprarenal-veins': {
+    name: 'Suprarenal veins',
+    kind: 'vein',
+    about:
+      'One vein from each gland’s hilum: the short right one straight into the IVC, the left one down into the left renal vein.',
+  },
+  'lumbar-arteries': {
+    name: 'Lumbar arteries',
+    kind: 'artery',
+    about:
+      'Four pairs from the back of the aorta, round the sides of L1 to L4 behind psoas and quadratus lumborum, to the muscles of the back and the abdominal wall.',
+  },
+  'lumbar-veins': {
+    name: 'Lumbar and ascending lumbar veins',
+    kind: 'vein',
+    about:
+      'The third and fourth lumbar veins open into the IVC; the first and second into the ascending lumbar vein, which links the common iliac veins to the azygos and hemiazygos.',
+  },
+  'azygos-veins': {
+    name: 'Azygos and hemiazygos veins',
+    kind: 'vein',
+    about:
+      'Begin in the abdomen from the back of the IVC and the left renal vein (or the ascending lumbar and subcostal veins); the azygos goes up through the aortic opening, the hemiazygos through the left crus.',
+  },
+  'iliac-arteries': {
+    name: 'External and internal iliac arteries',
+    kind: 'artery',
+    about:
+      'The two ends of each common iliac artery, in front of the sacroiliac joint: the external to the lower limb, the internal into the pelvis.',
+  },
+  'iliohypogastric-nerves': {
+    name: 'Iliohypogastric nerves (L1)',
+    kind: 'nerve',
+    about:
+      'Out of the lateral border of psoas, across quadratus lumborum behind the kidney, through transversus abdominis above the iliac crest; to the abdominal muscles and the skin over the buttock and above the pubis.',
+  },
+  'ilioinguinal-nerves': {
+    name: 'Ilioinguinal nerves (L1)',
+    kind: 'nerve',
+    about:
+      'Below the iliohypogastric on the same course, then through the inguinal canal and out of the superficial ring, to the upper medial thigh and the front of the scrotum or labium majus.',
+  },
+  'genitofemoral-nerves': {
+    name: 'Genitofemoral nerves (L1, L2)',
+    kind: 'nerve',
+    about:
+      'The only branch through the front of psoas; it splits into a genital branch (through the deep ring, to cremaster) and a femoral branch (in the femoral sheath, to the skin below the inguinal ligament).',
+  },
+  'lateral-femoral-cutaneous-nerves': {
+    name: 'Lateral cutaneous nerves of the thigh (L2, L3)',
+    kind: 'nerve',
+    about:
+      'Out of the lateral border of psoas, across iliacus to the anterior superior iliac spine, behind the inguinal ligament into the thigh; pressed there it causes meralgia paraesthetica.',
+  },
+  'femoral-nerves': {
+    name: 'Femoral nerves (L2 to L4, dorsal divisions)',
+    kind: 'nerve',
+    about:
+      'The largest branch: out of the lateral border of psoas low down, in the groove between psoas and iliacus under the fascia iliaca, behind the inguinal ligament outside the femoral sheath.',
+  },
+  'obturator-nerves': {
+    name: 'Obturator nerves (L2 to L4, ventral divisions)',
+    kind: 'nerve',
+    about:
+      'The only branch out of the medial border of psoas: behind the common iliac vessels, along the side wall of the pelvis to the obturator canal and the adductors.',
+  },
+  'sympathetic-trunks': {
+    name: 'Sympathetic trunks (to L1)',
+    kind: 'nerve',
+    about:
+      'The thoracic chains entering the abdomen behind the medial arcuate ligaments. Below this the lumbar chains run down the fronts of the vertebral bodies, drawn here as lines.',
+  },
+  'thoracolumbar-fascia': {
+    name: 'Thoracolumbar fascia',
+    kind: 'membrane',
+    about:
+      'Three layers in the loin: the posterior behind erector spinae, the middle between it and quadratus lumborum, the anterior in front of quadratus lumborum, thickened above as the lateral arcuate ligament.',
+  },
+  'aortic-lymph-nodes': {
+    name: 'Aortic lymph nodes',
+    kind: 'organ',
+    about:
+      'Pre-aortic nodes (coeliac, superior and inferior mesenteric) drain the gut and form the intestinal trunk; lateral aortic nodes drain the kidneys, suprarenals, gonads and body wall and form the lumbar trunks.',
+  },
+  'iliac-lymph-nodes': {
+    name: 'Common and external iliac lymph nodes',
+    kind: 'organ',
+    about:
+      'Along the iliac arteries; the external from the inguinal nodes, the deep lower abdominal wall and some pelvic organs, the common from both external and internal iliac groups, on to the lateral aortic nodes.',
   },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
@@ -505,6 +614,8 @@ const LOOK: Partial<Record<AbdominalOrgansPartId, Pick<ModelPart, 'colour' | 'op
   'transverse-mesocolon': fold(0.5),
   mesentery: fold(0.4),
   mesoappendix: fold(0.5),
+  'aortic-lymph-nodes': { colour: '--color-anat-lymph', opacity: 1 },
+  'iliac-lymph-nodes': { colour: '--color-anat-lymph', opacity: 1 },
 };
 
 /**
@@ -807,3 +918,155 @@ export const URETERS_FRONT: CameraStop = {
   target: [0, -90, 915],
   position: [0, -960, 935],
 };
+
+/** The posterior abdominal wall's skeleton and muscles (abdomen batch 5). */
+export const POSTERIOR_WALL: AbdominalOrgansPartId[] = [
+  'lumbar-spine',
+  'sacrum',
+  'hip-bones',
+  'lower-ribs',
+  'diaphragm',
+  'psoas-major',
+  'iliacus',
+];
+
+/** The lumbar plexus's six branches, both sides. */
+export const LUMBAR_PLEXUS: AbdominalOrgansPartId[] = [
+  'iliohypogastric-nerves',
+  'ilioinguinal-nerves',
+  'genitofemoral-nerves',
+  'lateral-femoral-cutaneous-nerves',
+  'femoral-nerves',
+  'obturator-nerves',
+];
+
+/** Both suprarenal glands from the front, on the upper poles of the kidneys. */
+export const SUPRARENALS_FRONT: CameraStop = {
+  id: 'suprarenals-front',
+  title: 'The suprarenal glands',
+  description:
+    'On the upper poles of the kidneys, in front of the crura: the right a pyramid behind the IVC, the left a crescent along the kidney’s medial border down to its hilum.',
+  target: [0, -95, 1075],
+  position: [0, -560, 1095],
+};
+
+/** The diaphragm from below and in front, the viscera set aside. */
+export const DIAPHRAGM_BELOW: CameraStop = {
+  id: 'diaphragm-below',
+  title: 'From below',
+  description:
+    'The domes and the central tendon, the crura on the upper lumbar bodies, and the three openings: the IVC through the tendon (T8), the oesophagus through the right crus (T10), the aorta behind the median arcuate ligament (T12).',
+  target: [0, -80, 1110],
+  position: [0, -260, 740],
+};
+
+/** The diaphragm from the front, its domes over the liver and stomach. */
+export const DIAPHRAGM_FRONT: CameraStop = {
+  id: 'diaphragm-front',
+  title: 'The domes',
+  description:
+    'The right dome higher than the left, the central tendon between them under the heart; the costal fibres arise from the lower six costal cartilages.',
+  target: [0, -110, 1130],
+  position: [0, -820, 1160],
+};
+
+/** The aorta and IVC down the posterior wall, from the front. */
+export const GREAT_VESSELS_FRONT: CameraStop = {
+  id: 'great-vessels-front',
+  title: 'The aorta and IVC',
+  description:
+    'The aorta down the front of the lumbar bodies, a little left of the midline, from the aortic opening (T12) to its division at L4; the IVC on its right, from L5 up to the caval opening.',
+  target: [0, -110, 1045],
+  position: [0, -760, 1060],
+};
+
+/** The aorta's division and the iliac arteries. */
+export const AORTIC_BIFURCATION: CameraStop = {
+  id: 'aortic-bifurcation',
+  title: 'The division',
+  description:
+    'The aorta divides in front of L4 into the common iliac arteries, which divide in front of the sacroiliac joints into external and internal iliac arteries; the IVC begins behind the right common iliac artery at L5.',
+  target: [0, -110, 950],
+  position: [0, -560, 990],
+};
+
+/** The posterior wall's muscles from the front. */
+export const POSTERIOR_WALL_FRONT: CameraStop = {
+  id: 'posterior-wall-front',
+  title: 'The posterior wall',
+  description:
+    'Psoas beside the lumbar bodies, quadratus lumborum lateral to it between the twelfth rib and the iliac crest, iliacus in the iliac fossa joining psoas below.',
+  target: [0, -80, 990],
+  position: [0, -800, 1000],
+};
+
+/** The lumbar plexus's branches round psoas, from the front. */
+export const LUMBAR_PLEXUS_FRONT: CameraStop = {
+  id: 'lumbar-plexus-front',
+  title: 'Round psoas',
+  description:
+    'Lateral to psoas, from above down: iliohypogastric, ilioinguinal, lateral cutaneous nerve of the thigh, femoral. On its front, genitofemoral. Medial to it, obturator.',
+  target: [0, -85, 960],
+  position: [0, -760, 975],
+};
+
+/** The right side of the plexus, closer. */
+export const LUMBAR_PLEXUS_RIGHT: CameraStop = {
+  id: 'lumbar-plexus-right',
+  title: 'The right side',
+  description:
+    'The femoral nerve in the groove between psoas and iliacus; the lateral cutaneous nerve crossing iliacus to the anterior superior iliac spine; the obturator nerve on the medial side over the pelvic brim.',
+  target: [-60, -85, 950],
+  position: [-420, -560, 990],
+};
+
+/** The plexuses round the aorta, from the front and right. */
+export const AORTIC_PLEXUSES: CameraStop = {
+  id: 'aortic-plexuses',
+  title: 'Round the aorta',
+  description:
+    'The coeliac plexus round the coeliac trunk and the superior mesenteric artery, the aortic plexus down to the inferior mesenteric artery, the superior hypogastric plexus below the division; the lumbar chains on the vertebral bodies.',
+  target: [0, -110, 1030],
+  position: [-260, -640, 1060],
+};
+
+/** The lumbar sympathetic chains, which the model lacks: on from Z-Anatomy's trunks at L1, forward
+ * onto the vertebral bodies along the medial edge of psoas, to the sacral promontory. */
+export const LUMBAR_CHAIN_PATHS = [1, -1].map((side) =>
+  (
+    [
+      [23, -55, 1062],
+      [26, -82, 1045],
+      [28, -104, 1010],
+      [30, -108, 975],
+      [30, -108, 945],
+      [26, -104, 918],
+      [21, -98, 898],
+    ] as const
+  ).map(([x, y, z]) => [side * x, y, z] as [number, number, number]),
+);
+
+/** The cisterna chyli, right of the aorta in front of L1 and L2, on up as the thoracic duct. */
+export const CISTERNA_CHYLI_PATHS: [number, number, number][][] = [
+  [
+    [-4, -112, 1035],
+    [-4, -111, 1060],
+    [-3, -109, 1090],
+    [-2, -102, 1130],
+  ],
+];
+
+/** Quadratus lumborum, which the model lacks, outlined on each side: from the iliolumbar ligament
+ * and iliac crest up to the twelfth rib and the tips of the upper lumbar transverse processes. */
+export const QUADRATUS_LUMBORUM_PATHS = [1, -1].map((side) =>
+  (
+    [
+      [45, -62, 1040],
+      [75, -62, 1022],
+      [100, -62, 965],
+      [62, -62, 942],
+      [48, -62, 990],
+      [45, -62, 1040],
+    ] as const
+  ).map(([x, y, z]) => [side * x, y, z] as [number, number, number]),
+);

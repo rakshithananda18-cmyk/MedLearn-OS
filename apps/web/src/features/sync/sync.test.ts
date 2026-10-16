@@ -205,7 +205,7 @@ describe('progress sync', () => {
       completedDrills: ['drill-10', 'drill-2'],
       correctAnswers: ['answer-10', 'answer-2'],
       mistakes: ['mistake-10', 'mistake-2'],
-      deletedGoalIds: ['goal-10', 'goal-2'],
+      removedGoals: ['goal-10', 'goal-2'],
       completedRevisits: ['topic-10', 'topic-2'],
       activity: { '2026-09-28': day },
     });
@@ -215,7 +215,7 @@ describe('progress sync', () => {
         completedDrills: [...remote.completedDrills].reverse(),
         correctAnswers: [...remote.correctAnswers].reverse(),
         mistakes: [...remote.mistakes].reverse(),
-        deletedGoalIds: [...remote.deletedGoalIds].reverse(),
+        removedGoals: [...remote.removedGoals].reverse(),
         completedRevisits: [...remote.completedRevisits].reverse(),
         activity: {
           '2026-09-28': {
@@ -259,7 +259,7 @@ describe('progress sync', () => {
     expect(saved?.progress).toMatchObject({
       goals: [],
       revisits: {},
-      deletedGoalIds: ['goal-old'],
+      removedGoals: ['goal-old'],
       completedRevisits: ['axilla'],
     });
     stop();
@@ -273,7 +273,7 @@ describe('progress sync', () => {
       goals: [],
       revisits: {},
       correctAnswers: ['new-answer'],
-      deletedGoalIds: ['goal-old'],
+      removedGoals: ['goal-old'],
       completedRevisits: ['axilla'],
     });
     expect(readProgress()).toEqual(saved?.progress);
@@ -284,7 +284,7 @@ describe('progress sync', () => {
   });
 
   it('keeps removal markers when a conflicting save brings an old plan back', async () => {
-    replaceProgress(copy({ deletedGoalIds: ['gone'], completedRevisits: ['axilla'] }));
+    replaceProgress(copy({ removedGoals: ['gone'], completedRevisits: ['axilla'] }));
     let conflicted = false;
     fetchMock.mockImplementation(async (url, init) => {
       if (init?.method === 'PUT' && !conflicted) {
@@ -317,7 +317,7 @@ describe('progress sync', () => {
     expect(saved?.progress).toMatchObject({
       goals: [],
       revisits: {},
-      deletedGoalIds: ['gone'],
+      removedGoals: ['gone'],
       completedRevisits: ['axilla'],
       completedDrills: ['remote-drill'],
     });

@@ -3,6 +3,7 @@ import {
   EMPTY_PROGRESS,
   type LearnerProgress,
   type ReviewState,
+  REVISIT_DAYS,
   type StudyGoal,
   type StudyProfile,
   type TopicRevisit,
@@ -179,8 +180,18 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
   // An API limit must fail a save, never erase valid local removals after a reload.
   const markers = (field: unknown) =>
     or<string[]>(field, isIdList(field, Number.MAX_SAFE_INTEGER), []);
-  const deletedGoalIds = markers(data.deletedGoalIds);
-  const completedRevisits = markers(data.completedRevisits);
+  // Canonical name from released clients, plus the temporary pre-reconciliation alias.
+  const removedGoals = [
+    ...new Set([...markers(data.removedGoals), ...markers(value.deletedGoalIds)]),
+  ];
+  const completedRevisits = [
+    ...new Set([
+      ...markers(data.completedRevisits),
+      ...safeEntries(revisits)
+        .filter(([, revisit]) => revisit.step >= REVISIT_DAYS.length)
+        .map(([slug]) => slug),
+    ]),
+  ];
   // As with the API schema, discard unknown fields instead of carrying arbitrary storage data
   // into later sync requests. Keep optional legacy fields optional.
   return {
@@ -242,7 +253,7 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
       ]),
     ),
     goals: goals
-      .filter((goal) => !deletedGoalIds.includes(goal.id))
+      .filter((goal) => !removedGoals.includes(goal.id))
       .map((goal) => ({
         id: goal.id,
         kind: goal.kind,
@@ -252,7 +263,7 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         done: [...goal.done],
         createdAt: goal.createdAt,
       })),
-    deletedGoalIds: [...deletedGoalIds],
+    removedGoals: [...removedGoals],
     revisits: Object.fromEntries(
       safeEntries(revisits)
         .filter(([slug]) => !completedRevisits.includes(slug))

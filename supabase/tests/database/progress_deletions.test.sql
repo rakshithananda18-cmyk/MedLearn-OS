@@ -7,13 +7,13 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-000000000031","role":"authenticated"}', true);
 
 select is(public.save_learner_progress('00000000-0000-0000-0000-000000000031',
-  '{"deletedGoalIds":["old-goal"],"completedRevisits":["axilla"],"goals":[],"revisits":{}}',
+  '{"removedGoals":["old-goal"],"completedRevisits":["axilla"],"goals":[],"revisits":{}}',
   '2026-10-16 08:00:00Z', null, true), true, 'saves durable goal and revisit markers');
 
 select is(public.save_learner_progress('00000000-0000-0000-0000-000000000031',
   '{"goals":[{"id":"old-goal"},{"id":"other-goal"}],"revisits":{"axilla":{"step":2},"plexus":{"step":0}},"correctAnswers":["new-answer"]}',
   '2026-10-16 09:00:00Z'), true, 'a legacy client can still save unrelated work');
-select is((select progress->'deletedGoalIds' from public.learner_progress),
+select is((select progress->'removedGoals' from public.learner_progress),
   '["old-goal"]'::jsonb, 'legacy save cannot erase goal removal');
 select is((select progress->'completedRevisits' from public.learner_progress),
   '["axilla"]'::jsonb, 'legacy save cannot erase revisit completion');
@@ -28,9 +28,9 @@ select is(public.save_learner_progress('00000000-0000-0000-0000-000000000031',
   '2026-10-16 09:00:00Z'), true, 'identical legacy retry remains idempotent after normalization');
 
 select is(public.save_learner_progress('00000000-0000-0000-0000-000000000031',
-  '{"deletedGoalIds":["other-goal"],"completedRevisits":["plexus"],"goals":[{"id":"old-goal"}],"revisits":{"axilla":{"step":2}}}',
+  '{"removedGoals":["other-goal"],"completedRevisits":["plexus"],"goals":[{"id":"old-goal"}],"revisits":{"axilla":{"step":2}}}',
   '2026-10-16 10:00:00Z', '2026-10-16 09:00:00Z', true), true, 'versioned save joins markers inside the write');
-select is((select progress->'deletedGoalIds' from public.learner_progress),
+select is((select progress->'removedGoals' from public.learner_progress),
   '["old-goal","other-goal"]'::jsonb, 'independent goal removals are joined');
 select is((select progress->'completedRevisits' from public.learner_progress),
   '["axilla","plexus"]'::jsonb, 'independent final revisits are joined');

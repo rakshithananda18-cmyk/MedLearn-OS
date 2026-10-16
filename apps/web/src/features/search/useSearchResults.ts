@@ -38,6 +38,10 @@ export function useSearchResults(query: string, enabled = true, delay = 0) {
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
+    const deadline = setTimeout(() => {
+      controller.abort();
+      setSettled({ query, attempt, results: null });
+    }, delay + 10_000);
     const timer = setTimeout(() => {
       search(query, controller.signal)
         .then((results) => {
@@ -45,18 +49,27 @@ export function useSearchResults(query: string, enabled = true, delay = 0) {
         })
         .catch(() => {
           if (!controller.signal.aborted) setSettled({ query, attempt, results: null });
-        });
+        })
+        .finally(() => clearTimeout(deadline));
     }, delay);
     return () => {
       clearTimeout(timer);
+      clearTimeout(deadline);
       controller.abort();
     };
   }, [query, attempt, enabled, delay]);
   const current =
     enabled && settled?.query === query && settled.attempt === attempt ? settled : null;
+  const error = current !== null && current.results === null;
+  useEffect(() => {
+    if (!error) return;
+    const retry = () => setAttempt((value) => value + 1);
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, [error]);
   return {
     results: current?.results ?? null,
-    error: current !== null && current.results === null,
+    error,
     loading: enabled && current === null,
     retry: () => setAttempt((value) => value + 1),
   };

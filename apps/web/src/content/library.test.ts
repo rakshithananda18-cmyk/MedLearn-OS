@@ -63,6 +63,9 @@ describe('libraryTree', () => {
       'Extrahepatic biliary apparatus',
       'Spleen, pancreas and liver',
       'Kidney and ureter',
+      'Suprarenal gland and chromaffin system',
+      'Diaphragm',
+      'Posterior abdominal wall',
     ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
     const lowerLimb = tree[3];

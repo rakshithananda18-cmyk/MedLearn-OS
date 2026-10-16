@@ -1,6 +1,6 @@
 import { mergeActivity } from './activity';
 import type { ReviewState } from './review';
-import type { LearnerProgress, StudyGoal } from './today';
+import { type LearnerProgress, REVISIT_DAYS, type StudyGoal } from './today';
 
 const union = (a: string[], b: string[]) => [...new Set([...a, ...b])];
 
@@ -48,8 +48,14 @@ export function mergeProgress(
   }
   // Goals are joined by id; a topic gone over on either side counts as done.
   // These markers never expire: a long-offline device may still hold an older live copy.
-  const deletedGoalIds = union(local.deletedGoalIds, account.deletedGoalIds);
-  const completedRevisits = union(local.completedRevisits, account.completedRevisits);
+  const removedGoals = union(local.removedGoals, account.removedGoals);
+  const legacyFinished = [...Object.entries(local.revisits), ...Object.entries(account.revisits)]
+    .filter(([, revisit]) => revisit.step >= REVISIT_DAYS.length)
+    .map(([slug]) => slug);
+  const completedRevisits = union(
+    union(local.completedRevisits, account.completedRevisits),
+    legacyFinished,
+  );
   const goals = new Map<string, StudyGoal>(local.goals.map((goal) => [goal.id, goal]));
   for (const goal of account.goals) {
     const mine = goals.get(goal.id);
@@ -71,8 +77,8 @@ export function mergeProgress(
     catchUpAcceptedOn: account.catchUpAcceptedOn ?? local.catchUpAcceptedOn,
     notes,
     activity: mergeActivity(local.activity, account.activity),
-    goals: [...goals.values()].filter((goal) => !deletedGoalIds.includes(goal.id)),
-    deletedGoalIds,
+    goals: [...goals.values()].filter((goal) => !removedGoals.includes(goal.id)),
+    removedGoals,
     revisits: Object.fromEntries(
       Object.entries(mergeRevisits(local.revisits, account.revisits)).filter(
         ([slug]) => !completedRevisits.includes(slug),

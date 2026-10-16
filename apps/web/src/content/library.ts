@@ -79,6 +79,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     22: 'Extrahepatic biliary apparatus',
     23: 'Spleen, pancreas and liver',
     24: 'Kidney and ureter',
+    25: 'Suprarenal gland and chromaffin system',
+    26: 'Diaphragm',
+    27: 'Posterior abdominal wall',
   },
 };
 

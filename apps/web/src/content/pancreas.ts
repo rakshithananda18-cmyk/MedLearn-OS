@@ -20,7 +20,7 @@ export const pancreas: Topic = {
     'The pancreas across the posterior wall: its head, uncinate process, neck, body and tail with their relations, its two ducts, its blood from both foregut and midgut arteries, and how it develops from two buds.',
   estimatedMinutes: 13,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

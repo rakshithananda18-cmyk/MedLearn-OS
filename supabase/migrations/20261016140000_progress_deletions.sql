@@ -13,9 +13,9 @@ declare
 begin
   select coalesce(jsonb_agg(value order by value), '[]'::jsonb) into deleted
   from (
-    select value from jsonb_array_elements(coalesce(p_progress->'deletedGoalIds', '[]'::jsonb))
+    select value from jsonb_array_elements(coalesce(p_progress->'removedGoals', '[]'::jsonb))
     union
-    select value from jsonb_array_elements(coalesce(p_saved->'deletedGoalIds', '[]'::jsonb))
+    select value from jsonb_array_elements(coalesce(p_saved->'removedGoals', '[]'::jsonb))
   ) as ids;
   select coalesce(jsonb_agg(value order by value), '[]'::jsonb) into completed
   from (
@@ -28,7 +28,7 @@ begin
     raise exception 'Too many progress removal markers' using errcode = '22023';
   end if;
   return p_progress || jsonb_build_object(
-    'deletedGoalIds', deleted,
+    'removedGoals', deleted,
     'completedRevisits', completed,
     'goals', (
       select coalesce(jsonb_agg(goal order by ordinal), '[]'::jsonb)

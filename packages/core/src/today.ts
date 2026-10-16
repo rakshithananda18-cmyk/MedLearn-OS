@@ -68,7 +68,7 @@ export interface LearnerProgress {
   /** Class tests and revisits the student asked for. */
   goals: StudyGoal[];
   /** Removed goal ids. Retained permanently so an offline device cannot bring them back. */
-  deletedGoalIds: string[];
+  removedGoals: string[];
   /** Each learnt topic's next spaced revisit, by slug; gone once the last one is done. */
   revisits: Record<string, TopicRevisit>;
   /** Topics that finished their last revisit. Completion wins over every older schedule. */
@@ -89,11 +89,14 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   notes: {},
   activity: {},
   goals: [],
-  deletedGoalIds: [],
+  removedGoals: [],
   revisits: {},
   completedRevisits: [],
   updatedAt: null,
 };
+
+/** API save bound for removed goal ids; local devices must never prune durable removals. */
+export const MAX_REMOVED_GOALS = 5000;
 
 /** The parts of a topic the planner needs. */
 export interface PlannableTopic {
@@ -207,6 +210,11 @@ export function addDays(day: string, days: number): string {
   return dayKey(new Date(Date.parse(`${day}T12:00:00`) + days * DAY_MS));
 }
 
+/** Legacy wire marker for a topic whose spaced revisits are complete. */
+export function finishedRevisit(): TopicRevisit {
+  return { step: REVISIT_DAYS.length, due: '9999-12-31' };
+}
+
 /** A topic's first revisit, due the day after its lesson. */
 export function firstRevisit(today: string): TopicRevisit {
   return { step: 0, due: addDays(today, REVISIT_DAYS[0]) };
@@ -221,10 +229,11 @@ export function nextRevisit(
   share: number,
   today: string,
 ): TopicRevisit | null {
+  if (current.step >= REVISIT_DAYS.length) return null;
   if (share < REVISIT_PASS) return { step: current.step, due: addDays(today, 1) };
   const step = current.step + 1;
   const gap = REVISIT_DAYS[step];
-  return gap === undefined ? null : { step, due: addDays(today, gap) };
+  return gap === undefined ? finishedRevisit() : { step, due: addDays(today, gap) };
 }
 
 /** The recall card made from a question the student got wrong. */
@@ -361,26 +370,33 @@ export function buildTodayPlan(
       : [],
   );
 
-  const goals: TodayItem[] = progress.goals.flatMap((goal) =>
-    goalToday(goal, today).topics.flatMap((slug) => {
-      const topic = topics.find((item) => item.slug === slug);
-      return topic
-        ? [
-            {
-              kind: 'goal' as const,
-              goalId: goal.id,
-              goalTitle: goal.title,
-              topicSlug: slug,
-              title: topic.title,
-              minutes: revisitMinutes(topic),
-            },
-          ]
-        : [];
-    }),
-  );
+  const goals: TodayItem[] = progress.goals
+    .filter((goal) => !progress.removedGoals.includes(goal.id))
+    .flatMap((goal) =>
+      goalToday(goal, today).topics.flatMap((slug) => {
+        const topic = topics.find((item) => item.slug === slug);
+        return topic
+          ? [
+              {
+                kind: 'goal' as const,
+                goalId: goal.id,
+                goalTitle: goal.title,
+                topicSlug: slug,
+                title: topic.title,
+                minutes: revisitMinutes(topic),
+              },
+            ]
+          : [];
+      }),
+    );
 
   const revisits: TodayItem[] = Object.entries(progress.revisits)
-    .filter(([, revisit]) => revisit.due <= today)
+    .filter(
+      ([slug, revisit]) =>
+        !progress.completedRevisits.includes(slug) &&
+        revisit.step < REVISIT_DAYS.length &&
+        revisit.due <= today,
+    )
     .toSorted(([, a], [, b]) => a.due.localeCompare(b.due))
     .flatMap(([slug, revisit]) => {
       const topic = topics.find((item) => item.slug === slug);

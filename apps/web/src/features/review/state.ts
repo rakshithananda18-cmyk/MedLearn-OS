@@ -1,4 +1,3 @@
-import type * as Schemas from '@medlearn/schemas';
 import type { ReviewStatus } from '@medlearn/schemas';
 import type { BadgeTone } from '@medlearn/ui';
 
@@ -33,6 +32,23 @@ export function reviewState(
 }
 
 export const STATUS_TTL_MS = 30_000;
+
+/** Validate this small public response without starting the schema library on every lesson. */
+function isStatus(value: unknown): value is ReviewStatus {
+  if (!value || typeof value !== 'object') return false;
+  const status = value as Partial<ReviewStatus>;
+  return (
+    typeof status.topicSlug === 'string' &&
+    /^[a-z0-9]+(-[a-z0-9]+)*$/.test(status.topicSlug) &&
+    typeof status.contentVersion === 'string' &&
+    /^\d+\.\d+\.\d+$/.test(status.contentVersion) &&
+    (status.contentDigest === null ||
+      (typeof status.contentDigest === 'string' && /^[a-f0-9]{64}$/.test(status.contentDigest))) &&
+    (status.currentContent === undefined || typeof status.currentContent === 'boolean') &&
+    (status.decision === 'approved' || status.decision === 'changes-requested') &&
+    typeof status.decidedAt === 'string'
+  );
+}
 let cache = new Map<string, ReviewStatus>();
 let expiresAt = 0;
 let pending: Promise<Map<string, ReviewStatus>> | null = null;
@@ -60,20 +76,15 @@ export function loadStatuses(force = false): Promise<Map<string, ReviewStatus>> 
   const requestGeneration = generation;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
-  pending = Promise.all([
-    fetch('/api/reviews', { cache: 'no-store', signal: controller.signal }).then((response) => {
+  pending = fetch('/api/reviews', { cache: 'no-store', signal: controller.signal })
+    .then((response) => {
       if (!response.ok) throw new Error('Review status unavailable');
       return response.json();
-    }),
-    // Loaded here rather than with the page, so the schema library is not in every download.
-    import('@medlearn/schemas'),
-  ])
-    .then(([body, schemas]: [unknown, typeof Schemas]) => {
-      const list = schemas.ReviewStatus.array().safeParse(
-        (body as { data?: { statuses?: unknown } } | null)?.data?.statuses,
-      );
-      if (!list.success) throw new Error('Invalid review status');
-      const statuses = new Map(list.data.map((status) => [status.topicSlug, status]));
+    })
+    .then((body: unknown) => {
+      const list = (body as { data?: { statuses?: unknown } } | null)?.data?.statuses;
+      if (!Array.isArray(list) || !list.every(isStatus)) throw new Error('Invalid review status');
+      const statuses = new Map(list.map((status) => [status.topicSlug, status]));
       if (generation === requestGeneration) {
         expiresAt = Date.now() + STATUS_TTL_MS;
         publish(statuses);

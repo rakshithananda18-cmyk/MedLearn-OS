@@ -134,4 +134,26 @@ describe('LiveSearch', () => {
     await waitFor(() => expect(opened).toHaveBeenCalledTimes(1));
     expect(highlighted).toHaveAttribute('href', expect.stringMatching(/^\/(studio|learn)/));
   });
+
+  it('says so when search cannot answer, and asks again when the connection returns', async () => {
+    let answer = false;
+    let asked = 0;
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked += 1;
+      if (!answer) return new Response('Busy', { status: 503 });
+      const query = new URL(url, 'http://localhost').searchParams.get('q') ?? '';
+      return Response.json({ data: { results: searchTopics(query, undefined, 40) } });
+    });
+    renderSearch();
+    await userEvent.type(screen.getByRole('combobox', { name: /Search topics/ }), 'axilla');
+    expect(await screen.findByText(/Search is unavailable/)).toBeInTheDocument();
+    expect(screen.queryByText('Searching…')).toBeNull();
+
+    answer = true;
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(screen.queryByText(/Search is unavailable/)).toBeNull());
+    await waitFor(() => expect(asked).toBe(2));
+  });
 });

@@ -5,9 +5,36 @@ import { practiceQuestions, recallDeck } from '@/content/topics';
 
 import { useStudyContent } from './useStudyContent';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe('session content loading', () => {
+  it('ends a hung session request and lets a retry load the questions', async () => {
+    vi.useFakeTimers();
+    const items = practiceQuestions().slice(0, 1);
+    const fetcher = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockResolvedValue(Response.json({ data: { items } }));
+    vi.stubGlobal('fetch', fetcher);
+    const { result } = renderHook(() =>
+      useStudyContent(
+        'practice',
+        items.map((item) => item.question.id),
+        [],
+      ),
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(10_000));
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBe(true);
+    await act(async () => result.current.retry());
+    expect(result.current.items.size).toBe(1);
+    expect(result.current.error).toBe(false);
+    await act(async () => vi.advanceTimersByTimeAsync(10_000));
+    expect(result.current.error).toBe(false);
+  });
   it('does not fetch teaching content already rendered for a topic', () => {
     const initial = practiceQuestions().slice(0, 4);
     const fetcher = vi.fn();

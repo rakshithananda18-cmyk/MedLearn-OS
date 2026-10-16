@@ -21,7 +21,7 @@ export const jejunumIleum: Topic = {
     'The mobile small intestine on its mesentery: how it gains surface for absorption, how to tell the jejunum from the ileum by sight and touch, its supply, and the diverticulum the vitelline duct can leave behind.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

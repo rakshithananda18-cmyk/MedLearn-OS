@@ -22,7 +22,7 @@ export const stomachSupply: Topic = {
     'The arteries along each curvature and to the fundus, where its veins drain, its four lymph territories, its sympathetic and vagal nerves, and the interior where ulcers form.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

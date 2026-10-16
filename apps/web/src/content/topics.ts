@@ -3,6 +3,8 @@ import type { Question, Topic } from '@medlearn/schemas';
 
 import { topicReviewDigest } from '@/server/review-digest';
 
+import { abdominalAorta } from './abdominal-aorta';
+import { abdominalAutonomicNerves } from './abdominal-autonomic-nerves';
 import { abdominalRegions } from './abdominal-regions';
 import { abdominalWallMuscles } from './abdominal-wall-muscles';
 import { abdominalWallSuperficial } from './abdominal-wall-superficial';
@@ -27,6 +29,7 @@ import { coeliacTrunk } from './coeliac-trunk';
 import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
+import { diaphragm } from './diaphragm';
 import { duodenum } from './duodenum';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
@@ -46,6 +49,7 @@ import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
 import { heartValvesConduction } from './heart-valves-conduction';
 import { hipJoint } from './hip-joint';
+import { inferiorVenaCava } from './inferior-vena-cava';
 import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
@@ -68,6 +72,7 @@ import { lowerLimbNerveInjuries } from './lower-limb-nerve-injuries';
 import { lowerLimbSurfaceMarking } from './lower-limb-surface-marking';
 import { lowerLimbVeins } from './lower-limb-veins';
 import { lowerLimbXrays } from './lower-limb-xrays';
+import { lumbarPlexus } from './lumbar-plexus';
 import { lumbarVertebraeSacrum } from './lumbar-vertebrae-sacrum';
 import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
@@ -90,6 +95,7 @@ import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
 import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
 import { portalVein } from './portal-vein';
+import { posteriorAbdominalWall } from './posterior-abdominal-wall';
 import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
 import { radioulnarJoints } from './radioulnar-joints';
 import { rectusSheath } from './rectus-sheath';
@@ -107,6 +113,7 @@ import { spleen } from './spleen';
 import { sternumThoracicVertebrae } from './sternum-thoracic-vertebrae';
 import { stomach } from './stomach';
 import { stomachSupply } from './stomach-supply';
+import { suprarenalGland } from './suprarenal-gland';
 import { surfaceMarking } from './surface-marking';
 import { svcPulmonaryTrunk } from './svc-pulmonary-trunk';
 import { testisDescent } from './testis-descent';
@@ -248,6 +255,13 @@ export const TOPICS: Topic[] = [
   liverSegments,
   kidney,
   ureter,
+  suprarenalGland,
+  diaphragm,
+  abdominalAorta,
+  inferiorVenaCava,
+  posteriorAbdominalWall,
+  lumbarPlexus,
+  abdominalAutonomicNerves,
   oxygenCurve,
 ];
 
@@ -291,7 +305,6 @@ export const PLANNABLE_TOPICS: TopicSummary[] = TOPICS.map((topic) => ({
 
 /** What the source drawer shows about the topic a question or card comes from. */
 export type TopicTrust = Pick<Topic, 'slug' | 'title' | 'version' | 'reviewed' | 'sources'> & {
-  /** Immutable evidence for the content this client actually received. */
   contentDigest?: string;
 };
 

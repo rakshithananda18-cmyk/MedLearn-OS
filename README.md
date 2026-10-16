@@ -2,9 +2,9 @@
 
 The daily learning system for MBBS students. Phase 1 is an installable web app (Next.js + Supabase).
 
-The current private prototype (for a study group of about five) has 119 sample topics across
-Upper Limb, Thorax, Lower Limb and Abdomen, plus the oxygen–haemoglobin curve. Sample content
-remains unreviewed until the review team approves the displayed topic version.
+The current private prototype (for a study group of about five) has 31 sample topics: the whole
+Upper Limb in three batches, plus the oxygen–haemoglobin curve. The content is written from the
+standard textbooks and is still marked as not medically reviewed.
 
 ## What is in the app
 
@@ -23,8 +23,7 @@ Product and design decisions live in `docs/` (each version adds to the one befor
 
 - [Product Blueprint v0.7](docs/MedLearn_OS_Product_Blueprint_v0_7.docx): product scope, the 3D plan (Complete Anatomy as the bar) and the AI and agent plan
 - [Visual, UX/UI & Engineering Plan v0.6](docs/MedLearn_OS_Visual_UX_UI_Engineering_Plan_v0_6.docx): design, architecture and quality requirements
-- [October source and UI review](docs/CODEX_REVIEW_2026-10-16.md): current capabilities, verified issues and recommended work
-- [September alignment review](docs/CODEX_ALIGNMENT_REVIEW.md): historical assessment of the earlier prototype
+- [Codex alignment review](docs/CODEX_ALIGNMENT_REVIEW.md): implemented capabilities, reliability work and remaining plan gaps
 
 ## Quick start on Windows
 
@@ -149,6 +148,10 @@ insert into public.content_reviewers (email) values ('name@example.com');
 ```
 
 Locally, `reviewer@example.com` is a reviewer (from `supabase/seed.sql`); sign up with it.
+
+An approval covers one version of a topic. When you change a topic (its text, questions, diagram,
+3D labels or model file), bump its `version` and run `pnpm content:versions`; a test fails if
+content changes under an old version, so nothing unchecked ever carries an approval.
 
 ## Conventions
 

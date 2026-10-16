@@ -108,7 +108,7 @@ describe('mergeProgress', () => {
       // A newer unrelated edit on a stale phone cannot revive an older plan.
       updatedAt: '2040-01-01T00:00:00.000Z',
     });
-    const finished = progress({ deletedGoalIds: ['removed'], completedRevisits: ['axilla'] });
+    const finished = progress({ removedGoals: ['removed'], completedRevisits: ['axilla'] });
     for (const [local, account] of [
       [older, finished],
       [finished, older],
@@ -116,7 +116,7 @@ describe('mergeProgress', () => {
       const merged = mergeProgress(local, account, NOW);
       expect(merged.goals).toEqual([]);
       expect(merged.revisits).toEqual({ plexus: { step: 0, due: '2026-10-02' } });
-      expect(merged.deletedGoalIds).toEqual(['removed']);
+      expect(merged.removedGoals).toEqual(['removed']);
       expect(merged.completedRevisits).toEqual(['axilla']);
       expect(mergeProgress(merged, older, new Date('2050-01-01')).goals).toEqual([]);
       expect(mergeProgress(merged, older, new Date('2050-01-01')).revisits).toEqual(
@@ -127,21 +127,39 @@ describe('mergeProgress', () => {
 
   it('joins completion markers and advances active revisits without losing another topic', () => {
     const local = progress({
-      deletedGoalIds: ['a'],
+      removedGoals: ['a'],
       completedRevisits: ['done-a'],
       revisits: { axilla: { step: 0, due: '2026-10-01' }, plexus: { step: 1, due: '2026-10-01' } },
     });
     const account = progress({
-      deletedGoalIds: ['b', 'a'],
+      removedGoals: ['b', 'a'],
       completedRevisits: ['done-b', 'done-a'],
       revisits: { axilla: { step: 1, due: '2026-10-02' }, plexus: { step: 1, due: '2026-10-03' } },
     });
     const merged = mergeProgress(local, account, NOW);
-    expect(merged.deletedGoalIds).toEqual(['a', 'b']);
+    expect(merged.removedGoals).toEqual(['a', 'b']);
     expect(merged.completedRevisits).toEqual(['done-a', 'done-b']);
     expect(merged.revisits).toEqual({
       axilla: { step: 1, due: '2026-10-02' },
       plexus: { step: 1, due: '2026-10-03' },
     });
+  });
+
+  it('converts a released terminal revisit into completion in either merge direction', () => {
+    const legacy = progress({
+      removedGoals: Array.from({ length: 201 }, (_, index) => `removed-${index}`),
+      revisits: { axilla: { step: 3, due: '9999-12-31' } },
+    });
+    const old = progress({ revisits: { axilla: { step: 0, due: '2026-10-01' } } });
+    for (const [local, account] of [
+      [legacy, old],
+      [old, legacy],
+    ] as const) {
+      const merged = mergeProgress(local, account, NOW);
+      expect(merged.revisits).toEqual({});
+      expect(merged.completedRevisits).toEqual(['axilla']);
+      expect(merged.removedGoals).toHaveLength(201);
+      expect(mergeProgress(merged, old, NOW).revisits).toEqual({});
+    }
   });
 });

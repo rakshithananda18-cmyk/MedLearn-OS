@@ -85,7 +85,7 @@ function contentKey(progress: LearnerProgress): string {
       completedDrills: [...progress.completedDrills].sort(compareIds),
       correctAnswers: [...progress.correctAnswers].sort(compareIds),
       mistakes: [...progress.mistakes].sort(compareIds),
-      deletedGoalIds: [...progress.deletedGoalIds].sort(compareIds),
+      removedGoals: [...progress.removedGoals].sort(compareIds),
       completedRevisits: [...progress.completedRevisits].sort(compareIds),
       activity: Object.fromEntries(
         Object.entries(progress.activity).map(([day, activity]) => [

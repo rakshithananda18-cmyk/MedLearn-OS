@@ -72,6 +72,10 @@ export function useStudyContent<K extends Kind>(kind: K, ids: string[], initial:
     if (!needed) return;
     const missing = [...new Set(wanted)].filter((id) => !items.has(id)).slice(0, 20);
     const controller = new AbortController();
+    const deadline = setTimeout(() => {
+      controller.abort();
+      setFailure(key);
+    }, 10_000);
     load(kind, missing, controller.signal)
       .then((loaded) => {
         if (controller.signal.aborted) return;
@@ -85,8 +89,12 @@ export function useStudyContent<K extends Kind>(kind: K, ids: string[], initial:
       })
       .catch(() => {
         if (!controller.signal.aborted) setFailure(key);
-      });
-    return () => controller.abort();
+      })
+      .finally(() => clearTimeout(deadline));
+    return () => {
+      controller.abort();
+      clearTimeout(deadline);
+    };
   }, [key, kind, wanted, items, needed]);
   return {
     items,

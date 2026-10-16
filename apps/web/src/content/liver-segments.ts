@@ -22,7 +22,7 @@ export const liverSegments: Topic = {
     'The liver’s two inflows and one outflow, its lymph and nerves, the functional right and left livers and their eight segments, and the lobule and acinus under the microscope.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

@@ -43,10 +43,9 @@ describe('progress store', () => {
     removeGoal(first.id);
     removeGoal(first.id);
     expect(readProgress().goals).toEqual([second]);
-    expect(readProgress().deletedGoalIds).toEqual([first.id]);
+    expect(readProgress().removedGoals).toEqual([first.id]);
     expect(
-      parseLocalProgress(JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}'))
-        ?.deletedGoalIds,
+      parseLocalProgress(JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}'))?.removedGoals,
     ).toEqual([first.id]);
   });
 
@@ -192,7 +191,7 @@ describe('storage recovery', () => {
     expect(progress.completedLessons).toEqual(['old-lesson']);
     expect(progress.notes).toEqual({});
     expect(progress.activity).toEqual({});
-    expect(progress.deletedGoalIds).toEqual([]);
+    expect(progress.removedGoals).toEqual([]);
     expect(progress.completedRevisits).toEqual([]);
     expect(progress.completedLessons).not.toBe(EMPTY_PROGRESS.completedLessons);
     expect(progress.completedDrills).not.toBe(EMPTY_PROGRESS.completedDrills);
@@ -212,10 +211,26 @@ describe('storage recovery', () => {
 
   it('retains valid local markers even when their count exceeds the API save limit', () => {
     const markers = Array.from({ length: 5001 }, (_, index) => `removed-${index}`);
-    const progress = parseLocalProgress({ deletedGoalIds: markers, completedRevisits: markers });
-    expect(progress?.deletedGoalIds).toEqual(markers);
+    const progress = parseLocalProgress({ removedGoals: markers, completedRevisits: markers });
+    expect(progress?.removedGoals).toEqual(markers);
     expect(progress?.completedRevisits).toEqual(markers);
-    expect(progress?.deletedGoalIds).not.toBe(markers);
+    expect(progress?.removedGoals).not.toBe(markers);
+  });
+
+  it('loads released terminal revisits and either removal spelling without reviving work', () => {
+    const parsed = parseLocalProgress({
+      removedGoals: ['main-goal'],
+      deletedGoalIds: ['codex-goal'],
+      revisits: { axilla: { step: 3, due: '9999-12-31' }, plexus: { step: 2, due: '2026-10-18' } },
+    });
+    expect(parsed?.removedGoals).toEqual(['main-goal', 'codex-goal']);
+    expect(parsed).not.toHaveProperty('deletedGoalIds');
+    expect(parsed?.completedRevisits).toEqual(['axilla']);
+    expect(parsed?.revisits).toEqual({ plexus: { step: 2, due: '2026-10-18' } });
+    localStorage.setItem('ml-progress-v1', JSON.stringify(parsed));
+    completeLesson('axilla');
+    expect(readProgress().revisits.axilla).toBeUndefined();
+    expect(readProgress().completedRevisits).toEqual(['axilla']);
   });
 
   it('keeps planned class tests and spaced revisits, and drops malformed ones', () => {
@@ -235,22 +250,22 @@ describe('storage recovery', () => {
     const removed = parseLocalProgress({
       goals: [goal],
       revisits,
-      deletedGoalIds: [goal.id],
+      removedGoals: [goal.id],
       completedRevisits: ['axilla'],
     });
     expect(removed?.goals).toEqual([]);
     expect(removed?.revisits).toEqual({});
-    expect(removed?.deletedGoalIds).toEqual([goal.id]);
+    expect(removed?.removedGoals).toEqual([goal.id]);
     expect(removed?.completedRevisits).toEqual(['axilla']);
     const malformed = parseLocalProgress({
       goals: [goal],
       revisits,
-      deletedGoalIds: [42],
+      removedGoals: [42],
       completedRevisits: [''],
     });
     expect(malformed?.goals).toEqual([goal]);
     expect(malformed?.revisits).toEqual(revisits);
-    expect(malformed?.deletedGoalIds).toEqual([]);
+    expect(malformed?.removedGoals).toEqual([]);
     expect(malformed?.completedRevisits).toEqual([]);
     expect(parseLocalProgress({})?.goals).toEqual([]);
     expect(parseLocalProgress({ goals: [{ ...goal, topics: [] }] })?.goals).toEqual([]);

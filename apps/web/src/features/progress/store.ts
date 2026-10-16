@@ -7,6 +7,7 @@ import {
   logActivity,
   nextRevisit,
   type ReviewRating,
+  REVISIT_DAYS,
   scheduleReview,
   type StudyGoal,
   type StudyProfile,
@@ -128,11 +129,12 @@ export function completeRevisit(topicSlug: string, share: number, now = new Date
   const current = revisits[topicSlug];
   if (!current) return;
   const next = nextRevisit(current, share, dayKey(now));
+  const active = next !== null && next.step < REVISIT_DAYS.length ? next : null;
   const rest = Object.fromEntries(Object.entries(revisits).filter(([slug]) => slug !== topicSlug));
   commit(
     {
-      revisits: next ? { ...rest, [topicSlug]: next } : rest,
-      completedRevisits: next ? completedRevisits : addOnce(completedRevisits, topicSlug),
+      revisits: active ? { ...rest, [topicSlug]: active } : rest,
+      completedRevisits: active ? completedRevisits : addOnce(completedRevisits, topicSlug),
     },
     now,
   );
@@ -198,10 +200,10 @@ export function addGoal(
 }
 
 export function removeGoal(goalId: string): void {
-  const { goals, deletedGoalIds } = read();
+  const { goals, removedGoals } = read();
   commit({
     goals: goals.filter((goal) => goal.id !== goalId),
-    deletedGoalIds: addOnce(deletedGoalIds, goalId),
+    removedGoals: addOnce(removedGoals, goalId),
   });
 }
 

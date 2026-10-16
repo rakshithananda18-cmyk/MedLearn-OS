@@ -80,7 +80,7 @@ test('a practice batch exposes online failures, retries, and recovers offline af
   await expect(page.getByRole('region', { name: 'Quick mix' })).toContainText('1 of 4');
 });
 
-test('an opened recall batch is available offline after a reload', async ({ page, context }) => {
+test('remaining recall cards recover offline after rating a card and reloading', async ({ page, context }) => {
   await openControlledApp(page);
   const initialResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
@@ -93,16 +93,24 @@ test('an opened recall batch is available offline after a reload', async ({ page
   const count = new URL(online.url()).searchParams.getAll('id').length;
   expect(count).toBeGreaterThan(0);
   expect(count).toBeLessThanOrEqual(20);
-  const batch: unknown = await online.json();
+  const batch = (await online.json()) as { data: { items: Array<{ id: string }> } };
+  await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
+  await page.getByRole('button', { name: 'Show answer' }).click();
+  await page.getByRole('button', { name: 'Easy: Instant' }).click();
   await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
 
   await context.setOffline(true);
-  const offlineResponse = page.waitForResponse((response) => response.url() === online.url());
+  const offlineResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.pathname === '/api/study-content' && url.searchParams.get('kind') === 'recall';
+  });
   await page.reload();
   const offline = await offlineResponse;
   expect(offline.status()).toBe(200);
   expect(offline.fromServiceWorker()).toBe(true);
-  expect(await offline.json()).toEqual(batch);
+  const remainingIds = new URL(offline.url()).searchParams.getAll('id');
+  expect(remainingIds).toHaveLength(count - 1);
+  expect(await offline.json()).toEqual({ data: { items: remainingIds.map((id) => batch.data.items.find((item) => item.id === id)) } });
   await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible();
   await page.getByRole('button', { name: 'Show answer' }).click();
   await expect(page.getByRole('button', { name: 'Easy: Instant' })).toBeVisible();
