@@ -60,6 +60,9 @@ describe('libraryTree', () => {
       'Abdominal part of oesophagus and stomach',
       'Small and large intestines',
       'Large blood vessels of the gut',
+      'Extrahepatic biliary apparatus',
+      'Spleen, pancreas and liver',
+      'Kidney and ureter',
     ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
     const lowerLimb = tree[3];

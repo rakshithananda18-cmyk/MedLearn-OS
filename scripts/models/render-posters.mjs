@@ -132,6 +132,13 @@ export const POSTERS = [
   { name: 'coeliac-trunk', path: '/studio?topic=coeliac-trunk' },
   { name: 'mesenteric-vessels', path: '/studio?topic=mesenteric-vessels' },
   { name: 'portal-vein', path: '/studio?topic=portal-vein' },
+  { name: 'biliary-apparatus', path: '/studio?topic=biliary-apparatus' },
+  { name: 'spleen', path: '/studio?topic=spleen' },
+  { name: 'pancreas', path: '/studio?topic=pancreas' },
+  { name: 'liver', path: '/studio?topic=liver' },
+  { name: 'liver-segments', path: '/studio?topic=liver-segments' },
+  { name: 'kidney', path: '/studio?topic=kidney' },
+  { name: 'ureter', path: '/studio?topic=ureter' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

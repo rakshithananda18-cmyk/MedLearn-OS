@@ -1460,7 +1460,22 @@ export const MODELS = [
       // Organs.
       ...zParts('VisceralSystem100.fbx', [['liver', 'Liver', 0.15]]),
       { id: 'gallbladder', concept: 'gallbladder', ratio: 0.5 },
-      ...zParts('VisceralSystem100.fbx', [['bile-duct', 'Bile duct', 0.5]]),
+      // BodyParts3D's common hepatic duct runs on as the bile duct to the duodenum.
+      { id: 'bile-duct', concept: 'common hepatic duct', ratio: 1 },
+      { id: 'hepatic-ducts', concepts: ['right hepatic duct', 'left hepatic duct'], ratio: 1 },
+      { id: 'cystic-duct', concept: 'cystic duct', ratio: 1 },
+      // The liver's eight segments (Couinaud), which fit the Z-Anatomy liver.
+      ...visceral([
+        ['liver-segment-1', 'Posterior segment of liver (I)', 0.3],
+        ['liver-segment-2', 'Left posterior lateral segment of liver (II)', 0.3],
+        ['liver-segment-3', 'Left anterior lateral segment of liver (III)', 0.3],
+        ['liver-segment-4', 'Left medial segment of liver (IV)', 0.3],
+        ['liver-segment-5', 'Anterior medial segment of liver (V)', 0.3],
+        ['liver-segment-6', 'Anterior lateral segment of liver (VI)', 0.3],
+        ['liver-segment-7', 'Posterior lateral segment of liver (VII)', 0.3],
+        ['liver-segment-8', 'Posterior medial segment of liver (VIII)', 0.3],
+        ['pancreatic-ducts', ['Pancreatic duct', 'Accessory pancreatic duct'], 0.05],
+      ]),
       // The oesophagus below the hiatus, with a little of the thoracic part above it.
       { id: 'abdominal-oesophagus', concept: 'esophagus', ratio: 1, clipZ: [-Infinity, 1175] },
       { id: 'stomach', concept: 'stomach', ratio: 1 },
@@ -1569,6 +1584,18 @@ export const MODELS = [
       { id: 'superior-rectal-artery', concept: 'superior rectal artery', ratio: 0.6 },
       { id: 'left-gastric-vein', concept: 'left gastric vein', ratio: 0.5 },
       { id: 'right-gastric-vein', concept: 'right gastric vein', ratio: 0.6 },
+      // The liver's and kidneys' vessels and the posterior wall (abdomen batch 4).
+      { id: 'hepatic-veins', concept: 'hepatic vein', ratio: 0.3 },
+      { id: 'renal-arteries', concepts: ['renal artery', 'segment of renal artery'], ratio: 0.3 },
+      { id: 'renal-veins', concept: 'renal vein', ratio: 0.3 },
+      { id: 'testicular-arteries', concept: 'testicular artery', ratio: 0.06 },
+      { id: 'testicular-veins', concept: 'testicular vein', ratio: 0.06 },
+      {
+        id: 'common-iliac-vessels',
+        concepts: ['common iliac artery', 'common iliac vein'],
+        ratio: 0.6,
+      },
+      { id: 'psoas-major', concept: 'psoas major', ratio: 0.15 },
     ],
   },
   {

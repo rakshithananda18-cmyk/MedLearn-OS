@@ -542,6 +542,53 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('VhZWLmAmPO0', 'The portal venous system', 'Dr Adel Bondok', 1439),
     video('YDY2UUmqrLg', 'Portocaval anastomoses in 8 minutes', 'Eva Sweeney', 472),
   ],
+  'biliary-apparatus': [
+    video('cTxAXonhLdI', 'Extrahepatic biliary apparatus', 'Creative Medicine', 1311),
+    video('sryf2xz27UA', 'Biliary apparatus anatomy', 'medishare tips', 2428),
+  ],
+  spleen: [
+    video('Ku0DSRDYlH4', 'The spleen: ligaments, relations and vessels', 'Sanjoy Sanyal', 576),
+    video('muBNoer_aYI', 'The spleen and its peritoneal relations', 'Anatomy 4 Students', 551),
+    video(
+      '8Q0W34Q9skM',
+      'Spleen: surfaces, borders, relations and ligaments',
+      'Dr Shankar Dey',
+      229,
+    ),
+  ],
+  pancreas: [
+    video('Ekj9TKd0O-4', 'The pancreas', 'Dr Yusuf', 2322),
+    video('Rx8uTLKyG-Q', 'The pancreas: relations, vessels and lymph', 'Dr G Bhanu Prakash', 1111),
+    video('4XXLZOg49Sg', 'Blood supply of the pancreas', 'Anatomy Knowledge', 286),
+  ],
+  liver: [
+    video('FVNV8rEvDbA', 'Lobes of the liver', 'Anatomy 4 Students', 1373),
+    video(
+      'E9zTnGxLZ_s',
+      'Liver: topography, external features and ligaments',
+      'Taim Talks Med',
+      785,
+    ),
+    video('6mU5aZnNl1Q', 'Gross anatomy of the liver', 'Human Anatomy Education', 381),
+  ],
+  'liver-segments': [
+    video('4759zbY3PlA', 'Couinaud segments and liver resection', 'Dr Sajan Skaria', 934),
+    video('7YMqdbLCgWc', 'Liver: surfaces and Couinaud segments', 'AyurEdge', 1794),
+  ],
+  kidney: [
+    video('GmqOWi9sMkE', 'Kidney: coverings, blood and nerve supply', 'Dr Sumit Gupta', 1992),
+    video('uXCqm8LFWH4', 'Coverings of the kidney', 'miniMEDSCHOOL', 363),
+  ],
+  ureter: [
+    video('WDjXD_720gY', 'The ureter', 'Dr Sumit Gupta', 3167),
+    video('-OWriKAZXc0', 'Anatomy of the ureter', 'Dr Adel Bondok', 624),
+    video(
+      'r2oyREsgGTU',
+      'Ureter: constrictions, relations and blood supply',
+      'Dr Ankit Singh',
+      506,
+    ),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),
