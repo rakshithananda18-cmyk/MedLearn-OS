@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -26,4 +26,9 @@ export function reviewAssets() {
 export function writeReviewAssets() {
   const json = `${JSON.stringify(reviewAssets(), null, 2)}\n`;
   if (!existsSync(output) || readFileSync(output, 'utf8') !== json) writeFileSync(output, json);
+}
+
+// Run before dev/build, keeping next.config self-contained for `next start` from any cwd.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  writeReviewAssets();
 }
