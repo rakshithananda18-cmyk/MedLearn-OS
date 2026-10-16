@@ -21,7 +21,7 @@ export const appendix: Topic = {
     'Where the appendix starts and the many places its tip can lie, how to find its base on the skin, its mesoappendix, end artery, lymph and nerves, and why appendicitis behaves as it does.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

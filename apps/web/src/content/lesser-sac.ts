@@ -23,7 +23,7 @@ export const lesserSac: Topic = {
     'Tracing the peritoneum down and across the abdomen, the opening between the two sacs and its four boundaries, the walls and recesses of the lesser sac, and the folds on the back of the anterior wall.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

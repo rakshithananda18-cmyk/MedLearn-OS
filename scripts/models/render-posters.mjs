@@ -139,6 +139,13 @@ export const POSTERS = [
   { name: 'liver-segments', path: '/studio?topic=liver-segments' },
   { name: 'kidney', path: '/studio?topic=kidney' },
   { name: 'ureter', path: '/studio?topic=ureter' },
+  { name: 'suprarenal-gland', path: '/studio?topic=suprarenal-gland' },
+  { name: 'diaphragm', path: '/studio?topic=diaphragm' },
+  { name: 'abdominal-aorta', path: '/studio?topic=abdominal-aorta' },
+  { name: 'inferior-vena-cava', path: '/studio?topic=inferior-vena-cava' },
+  { name: 'posterior-abdominal-wall', path: '/studio?topic=posterior-abdominal-wall' },
+  { name: 'lumbar-plexus', path: '/studio?topic=lumbar-plexus' },
+  { name: 'abdominal-autonomic-nerves', path: '/studio?topic=abdominal-autonomic-nerves' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

@@ -23,7 +23,7 @@ export const peritonealSpaces: Topic = {
     'The surgical map of the peritoneal cavity: supracolic and infracolic compartments, the spaces under the diaphragm and the hepatorenal pouch, the paracolic gutters, the pelvic pouches, and the small recesses where gut can be trapped.',
   estimatedMinutes: 13,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

@@ -20,7 +20,7 @@ export const kidney: Topic = {
     'Where the kidneys lie, their hilum and its order, what lies in front of and behind each, their four coverings, their inner structure, the five vascular segments, and why the twelfth rib matters at operation.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

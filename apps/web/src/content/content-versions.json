@@ -392,84 +392,112 @@
     "digest": "e63cf9dc21663e47"
   },
   "peritoneum": {
-    "version": "0.1.0",
-    "digest": "40a7ebb33259aa32"
+    "version": "0.1.1",
+    "digest": "6f61783800709cdb"
   },
   "peritoneal-folds": {
-    "version": "0.1.0",
-    "digest": "12cbfde72be14d62"
+    "version": "0.1.1",
+    "digest": "dd65a89271d9649f"
   },
   "lesser-sac": {
-    "version": "0.1.0",
-    "digest": "985ff731a4835b76"
+    "version": "0.1.1",
+    "digest": "18582f41368f94c1"
   },
   "peritoneal-spaces": {
-    "version": "0.1.0",
-    "digest": "5802c7cca2288f30"
+    "version": "0.1.1",
+    "digest": "cbfa0bd4536e56b1"
   },
   "stomach": {
-    "version": "0.1.0",
-    "digest": "a2ecccce23c23457"
+    "version": "0.1.1",
+    "digest": "9c02a321cd8360db"
   },
   "stomach-supply": {
-    "version": "0.1.0",
-    "digest": "e364b5dc4a66b1bc"
+    "version": "0.1.1",
+    "digest": "e6868f66324f8180"
   },
   "duodenum": {
-    "version": "0.1.0",
-    "digest": "427ec5ba0d4775cb"
+    "version": "0.1.1",
+    "digest": "2380f89ec6cfe57b"
   },
   "jejunum-ileum": {
-    "version": "0.1.0",
-    "digest": "c1b2bc52c0181017"
+    "version": "0.1.1",
+    "digest": "64ab4af65e783e99"
   },
   "large-intestine": {
-    "version": "0.1.0",
-    "digest": "96a462c8071744a9"
+    "version": "0.1.1",
+    "digest": "29a52c3a21e2a636"
   },
   "appendix": {
-    "version": "0.1.0",
-    "digest": "703cb71762497820"
+    "version": "0.1.1",
+    "digest": "3e594e5db7fa3757"
   },
   "coeliac-trunk": {
-    "version": "0.1.0",
-    "digest": "43cd4f661fe9135f"
+    "version": "0.1.1",
+    "digest": "c33182d0dc9ac3cc"
   },
   "mesenteric-vessels": {
-    "version": "0.1.0",
-    "digest": "ed7814eb0942e0ba"
+    "version": "0.1.1",
+    "digest": "2c89d5ee6f1a6134"
   },
   "portal-vein": {
-    "version": "0.1.0",
-    "digest": "7233a56dfa1cc428"
+    "version": "0.1.1",
+    "digest": "5ee4a1a7d522a075"
   },
   "biliary-apparatus": {
-    "version": "0.1.0",
-    "digest": "1a042b388694528d"
+    "version": "0.1.1",
+    "digest": "35d1172e4460486e"
   },
   "spleen": {
-    "version": "0.1.0",
-    "digest": "da86806c005d0511"
+    "version": "0.1.1",
+    "digest": "ab9b42eaddb56279"
   },
   "pancreas": {
-    "version": "0.1.0",
-    "digest": "848e60301ef978cd"
+    "version": "0.1.1",
+    "digest": "9a45ca583b487aba"
   },
   "liver": {
-    "version": "0.1.0",
-    "digest": "02056d41fbd08097"
+    "version": "0.1.1",
+    "digest": "03b896332b0d94d3"
   },
   "liver-segments": {
-    "version": "0.1.0",
-    "digest": "625dbb69935f80f3"
+    "version": "0.1.1",
+    "digest": "7061dd8f82d522ed"
   },
   "kidney": {
-    "version": "0.1.0",
-    "digest": "54167d5d80d48237"
+    "version": "0.1.1",
+    "digest": "ca1fd97d6d16bb19"
   },
   "ureter": {
+    "version": "0.1.1",
+    "digest": "a21cebeec8e4ce1a"
+  },
+  "suprarenal-gland": {
     "version": "0.1.0",
-    "digest": "0959432aa8e3d44c"
+    "digest": "5ef6c05350bb82fd"
+  },
+  "diaphragm": {
+    "version": "0.1.0",
+    "digest": "c09707653bc1da6a"
+  },
+  "abdominal-aorta": {
+    "version": "0.1.0",
+    "digest": "48c43f86666c0a71"
+  },
+  "inferior-vena-cava": {
+    "version": "0.1.0",
+    "digest": "54580656267bc70e"
+  },
+  "posterior-abdominal-wall": {
+    "version": "0.1.0",
+    "digest": "6d91625c13d199fd"
+  },
+  "lumbar-plexus": {
+    "version": "0.1.0",
+    "digest": "14e4d817de81377f"
+  },
+  "abdominal-autonomic-nerves": {
+    "version": "0.1.0",
+    "digest": "53aa0aaead5f1890"
   },
   "oxygen-haemoglobin-curve": {
     "version": "0.1.0",

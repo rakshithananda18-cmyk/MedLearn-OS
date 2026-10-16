@@ -1436,7 +1436,7 @@ export const MODELS = [
     // organs and vessels; Z-Anatomy for the liver (BodyParts3D has it only in segments), the
     // omenta and the transverse mesocolon, which fit BodyParts3D in the upper abdomen, and the
     // sigmoid colon, which BodyParts3D lacks and which sits low like the rest of Z-Anatomy's pelvis.
-    maxTriangles: 150_000,
+    maxTriangles: 160_000,
     error: 0.003,
     parts: [
       // Skeleton.
@@ -1586,7 +1586,7 @@ export const MODELS = [
       { id: 'right-gastric-vein', concept: 'right gastric vein', ratio: 0.6 },
       // The liver's and kidneys' vessels and the posterior wall (abdomen batch 4).
       { id: 'hepatic-veins', concept: 'hepatic vein', ratio: 0.3 },
-      { id: 'renal-arteries', concepts: ['renal artery', 'segment of renal artery'], ratio: 0.3 },
+      { id: 'renal-arteries', concepts: ['renal artery', 'segment of renal artery'], ratio: 0.15 },
       { id: 'renal-veins', concept: 'renal vein', ratio: 0.3 },
       { id: 'testicular-arteries', concept: 'testicular artery', ratio: 0.06 },
       { id: 'testicular-veins', concept: 'testicular vein', ratio: 0.06 },
@@ -1596,6 +1596,112 @@ export const MODELS = [
         ratio: 0.6,
       },
       { id: 'psoas-major', concept: 'psoas major', ratio: 0.15 },
+      // The posterior abdominal wall (abdomen batch 5). Neither set has quadratus lumborum or the
+      // cisterna chyli, and Z-Anatomy's sympathetic trunks stop at L1.
+      { id: 'iliacus', concept: 'iliacus', ratio: 0.15 },
+      { id: 'inferior-phrenic-arteries', concept: 'inferior phrenic artery', ratio: 0.2 },
+      {
+        id: 'suprarenal-arteries',
+        concepts: ['middle suprarenal artery', 'inferior suprarenal artery'],
+        ratio: 0.4,
+      },
+      { id: 'suprarenal-veins', concept: 'suprarenal vein', ratio: 1 },
+      { id: 'lumbar-arteries', concept: 'lumbar artery', ratio: 0.08 },
+      { id: 'lumbar-veins', concepts: ['lumbar vein', 'ascending lumbar vein'], ratio: 0.06 },
+      {
+        id: 'azygos-veins',
+        concepts: ['azygos vein', 'hemiazygos vein'],
+        ratio: 0.15,
+        clipZ: [-Infinity, 1180],
+      },
+      {
+        id: 'iliac-arteries',
+        concepts: ['external iliac artery', 'internal iliac artery'],
+        ratio: 0.3,
+      },
+      ...zParts(
+        'NervousSystem100.fbx',
+        [
+          ['iliohypogastric-nerves', 'iliohypogastric nerve'],
+          ['ilioinguinal-nerves', 'ilio-inguinal nerve'],
+          [
+            'genitofemoral-nerves',
+            [
+              'genitofemoral nerve',
+              'femoral branch of genitofemoral nerve',
+              'genital branch of genitofemoral nerve',
+            ],
+          ],
+          ['lateral-femoral-cutaneous-nerves', 'lateral femoral cutaneous nerve'],
+          ['femoral-nerves', 'femoral nerve'],
+          [
+            'obturator-nerves',
+            [
+              'obturator nerve',
+              'anterior branch of obturator nerve',
+              'posterior branch of obturator nerve',
+            ],
+          ],
+        ].map(([id, names]) => [
+          id,
+          [names].flat().flatMap((name) => [`Right ${name}`, `Left ${name}`]),
+          0.2,
+          // Down to the upper thigh, below the inguinal ligament.
+          { clipZ: [720, Infinity] },
+        ]),
+      ),
+      ...zParts('NervousSystem100.fbx', [
+        [
+          'sympathetic-trunks',
+          [
+            'Right sympathetic trunk',
+            'Left sympathetic trunk',
+            'Right ganglia of sympathetic trunk',
+            'Left ganglia of sympathetic trunk',
+          ],
+          0.08,
+          { clipZ: [-Infinity, 1180] },
+        ],
+      ]),
+      ...zParts('MuscularSystem100.fbx', [
+        [
+          'thoracolumbar-fascia',
+          ['posterior', 'middle', 'anterior'].flatMap((layer) =>
+            ['Right', 'Left'].map((side) => `${side} ${layer} layer of thoracolumbar fascia`),
+          ),
+          1,
+        ],
+      ]),
+      ...zParts('LymphoidOrgans100.fbx', [
+        [
+          'aortic-lymph-nodes',
+          [
+            'Coeliac nodes',
+            'Pre-aortic nodes',
+            'Lateral aortic nodes',
+            'Retro-aortic nodes',
+            'Intermediate lumbar nodes',
+            'Lateral caval nodes',
+            'Precaval nodes',
+            'Retrocaval nodes',
+          ],
+          0.25,
+        ],
+        [
+          'iliac-lymph-nodes',
+          [
+            'Lateral common iliac nodes',
+            'Intermediate common iliac nodes',
+            'Medial common iliac nodes',
+            'Subaortic nodes',
+            'Right medial external iliac nodes',
+            'Left medial external iliac nodes',
+            'Right intermediate external iliac nodes',
+            'Left intermediate external iliac nodes',
+          ],
+          0.2,
+        ],
+      ]),
     ],
   },
   {

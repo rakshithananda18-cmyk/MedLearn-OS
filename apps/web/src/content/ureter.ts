@@ -20,7 +20,7 @@ export const ureter: Topic = {
     'The ureter from the renal pelvis to the bladder: its course over the psoas and the pelvic brim, its five narrow points, what crosses it in men and women, its blood and nerves, and why a stone hurts from loin to groin.',
   estimatedMinutes: 11,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

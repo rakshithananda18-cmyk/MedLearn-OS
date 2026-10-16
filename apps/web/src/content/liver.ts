@@ -21,7 +21,7 @@ export const liver: Topic = {
     'Where the liver lies, its five surfaces and sharp inferior border, the right, left, caudate and quadrate lobes, the porta hepatis, its bare areas, and the organs that mark its surfaces.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

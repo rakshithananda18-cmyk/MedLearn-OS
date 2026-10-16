@@ -22,7 +22,7 @@ export const coeliacTrunk: Topic = {
     'The artery of the foregut: where it arises and what surrounds it, then its three branches, the left gastric, common hepatic and splenic, and everything they give off.',
   estimatedMinutes: 13,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

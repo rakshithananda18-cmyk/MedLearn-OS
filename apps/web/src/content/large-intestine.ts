@@ -21,7 +21,7 @@ export const largeIntestine: Topic = {
     'The parts of the large intestine and how to tell it from the small, its taeniae and their positions, the caecum and ileocaecal valve, the colon from flexure to flexure, and its blood, lymph and nerves.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
