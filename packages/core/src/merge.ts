@@ -47,6 +47,9 @@ export function mergeProgress(
     if (!mine || reviewedAt(review) > reviewedAt(mine)) reviews[id] = review;
   }
   // Goals are joined by id; a topic gone over on either side counts as done.
+  // These markers never expire: a long-offline device may still hold an older live copy.
+  const deletedGoalIds = union(local.deletedGoalIds, account.deletedGoalIds);
+  const completedRevisits = union(local.completedRevisits, account.completedRevisits);
   const goals = new Map<string, StudyGoal>(local.goals.map((goal) => [goal.id, goal]));
   for (const goal of account.goals) {
     const mine = goals.get(goal.id);
@@ -68,8 +71,14 @@ export function mergeProgress(
     catchUpAcceptedOn: account.catchUpAcceptedOn ?? local.catchUpAcceptedOn,
     notes,
     activity: mergeActivity(local.activity, account.activity),
-    goals: [...goals.values()],
-    revisits: mergeRevisits(local.revisits, account.revisits),
+    goals: [...goals.values()].filter((goal) => !deletedGoalIds.includes(goal.id)),
+    deletedGoalIds,
+    revisits: Object.fromEntries(
+      Object.entries(mergeRevisits(local.revisits, account.revisits)).filter(
+        ([slug]) => !completedRevisits.includes(slug),
+      ),
+    ),
+    completedRevisits,
     updatedAt: now.toISOString(),
   };
 }

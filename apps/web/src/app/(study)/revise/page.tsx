@@ -20,7 +20,7 @@ export default async function RevisePage({ searchParams }: Props) {
   const topics = topic
     ? PLANNABLE_TOPICS.filter((item) => item.slug === topic.slug)
     : PLANNABLE_TOPICS;
-  const cards = recallDeck().filter((item) => !topic || item.topic.slug === topic.slug);
+  const cards = topic ? recallDeck().filter((item) => item.topic.slug === topic.slug) : [];
 
   return (
     <Screen width="wide">

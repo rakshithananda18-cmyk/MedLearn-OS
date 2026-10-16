@@ -4,6 +4,7 @@ import { ReportKind } from './progress';
 
 const Slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
 const Version = z.string().regex(/^\d+\.\d+\.\d+$/);
+const Digest = z.string().regex(/^[a-f0-9]{64}$/);
 
 export const ReviewDecision = z.enum(['approved', 'changes-requested']);
 export type ReviewDecision = z.infer<typeof ReviewDecision>;
@@ -26,6 +27,7 @@ export const ReviewInput = z
   .object({
     topicSlug: Slug,
     contentVersion: Version,
+    contentDigest: Digest,
     decision: ReviewDecision,
     checks: ReviewChecks,
     note: z.string().trim().max(2000).optional(),
@@ -44,6 +46,10 @@ export type ReviewInput = z.infer<typeof ReviewInput>;
 export const ReviewStatus = z.object({
   topicSlug: Slug,
   contentVersion: Version,
+  /** Null on pre-digest reviews: they must be checked again. */
+  contentDigest: Digest.nullable().default(null),
+  /** Set by the app after comparing with the deployed teaching content and assets. */
+  currentContent: z.boolean().optional(),
   decision: ReviewDecision,
   decidedAt: z.string(),
 });

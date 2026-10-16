@@ -130,18 +130,29 @@ export function TopicPreview({
           <Tally icon={RotateCcw} value={topic.cardIds.length} label="recall cards" />
         </ul>
 
-        <div className="flex items-center gap-2">
-          <Link href={`/learn/${topic.slug}/lesson`} className={buttonClasses({ fullWidth: true })}>
+        <div className="flex flex-col gap-2">
+          <Link
+            href={`/learn/${topic.slug}/lesson`}
+            className={cx(
+              buttonClasses({ fullWidth: true }),
+              'h-auto min-h-12 px-3 py-3 text-center',
+            )}
+          >
             <Icon icon={Play} size="sm" />
             {status === 'learnt' ? 'Go over the lesson' : 'Start lesson'}
           </Link>
-          <Link
-            href={`/learn/${topic.slug}`}
-            className={buttonClasses({ variant: 'secondary', fullWidth: true })}
-          >
-            Open topic
-          </Link>
-          <WhereToRead readings={preview.readings} />
+          <div className="flex min-w-0 items-center gap-2">
+            <Link
+              href={`/learn/${topic.slug}`}
+              className={cx(
+                buttonClasses({ variant: 'secondary', fullWidth: true }),
+                'h-auto min-h-12 min-w-0 px-3 py-3 text-center',
+              )}
+            >
+              Open topic
+            </Link>
+            <WhereToRead readings={preview.readings} />
+          </div>
         </div>
 
         <MasteryCard topic={topic} />

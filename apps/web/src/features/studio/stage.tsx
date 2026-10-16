@@ -30,7 +30,7 @@ import type {
   Viewer3DPose,
   Viewer3DSection,
 } from '@medlearn/visuals/viewer3d';
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 
@@ -194,13 +194,34 @@ export function ViewTools({
   onReset: () => void;
   onSettings: () => void;
 }>) {
+  const instructions = useId();
   return (
     <div
       role="toolbar"
       aria-label="View"
       aria-orientation="vertical"
-      className={cx(GLASS, 'pointer-events-auto flex flex-col gap-1 rounded-full p-1')}
+      aria-describedby={instructions}
+      onKeyDown={(event) => {
+        const controls = Array.from(event.currentTarget.querySelectorAll('button:not(:disabled)'));
+        const index = controls.indexOf(document.activeElement as HTMLButtonElement);
+        const last = controls.length - 1;
+        let next: number;
+        if (event.key === 'ArrowDown') next = index >= last ? 0 : index + 1;
+        else if (event.key === 'ArrowUp') next = index <= 0 ? last : index - 1;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = last;
+        else return;
+        event.preventDefault();
+        (controls[next] as HTMLButtonElement | undefined)?.focus();
+      }}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex max-h-full min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain rounded-full p-1',
+      )}
     >
+      <span id={instructions} className="sr-only">
+        Scroll for more tools, or use the Up and Down arrow keys.
+      </span>
       {xray === null ? null : (
         <>
           <IconButton

@@ -131,6 +131,7 @@ export type Database = {
       }
       topic_reviews: {
         Row: {
+          content_digest: string | null
           content_version: string
           created_at: string
           decision: string
@@ -145,6 +146,7 @@ export type Database = {
           visuals_checked: boolean
         }
         Insert: {
+          content_digest?: string | null
           content_version: string
           created_at?: string
           decision: string
@@ -159,6 +161,7 @@ export type Database = {
           visuals_checked?: boolean
         }
         Update: {
+          content_digest?: string | null
           content_version?: string
           created_at?: string
           decision?: string
@@ -180,6 +183,10 @@ export type Database = {
     }
     Functions: {
       is_reviewer: { Args: never; Returns: boolean }
+      merge_progress_deletions: {
+        Args: { p_progress: Json; p_saved: Json }
+        Returns: Json
+      }
       save_learner_progress: {
         Args: {
           p_check_version?: boolean
@@ -193,6 +200,7 @@ export type Database = {
       topic_review_status: {
         Args: never
         Returns: {
+          content_digest: string
           content_version: string
           decided_at: string
           decision: string

@@ -2,22 +2,51 @@
 
 import { useEffect, useState } from 'react';
 
-import { loadStatuses, reviewState } from './state';
+import { loadStatuses, reviewState, STATUS_TTL_MS, subscribeStatuses } from './state';
 
 /**
- * Whether a topic counts as checked: bundled as reviewed, or approved by the review team for the
- * version shown, which the page learns from the server after it loads.
+ * A current team approval must match both the displayed content snapshot and deployed evidence.
+ * Revalidate while the screen stays open and whenever a student returns to it.
  */
-export function useReviewed(topic: Readonly<{ slug: string; version: string; reviewed: boolean }>) {
-  const [approved, setApproved] = useState(false);
+export function useReviewed(
+  topic: Readonly<{ slug: string; version: string; contentDigest?: string }>,
+) {
+  const key = `${topic.slug}:${topic.version}:${topic.contentDigest ?? ''}`;
+  const [status, setStatus] = useState({ key: '', approved: false });
   useEffect(() => {
     let live = true;
-    void loadStatuses().then((statuses) => {
-      if (live) setApproved(reviewState(topic.version, statuses.get(topic.slug)) === 'approved');
-    });
+    const update = (statuses: Awaited<ReturnType<typeof loadStatuses>>) => {
+      if (live)
+        setStatus({
+          key,
+          approved:
+            Boolean(topic.contentDigest) &&
+            reviewState(topic.version, statuses.get(topic.slug), topic.contentDigest) ===
+              'approved' &&
+            statuses.get(topic.slug)?.currentContent === true,
+        });
+    };
+    const refresh = () => {
+      void loadStatuses(true).then(update);
+    };
+    const visible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    const unsubscribe = subscribeStatuses(update);
+    refresh();
+    const timer = setInterval(refresh, STATUS_TTL_MS);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
+    document.addEventListener('visibilitychange', visible);
     return () => {
       live = false;
+      unsubscribe();
+      clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('online', refresh);
+      document.removeEventListener('visibilitychange', visible);
     };
-  }, [topic.slug, topic.version]);
-  return topic.reviewed || approved;
+  }, [key, topic.slug, topic.version, topic.contentDigest]);
+  // A bundled flag cannot override a revoked decision or an unavailable review service.
+  return status.key === key && status.approved;
 }

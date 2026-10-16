@@ -1,12 +1,11 @@
 'use client';
 
-import { cx, IconButton, Text } from '@medlearn/ui';
+import { Button, cx, IconButton, Text } from '@medlearn/ui';
 import { X } from '@medlearn/ui/icons';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 import { bodyStructure } from '@/content/body';
-import type { SearchResult } from '@/content/search';
+import { SEARCH_UNAVAILABLE, useSearchResults } from '@/features/search/useSearchResults';
 
 import { LAYER_DOT } from './panels';
 
@@ -18,27 +17,14 @@ const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
  */
 export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: () => void }>) {
   const { system, name, search } = bodyStructure(id);
-  const [found, setFound] = useState<{ id: string; topics: SearchResult[] } | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch(`/api/search?q=${encodeURIComponent(search)}`, { signal: controller.signal })
-      .then((response) => response.json() as Promise<{ data?: { results: SearchResult[] } }>)
-      .then((body) => {
-        const results = body.data?.results ?? [];
-        // One link per topic: its own title first, then where the structure is drawn.
-        const topics = results.filter(
-          (result, index) =>
-            (result.kind === 'Topic' || result.kind === 'Structure') &&
-            results.findIndex((other) => other.topicSlug === result.topicSlug) === index,
-        );
-        setFound({ id, topics: topics.slice(0, 6) });
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [id, search]);
-
-  const topics = found?.id === id ? found.topics : null;
+  const found = useSearchResults(search);
+  const topics = found.results
+    ?.filter(
+      (result, index, results) =>
+        (result.kind === 'Topic' || result.kind === 'Structure') &&
+        results.findIndex((other) => other.topicSlug === result.topicSlug) === index,
+    )
+    .slice(0, 6);
   return (
     <section aria-label={name} className="pointer-events-auto flex animate-rise flex-col gap-3">
       <div className="flex items-start gap-2">
@@ -58,10 +44,20 @@ export function BodyPartCard({ id, onClose }: Readonly<{ id: string; onClose: ()
       </div>
       <div className="flex flex-col gap-1">
         <h3 className={LABEL}>In your topics</h3>
-        {topics === null ? (
+        {found.loading ? (
           <Text size="sm" tone="muted">
             Looking…
           </Text>
+        ) : null}
+        {found.error ? (
+          <div role="status" className="flex flex-col gap-2">
+            <Text size="sm" tone="muted">
+              {SEARCH_UNAVAILABLE}
+            </Text>
+            <Button variant="secondary" className="self-start" onClick={found.retry}>
+              Retry search
+            </Button>
+          </div>
         ) : null}
         {topics?.length === 0 ? (
           <Text size="sm" tone="muted">

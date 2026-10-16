@@ -90,4 +90,58 @@ describe('mergeProgress', () => {
       ['g2', []],
     ]);
   });
+
+  it('keeps removed goals and finished revisits removed across either merge order', () => {
+    const older = progress({
+      goals: [
+        {
+          id: 'removed',
+          kind: 'test',
+          title: 'Old plan',
+          topics: ['axilla'],
+          date: '2026-10-01',
+          done: [],
+          createdAt: EARLY.toISOString(),
+        },
+      ],
+      revisits: { axilla: { step: 2, due: '2026-10-01' }, plexus: { step: 0, due: '2026-10-02' } },
+      // A newer unrelated edit on a stale phone cannot revive an older plan.
+      updatedAt: '2040-01-01T00:00:00.000Z',
+    });
+    const finished = progress({ deletedGoalIds: ['removed'], completedRevisits: ['axilla'] });
+    for (const [local, account] of [
+      [older, finished],
+      [finished, older],
+    ] as const) {
+      const merged = mergeProgress(local, account, NOW);
+      expect(merged.goals).toEqual([]);
+      expect(merged.revisits).toEqual({ plexus: { step: 0, due: '2026-10-02' } });
+      expect(merged.deletedGoalIds).toEqual(['removed']);
+      expect(merged.completedRevisits).toEqual(['axilla']);
+      expect(mergeProgress(merged, older, new Date('2050-01-01')).goals).toEqual([]);
+      expect(mergeProgress(merged, older, new Date('2050-01-01')).revisits).toEqual(
+        merged.revisits,
+      );
+    }
+  });
+
+  it('joins completion markers and advances active revisits without losing another topic', () => {
+    const local = progress({
+      deletedGoalIds: ['a'],
+      completedRevisits: ['done-a'],
+      revisits: { axilla: { step: 0, due: '2026-10-01' }, plexus: { step: 1, due: '2026-10-01' } },
+    });
+    const account = progress({
+      deletedGoalIds: ['b', 'a'],
+      completedRevisits: ['done-b', 'done-a'],
+      revisits: { axilla: { step: 1, due: '2026-10-02' }, plexus: { step: 1, due: '2026-10-03' } },
+    });
+    const merged = mergeProgress(local, account, NOW);
+    expect(merged.deletedGoalIds).toEqual(['a', 'b']);
+    expect(merged.completedRevisits).toEqual(['done-a', 'done-b']);
+    expect(merged.revisits).toEqual({
+      axilla: { step: 1, due: '2026-10-02' },
+      plexus: { step: 1, due: '2026-10-03' },
+    });
+  });
 });

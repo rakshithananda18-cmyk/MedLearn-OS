@@ -176,6 +176,11 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
     isRecordOf(data.revisits, MAX_ITEMS, isId, isRevisit),
     {},
   );
+  // An API limit must fail a save, never erase valid local removals after a reload.
+  const markers = (field: unknown) =>
+    or<string[]>(field, isIdList(field, Number.MAX_SAFE_INTEGER), []);
+  const deletedGoalIds = markers(data.deletedGoalIds);
+  const completedRevisits = markers(data.completedRevisits);
   // As with the API schema, discard unknown fields instead of carrying arbitrary storage data
   // into later sync requests. Keep optional legacy fields optional.
   return {
@@ -236,21 +241,24 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         },
       ]),
     ),
-    goals: goals.map((goal) => ({
-      id: goal.id,
-      kind: goal.kind,
-      title: goal.title,
-      topics: [...goal.topics],
-      date: goal.date,
-      done: [...goal.done],
-      createdAt: goal.createdAt,
-    })),
+    goals: goals
+      .filter((goal) => !deletedGoalIds.includes(goal.id))
+      .map((goal) => ({
+        id: goal.id,
+        kind: goal.kind,
+        title: goal.title,
+        topics: [...goal.topics],
+        date: goal.date,
+        done: [...goal.done],
+        createdAt: goal.createdAt,
+      })),
+    deletedGoalIds: [...deletedGoalIds],
     revisits: Object.fromEntries(
-      safeEntries(revisits).map(([slug, revisit]) => [
-        slug,
-        { step: revisit.step, due: revisit.due },
-      ]),
+      safeEntries(revisits)
+        .filter(([slug]) => !completedRevisits.includes(slug))
+        .map(([slug, revisit]) => [slug, { step: revisit.step, due: revisit.due }]),
     ),
+    completedRevisits: [...completedRevisits],
     updatedAt: or<string | null>(data.updatedAt, nullable(data.updatedAt, isIsoTime), null),
   };
 }

@@ -14,7 +14,7 @@ import { FoldBody } from '@/features/shell/FoldBody';
 import { useHydrated } from '@/features/shell/media';
 
 import { GoalPlanner } from './GoalPlanner';
-import { PracticeSession } from './PracticeSession';
+import { LoadedPracticeSession } from './LoadedPracticeSession';
 import {
   buildSession,
   SECONDS_PER_TIMED_QUESTION,
@@ -396,7 +396,6 @@ export function PracticeView({
   const now = new Date();
   const titles = Object.fromEntries(topics.map((topic) => [topic.slug, topic.title]));
   const sections = sectionStrengths(tree, topics, progress, now);
-  const byId = new Map(questions.map((question) => [question.question.id, question]));
 
   const session = (kind: SessionKind, slugs?: string[]) =>
     buildSession(kind, topics, progress, slugs ? { slugs, now } : { now });
@@ -428,10 +427,11 @@ export function PracticeView({
   if (running) {
     return (
       <div className="mx-auto w-full max-w-3xl">
-        <PracticeSession
+        <LoadedPracticeSession
           key={running.ids.join()}
           title={running.title}
-          questions={running.ids.flatMap((id) => byId.get(id) ?? [])}
+          ids={running.ids}
+          initial={questions}
           seconds={running.seconds}
           onFinish={(results) => {
             if (running.goal) markGoalTopic(running.goal.id, running.goal.topic);

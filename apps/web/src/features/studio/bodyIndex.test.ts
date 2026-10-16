@@ -1,8 +1,30 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BODY_REGIONS } from '@/content/body';
 
-import { bodyQuizPool, regionOf } from './bodyIndex';
+import { bodyQuizPool, loadBodyIndex, regionOf } from './bodyIndex';
+
+afterEach(() => vi.unstubAllGlobals());
+
+it('reloads the body index when its content hash changes, and retries failed files', async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json({ structures: [['skeleton/right-femur', 1, 2, 3, 4]] }))
+    .mockResolvedValueOnce(new Response('', { status: 503 }))
+    .mockResolvedValueOnce(Response.json({ structures: [['skeleton/right-tibia', 1, 2, 3, 4]] }));
+  vi.stubGlobal('fetch', fetch);
+  expect((await loadBodyIndex('/models/body-index.json?h=first'))[0]?.id).toBe(
+    'skeleton/right-femur',
+  );
+  await loadBodyIndex('/models/body-index.json?h=first');
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(await loadBodyIndex('/models/body-index.json?h=next')).toEqual([]);
+  expect((await loadBodyIndex('/models/body-index.json?h=next'))[0]?.id).toBe(
+    'skeleton/right-tibia',
+  );
+  expect(fetch).toHaveBeenNthCalledWith(2, '/models/body-index.json?h=next');
+  expect(fetch).toHaveBeenCalledTimes(3);
+});
 
 const entry = (id: string, centre: [number, number, number], radius = 100) => ({
   id,

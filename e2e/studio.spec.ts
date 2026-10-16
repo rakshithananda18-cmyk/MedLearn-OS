@@ -45,7 +45,7 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
 
   // Layers, beside the settings: peel the muscles away.
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
-  const layers = page.getByRole('region', { name: 'Layers' });
+  const layers = page.getByRole('dialog', { name: 'Layers' });
   await layers.getByRole('switch', { name: 'Muscles' }).click();
   await expect(layers.getByRole('switch', { name: 'Muscles' })).toHaveAttribute(
     'aria-checked',

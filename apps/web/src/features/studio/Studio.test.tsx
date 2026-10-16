@@ -1,4 +1,4 @@
-import type { PartKind } from '@medlearn/schemas';
+import type { Model3D, PartKind } from '@medlearn/schemas';
 import { expectNoA11yViolations } from '@medlearn/test-utils/dom';
 import type * as Visuals from '@medlearn/visuals';
 import type {
@@ -13,17 +13,17 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BODY_MODEL, BODY_REGIONS } from '@/content/body';
+import { BODY_REGIONS } from '@/content/body';
 import { libraryTree } from '@/content/library';
-import { studioTopics } from '@/content/studio';
+import { studioAssets, studioTopics } from '@/content/studio';
 import { TOPICS } from '@/content/topics';
-import { XRAYS } from '@/content/xrays';
 
 const capability = vi.hoisted(() => ({ supported: true }));
 // What the 3D view last received, so a test can tap the model or draw as a finger would.
 const viewer = vi.hoisted(() => ({
   props: null as null | {
     onSelect: (id: string | null) => void;
+    model: Model3D;
     hiddenKinds: ReadonlySet<PartKind>;
     hiddenIds: ReadonlySet<string>;
     xray: boolean;
@@ -78,8 +78,7 @@ async function renderStudio(initialTopic: string | null = null, initialTour = fa
       topics={studioTopics()}
       tree={libraryTree(TOPICS.filter((topic) => topic.subjectSlug === 'anatomy'))}
       regions={BODY_REGIONS}
-      body={BODY_MODEL}
-      films={XRAYS}
+      {...studioAssets()}
       initialTopic={initialTopic}
       initialTour={initialTour}
     />,
@@ -113,6 +112,50 @@ afterEach(() => {
 });
 
 describe('Studio on a phone', () => {
+  it('keeps server-provided content hashes on body, systems and index requests', async () => {
+    const fetch = vi.fn(async () => Response.json({ structures: [] }));
+    vi.stubGlobal('fetch', fetch);
+    await renderStudio();
+    const assets = studioAssets();
+    expect(viewer.props?.model.src).toBe(assets.body.src);
+    expect(viewer.props?.layers.find((layer) => layer.id === 'skeleton')?.src).toBe(
+      assets.systems.find((system) => system.id === 'skeleton')?.src,
+    );
+    expect(fetch).toHaveBeenCalledWith(assets.bodyIndexSrc);
+  });
+  it('moves through the view tools by keyboard, including tools beyond the visible scroll area', async () => {
+    await renderStudio('knee-joint');
+    const tools = screen.getByRole('toolbar', { name: 'View' });
+    const settings = within(tools).getByRole('button', { name: 'Settings' });
+    settings.focus();
+    await userEvent.keyboard('{Home}');
+    expect(within(tools).getByRole('button', { name: 'See-through' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    // Isolation is disabled until a structure is picked, so it is skipped.
+    expect(within(tools).getByRole('button', { name: 'Section' })).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    expect(settings).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(within(tools).getByRole('button', { name: 'See-through' })).toHaveFocus();
+  });
+
+  it('focuses a floating tool dialog, leaves Tab unrestricted and restores its trigger on Escape', async () => {
+    const { container } = await renderStudio('knee-joint');
+    const settings = screen.getByRole('button', { name: 'Settings' });
+    await userEvent.click(settings);
+    const dialog = screen.getByRole('dialog', { name: 'Settings' });
+    expect(dialog).toHaveAttribute('aria-modal', 'false');
+    expect(dialog).toHaveFocus();
+    await expectNoA11yViolations(container);
+    await userEvent.tab({ shift: true });
+    expect(dialog).not.toHaveFocus();
+    expect(dialog).not.toContainElement(document.activeElement as HTMLElement);
+    dialog.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Settings' })).not.toBeInTheDocument();
+    expect(settings).toHaveFocus();
+  });
+
   it('keeps the model above the sheet along the bottom of the screen', async () => {
     const rect = vi
       .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
@@ -159,7 +202,7 @@ describe('Studio on a phone', () => {
 
     // The topic's name opens the topics as the library's tree, the open one marked.
     await userEvent.click(screen.getByRole('button', { name: 'Axilla: walls and contents' }));
-    const topics = screen.getByRole('region', { name: 'Topics' });
+    const topics = screen.getByRole('dialog', { name: 'Topics' });
     expect(within(topics).getByRole('button', { name: /Axilla: walls.*Open/ })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Go back' }));
@@ -190,7 +233,7 @@ describe('Studio on a phone', () => {
     await renderStudio('axilla');
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
-    const layers = screen.getByRole('region', { name: 'Layers' });
+    const layers = screen.getByRole('dialog', { name: 'Layers' });
     await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles', checked: true }));
     expect(viewer.props?.hiddenKinds.has('muscle')).toBe(true);
 
@@ -209,7 +252,7 @@ describe('Studio on a phone', () => {
   it('finds a structure by name', async () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Search structures' }));
-    const sheet = screen.getByRole('region', { name: 'Search' });
+    const sheet = screen.getByRole('dialog', { name: 'Search' });
     // The same search as the library's, its suggestions listed in the sheet; a letter wrong is
     // forgiven.
     await userEvent.type(
@@ -218,7 +261,7 @@ describe('Studio on a phone', () => {
     );
     await userEvent.click(within(sheet).getByRole('option', { name: /^Axillary vein/ }));
     expect(screen.getByRole('region', { name: 'Axillary vein' })).toBeInTheDocument();
-    expect(screen.queryByRole('region', { name: 'Search' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Search' })).not.toBeInTheDocument();
   });
 
   it('plays "Find it" in rounds of ten: finds score, misses are named, hints help for half', async () => {
@@ -400,7 +443,7 @@ describe('Studio on a wide screen', () => {
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Layers' }));
-    const layers = screen.getByRole('region', { name: 'Layers' });
+    const layers = screen.getByRole('dialog', { name: 'Layers' });
     // It opens on the skin over the skeleton; the other systems load when switched on.
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
     await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
@@ -507,7 +550,7 @@ describe('Studio on a wide screen', () => {
     const { container } = await renderStudio('axilla');
     const tools = screen.getByRole('toolbar', { name: 'View' });
     await userEvent.click(within(tools).getByRole('button', { name: 'Section' }));
-    const sheet = screen.getByRole('region', { name: 'Section' });
+    const sheet = screen.getByRole('dialog', { name: 'Section' });
     expect(viewer.props?.section).toBeNull();
     await userEvent.click(within(sheet).getByRole('switch', { name: 'Cut through the model' }));
     expect(viewer.props?.section).toEqual({ plane: 'transverse', at: 0.5 });
@@ -573,7 +616,7 @@ describe('Studio on a wide screen', () => {
     expect(viewer.props?.dpr).toEqual([1, 2]);
 
     await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    const settings = screen.getByRole('region', { name: 'Settings' });
+    const settings = screen.getByRole('dialog', { name: 'Settings' });
     await expectNoA11yViolations(container);
     await userEvent.click(within(settings).getByRole('switch', { name: 'Names on the model' }));
     await userEvent.click(within(settings).getByRole('switch', { name: 'Smooth camera moves' }));
@@ -629,7 +672,7 @@ describe('Studio on a wide screen', () => {
     );
     const { container } = await renderStudio();
     await userEvent.click(screen.getByRole('button', { name: 'Movement' }));
-    const sheet = screen.getByRole('region', { name: 'Movement' });
+    const sheet = screen.getByRole('dialog', { name: 'Movement' });
     await userEvent.click(within(sheet).getByRole('switch', { name: 'Move a joint' }));
     await vi.waitFor(() => expect(viewer.props?.pose).not.toBeNull());
     expect([...(viewer.props?.pose?.ids ?? [])]).toEqual([
@@ -657,7 +700,7 @@ describe('Studio on a wide screen', () => {
     wideScreen();
     const { container } = await renderStudio('knee-joint');
     await userEvent.click(screen.getByRole('button', { name: 'Movement' }));
-    const sheet = screen.getByRole('region', { name: 'Movement' });
+    const sheet = screen.getByRole('dialog', { name: 'Movement' });
     await userEvent.click(within(sheet).getByRole('switch', { name: 'Move a joint' }));
     await vi.waitFor(() => expect(viewer.props?.pose).not.toBeNull());
     const pose = viewer.props?.pose;
@@ -729,6 +772,10 @@ describe('Studio on a wide screen', () => {
     const { unmount } = await renderStudio('elbow-joint');
     await userEvent.click(screen.getByRole('button', { name: 'X-ray images', pressed: false }));
     const films = screen.getByRole('region', { name: 'X-ray: Elbow, AP' });
+    expect(films.querySelector('image')).toHaveAttribute(
+      'href',
+      studioAssets().films.find((film) => film.id === 'elbow-ap')?.src,
+    );
     expect(within(films).getByRole('img', { name: 'Elbow, AP radiograph' })).toBeInTheDocument();
     const key = within(films).getByRole('list', { name: 'Marked on the film' });
     expect(within(key).getByRole('button', { name: /Medial epicondyle/ })).toBeInTheDocument();

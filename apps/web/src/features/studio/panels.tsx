@@ -7,7 +7,7 @@ import { Eye, Pause, PersonStanding, Play, X } from '@medlearn/ui/icons';
 import type { LayerKind, SectionPlane, Viewer3DSection } from '@medlearn/visuals/viewer3d';
 import Image from 'next/image';
 import Link from 'next/link';
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import type { BodyRegionInfo } from '@/content/body';
 import { type LibraryNode, toggledTrail, topicsUnder, trailTo } from '@/content/library';
@@ -52,15 +52,44 @@ function Sheet({
   onClose: () => void;
   children: ReactNode;
 }>) {
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (place !== 'float') return;
+    const element = panel.current;
+    const opener = document.activeElement;
+    element?.focus({ preventScroll: true });
+    return () => {
+      // Switching tools already puts focus on the next trigger. Only restore it when focus was
+      // in the closing panel, or its focused control has just been removed from the document.
+      if (
+        opener instanceof HTMLElement &&
+        opener.isConnected &&
+        (document.activeElement === document.body || element?.contains(document.activeElement))
+      ) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, [place, label]);
   return (
     <section
+      ref={panel}
+      role={place === 'float' ? 'dialog' : undefined}
       aria-label={label}
+      aria-modal={place === 'float' ? false : undefined}
+      tabIndex={place === 'float' ? -1 : undefined}
+      onKeyDown={(event) => {
+        if (place === 'float' && event.key === 'Escape' && !event.defaultPrevented) {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}
       className={cx(
         'pointer-events-auto flex flex-col gap-4',
         place === 'float' &&
           cx(
             GLASS,
-            'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto p-4 max-sm:inset-x-3 max-sm:w-auto',
+            'absolute top-20 z-20 w-sheet animate-rise overflow-y-auto overscroll-contain p-4 max-sm:inset-x-3 max-sm:w-auto',
             compact === true && 'max-h-sheet',
             compact === 'phone' && 'max-md:max-h-sheet md:bottom-24',
             !compact && 'bottom-24',
@@ -75,7 +104,7 @@ function Sheet({
         {/* Docked, the title lines up with the names in the list below it. */}
         <h2 className={cx(LABEL, place === 'dock' && 'px-2')}>{label}</h2>
         {place === 'float' ? (
-          <IconButton icon={X} label={`Close ${label.toLowerCase()}`} size="sm" onClick={onClose} />
+          <IconButton icon={X} label={`Close ${label.toLowerCase()}`} onClick={onClose} />
         ) : (
           action
         )}

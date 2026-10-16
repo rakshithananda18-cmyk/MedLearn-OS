@@ -13,39 +13,44 @@ export interface BodyIndexEntry {
 
 // A new version in the address whenever the index is rebuilt, so phones fetch it again.
 const INDEX_FILE = '/models/body-index.json?v=3';
-let request: Promise<BodyIndexEntry[]> | null = null;
+const requests = new Map<string, Promise<BodyIndexEntry[]>>();
 
 /** Every structure of the body, fetched once per page, the first time it is needed. */
-export function loadBodyIndex(): Promise<BodyIndexEntry[]> {
-  request ??= fetch(INDEX_FILE)
-    .then(
-      (response) =>
-        response.json() as Promise<{ structures: Array<[string, number, number, number, number]> }>,
-    )
+export function loadBodyIndex(src = INDEX_FILE): Promise<BodyIndexEntry[]> {
+  const existing = requests.get(src);
+  if (existing) return existing;
+  const request = fetch(src)
+    .then((response) => {
+      if (!response.ok) throw new Error('Body index unavailable');
+      return response.json() as Promise<{
+        structures: Array<[string, number, number, number, number]>;
+      }>;
+    })
     .then(({ structures }) =>
       structures.map(([id, x, y, z, radius]) => ({ id, centre: [x, y, z] as Point3, radius })),
     )
     .catch(() => {
       // Search still finds topics; the next search tries again.
-      request = null;
+      requests.delete(src);
       return [];
     });
+  requests.set(src, request);
   return request;
 }
 
 /** The body's structures while `active` (on the whole body), or null until they arrive. */
-export function useBodyIndex(active: boolean): BodyIndexEntry[] | null {
+export function useBodyIndex(active: boolean, src = INDEX_FILE): BodyIndexEntry[] | null {
   const [entries, setEntries] = useState<BodyIndexEntry[] | null>(null);
   useEffect(() => {
     if (!active) return;
     let live = true;
-    void loadBodyIndex().then((list) => {
+    void loadBodyIndex(src).then((list) => {
       if (live) setEntries(list);
     });
     return () => {
       live = false;
     };
-  }, [active]);
+  }, [active, src]);
   return entries;
 }
 

@@ -1,6 +1,8 @@
 import { mistakeCardId, type PlannableTopic } from '@medlearn/core';
 import type { Question, Topic } from '@medlearn/schemas';
 
+import { topicReviewDigest } from '@/server/review-digest';
+
 import { abdominalRegions } from './abdominal-regions';
 import { abdominalWallMuscles } from './abdominal-wall-muscles';
 import { abdominalWallSuperficial } from './abdominal-wall-superficial';
@@ -10,6 +12,7 @@ import { aorta } from './aorta';
 import { appendix } from './appendix';
 import { armBackRadial } from './arm-back-radial';
 import { armFront } from './arm-front';
+import { assetUrl } from './asset-url';
 import { axilla } from './axilla';
 import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
@@ -270,7 +273,7 @@ export type TopicSummary = PlannableTopic & {
 /** Where a topic's poster lives, when the topic has a 3D model. */
 export function posterOf(topic: Topic): string | null {
   return topic.visual.kind === 'path' && topic.visual.model3d
-    ? `/posters/${topic.slug}.webp`
+    ? assetUrl(`/posters/${topic.slug}.webp`)
     : null;
 }
 
@@ -287,10 +290,14 @@ export const PLANNABLE_TOPICS: TopicSummary[] = TOPICS.map((topic) => ({
 }));
 
 /** What the source drawer shows about the topic a question or card comes from. */
-export type TopicTrust = Pick<Topic, 'slug' | 'title' | 'version' | 'reviewed' | 'sources'>;
+export type TopicTrust = Pick<Topic, 'slug' | 'title' | 'version' | 'reviewed' | 'sources'> & {
+  /** Immutable evidence for the content this client actually received. */
+  contentDigest?: string;
+};
 
-function trustOf({ slug, title, version, reviewed, sources }: Topic): TopicTrust {
-  return { slug, title, version, reviewed, sources };
+export function trustOf(topic: Topic): TopicTrust {
+  const { slug, title, version, reviewed, sources } = topic;
+  return { slug, title, version, reviewed, sources, contentDigest: topicReviewDigest(topic) };
 }
 
 export interface PracticeQuestion {

@@ -5,8 +5,10 @@ import { connection } from 'next/server';
 import { TOPICS } from '@/content/topics';
 import { type BoardTopic, ReviewBoard } from '@/features/review/ReviewBoard';
 import { ReviewersOnly } from '@/features/review/ReviewersOnly';
+import { ReviewRefresh } from '@/features/review/ReviewRefresh';
 import { reviewState } from '@/features/review/state';
 import { Screen } from '@/features/shell/Screen';
+import { topicReviewDigest } from '@/server/review-digest';
 import { getSessionDb } from '@/server/session';
 
 export const metadata: Metadata = { title: 'Review | MedLearn OS' };
@@ -29,12 +31,13 @@ export default async function ReviewPage() {
     title: topic.title,
     version: topic.version,
     chapter: topic.readIn[0]?.chapter ?? 'Other',
-    state: reviewState(topic.version, latest.get(topic.slug)),
+    state: reviewState(topic.version, latest.get(topic.slug), topicReviewDigest(topic)),
     openReports: reports.filter((report) => report.topicSlug === topic.slug && !report.resolvedAt)
       .length,
   }));
   return (
     <Screen>
+      <ReviewRefresh />
       <ReviewBoard topics={topics} />
     </Screen>
   );

@@ -3,9 +3,10 @@
 import { Button, buttonClasses, cx, Eyebrow, Icon, IconButton, QuestionCard } from '@medlearn/ui';
 import { ArrowRight, Flame, RotateCcw, Timer, X } from '@medlearn/ui/icons';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { PracticeQuestion } from '@/content/topics';
+import { ContentTrust } from '@/features/content/ContentTrust';
 import { recordAnswer } from '@/features/progress/store';
 
 import { SECONDS_PER_TIMED_QUESTION } from './sessions';
@@ -28,6 +29,10 @@ function Results({
   onAgain: (questions: PracticeQuestion[]) => void;
   onDone: () => void;
 }>) {
+  const score = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    score.current?.focus();
+  }, []);
   const right = results.filter((result) => result.correct === true).length;
   const missed = results.filter((result) => result.correct !== true);
   const percent = Math.round((100 * right) / Math.max(1, results.length));
@@ -49,7 +54,12 @@ function Results({
     >
       <Eyebrow>{title} · done</Eyebrow>
       <div className="flex items-baseline gap-3">
-        <h2 id="results-title" className="text-gold font-display text-5xl">
+        <h2
+          ref={score}
+          tabIndex={-1}
+          id="results-title"
+          className="text-gold font-display text-5xl outline-none"
+        >
           {right}/{results.length}
         </h2>
         <span className="text-lg font-semibold text-ink">{percent}% right</span>
@@ -215,12 +225,14 @@ export function PracticeSession({
 
       <div className="flex flex-col gap-4 rounded-xl border border-glass-border bg-glass p-6 shadow-glass">
         <Eyebrow>{showing.topic.title}</Eyebrow>
+        <ContentTrust topic={showing.topic} />
         <QuestionCard
           key={showing.question.id}
           prompt={showing.question.prompt}
           options={showing.question.options}
           answerId={showing.question.answerId}
           explanation={showing.question.explanation}
+          autoFocusPrompt
           onAnswered={(correct) => {
             setAnswers({ ...answers, [showing.question.id]: correct });
             recordAnswer(showing.question.id, correct);

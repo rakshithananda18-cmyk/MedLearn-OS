@@ -13,6 +13,8 @@ export interface XrayMark {
 /** One radiograph, with what to look for on it. */
 export interface XrayFilm {
   id: string;
+  /** Content-hashed file address, supplied by the server before it reaches the viewer. */
+  src?: string;
   region: FilmRegion;
   /** The joint or part, and the view: "Elbow, lateral". */
   title: string;

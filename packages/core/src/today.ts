@@ -67,8 +67,12 @@ export interface LearnerProgress {
   activity: Activity;
   /** Class tests and revisits the student asked for. */
   goals: StudyGoal[];
+  /** Removed goal ids. Retained permanently so an offline device cannot bring them back. */
+  deletedGoalIds: string[];
   /** Each learnt topic's next spaced revisit, by slug; gone once the last one is done. */
   revisits: Record<string, TopicRevisit>;
+  /** Topics that finished their last revisit. Completion wins over every older schedule. */
+  completedRevisits: string[];
   /** Last change (ISO time); the newer copy wins when the device and the server differ. */
   updatedAt: string | null;
 }
@@ -85,7 +89,9 @@ export const EMPTY_PROGRESS: LearnerProgress = {
   notes: {},
   activity: {},
   goals: [],
+  deletedGoalIds: [],
   revisits: {},
+  completedRevisits: [],
   updatedAt: null,
 };
 

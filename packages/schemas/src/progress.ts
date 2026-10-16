@@ -77,11 +77,14 @@ export const LearnerProgressInput = z.object({
     .default({}),
   // Missing from progress saved before class tests and revisits could be planned.
   goals: z.array(StudyGoalInput).max(100).default([]),
+  // Durable remove/completion markers. Never expire these while older devices can reconnect.
+  deletedGoalIds: IdList.default([]),
   // Missing from progress saved before spaced revisits of learnt topics.
   revisits: z
     .record(ItemId, z.object({ step: z.number().int().min(0).max(10), due: LocalDate }))
     .refine((revisits) => Object.keys(revisits).length <= MAX_ITEMS, 'Too many revisits')
     .default({}),
+  completedRevisits: IdList.default([]),
   updatedAt: IsoTime.nullable(),
 });
 export type LearnerProgressInput = z.infer<typeof LearnerProgressInput>;

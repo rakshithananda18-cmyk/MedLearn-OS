@@ -1,5 +1,9 @@
 import type { NextConfig } from 'next';
 
+import { writeReviewAssets } from '../../scripts/review-assets.mjs';
+
+writeReviewAssets();
+
 /** Origins the browser may load from besides this app: lecture players and their thumbnails. */
 const YOUTUBE_PLAYER = 'https://www.youtube-nocookie.com';
 const YOUTUBE_THUMBNAILS = 'https://i.ytimg.com';

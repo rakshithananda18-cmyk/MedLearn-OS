@@ -1,6 +1,6 @@
 'use client';
 
-import type { IconGlyph } from '@medlearn/ui';
+import { Button, type IconGlyph } from '@medlearn/ui';
 import {
   BookOpen,
   Box,
@@ -12,12 +12,13 @@ import {
   Search,
   Target,
 } from '@medlearn/ui/icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { SearchKind, SearchResult } from '@/content/search';
 import { useProgress } from '@/features/progress/store';
 
 import { SearchBox, type SearchGroup as Group, type SearchOption as Option } from './SearchBox';
+import { SEARCH_UNAVAILABLE, useSearchResults } from './useSearchResults';
 
 /** What the box needs to know about each topic for its suggestions. */
 export interface SearchTopic {
@@ -101,25 +102,9 @@ export function LiveSearch({
 }: Readonly<{ topics: SearchTopic[]; defaultValue?: string; className?: string }>) {
   const progress = useProgress();
   const [query, setQuery] = useState(defaultValue);
-  const [found, setFound] = useState<{ query: string; results: SearchResult[] } | null>(null);
   const terms = words(query);
   const typed = terms.length > 0;
-
-  // Results arrive a moment after typing stops; an older request never overwrites a newer one.
-  useEffect(() => {
-    if (!typed) return;
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
-        .then((response) => response.json() as Promise<{ data?: { results: SearchResult[] } }>)
-        .then((body) => setFound({ query, results: body.data?.results ?? [] }))
-        .catch(() => undefined);
-    }, DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, typed]);
+  const found = useSearchResults(query, typed, DEBOUNCE_MS);
 
   const titleOf = new Map(topics.map((topic) => [topic.slug, topic.title]));
   const notes = Object.entries(progress.notes)
@@ -138,7 +123,7 @@ export function LiveSearch({
         href: `/learn/${slug}`,
         icon: FileText,
       }));
-    const results = found?.query === query ? found.results : [];
+    const results = found.results ?? [];
     const [topicGroup, structureGroup, insideGroup] = resultGroups(results) as [
       Group,
       Group,
@@ -202,7 +187,8 @@ export function LiveSearch({
   }
   const options = groups.flatMap((group) => group.options);
   let status: string | null = null;
-  if (typed && found?.query !== query) status = 'Searching…';
+  if (found.error) status = SEARCH_UNAVAILABLE;
+  else if (found.loading) status = 'Searching…';
   else if (typed && options.length === 1) {
     status = 'Nothing matches yet. Try fewer letters, or a nerve, muscle or sign.';
   }
@@ -218,7 +204,13 @@ export function LiveSearch({
       action="/search"
       className={className}
       footer={
-        typed ? null : (
+        typed ? (
+          found.error ? (
+            <Button variant="secondary" className="mx-3 self-start" onClick={found.retry}>
+              Retry search
+            </Button>
+          ) : null
+        ) : (
           <div className="flex flex-col gap-2 px-3 pt-1 pb-2">
             <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
               Try searching

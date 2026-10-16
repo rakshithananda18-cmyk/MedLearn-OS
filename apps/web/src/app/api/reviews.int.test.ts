@@ -3,6 +3,7 @@ import { emailedCode } from '@medlearn/test-utils/mail';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { getTopic } from '@/content/topics';
+import { topicReviewDigest } from '@/server/review-digest';
 import { getSessionDb } from '@/server/session';
 
 import { POST as confirm } from './account/confirm/route';
@@ -41,6 +42,7 @@ const allChecks = { pages: true, facts: true, questions: true, visuals: true };
 const approval = {
   topicSlug: 'brachial-plexus',
   contentVersion: version,
+  contentDigest: topic ? topicReviewDigest(topic) : '',
   decision: 'approved',
   checks: allChecks,
 };
@@ -85,6 +87,8 @@ describe('reviews API', () => {
         expect.objectContaining({
           topicSlug: 'brachial-plexus',
           contentVersion: version,
+          contentDigest: approval.contentDigest,
+          currentContent: true,
           decision: 'approved',
         }),
       );
@@ -92,6 +96,7 @@ describe('reviews API', () => {
 
     it('refuses an old version, an unknown topic and an approval without every check', async () => {
       expect((await review(post({ ...approval, contentVersion: '9.9.9' }))).status).toBe(409);
+      expect((await review(post({ ...approval, contentDigest: '0'.repeat(64) }))).status).toBe(409);
       expect((await review(post({ ...approval, topicSlug: 'no-such-topic' }))).status).toBe(404);
       const partial = { ...approval, checks: { ...allChecks, visuals: false } };
       expect((await review(post(partial))).status).toBe(400);

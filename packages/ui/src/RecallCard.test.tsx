@@ -26,6 +26,28 @@ describe('RecallCard', () => {
     }
   });
 
+  it('keeps keyboard focus on the answer and the next prompt as controls are replaced', async () => {
+    const onRate = vi.fn();
+    const { rerender } = render(
+      <RecallCard front="First prompt" back="First answer" onRate={onRate} />,
+    );
+    expect(screen.getByText('First prompt')).toHaveFocus();
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Show answer' })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(screen.getByText('First answer')).toHaveFocus();
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'Again: Forgot' })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(onRate).toHaveBeenCalledWith('again');
+    expect(screen.getByText('First prompt')).toHaveFocus();
+
+    rerender(
+      <RecallCard key="second" front="Second prompt" back="Second answer" onRate={onRate} />,
+    );
+    expect(screen.getByText('Second prompt')).toHaveFocus();
+  });
+
   it('has no accessibility violations when revealed', async () => {
     const { container } = render(<RecallCard front="Q" back="A" onRate={() => undefined} />);
     await userEvent.click(screen.getByRole('button', { name: 'Show answer' }));

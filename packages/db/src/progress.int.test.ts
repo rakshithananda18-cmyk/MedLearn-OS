@@ -35,7 +35,9 @@ const progress = (updatedAt: string): LearnerProgressInput => ({
     },
   },
   goals: [],
+  deletedGoalIds: [],
   revisits: {},
+  completedRevisits: [],
   updatedAt,
 });
 
@@ -125,6 +127,63 @@ describe('progress repository (local database)', () => {
     expect((await createProgressRepository(first.db).load(first.userId))?.progress).toEqual(
       original,
     );
+  });
+
+  it('preserves removals when an old client saves a newer snapshot without marker fields', async () => {
+    const { db, userId } = await learner();
+    const repository = createProgressRepository(db);
+    const initial = {
+      ...progress('2026-10-16T08:00:00.000Z'),
+      deletedGoalIds: ['goal-old'],
+      completedRevisits: ['axilla'],
+    };
+    expect(await repository.save(userId, initial, null)).toBe('saved');
+    const legacy: Partial<LearnerProgressInput> = { ...progress('2026-10-16T09:00:00.000Z') };
+    delete legacy.deletedGoalIds;
+    delete legacy.completedRevisits;
+    const oldClient = {
+      ...legacy,
+      goals: [
+        {
+          id: 'goal-old',
+          kind: 'test',
+          title: 'Removed plan',
+          topics: ['axilla'],
+          date: '2026-10-20',
+          done: [],
+          createdAt: '2026-10-01T08:00:00.000Z',
+        },
+        {
+          id: 'goal-other',
+          kind: 'test',
+          title: 'Keep plan',
+          topics: ['plexus'],
+          date: '2026-10-20',
+          done: [],
+          createdAt: '2026-10-01T08:00:00.000Z',
+        },
+      ],
+      revisits: { axilla: { step: 2, due: '2026-10-16' }, plexus: { step: 0, due: '2026-10-17' } },
+      correctAnswers: ['offline-answer'],
+    };
+    // Calling the RPC without parsing models an installed client that does not know the fields.
+    for (const p_check_version of [false, true]) {
+      const { data, error } = await db.rpc('save_learner_progress', {
+        p_user_id: userId,
+        p_progress: oldClient,
+        p_updated_at: oldClient.updatedAt ?? '',
+        p_check_version,
+        p_expected_updated_at: (await repository.load(userId))?.updatedAt,
+      });
+      expect(error).toBeNull();
+      expect(data).toBe(true);
+    }
+    const saved = (await repository.load(userId))?.progress;
+    expect(saved?.deletedGoalIds).toEqual(['goal-old']);
+    expect(saved?.completedRevisits).toEqual(['axilla']);
+    expect(saved?.goals.map((goal) => goal.id)).toEqual(['goal-other']);
+    expect(saved?.revisits).toEqual({ plexus: { step: 0, due: '2026-10-17' } });
+    expect(saved?.correctAnswers).toEqual(['offline-answer']);
   });
 
   it("never shows one learner's progress to another", async () => {

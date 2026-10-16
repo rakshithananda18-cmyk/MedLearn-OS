@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { ReviewInput } from './reviews';
 
 const all = { pages: true, facts: true, questions: true, visuals: true };
-const base = { topicSlug: 'brachial-plexus', contentVersion: '0.1.0' };
+const base = {
+  topicSlug: 'brachial-plexus',
+  contentVersion: '0.1.0',
+  contentDigest: 'a'.repeat(64),
+};
 
 describe('ReviewInput', () => {
   it('approves only with every check ticked', () => {

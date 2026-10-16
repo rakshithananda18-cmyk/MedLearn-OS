@@ -54,6 +54,21 @@ describe('LearnerProgressInput', () => {
     expect(LearnerProgressInput.safeParse(badProfile).success).toBe(false);
   });
 
+  it('defaults legacy removal markers and validates durable markers', () => {
+    const legacy = LearnerProgressInput.parse(progress);
+    expect(legacy.deletedGoalIds).toEqual([]);
+    expect(legacy.completedRevisits).toEqual([]);
+    const markers = { deletedGoalIds: ['goal-old'], completedRevisits: ['axilla'] };
+    expect(LearnerProgressInput.parse({ ...progress, ...markers })).toMatchObject(markers);
+    for (const field of ['deletedGoalIds', 'completedRevisits']) {
+      expect(LearnerProgressInput.safeParse({ ...progress, [field]: [''] }).success).toBe(false);
+      expect(LearnerProgressInput.safeParse({ ...progress, [field]: [42] }).success).toBe(false);
+      expect(
+        LearnerProgressInput.safeParse({ ...progress, [field]: Array(5001).fill('old') }).success,
+      ).toBe(false);
+    }
+  });
+
   it("keeps the student's name trimmed, and refuses an empty or overlong one", () => {
     const named = (name: string) => ({ ...progress, profile: { ...progress.profile, name } });
     expect(LearnerProgressInput.parse(named('  Rakshith Ananda ')).profile?.name).toBe(
