@@ -146,6 +146,12 @@ export const POSTERS = [
   { name: 'posterior-abdominal-wall', path: '/studio?topic=posterior-abdominal-wall' },
   { name: 'lumbar-plexus', path: '/studio?topic=lumbar-plexus' },
   { name: 'abdominal-autonomic-nerves', path: '/studio?topic=abdominal-autonomic-nerves' },
+  { name: 'perineum', path: '/studio?topic=perineum' },
+  { name: 'ischioanal-fossa', path: '/studio?topic=ischioanal-fossa' },
+  { name: 'male-urogenital-region', path: '/studio?topic=male-urogenital-region' },
+  { name: 'female-perineum', path: '/studio?topic=female-perineum' },
+  { name: 'pudendal-nerve-vessels', path: '/studio?topic=pudendal-nerve-vessels' },
+  { name: 'pelvic-cavity', path: '/studio?topic=pelvic-cavity' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

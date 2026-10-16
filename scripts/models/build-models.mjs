@@ -14,6 +14,8 @@
 //  - abdominal-wall.glb: the anterior abdominal wall over its skeleton, with the inguinal region,
 //    testes and penis, shared by the abdomen's wall and male external genitalia topics
 //  - abdominal-organs.glb: the abdominal viscera with their peritoneal folds and gut vessels
+//  - pelvis.glb: the male pelvis and perineum, its walls, floor, organs and pudendal nerves and
+//    vessels, shared by the pelvis and perineum topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -1702,6 +1704,102 @@ export const MODELS = [
           0.2,
         ],
       ]),
+    ],
+  },
+  {
+    name: 'pelvis',
+    // The pelvis and perineum (pelvis batch 1 onwards). BodyParts3D for the bones, the pelvic
+    // floor and walls, the anal sphincter, the male organs and the vessels; Z-Anatomy for the
+    // pelvic ligaments, pubic symphysis, ductus deferens and pudendal nerves, which sit about
+    // 2.5 cm forward and low here and take the same fit as the abdominal wall. Neither set has the
+    // superficial perineal muscles, the perineal membrane, the coccyx or the internal pudendal
+    // artery (its vein runs the same course), and BodyParts3D's body is male.
+    maxTriangles: 120_000,
+    error: 0.003,
+    parts: [
+      // Skeleton.
+      { id: 'hip-bones', concepts: ['right hip bone', 'left hip bone'], ratio: 0.35 },
+      { id: 'sacrum', concept: 'sacrum', ratio: 0.35 },
+      { id: 'lumbar-spine', concept: 'lumbar vertebra', ratio: 0.2, clipZ: [880, Infinity] },
+      { id: 'femurs', concepts: ['right femur', 'left femur'], ratio: 0.2, clipZ: [640, Infinity] },
+      ...zParts('Joints100.fbx', [
+        [
+          'pubic-symphysis',
+          ['Pubic symphysis', 'Inferior pubic ligament', 'Superior pubic ligament'],
+          1,
+        ],
+        [
+          'sacrotuberous-ligaments',
+          ['Right sacrotuberous ligament', 'Left sacrotuberous ligament'],
+          1,
+        ],
+        [
+          'sacrospinous-ligaments',
+          ['Right sacrospinous ligament', 'Left sacrospinous ligament'],
+          1,
+        ],
+        ['obturator-membranes', ['Right obturator membrane', 'Left obturator membrane'], 0.5],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      // Walls and floor.
+      { id: 'obturator-internus', concept: 'obturator internus', ratio: 0.3 },
+      { id: 'piriformis', concept: 'piriformis', ratio: 0.3 },
+      { id: 'gluteus-maximus', concept: 'gluteus maximus', ratio: 0.12 },
+      {
+        id: 'levator-ani',
+        concepts: ['pubococcygeus', 'puborectalis', 'iliococcygeus'],
+        ratio: 0.5,
+      },
+      { id: 'coccygeus', concept: 'coccygeus', ratio: 0.5 },
+      { id: 'external-anal-sphincter', concept: 'external anal sphincter', ratio: 1 },
+      // Organs.
+      { id: 'rectum', concept: 'rectum', ratio: 0.6 },
+      { id: 'urinary-bladder', concept: 'urinary bladder', ratio: 0.6 },
+      { id: 'ureters', concept: 'ureter', ratio: 0.4, clipZ: [-Infinity, 930] },
+      { id: 'prostate', concept: 'prostate', ratio: 1 },
+      { id: 'seminal-vesicles', concept: 'seminal vesicle', ratio: 1 },
+      ...zParts('VisceralSystem100.fbx', [
+        [
+          'ductus-deferens',
+          ['Right ductus deferens', 'Left ductus deferens'],
+          0.3,
+          { clipZ: [740, Infinity] },
+        ],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
+      // The penis is cut just below its root, which is all of it that lies in the perineum.
+      { id: 'urethra', concept: 'urethra', ratio: 1, clipZ: [745, Infinity] },
+      {
+        id: 'corpora-cavernosa',
+        concept: 'corpus cavernosum of penis',
+        ratio: 1,
+        clipZ: [745, Infinity],
+      },
+      {
+        id: 'corpus-spongiosum',
+        concept: 'corpus spongiosum of penis',
+        ratio: 1,
+        clipZ: [745, Infinity],
+      },
+      // Vessels and nerves.
+      {
+        id: 'iliac-arteries',
+        concepts: ['common iliac artery', 'external iliac artery', 'internal iliac artery'],
+        ratio: 0.4,
+      },
+      {
+        id: 'iliac-veins',
+        concepts: ['common iliac vein', 'external iliac vein', 'internal iliac vein'],
+        ratio: 0.4,
+      },
+      { id: 'internal-pudendal-vessels', concept: 'internal pudendal vein', ratio: 0.5 },
+      {
+        id: 'dorsal-arteries',
+        concept: 'subdivision of internal pudendal artery',
+        ratio: 0.6,
+        clipZ: [745, Infinity],
+      },
+      ...zParts('NervousSystem100.fbx', [
+        ['pudendal-nerves', ['Right pudendal nerve', 'Left pudendal nerve'], 0.4],
+      ]).map((part) => ({ ...part, ...PELVIC_FIT })),
     ],
   },
   {
