@@ -54,7 +54,7 @@ export function PathTracer({
           .filter((node) => affected.has(node.id))
           .map((node) => node.name)
           .join(', ')}.`
-      : 'Select a root or nerve to trace its path.';
+      : 'Select a box to trace its path.';
 
   return (
     // Fills the height it is given (a lesson's stage), or sizes from its width in a column.

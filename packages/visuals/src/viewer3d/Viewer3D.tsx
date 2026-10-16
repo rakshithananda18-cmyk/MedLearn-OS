@@ -142,6 +142,8 @@ export interface Viewer3DProps {
    * what is left, sliding there and back as the panel opens and closes.
    */
   insetRight?: number;
+  /** The same for a sheet over the bottom edge (phones): the model keeps above it. */
+  insetBottom?: number;
   /** One finger or the left button moves the model instead of turning it (the right turns it). */
   pan?: boolean;
 }
@@ -829,30 +831,41 @@ function CameraRig({
   return null;
 }
 
+/** One step of easing towards a goal (straight there when motion is reduced). */
+function easeToward(from: number, goal: number, delta: number, reducedMotion: boolean): number {
+  const next = reducedMotion ? goal : from + (goal - from) * (1 - Math.exp(-delta * 8));
+  return Math.abs(next - goal) < 0.5 ? goal : next;
+}
+
 /**
  * Keeps the model in the middle of the view left uncovered: a panel over the right edge shifts
- * the picture left by half its width, easing there and back (at once when motion is reduced).
- * The camera's own view is shifted, so the model keeps its size and taps still land true.
+ * the picture left by half its width, a sheet over the bottom shifts it up by half its height,
+ * easing there and back (at once when motion is reduced). The camera's own view is shifted, so
+ * the model keeps its size and taps still land true.
  */
-function ViewInset({ right, reducedMotion }: Readonly<{ right: number; reducedMotion: boolean }>) {
+function ViewInset({
+  right,
+  bottom,
+  reducedMotion,
+}: Readonly<{ right: number; bottom: number; reducedMotion: boolean }>) {
   const { camera, size, invalidate } = useThree();
-  const shift = useRef(0);
-  const applied = useRef({ shift: 0, width: 0, height: 0 });
-  useEffect(() => invalidate(), [right, invalidate]);
+  const shift = useRef({ x: 0, y: 0 });
+  const applied = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  useEffect(() => invalidate(), [right, bottom, invalidate]);
   useFrame((_, delta) => {
-    const goal = right / 2;
-    let next = goal;
-    if (!reducedMotion) next = shift.current + (goal - shift.current) * (1 - Math.exp(-delta * 8));
-    shift.current = Math.abs(next - goal) < 0.5 ? goal : next;
-    if (shift.current !== goal) invalidate();
+    const goal = { x: right / 2, y: bottom / 2 };
+    const x = easeToward(shift.current.x, goal.x, delta, reducedMotion);
+    const y = easeToward(shift.current.y, goal.y, delta, reducedMotion);
+    shift.current = { x, y };
+    if (x !== goal.x || y !== goal.y) invalidate();
     const last = applied.current;
-    if (last.shift === shift.current && last.width === size.width && last.height === size.height) {
+    if (last.x === x && last.y === y && last.width === size.width && last.height === size.height) {
       return;
     }
     const view = camera as PerspectiveCamera;
-    if (shift.current === 0) view.clearViewOffset();
-    else view.setViewOffset(size.width, size.height, shift.current, 0, size.width, size.height);
-    applied.current = { shift: shift.current, width: size.width, height: size.height };
+    if (x === 0 && y === 0) view.clearViewOffset();
+    else view.setViewOffset(size.width, size.height, x, y, size.width, size.height);
+    applied.current = { x, y, width: size.width, height: size.height };
   });
   return null;
 }
@@ -936,6 +949,7 @@ export default function Viewer3D({
   focusId = null,
   pose = null,
   insetRight = 0,
+  insetBottom = 0,
   pan = false,
 }: Readonly<Viewer3DProps>) {
   // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
@@ -1081,7 +1095,7 @@ export default function Viewer3D({
           }
         />
         <PanLimit groupRef={group} />
-        <ViewInset right={insetRight} reducedMotion={reducedMotion} />
+        <ViewInset right={insetRight} bottom={insetBottom} reducedMotion={reducedMotion} />
         <CameraRig
           model={model}
           stopId={stopId}

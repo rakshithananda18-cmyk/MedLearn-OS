@@ -32,6 +32,8 @@ export default defineConfig({
     command: `node node_modules/next/dist/bin/next start --port ${PORT}`,
     cwd: 'apps/web',
     url: `http://localhost:${PORT}/api/health`,
+    // The production server is closed without an access list; the tests use it open.
+    env: { ACCESS_OPEN: 'true' },
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },

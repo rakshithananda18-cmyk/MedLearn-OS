@@ -73,6 +73,8 @@ export type Strength = 'new' | 'weak' | 'building' | 'strong';
 export interface SectionStrength {
   id: string;
   label: string;
+  /** The body region (or subject) it belongs to, for folding the list. */
+  group: string;
   slugs: string[];
   strength: Strength;
   /** Average mastery of the section's topics, 0 to 100. */
@@ -94,10 +96,10 @@ export function sectionStrengths(
 ): SectionStrength[] {
   const sections = tree.flatMap((node) =>
     node.kind === 'branch' && node.children.some((child) => child.kind === 'branch')
-      ? node.children
-      : [node],
+      ? node.children.map((child) => ({ section: child, group: node.label }))
+      : [{ section: node, group: node.kind === 'branch' ? node.label : node.title }],
   );
-  return sections.map((section) => {
+  return sections.map(({ section, group }) => {
     const slugs = topicsUnder(section).map((topic) => topic.slug);
     const inSection = topics.filter((topic) => slugs.includes(topic.slug));
     const questions = inSection.flatMap((topic) => topic.questionIds);
@@ -117,6 +119,7 @@ export function sectionStrengths(
     return {
       id: section.kind === 'branch' ? section.id : section.slug,
       label: section.kind === 'branch' ? section.label : section.title,
+      group,
       slugs,
       strength,
       percent,

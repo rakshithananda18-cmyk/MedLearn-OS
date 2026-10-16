@@ -74,6 +74,8 @@ export interface ModelViewProps {
   flat: boolean;
   /** How much of the view's right edge a panel covers, in pixels: the model keeps beside it. */
   insetRight: number;
+  /** How much of the view's bottom edge a sheet covers, in pixels (phones). */
+  insetBottom: number;
   /** A plain drag moves the model instead of turning it. */
   pan: boolean;
   onPick: (id: string | null) => void;
@@ -114,6 +116,7 @@ export function ModelView(props: Readonly<ModelViewProps>) {
         focusId={props.focusId}
         pose={props.pose}
         insetRight={props.insetRight}
+        insetBottom={props.insetBottom}
         pan={props.pan}
       />
     );
@@ -196,7 +199,10 @@ export function ViewTools({
       role="toolbar"
       aria-label="View"
       aria-orientation="vertical"
-      className={cx(GLASS, 'pointer-events-auto flex flex-col gap-1 rounded-full p-1')}
+      className={cx(
+        GLASS,
+        'pointer-events-auto flex max-h-full flex-col gap-1 overflow-y-auto overscroll-contain rounded-full p-1',
+      )}
     >
       {xray === null ? null : (
         <>

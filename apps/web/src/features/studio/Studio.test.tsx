@@ -40,6 +40,7 @@ const viewer = vi.hoisted(() => ({
     focus: Viewer3DFocus | null;
     pose: Viewer3DPose | null;
     insetRight: number;
+    insetBottom: number;
     pan: boolean;
     focusId: string | null;
   },
@@ -112,6 +113,18 @@ afterEach(() => {
 });
 
 describe('Studio on a phone', () => {
+  it('keeps the model above the sheet along the bottom of the screen', async () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ top: window.innerHeight - 300, width: window.innerWidth } as DOMRect);
+    await renderStudio('axilla');
+    expect(viewer.props?.insetBottom).toBe(300);
+    // The tools stop above the sheet, so none hides under it on a short phone.
+    const tools = screen.getByRole('toolbar', { name: 'View' }).parentElement;
+    expect(tools?.style.bottom).toBe('312px');
+    rect.mockRestore();
+  });
+
   it('opens on the whole body: regions, their topics as cards, counts on the model', async () => {
     const { container } = await renderStudio();
     expect(screen.getByRole('heading', { level: 1, name: 'Whole body' })).toBeInTheDocument();
@@ -337,7 +350,7 @@ describe('Studio on a wide screen', () => {
     expect(screen.getByText('Find it on the model')).toBeInTheDocument();
   });
 
-  it('lists the topics folded to the regions, one open at a time, the next one to continue', async () => {
+  it('lists the topics unfolded to the open one, one branch open at a time, the next to continue', async () => {
     wideScreen();
     await renderStudio('axilla');
     const tree = screen.getByRole('list', { name: 'Regions and topics' });
@@ -346,13 +359,11 @@ describe('Studio on a wide screen', () => {
     expect(
       within(resume).getByRole('button', { name: /Pectoral region and breast.*Up next/ }),
     ).toBeVisible();
-    const upper = within(tree).getByRole('button', { name: /^Upper limb/, expanded: false });
+    // Open on a topic, the list starts unfolded to it; the other regions stay folded.
+    const upper = within(tree).getByRole('button', { name: /^Upper limb/, expanded: true });
     const thorax = within(tree).getByRole('button', { name: /^Thorax\s?\d/, expanded: false });
     expect(thorax).toBeVisible();
-
-    await userEvent.click(upper);
-    const axilla = within(tree).getByRole('button', { name: /^Axilla\s?\d/, expanded: false });
-    await userEvent.click(axilla);
+    const axilla = within(tree).getByRole('button', { name: /^Axilla\s?\d/, expanded: true });
     expect(within(tree).getByRole('button', { name: /Axilla: walls.*Open/ })).toHaveAttribute(
       'aria-current',
       'true',

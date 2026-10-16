@@ -94,7 +94,8 @@ async function waitForServer() {
 const server = spawn(
   process.execPath,
   ['apps/web/node_modules/next/dist/bin/next', 'start', 'apps/web', '--port', String(PORT)],
-  { stdio: 'ignore' },
+  // The production server is closed without an access list; the budgets measure it open.
+  { stdio: 'ignore', env: { ...process.env, ACCESS_OPEN: 'true' } },
 );
 // Lighthouse drives a Chrome that is already running, so it never launches or cleans up its own.
 // Installed Google Chrome, as Lighthouse expects (Playwright's headless shell times differently).

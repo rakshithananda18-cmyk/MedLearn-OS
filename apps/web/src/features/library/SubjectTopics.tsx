@@ -14,6 +14,7 @@ import {
   topicsUnder,
   trailTo,
 } from '@/content/library';
+import { FoldBody } from '@/features/shell/FoldBody';
 
 /** A subject with its topics, as the library tree for it. */
 export interface LibrarySubject {
@@ -172,21 +173,15 @@ function Section({
         ) : null}
         <Chevron open={open} />
       </button>
-      <div
-        id={id}
-        inert={!open}
-        className={cx('fold motion-reduce:transition-none', open && 'fold-open')}
-      >
-        <div className="min-h-0 overflow-hidden">
-          <ul className="ml-6 flex flex-col pr-3 pb-3">
-            {topics.map((topic) => (
-              <li key={topic.slug} className={RAIL}>
-                <TopicRow topic={topic} state={state} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <FoldBody id={id} open={open}>
+        <ul className="ml-6 flex flex-col pr-3 pb-3">
+          {topics.map((topic) => (
+            <li key={topic.slug} className={RAIL}>
+              <TopicRow topic={topic} state={state} />
+            </li>
+          ))}
+        </ul>
+      </FoldBody>
     </div>
   );
 }
@@ -225,21 +220,15 @@ function Region({
         max={topics.length}
         aria-label={`${region.label}: ${done} of ${topics.length} learnt`}
       />
-      <div
-        id={id}
-        inert={!open}
-        className={cx('fold motion-reduce:transition-none', open && 'fold-open')}
-      >
-        <div className="min-h-0 overflow-hidden">
-          <ul className="flex flex-col gap-2 pt-1">
-            {sections.map((section) => (
-              <li key={section.id}>
-                <Section section={section} state={state} folds={folds} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <FoldBody id={id} open={open}>
+        <ul className="flex flex-col gap-2 pt-1">
+          {sections.map((section) => (
+            <li key={section.id}>
+              <Section section={section} state={state} folds={folds} />
+            </li>
+          ))}
+        </ul>
+      </FoldBody>
     </section>
   );
 }
