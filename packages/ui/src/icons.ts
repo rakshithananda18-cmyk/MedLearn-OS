@@ -53,6 +53,7 @@ export {
   PenLine,
   PersonStanding,
   Play,
+  Plus,
   RefreshCw,
   Rotate3d,
   RotateCcw,
