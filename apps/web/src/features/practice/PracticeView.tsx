@@ -95,10 +95,10 @@ function Mode({
   );
 }
 
-/** "6 of 8 right · 70% mastery" once questions are answered, else how many topics it holds. */
+/** "6 of 8 right · 70% covered" once questions are answered, else how many topics it holds. */
 function sectionDetail(section: SectionStrength): string {
   if (section.answered > 0) {
-    return `${section.correct} of ${section.answered} right · ${section.percent}% mastery`;
+    return `${section.correct} of ${section.answered} right · ${section.percent}% covered`;
   }
   const count = section.slugs.length;
   return `${count} ${count === 1 ? 'topic' : 'topics'}`;

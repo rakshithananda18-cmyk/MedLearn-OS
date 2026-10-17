@@ -132,8 +132,9 @@ export function UpNext({
 
 /**
  * Today's plan, the page's focus: what is done, ticked off, then each step left with its kind,
- * detail and minutes, the next one marked. The bar fills with the minutes done out of the day's
- * work (done and still planned), so it starts empty; the daily goal is a quieter number beside it.
+ * detail and minutes, the next one marked. The minutes done are estimates (each finished step
+ * counts its own), so they read "about"; the bar fills towards the daily goal, and the minutes
+ * still suggested stand apart from it, so more work on offer never looks like a goal moving away.
  */
 export function PlanCard({
   done,
@@ -152,7 +153,6 @@ export function PlanCard({
   goal: number;
   className?: string;
 }>) {
-  const total = studied + planned;
   const row = 'flex min-h-16 items-center gap-3 border-t border-border px-2 py-2';
   return (
     <section aria-labelledby="plan-title" className={cx(GLASS, 'flex flex-col p-4', className)}>
@@ -162,15 +162,19 @@ export function PlanCard({
         </h2>
         <span className="text-right text-sm">
           <span className="font-semibold text-primary-strong">
-            {studied} of {total} min done
+            {studied > 0 ? `About ${Math.round(studied)} min done` : 'Nothing done yet'}
           </span>
-          <span className="block text-xs text-fg-muted">{goal} min a day goal</span>
+          <span className="block text-xs text-fg-muted">
+            {`${goal > 0 && studied >= goal ? 'Daily goal met' : `${goal} min a day goal`}${
+              planned > 0 ? ` · ${Math.round(planned)} min suggested` : ''
+            }`}
+          </span>
         </span>
       </div>
       <span aria-hidden="true" className="mb-3 h-1 overflow-hidden rounded-full bg-border">
         <span
           className="block h-full rounded-full bg-primary"
-          style={{ width: `${Math.min(100, (100 * studied) / Math.max(total, 1))}%` }}
+          style={{ width: `${Math.min(100, (100 * studied) / Math.max(goal, 1))}%` }}
         />
       </span>
       <ol aria-label="Today's plan">

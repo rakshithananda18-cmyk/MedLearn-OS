@@ -75,9 +75,9 @@ describe('TodayView', () => {
       'href',
       '/learn/pectoral-region/lesson',
     );
-    // Nothing done yet: the plan reads empty, not as a share of the daily goal.
-    expect(screen.getByText('0 of 15 min done')).toBeInTheDocument();
-    expect(screen.getByText('20 min a day goal')).toBeInTheDocument();
+    // Nothing done yet; the goal and the minutes on offer are told apart.
+    expect(screen.getByText('Nothing done yet')).toBeInTheDocument();
+    expect(screen.getByText('20 min a day goal · 15 min suggested')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -93,7 +93,8 @@ describe('TodayView', () => {
       screen.getByRole('link', { name: /Practice: Pectoral region and breast/ }),
     ).toHaveAttribute('href', '/practice?topic=pectoral-region');
     // The finished lesson's minutes are done; the reviews, next lesson and practice remain.
-    expect(screen.getByText('15 of 34 min done')).toBeInTheDocument();
+    expect(screen.getByText('About 15 min done')).toBeInTheDocument();
+    expect(screen.getByText('20 min a day goal · 19 min suggested')).toBeInTheDocument();
   });
 
   it('switches to exam mode with a countdown and the diagram drill first', () => {

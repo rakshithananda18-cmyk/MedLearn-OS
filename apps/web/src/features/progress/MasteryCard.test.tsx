@@ -22,6 +22,6 @@ describe('MasteryCard', () => {
     });
     expect(screen.getByText('done')).toBeInTheDocument();
     expect(screen.getByText(`1/${topic.questionIds.length}`)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Mastery' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Study coverage' })).toBeInTheDocument();
   });
 });

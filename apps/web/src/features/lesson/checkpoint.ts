@@ -10,10 +10,14 @@ export const MAX_CHECKPOINTS = 50;
 type Checkpoints = Record<string, { step: number; at: number }>;
 
 const listeners = new Set<() => void>();
+const NONE: Checkpoints = {};
 let cachedRaw: string | null | undefined;
-let cached: Checkpoints = {};
+let cached: Checkpoints = NONE;
+// After a failed write the stored copy is stale, so this visit keeps to the one in memory.
+let memoryOnly = false;
 
 function read(): Checkpoints {
+  if (memoryOnly) return cached;
   let raw: string | null = null;
   try {
     raw = localStorage.getItem(STORAGE_KEY);
@@ -47,8 +51,10 @@ function write(next: Checkpoints): void {
   cached = next;
   try {
     localStorage.setItem(STORAGE_KEY, raw);
+    memoryOnly = false;
   } catch {
     // Blocked or full storage: the step is kept for this visit only.
+    memoryOnly = true;
   }
   for (const listener of listeners) listener();
 }
@@ -69,7 +75,7 @@ export function lessonStepOf(checkpoints: Checkpoints, slug: string | null): num
 
 /** The saved step of a lesson, live; null on the server and when the lesson has not been left. */
 export function useLessonStep(slug: string | null): number | null {
-  const checkpoints = useSyncExternalStore(subscribe, read, () => ({}) as Checkpoints);
+  const checkpoints = useSyncExternalStore(subscribe, read, () => NONE);
   return lessonStepOf(checkpoints, slug);
 }
 
@@ -87,6 +93,12 @@ export function saveLessonStep(slug: string, step: number, now = Date.now()): vo
 /** Forgets a lesson's step, when it is finished. */
 export function clearLessonStep(slug: string): void {
   saveLessonStep(slug, 0);
+}
+
+/** Forgets every lesson's step on this device, at sign-out; false when storage refused. */
+export function clearLessonSteps(): boolean {
+  write({});
+  return !memoryOnly;
 }
 
 /** What a lesson's main action says: carry on from a saved step, go over a finished one, or start. */

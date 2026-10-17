@@ -6,7 +6,11 @@ import type { TopicSummary } from '@/content/topics';
 
 import { useProgress } from './store';
 
-/** A topic's mastery at a glance: the percentage, and a bar each for lesson, practice and recall. */
+/**
+ * How much of a topic has been studied: the lesson, the questions got right and the recall cards
+ * gone over. It is coverage, not proof of memory (a card counts however it was rated), so it is
+ * not called mastery.
+ */
 export function MasteryCard({ topic }: Readonly<{ topic: TopicSummary }>) {
   const mastery = topicMastery(topic, useProgress(), new Date());
   const share = (part: number, whole: number) => (whole === 0 ? 0 : part / whole);
@@ -19,7 +23,7 @@ export function MasteryCard({ topic }: Readonly<{ topic: TopicSummary }>) {
     },
     {
       label: 'Recall',
-      detail: `${mastery.cardsReviewed}/${mastery.cardsTotal}`,
+      detail: `${mastery.cardsReviewed}/${mastery.cardsTotal} seen`,
       share: share(mastery.cardsReviewed, mastery.cardsTotal),
     },
   ];
@@ -33,7 +37,7 @@ export function MasteryCard({ topic }: Readonly<{ topic: TopicSummary }>) {
           id="mastery-title"
           className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink"
         >
-          Mastery
+          Study coverage
         </h2>
         <span className="text-gold font-display text-3xl" suppressHydrationWarning>
           {mastery.percent}%
