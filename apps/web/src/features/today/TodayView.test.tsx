@@ -173,7 +173,7 @@ describe('TodayView', () => {
     expect(
       within(plan).getByRole('link', { name: /Revise: Axilla: walls and contents/ }),
     ).toHaveAttribute('href', expect.stringMatching(/^\/practice\?goal=goal-\w+&topic=axilla$/));
-    const goals = screen.getByRole('region', { name: 'Tests and revisits' });
+    const goals = screen.getByRole('region', { name: 'Your plans' });
     expect(within(goals).getByText('Axilla test')).toBeInTheDocument();
     expect(within(goals).getByText(/Test in 3 days/)).toBeInTheDocument();
   });

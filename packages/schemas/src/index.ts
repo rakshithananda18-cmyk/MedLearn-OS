@@ -4,6 +4,7 @@ export * from './api';
 export * from './content';
 export * from './limits';
 export * from './logging';
+export * from './plan';
 export * from './progress';
 export * from './reviews';
 export * from './subjects';

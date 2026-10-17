@@ -393,7 +393,10 @@ function daysWord(days: number): string {
   return `in ${days} days`;
 }
 
-/** Class tests and revisits the student planned, counting down, with the way to plan another. */
+/** How each kind of plan names its date. */
+const GOAL_WHEN = { test: 'Test', revisit: 'Revisit by', learn: 'Learn by' } as const;
+
+/** The plans the student made, counting down, with the way to plan another. */
 export function GoalsCard({
   goals,
   className,
@@ -401,7 +404,7 @@ export function GoalsCard({
   goals: Array<{
     id: string;
     title: string;
-    kind: 'test' | 'revisit';
+    kind: keyof typeof GOAL_WHEN;
     daysLeft: number;
     done: number;
     total: number;
@@ -415,10 +418,10 @@ export function GoalsCard({
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id="goals-title" className={LABEL}>
-          Tests and revisits
+          Your plans
         </h2>
         <Link
-          href="/practice"
+          href="/plan"
           className="text-sm font-semibold text-primary-strong underline-offset-4 hover:underline"
         >
           {goals.length > 0 ? 'Manage' : 'Plan one'}
@@ -426,7 +429,8 @@ export function GoalsCard({
       </div>
       {goals.length === 0 ? (
         <Text size="sm" tone="muted">
-          A class test coming up? Plan it in Practice and Today fits the revision in.
+          A class test coming up, or a course to finish by the exam? Ask for a plan and Today fits
+          it in.
         </Text>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -441,8 +445,8 @@ export function GoalsCard({
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold text-ink">{goal.title}</span>
                 <span className="text-xs text-fg-muted" suppressHydrationWarning>
-                  {goal.kind === 'test' ? 'Test' : 'Revisit by'} {daysWord(goal.daysLeft)} ·{' '}
-                  {goal.done} of {goal.total} topics
+                  {GOAL_WHEN[goal.kind]} {daysWord(goal.daysLeft)} · {goal.done} of {goal.total}{' '}
+                  topics
                 </span>
               </span>
             </li>

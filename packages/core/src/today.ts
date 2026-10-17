@@ -18,18 +18,21 @@ export interface StudyProfile {
 }
 
 /**
- * A plan the student asked for between the daily ones: a class test to prepare for, or topics to
- * revisit by a date. Today spreads its topics over the days left.
+ * A plan the student asked for between the daily ones: a class test to prepare for, topics to
+ * revisit by a date, or new topics to learn by a date (a course, or part of one). Today spreads
+ * its topics over the days left.
  */
 export interface StudyGoal {
   id: string;
-  kind: 'test' | 'revisit';
+  kind: 'test' | 'revisit' | 'learn';
   title: string;
   /** Topic slugs, in the order to go over them. */
   topics: string[];
-  /** The test day, or the day to have revisited them by (YYYY-MM-DD). */
+  /** The test day, or the day to have revisited or learnt them by (YYYY-MM-DD). */
   date: string;
-  /** Topics already gone over for this goal. */
+  /** The first day to work on it (YYYY-MM-DD), when it waits: a course's later parts wait for the earlier ones. */
+  from?: string;
+  /** Topics already gone over for this goal (a topic to learn also counts once its lesson is done). */
   done: string[];
   /** When it was asked for (ISO time). */
   createdAt: string;
@@ -118,6 +121,7 @@ export type TodayItem =
   | {
       kind: 'goal';
       goalId: string;
+      goalKind: StudyGoal['kind'];
       goalTitle: string;
       topicSlug: string;
       title: string;
@@ -182,21 +186,70 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
 }
 
+/** A goal's topics already gone over: those ticked, and for a goal to learn, those learnt. */
+export function goalDone(goal: StudyGoal, learnt: readonly string[] = []): string[] {
+  return goal.topics.filter(
+    (slug) => goal.done.includes(slug) || (goal.kind === 'learn' && learnt.includes(slug)),
+  );
+}
+
 /**
  * A goal's pace: whole days until its date, and the topics to go over today to finish in time.
  * A test is prepared on the days before it (on the day itself only when it is today); a revisit
- * may use its last day too. Nothing is due once the date has passed or every topic is done.
+ * or topics to learn may use the last day too. Nothing is due once the date has passed or every
+ * topic is done. `learnt` is the lessons finished, which tick off a goal to learn.
  */
-export function goalToday(goal: StudyGoal, today: string): { daysLeft: number; topics: string[] } {
+export function goalToday(
+  goal: StudyGoal,
+  today: string,
+  learnt: readonly string[] = [],
+): { daysLeft: number; topics: string[] } {
   const daysLeft = daysBetween(today, goal.date);
-  const remaining = goal.topics.filter((slug) => !goal.done.includes(slug));
-  if (daysLeft < 0 || remaining.length === 0) return { daysLeft, topics: [] };
+  const done = goalDone(goal, learnt);
+  const remaining = goal.topics.filter((slug) => !done.includes(slug));
+  const waiting = goal.from !== undefined && today < goal.from;
+  if (daysLeft < 0 || remaining.length === 0 || waiting) return { daysLeft, topics: [] };
   const studyDays = goal.kind === 'test' ? Math.max(1, daysLeft) : daysLeft + 1;
   return { daysLeft, topics: remaining.slice(0, Math.ceil(remaining.length / studyDays)) };
 }
 
+/**
+ * How a goal falls over the days from today, if each day's share is done: the same pace Today
+ * keeps, day by day. Missed days push the rest later, as Today does, so this is the plan as it
+ * stands today.
+ */
+export function goalSchedule(
+  goal: StudyGoal,
+  today: string,
+  learnt: readonly string[] = [],
+): Array<{ date: string; topics: string[] }> {
+  const days: Array<{ date: string; topics: string[] }> = [];
+  let done = goalDone(goal, learnt);
+  const start = goal.from !== undefined && goal.from > today ? goal.from : today;
+  for (let day = start; daysBetween(day, goal.date) >= 0; day = addDays(day, 1)) {
+    const { topics } = goalToday({ ...goal, done }, day);
+    if (topics.length === 0) break;
+    days.push({ date: day, topics });
+    done = [...done, ...topics];
+  }
+  return days;
+}
+
+/** The heaviest day of a goal in minutes, at the pace Today keeps; `minutesOf` times each topic. */
+export function goalLoad(
+  goal: Pick<StudyGoal, 'kind' | 'topics' | 'date' | 'from'>,
+  today: string,
+  minutesOf: (slug: string) => number,
+): number {
+  const days = goalSchedule({ ...goal, id: '', title: '', done: [], createdAt: '' }, today);
+  return Math.max(
+    0,
+    ...days.map((day) => day.topics.reduce((sum, slug) => sum + minutesOf(slug), 0)),
+  );
+}
+
 /** Minutes to go over a topic again: its questions, then its recall cards. */
-function revisitMinutes(topic: PlannableTopic): number {
+export function revisitMinutes(topic: PlannableTopic): number {
   return Math.max(
     3,
     topic.questionIds.length * MINUTES_PER_QUESTION +
@@ -335,11 +388,6 @@ export function buildTodayPlan(
         ]
       : [];
 
-  const next = topics.find((topic) => !progress.completedLessons.includes(topic.slug));
-  const learn: TodayItem[] = next
-    ? [{ kind: 'learn', topicSlug: next.slug, title: next.title, minutes: next.estimatedMinutes }]
-    : [];
-
   const practice: TodayItem[] = topics.flatMap((topic) => {
     const open = openQuestionIds(topic, progress).length;
     return open > 0
@@ -373,22 +421,31 @@ export function buildTodayPlan(
   const goals: TodayItem[] = progress.goals
     .filter((goal) => !progress.removedGoals.includes(goal.id))
     .flatMap((goal) =>
-      goalToday(goal, today).topics.flatMap((slug) => {
+      goalToday(goal, today, progress.completedLessons).topics.flatMap((slug) => {
         const topic = topics.find((item) => item.slug === slug);
         return topic
           ? [
               {
                 kind: 'goal' as const,
                 goalId: goal.id,
+                goalKind: goal.kind,
                 goalTitle: goal.title,
                 topicSlug: slug,
                 title: topic.title,
-                minutes: revisitMinutes(topic),
+                // A topic to learn takes its lesson; one to go over again, its questions and cards.
+                minutes: goal.kind === 'learn' ? topic.estimatedMinutes : revisitMinutes(topic),
               },
             ]
           : [];
       }),
     );
+
+  // The next new topic in the book's order, unless a goal to learn has it today already.
+  const next = topics.find((topic) => !progress.completedLessons.includes(topic.slug));
+  const learn: TodayItem[] =
+    next && !goals.some((item) => item.kind === 'goal' && item.topicSlug === next.slug)
+      ? [{ kind: 'learn', topicSlug: next.slug, title: next.title, minutes: next.estimatedMinutes }]
+      : [];
 
   const revisits: TodayItem[] = Object.entries(progress.revisits)
     .filter(

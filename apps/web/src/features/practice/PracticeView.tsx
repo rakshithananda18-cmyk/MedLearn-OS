@@ -267,7 +267,10 @@ function Goals({
   onRevise: (goal: StudyGoal, slug: string) => void;
 }>) {
   const today = dayKey(new Date());
-  const upcoming = goals.filter((goal) => goalToday(goal, today).daysLeft >= 0);
+  // Tests and revisits are practised here; topics to learn are lessons, on Today and the Plan page.
+  const upcoming = goals.filter(
+    (goal) => goal.kind !== 'learn' && goalToday(goal, today).daysLeft >= 0,
+  );
   return (
     <section
       aria-labelledby="goals-title"

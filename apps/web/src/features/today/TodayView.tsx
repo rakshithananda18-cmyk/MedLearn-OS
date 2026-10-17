@@ -7,6 +7,7 @@ import {
   dayKey,
   dayOf,
   type ExamPhase,
+  goalDone,
   goalToday,
   lastDays,
   type LearnerProgress,
@@ -188,7 +189,7 @@ function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
     .slice(0, 3);
 }
 
-/** The planned tests and revisits still ahead, soonest first. */
+/** The planned tests, revisits and topics to learn still ahead, soonest first. */
 function upcomingGoals(progress: LearnerProgress, now: Date) {
   const today = dayKey(now);
   return progress.goals
@@ -197,7 +198,7 @@ function upcomingGoals(progress: LearnerProgress, now: Date) {
       title: goal.title,
       kind: goal.kind,
       daysLeft: goalToday(goal, today).daysLeft,
-      done: goal.done.length,
+      done: goalDone(goal, progress.completedLessons).length,
       total: goal.topics.length,
     }))
     .filter((goal) => goal.daysLeft >= 0)

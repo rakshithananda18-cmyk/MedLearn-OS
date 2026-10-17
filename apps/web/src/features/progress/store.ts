@@ -181,7 +181,7 @@ export function saveNote(topicSlug: string, text: string, now = new Date()): voi
 
 /** Plans a class test or a revisit: Today spreads its topics over the days until its date. */
 export function addGoal(
-  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date'>,
+  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date' | 'from'>,
   now = new Date(),
 ): StudyGoal {
   // getRandomValues also works on a phone opening a local development server over HTTP.
