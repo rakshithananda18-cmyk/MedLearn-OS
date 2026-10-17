@@ -33,7 +33,15 @@ import {
   SettingsPanel,
   TopicsPanel,
 } from './panels';
-import { hintQuiz, points, skipQuiz, startQuiz } from './quiz';
+import {
+  answerQuiz,
+  hintQuiz,
+  points,
+  type QuizKind,
+  roundOver,
+  skipQuiz,
+  startQuiz,
+} from './quiz';
 import {
   loadBest,
   loadSettings,
@@ -213,7 +221,16 @@ function useStudio({
     togglePanel: (panel: Exclude<Panel, null>) =>
       update({ panel: session.panel === panel ? null : panel }),
     changeMode: (mode: Mode) => setSession(changeModeIn(session, mode, context, loadBest(slug))),
-    playAgain: () => update({ quiz: startQuiz(context.pool, loadBest(slug)) }),
+    /** A new round, of the same kind unless another is asked for. */
+    playAgain: (kind: QuizKind = session.quiz?.kind ?? 'find') =>
+      update({ quiz: startQuiz(context.pool, loadBest(slug), Math.random, kind) }),
+    /** "Name it": a name chosen from the card. */
+    answer: (id: string) => {
+      if (!session.quiz || roundOver(session.quiz)) return;
+      const quiz = answerQuiz(session.quiz, id, context.pool);
+      if (quiz.best > session.quiz.best) saveBest(slug, quiz.best);
+      update({ quiz });
+    },
     skip: () => session.quiz && update({ quiz: skipQuiz(session.quiz, context.pool) }),
     hint: () => session.quiz && update({ quiz: hintQuiz(session.quiz) }),
     /** After a round, a structure to learn again: back to exploring, with it picked. */
@@ -322,6 +339,8 @@ function labelsFor(
   }
   const quiz = session.mode === 'quiz' ? session.quiz : null;
   if (quiz) {
+    // "Name it": a mark on the structure to name, never its name.
+    if (quiz.kind === 'name') return [{ id: quiz.targetId, text: '?', active: true }];
     // Only what was tapped: never the name asked for.
     if (!quiz.picked || !quiz.last) return [];
     const name = studio.nameOf(quiz.picked);
@@ -872,7 +891,7 @@ function Draw({ studio }: Readonly<{ studio: StudioState }>) {
   );
 }
 
-/** "Find it": the scoreboard, its hints and skips, and the end of the round. */
+/** "Find it" and "Name it": the scoreboard, its answers, hints and skips, and the end of the round. */
 function Quiz({ studio }: Readonly<{ studio: StudioState }>) {
   const { quiz } = studio.session;
   if (!quiz) return null;
@@ -883,8 +902,10 @@ function Quiz({ studio }: Readonly<{ studio: StudioState }>) {
       onHint={studio.hint}
       onSkip={studio.skip}
       onLearn={studio.learn}
-      onAgain={studio.playAgain}
+      onAgain={() => studio.playAgain()}
       onEnd={() => studio.changeMode('explore')}
+      onAnswer={studio.answer}
+      onKind={studio.playAgain}
     />
   );
 }

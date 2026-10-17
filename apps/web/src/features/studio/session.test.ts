@@ -10,6 +10,7 @@ import {
   litIn,
   openTopicIn,
   pickIn,
+  quizFocus,
   startSession,
   toggled,
 } from './session';
@@ -75,6 +76,17 @@ describe('studio session', () => {
       mode: 'explore',
       quiz: null,
     });
+  });
+
+  it('plays "Name it" with its structure shown and turned to, answered from the card only', () => {
+    const open = startSession(vessels, 'upper-limb', 'ink', []);
+    const playing = changeModeIn(open, 'quiz', context, 0);
+    const naming = { ...playing, quiz: playing.quiz && { ...playing.quiz, kind: 'name' as const } };
+    const target = naming.quiz?.targetId ?? '';
+    expect([...litIn(naming, vessels)]).toEqual([target]);
+    expect(quizFocus(naming.quiz)).toBe(target);
+    // A tap on the model does not answer it.
+    expect(pickIn(naming, target, context).quiz?.score).toBe(0);
   });
 
   it('opens another topic fresh but keeps the pen, x-ray and layers', () => {

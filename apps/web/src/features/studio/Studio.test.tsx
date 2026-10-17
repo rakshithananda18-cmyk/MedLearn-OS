@@ -363,6 +363,41 @@ describe('Studio on a phone', () => {
     expect(viewer.props?.highlight.size).toBeGreaterThan(0);
   });
 
+  it('plays "Name it": the model marks a structure and the card offers four names', async () => {
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Name', pressed: false }));
+    expect(screen.getByText('Which structure is marked?')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hint' })).not.toBeInTheDocument();
+    // The structure to name glows, marked but not named, and the camera turns to it.
+    expect(viewer.props?.highlight).toEqual(new Set(['cords']));
+    expect(viewer.props?.labels).toEqual([{ id: 'cords', text: '?', active: true }]);
+    expect(viewer.props?.focusId).toBe('cords');
+
+    const names = within(screen.getByRole('group', { name: 'Choose its name' }));
+    expect(names.getAllByRole('button')).toHaveLength(4);
+    // A tap on the model does not answer it.
+    tap('cords');
+    expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+    const wrong = names.getAllByRole('button')[1] as HTMLElement;
+    await userEvent.click(wrong);
+    expect(
+      screen.getByText(`Not the ${wrong.textContent}. Turn the model and look again.`),
+    ).toBeInTheDocument();
+    expect(wrong).toBeDisabled();
+    await userEvent.click(names.getByRole('button', { name: 'Cords of the brachial plexus' }));
+    expect(
+      screen.getByText('Right, the Cords of the brachial plexus, for half a point. Next one.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Question 2 of 10')).toBeInTheDocument();
+    expect(viewer.props?.highlight).not.toEqual(new Set(['cords']));
+
+    // Back to finding: a new round.
+    await userEvent.click(screen.getByRole('button', { name: 'Find', pressed: false }));
+    expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+    expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+  });
+
   it('ends a round from the question card', async () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
