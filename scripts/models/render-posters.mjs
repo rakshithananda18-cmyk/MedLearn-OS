@@ -152,6 +152,14 @@ export const POSTERS = [
   { name: 'female-perineum', path: '/studio?topic=female-perineum' },
   { name: 'pudendal-nerve-vessels', path: '/studio?topic=pudendal-nerve-vessels' },
   { name: 'pelvic-cavity', path: '/studio?topic=pelvic-cavity' },
+  { name: 'urinary-bladder', path: '/studio?topic=urinary-bladder' },
+  { name: 'urethra', path: '/studio?topic=urethra' },
+  { name: 'prostate', path: '/studio?topic=prostate' },
+  { name: 'ductus-deferens', path: '/studio?topic=ductus-deferens' },
+  { name: 'ovary-uterine-tube', path: '/studio?topic=ovary-uterine-tube' },
+  { name: 'uterus', path: '/studio?topic=uterus' },
+  { name: 'uterine-supports', path: '/studio?topic=uterine-supports' },
+  { name: 'vagina', path: '/studio?topic=vagina' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

@@ -30,6 +30,7 @@ import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
 import { deltoidRotatorCuff } from './deltoid-rotator-cuff';
 import { diaphragm } from './diaphragm';
+import { ductusDeferens } from './ductus-deferens';
 import { duodenum } from './duodenum';
 import { elbowAnastomosis } from './elbow-anastomosis';
 import { elbowJoint } from './elbow-joint';
@@ -83,6 +84,7 @@ import { mediastinum } from './mediastinum';
 import { mesentericVessels } from './mesenteric-vessels';
 import { nerveInjuries } from './nerve-injuries';
 import { oesophagus } from './oesophagus';
+import { ovaryUterineTube } from './ovary-uterine-tube';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
 import { palmVesselsNerves } from './palm-vessels-nerves';
@@ -102,6 +104,7 @@ import { poplitealVesselsNerves } from './popliteal-vessels-nerves';
 import { portalVein } from './portal-vein';
 import { posteriorAbdominalWall } from './posterior-abdominal-wall';
 import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
+import { prostate } from './prostate';
 import { pudendalNerveVessels } from './pudendal-nerve-vessels';
 import { radioulnarJoints } from './radioulnar-joints';
 import { rectusSheath } from './rectus-sheath';
@@ -134,6 +137,11 @@ import { trachea } from './trachea';
 import { upperLimbDevelopment } from './upper-limb-development';
 import { upperLimbXrays } from './upper-limb-xrays';
 import { ureter } from './ureter';
+import { urethra } from './urethra';
+import { urinaryBladder } from './urinary-bladder';
+import { uterineSupports } from './uterine-supports';
+import { uterus } from './uterus';
+import { vagina } from './vagina';
 import { wristBack } from './wrist-back';
 import { wristHandJoints } from './wrist-hand-joints';
 
@@ -274,6 +282,14 @@ export const TOPICS: Topic[] = [
   femalePerineum,
   pudendalNerveVessels,
   pelvicCavity,
+  urinaryBladder,
+  urethra,
+  prostate,
+  ductusDeferens,
+  ovaryUterineTube,
+  uterus,
+  uterineSupports,
+  vagina,
   oxygenCurve,
 ];
 

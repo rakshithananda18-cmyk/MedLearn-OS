@@ -154,6 +154,8 @@ const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
   nerve: 1.8,
   lymph: 3.2,
   outline: 1.4,
+  organ: 2.2,
+  artery: 1.8,
 };
 const MARKER_RADIUS_MM = 28;
 /** A press that travels further than this (in pixels) turned or moved the model: not a tap. */
@@ -194,6 +196,8 @@ const TRACE_COLOUR: Record<ModelTrace['kind'], string> = {
   nerve: '--color-anat-nerve',
   lymph: '--color-anat-lymph',
   outline: '--color-fg-muted',
+  organ: '--color-anat-organ',
+  artery: '--color-anat-artery',
 };
 // Muscles, skin, organs, membranes and joint capsules are see-through, so what lies in them stays
 // visible: the vessels under a muscle, the bronchi in a lung, the lung in its pleura, the cruciate
