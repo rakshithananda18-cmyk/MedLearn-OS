@@ -187,6 +187,34 @@
 }
 
 /*
+ * The study companion's palette: the character keeps its colours in both themes, like the
+ * anatomical palette. One look stays once the founder chooses; the others' colours go with them.
+ */
+@theme static {
+  --color-mascot-ink: #1f2a33;
+  --color-mascot-light: #ffffff;
+  --color-mascot-mouth: #7a2733;
+  --color-mascot-tongue: #f0868f;
+  --color-mascot-muted: #8aa0ae;
+  --color-mascot-confetti: #e9707a;
+  --color-mascot-heart: #f28b86;
+  --color-mascot-heart-line: #a83c46;
+  --color-mascot-heart-vessel: #de6670;
+  --color-mascot-heart-vein: #86acd9;
+  --color-mascot-heart-vein-line: #40699b;
+  --color-mascot-heart-cheek: #d9475a;
+  --color-mascot-neuron: #f6cf68;
+  --color-mascot-neuron-line: #9c7220;
+  --color-mascot-neuron-myelin: #fff4d6;
+  --color-mascot-neuron-cheek: #e8875a;
+  --color-mascot-vertebra: #f4e9d2;
+  --color-mascot-vertebra-line: #86745a;
+  --color-mascot-vertebra-cheek: #e58f8a;
+  --color-mascot-disc: #a7d8d3;
+  --color-mascot-disc-line: #3c8984;
+}
+
+/*
  * Anatomical palette: reserved for diagrams only, identical in both themes (diagrams sit on
  * a light panel). Interface states never reuse these hues; always pair with a label.
  * Static, so the variables are always emitted: the 3D viewer reads them for its materials.

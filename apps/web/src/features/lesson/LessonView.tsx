@@ -11,7 +11,7 @@ import {
   NORMAL_BLOOD,
   PathTracer,
 } from '@medlearn/visuals';
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { completeLesson } from '@/features/progress/store';
@@ -104,6 +104,17 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
   const [picked, setPicked] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
   const stepIndex = picked ?? resumeAt ?? 0;
+  // After Next, Back or a step tap, the new explanation is brought into view and focused, so it
+  // never changes out of sight above a stacked visual. Other renders leave the scroll alone.
+  const moved = useRef(false);
+  const headingId = `${useId()}-step`;
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    const heading = document.getElementById(headingId);
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: 'nearest' });
+  }, [stepIndex, headingId]);
   const step = topic.lesson[stepIndex] ?? topic.lesson[0];
   if (!step) return null;
   if (finished) return <LessonWrapUp topic={topic} />;
@@ -112,6 +123,7 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
   const resumed = picked === null && resumeAt !== null && resumeAt > 0;
 
   const go = (index: number) => {
+    moved.current = true;
     setPicked(index);
     saveLessonStep(topic.slug, index);
   };
@@ -153,7 +165,9 @@ export function LessonView({ topic, digest }: Readonly<{ topic: Topic; digest?: 
             </p>
           ) : null}
           <div key={step.id} className="flex animate-rise flex-col gap-2">
-            <Heading level={2}>{step.title}</Heading>
+            <Heading level={2} id={headingId} tabIndex={-1} className="scroll-mt-4">
+              {step.title}
+            </Heading>
             <Text>{step.body}</Text>
           </div>
           {/* Where this step sits in the lesson, on screens with room beside the visual. */}

@@ -9,6 +9,11 @@ async function openControlledApp(page: Page) {
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
+  // The worker claims open pages after clearing old caches, which a slow runner can stretch past
+  // the poll; a page loaded once it is active is always controlled.
+  if (!(await page.evaluate(() => navigator.serviceWorker.controller !== null))) {
+    await page.reload();
+  }
   await expect
     .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
     .toBe(true);

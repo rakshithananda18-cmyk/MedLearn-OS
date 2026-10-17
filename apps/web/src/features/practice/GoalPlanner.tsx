@@ -22,7 +22,10 @@ const KINDS = [
   },
 ];
 
-const DEFAULT_TITLE: Record<StudyGoal['kind'], string> = {
+/** Planned by hand here; topics to learn by a date come from the Plan page. */
+type HandKind = Exclude<StudyGoal['kind'], 'learn'>;
+
+const DEFAULT_TITLE: Record<HandKind, string> = {
   test: 'Class test',
   revisit: 'Revisit',
 };
@@ -40,7 +43,7 @@ export function GoalPlanner({
   titles: Record<string, string>;
 }>) {
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<StudyGoal['kind']>('test');
+  const [kind, setKind] = useState<HandKind>('test');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [chosen, setChosen] = useState<string[]>([]);

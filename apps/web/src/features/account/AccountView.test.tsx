@@ -166,6 +166,7 @@ describe('AccountView', () => {
     act(() => saveNote('topic', 'Just written'));
     localStorage.setItem('ml-drawings-v1', '{"axilla":[{"points":[]}]}');
     localStorage.setItem('ml-find-it-best-v1', '{"axilla":4}');
+    localStorage.setItem('ml-lesson-steps-v1', '{"axilla":{"step":2,"at":1}}');
     localStorage.setItem('ml-theme', 'dark');
     const fetchMock = server({
       '/api/account': [{ body: signedIn }],
@@ -190,6 +191,7 @@ describe('AccountView', () => {
     expect(refresh).toHaveBeenCalledOnce();
     expect(localStorage.getItem('ml-drawings-v1')).toBeNull();
     expect(localStorage.getItem('ml-find-it-best-v1')).toBeNull();
+    expect(localStorage.getItem('ml-lesson-steps-v1')).not.toContain('axilla');
     expect(localStorage.getItem('ml-theme')).toBe('dark');
   });
 

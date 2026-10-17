@@ -1,11 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { completeLesson, resetProgress } from '@/features/progress/store';
 import { LessonModeTile } from '@/features/topic/LessonModeTile';
 
 import {
   clearLessonStep,
+  clearLessonSteps,
   lessonAction,
   lessonStepOf,
   MAX_CHECKPOINTS,
@@ -16,7 +17,9 @@ const KEY = 'ml-lesson-steps-v1';
 const saved = () => JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, unknown>;
 
 afterEach(() => {
+  vi.restoreAllMocks();
   act(() => resetProgress());
+  clearLessonSteps();
   localStorage.removeItem(KEY);
 });
 
@@ -66,5 +69,24 @@ describe('lesson checkpoints', () => {
       completeLesson('pectoral-region', 15);
     });
     expect(screen.getByRole('link', { name: /Go over the lesson/ })).toBeVisible();
+  });
+
+  it('keeps the step for this visit when storage is full, instead of the stale stored one', () => {
+    render(
+      <ul>
+        <LessonModeTile slug="pectoral-region" steps={8} minutes={15} />
+      </ul>,
+    );
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Full', 'QuotaExceededError');
+    });
+    act(() => saveLessonStep('pectoral-region', 2));
+    expect(screen.getByRole('link', { name: /Continue lesson\s*Step 3 of 8/ })).toBeVisible();
+    let cleared = true;
+    act(() => {
+      cleared = clearLessonSteps();
+    });
+    expect(cleared).toBe(false);
+    expect(screen.getByRole('link', { name: /Start lesson/ })).toBeVisible();
   });
 });

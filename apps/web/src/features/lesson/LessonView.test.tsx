@@ -52,15 +52,15 @@ describe('LessonView', () => {
     expect(localStorage.getItem('ml-lesson-steps-v1')).not.toContain('brachial-plexus');
   });
 
-  it('walks forwards and backwards through the steps', async () => {
+  it('walks forwards and backwards, focusing each new step so it is never out of sight', async () => {
     render(<LessonView topic={brachialPlexus} />);
-    expect(screen.getByRole('heading', { name: 'Five roots' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Five roots' })).not.toHaveFocus();
     expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByRole('heading', { name: 'Three trunks' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Three trunks' })).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByRole('heading', { name: 'Five roots' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Five roots' })).toHaveFocus();
   });
 
   it('hands over a slider for a step that names an angle, then goes back to the diagram', async () => {

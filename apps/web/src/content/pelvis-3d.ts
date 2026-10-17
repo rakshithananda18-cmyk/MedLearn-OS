@@ -387,3 +387,33 @@ export const PELVIC_INLET_ABOVE: CameraStop = {
   target: [0, -90, 860],
   position: [0, -480, 1230],
 };
+
+/** The male pelvis from the left, the hip bone see-through. */
+export const MALE_PELVIS_SIDE: CameraStop = {
+  id: 'male-pelvis-side',
+  title: 'From the left',
+  description:
+    'The bladder behind the pubic symphysis, the prostate below its neck, the seminal vesicles and ductus deferens behind its base, and the rectum behind them all, curving down to the anal canal.',
+  target: [0, -80, 800],
+  position: [420, -90, 820],
+};
+
+/** The base of the bladder from above and behind, the rectum faint. */
+export const BLADDER_BASE_BEHIND: CameraStop = {
+  id: 'bladder-base-behind',
+  title: 'The base from behind',
+  description:
+    'The ureters reach the back of the bladder; the ductus deferens cross over them and run down medial to the seminal vesicles to meet their ducts at the base of the prostate.',
+  target: [0, -75, 805],
+  position: [0, 0, 1200],
+};
+
+/** The prostate and urethra from the left, in front and below. */
+export const PROSTATE_SIDE: CameraStop = {
+  id: 'prostate-side',
+  title: 'The prostate',
+  description:
+    'Below the neck of the bladder and on the levator ani, behind the lower pubic symphysis and in front of the rectum; the urethra runs down through it, then through the perineal membrane into the bulb.',
+  target: [0, -82, 782],
+  position: [300, -220, 700],
+};

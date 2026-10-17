@@ -512,8 +512,8 @@
     "digest": "9bc923142a157ec6"
   },
   "female-perineum": {
-    "version": "0.1.0",
-    "digest": "9be4cf050d8771a0"
+    "version": "0.1.1",
+    "digest": "c6a97205e4f0eb54"
   },
   "pudendal-nerve-vessels": {
     "version": "0.1.0",
@@ -522,6 +522,38 @@
   "pelvic-cavity": {
     "version": "0.1.0",
     "digest": "6fd0cb12e2dc006e"
+  },
+  "urinary-bladder": {
+    "version": "0.1.0",
+    "digest": "1cd4712b60a62aca"
+  },
+  "urethra": {
+    "version": "0.1.0",
+    "digest": "285aea768d0157e4"
+  },
+  "prostate": {
+    "version": "0.1.0",
+    "digest": "71abaee4eef66e25"
+  },
+  "ductus-deferens": {
+    "version": "0.1.0",
+    "digest": "93084ccbd31ea2ce"
+  },
+  "ovary-uterine-tube": {
+    "version": "0.1.0",
+    "digest": "4585a1b23de2c0fb"
+  },
+  "uterus": {
+    "version": "0.1.0",
+    "digest": "c8e4677ee2e1e389"
+  },
+  "uterine-supports": {
+    "version": "0.1.0",
+    "digest": "4408e66ecacbd5e9"
+  },
+  "vagina": {
+    "version": "0.1.0",
+    "digest": "d031818201af4dc2"
   },
   "oxygen-haemoglobin-curve": {
     "version": "0.1.0",

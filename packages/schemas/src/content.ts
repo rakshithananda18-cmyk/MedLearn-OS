@@ -99,7 +99,8 @@ export type ModelPart = z.infer<typeof ModelPart>;
  */
 export const ModelTrace = z.object({
   id: Id,
-  kind: z.enum(['nerve', 'lymph', 'outline']),
+  // Organs and arteries a model set lacks are drawn as outlines in their own colour.
+  kind: z.enum(['nerve', 'lymph', 'outline', 'organ', 'artery']),
   paths: z.array(z.array(Point3).min(2)).min(1),
 });
 export type ModelTrace = z.infer<typeof ModelTrace>;

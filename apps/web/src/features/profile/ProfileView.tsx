@@ -155,6 +155,11 @@ function AccountSection({ adult }: Readonly<{ adult: boolean }>) {
             Review topics
           </Link>
         ) : null}
+        {state.account?.admin ? (
+          <Link href="/admin" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
+            Admin: review team
+          </Link>
+        ) : null}
       </div>
     );
   } else {

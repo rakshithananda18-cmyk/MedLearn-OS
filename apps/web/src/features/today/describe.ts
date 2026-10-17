@@ -72,13 +72,22 @@ export function describe(item: TodayItem): {
         action: 'Start revisit',
       };
     case 'goal':
-      return {
-        title: `Revise: ${item.title}`,
-        meta: `${item.minutes} min · for ${item.goalTitle}`,
-        href: `/practice?goal=${item.goalId}&topic=${item.topicSlug}`,
-        icon: CalendarDays,
-        kind: 'Revise',
-        action: 'Start revising',
-      };
+      return item.goalKind === 'learn'
+        ? {
+            title: `Learn: ${item.title}`,
+            meta: `${item.minutes} min · for ${item.goalTitle}`,
+            href: `/learn/${item.topicSlug}/lesson`,
+            icon: BookOpen,
+            kind: 'Learn',
+            action: 'Start lesson',
+          }
+        : {
+            title: `Revise: ${item.title}`,
+            meta: `${item.minutes} min · for ${item.goalTitle}`,
+            href: `/practice?goal=${item.goalId}&topic=${item.topicSlug}`,
+            icon: CalendarDays,
+            kind: 'Revise',
+            action: 'Start revising',
+          };
   }
 }

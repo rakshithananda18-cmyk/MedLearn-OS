@@ -61,6 +61,8 @@ export const ReviewRecord = ReviewStatus.extend({
   checks: ReviewChecks,
   note: z.string().nullable(),
   reviewerEmail: z.string(),
+  /** What qualified the reviewer when they decided, as the admins recorded it. */
+  reviewerQualification: z.string().nullable(),
 });
 export type ReviewRecord = z.infer<typeof ReviewRecord>;
 

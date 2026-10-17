@@ -43,13 +43,15 @@ const DayActivity = z.object({
   reviewed: z.number().int().nonnegative(),
 });
 
-/** A class test to prepare for, or topics to revisit by a date. */
+/** A class test to prepare for, or topics to revisit or learn by a date. */
 const StudyGoalInput = z.object({
   id: ItemId,
-  kind: z.enum(['test', 'revisit']),
+  kind: z.enum(['test', 'revisit', 'learn']),
   title: z.string().min(1).max(80),
   topics: z.array(ItemId).min(1).max(200),
   date: LocalDate,
+  // Missing from goals that start at once (all goals planned before courses could wait).
+  from: LocalDate.optional(),
   done: z.array(ItemId).max(200),
   createdAt: IsoTime,
 });

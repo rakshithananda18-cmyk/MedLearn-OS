@@ -27,5 +27,7 @@ export const AccountStatus = z.object({
   anonymous: z.boolean(),
   /** On the review team, so the profile leads to the review board. */
   reviewer: z.boolean().optional(),
+  /** Runs the review team, so the profile leads to the admin page. */
+  admin: z.boolean().optional(),
 });
 export type AccountStatus = z.infer<typeof AccountStatus>;

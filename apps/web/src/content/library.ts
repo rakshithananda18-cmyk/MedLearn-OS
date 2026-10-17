@@ -87,6 +87,9 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
   pelvis: {
     28: 'Perineum',
     29: 'Boundaries and contents of the pelvis',
+    30: 'Urinary bladder and urethra',
+    31: 'Female reproductive organs',
+    32: 'Male internal genital organs',
   },
 };
 

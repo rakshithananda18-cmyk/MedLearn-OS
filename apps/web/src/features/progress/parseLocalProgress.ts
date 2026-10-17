@@ -119,13 +119,14 @@ function isGoal(value: unknown): value is StudyGoal {
   return (
     isObject(value) &&
     isId(value.id) &&
-    (value.kind === 'test' || value.kind === 'revisit') &&
+    (value.kind === 'test' || value.kind === 'revisit' || value.kind === 'learn') &&
     typeof value.title === 'string' &&
     value.title.length >= 1 &&
     value.title.length <= 80 &&
     isIdList(value.topics, 200) &&
     value.topics.length >= 1 &&
     isDate(value.date) &&
+    (value.from === undefined || isDate(value.from)) &&
     isIdList(value.done, 200) &&
     isIsoTime(value.createdAt)
   );

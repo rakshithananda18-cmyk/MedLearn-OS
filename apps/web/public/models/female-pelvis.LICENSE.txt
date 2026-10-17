@@ -1,0 +1,13 @@
+female-pelvis.glb
+
+The female pelvis, its organs, ligaments, levator ani and perineal muscles, for the female pelvis
+topics in the 3D studio. Each structure is one named mesh, simplified and without textures.
+
+This work is based on "Female Reproductive System"
+(https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce) by Stanford Medicine EdTech
+(https://sketchfab.com/stanfordedtechteam), licensed under CC BY 4.0
+(http://creativecommons.org/licenses/by/4.0/). Downloaded 17 October 2026 (GLB, 1k textures).
+
+Changes: the meshes were turned from Y-up metres to Z-up millimetres and moved onto the
+BodyParts3D pelvis, renamed, simplified and compressed, and their textures removed
+(scripts/models/build-models.mjs, model "female-pelvis").

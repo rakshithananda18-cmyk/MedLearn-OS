@@ -2,15 +2,15 @@ import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
 import {
-  PELVIC_FLOOR,
-  PELVIS_MODEL_CREDIT,
-  PELVIS_MODEL_SRC,
-  PELVIS_SKELETON,
-  pelvisParts,
-  PERINEUM_BELOW,
-  PUDENDAL_ROUTE,
-  TRACES,
-} from './pelvis-3d';
+  FEMALE_FLOOR,
+  FEMALE_PELVIS_CREDIT,
+  FEMALE_PELVIS_MODEL_SRC,
+  FEMALE_PERINEUM_BELOW,
+  FEMALE_SKELETON,
+  FEMALE_TRACES,
+  femalePelvisParts,
+  VAGINA_OBLIQUE,
+} from './female-pelvis-3d';
 
 // Pelvis batch 1 (BD Volume 2). Facts in our own words; `reviewed: false` until a student checks
 // the topic against the book pages.
@@ -23,7 +23,7 @@ export const femalePerineum: Topic = {
     'The vulva: mons, labia, clitoris, vestibule and its openings, the bulbs and greater vestibular glands; then the female urogenital region, how it differs from the male, the perineal membrane split by the vagina, and its nerves.',
   estimatedMinutes: 14,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
@@ -36,11 +36,11 @@ export const femalePerineum: Topic = {
       'Chapter 5 Pelvis and Perineum: urogenital triangle, pages 501 to 506',
     ),
     {
-      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      title: 'Female Reproductive System, Stanford Medicine EdTech',
       detail:
-        'The bony outlet, pelvic floor and pudendal nerves in the 3D view (the female organs are not modelled yet)',
-      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
-      licence: 'CC BY 4.0 (files marked CC BY-SA 2.1 JP); Z-Anatomy CC BY-SA 4.0',
+        'Female pelvis, vulva, erectile tissue, glands and perineal muscles in the 3D view; the perineal membrane drawn as lines',
+      url: 'https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce',
+      licence: 'CC BY 4.0',
     },
   ],
   keyFacts: [
@@ -209,21 +209,27 @@ export const femalePerineum: Topic = {
       },
     ],
     model3d: {
-      src: PELVIS_MODEL_SRC,
-      credit: PELVIS_MODEL_CREDIT,
-      parts: pelvisParts(
+      src: FEMALE_PELVIS_MODEL_SRC,
+      credit: FEMALE_PELVIS_CREDIT,
+      parts: femalePelvisParts(
         [
-          ...PELVIS_SKELETON,
-          'femurs',
-          ...PELVIC_FLOOR,
+          ...FEMALE_SKELETON,
+          ...FEMALE_FLOOR,
+          'urinary-bladder',
           'rectum',
-          'internal-pudendal-vessels',
-          'pudendal-nerves',
+          'uterus-vagina',
+          'labia-minora',
+          'clitoris-crura',
+          'vestibular-bulbs',
+          'greater-vestibular-glands',
+          'ischiocavernosus',
+          'superficial-transverse-perinei',
+          'deep-transverse-perinei',
         ],
-        ['obturator-internus'],
+        ['hip-bones', 'pubococcygeus', 'iliococcygeus', 'puborectalis', 'urinary-bladder'],
       ),
-      traces: [{ id: 'perineal-membrane', ...TRACES.perinealMembrane }],
-      stops: [PERINEUM_BELOW, PUDENDAL_ROUTE],
+      traces: [{ id: 'perineal-membrane', ...FEMALE_TRACES.perinealMembrane }],
+      stops: [FEMALE_PERINEUM_BELOW, VAGINA_OBLIQUE],
     },
   },
   lesson: [

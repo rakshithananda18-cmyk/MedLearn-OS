@@ -25,8 +25,8 @@ test('onboarding sizes the plan and switches on exam mode', async ({ page }) => 
   ).toBeVisible();
   await expect(page.getByText('Exam in 12 days')).toBeVisible();
   // Nothing done yet; the 30 minutes chosen are the goal beside the plan.
-  await expect(page.getByText('0 of 15 min done')).toBeVisible();
-  await expect(page.getByText('30 min a day goal')).toBeVisible();
+  await expect(page.getByText('Nothing done yet')).toBeVisible();
+  await expect(page.getByText('30 min a day goal · 15 min suggested')).toBeVisible();
   await expectAccessible(page);
 });
 

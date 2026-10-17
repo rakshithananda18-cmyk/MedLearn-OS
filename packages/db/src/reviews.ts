@@ -4,7 +4,7 @@ import type { ReportRecord, ReviewInput, ReviewRecord, ReviewStatus } from '@med
 import type { DbClient } from './client';
 
 const REVIEW_COLUMNS =
-  'id, topic_slug, content_version, content_digest, decision, pages_checked, facts_checked, questions_checked, visuals_checked, note, reviewer_email, created_at';
+  'id, topic_slug, content_version, content_digest, decision, pages_checked, facts_checked, questions_checked, visuals_checked, note, reviewer_email, reviewer_qualification, created_at';
 
 /**
  * Reviews of topics by the review team, and the students' reports they work through. Row-level
@@ -74,6 +74,7 @@ export function createReviewsRepository(db: DbClient) {
         },
         note: row.note,
         reviewerEmail: row.reviewer_email,
+        reviewerQualification: row.reviewer_qualification,
       }));
     },
 

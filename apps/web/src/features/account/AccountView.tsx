@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { clearLessonSteps } from '@/features/lesson/checkpoint';
 import { resetProgress, useProgress } from '@/features/progress/store';
 import { clearStudioData } from '@/features/studio/saved';
 import { flushProgressSync, pauseProgressSync } from '@/features/sync/sync';
@@ -59,6 +60,7 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
         resetProgress();
         if (!clearStudioData())
           clientLogger.warn('Could not clear local Studio work after sign-out');
+        if (!clearLessonSteps()) clientLogger.warn('Could not clear lesson steps after sign-out');
         try {
           if ('caches' in globalThis) {
             await Promise.all((await caches.keys()).map((key) => caches.delete(key)));

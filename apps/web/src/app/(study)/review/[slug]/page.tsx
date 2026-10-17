@@ -102,7 +102,11 @@ export default async function ReviewTopicPage({ params }: PageProps<'/review/[sl
                     {review.contentVersion}
                   </span>
                   <span className="text-xs text-fg-muted">
-                    {review.reviewerEmail} · {day(review.decidedAt)}
+                    {review.reviewerEmail}
+                    {/* What qualified them when they decided, as the admins recorded it. */}
+                    {review.reviewerQualification
+                      ? ` (${review.reviewerQualification})`
+                      : ''} · {day(review.decidedAt)}
                   </span>
                   {review.note ? <span className="text-fg">{review.note}</span> : null}
                 </li>
