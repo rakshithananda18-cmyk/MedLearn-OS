@@ -107,6 +107,9 @@ export function findOnBody(session: Session, id: string): Session {
   return { ...session, selected: id, systems, focus: id, panel: null };
 }
 
+/** A part of a region's detailed model, picked on the body (the viewer's own prefix). */
+export const DETAIL_PREFIX = 'part:';
+
 /** A tap on the model: picks a region on the body, answers "Find it", or selects a structure. */
 export function pickIn(session: Session, id: string | null, context: SessionContext): Session {
   if (session.mode === 'quiz') {
@@ -117,9 +120,14 @@ export function pickIn(session: Session, id: string | null, context: SessionCont
   }
   if (!context.topic) {
     const region = context.regions.find((item) => item.id === id);
-    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
-    // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
-    return { ...session, selected: id?.includes('/') ? id : null };
+    // Picked on the body, a region also brings the camera to it.
+    if (region) {
+      return { ...session, region: region.id, panel: 'topics', selected: null, focus: region.id };
+    }
+    // A structure of one of the body's systems ("skeleton/left-humerus"), a part of the region
+    // opened in place ("part:humerus"), or nothing.
+    const structure = id?.includes('/') || id?.startsWith(DETAIL_PREFIX);
+    return { ...session, selected: structure ? id : null };
   }
   return { ...session, selected: id, detail: null };
 }
