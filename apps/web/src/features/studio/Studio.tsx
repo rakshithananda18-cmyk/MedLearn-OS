@@ -362,13 +362,13 @@ function bodyLayers(session: Session, systems: BodySystem[]) {
 }
 
 /**
- * The body file's parts left out: its low-detail skeleton always, the skin when switched off or
- * while a structure is isolated.
+ * The body file's parts left out: its low-detail skeleton always, the skin (the surface of every
+ * region) when switched off or while a structure is isolated.
  */
-function bodyHidden(session: Session): ReadonlySet<string> {
+function bodyHidden(session: Session, regions: BodyRegionInfo[]): ReadonlySet<string> {
   // The skin cannot bend, so it steps aside while a joint moves too.
   const skin = session.systems.has('skin') && !isolatedOnBody(session) && !session.movement;
-  return new Set(skin ? ['skeleton'] : ['skeleton', 'skin']);
+  return new Set(skin ? ['skeleton'] : ['skeleton', ...regions.map((region) => region.id)]);
 }
 
 /** The model, with a caption for screen readers; where it sits comes from the layout. */
@@ -442,9 +442,12 @@ function StudioModel({
     if (filmBones.length > 0) return focusOn(filmBones, index ?? []);
     // Choosing a joint turns the camera to it (moving it does not).
     if (movement) return { point: movement.pivot, radius: 120 };
+    // A region picked on the body brings it close.
+    const region = regions.find((item) => item.id === session.focus);
+    if (region) return { point: region.marker, radius: region.reach };
     const entry = index?.find((item) => item.id === session.focus);
     return entry ? { point: entry.centre, radius: entry.radius } : null;
-  }, [index, session.focus, filmBones, movement]);
+  }, [index, session.focus, filmBones, movement, regions]);
   return (
     <figure className={className}>
       <ModelView
@@ -459,7 +462,7 @@ function StudioModel({
         lit={lit}
         stopId={model.stops[session.stopIndex]?.id ?? ''}
         hiddenKinds={session.hiddenKinds}
-        hidden={topic ? hiddenIn(session, lit, studio.context.pool) : bodyHidden(session)}
+        hidden={topic ? hiddenIn(session, lit, studio.context.pool) : bodyHidden(session, regions)}
         xray={session.xray}
         reducedMotion={reducedMotion}
         pen={session.mode === 'draw' ? session.pen : null}
@@ -1110,7 +1113,7 @@ function DockedFooter({ studio, capable }: Readonly<Pick<OverlayProps, 'studio' 
       {mode === 'explore' ? (
         <Text size="xs" tone="muted" className="px-2">
           {studio.pan ? 'Drag to move' : 'Drag to turn · right-drag to move'} · scroll to zoom ·{' '}
-          {studio.topic ? 'click a structure' : 'click a structure or a region marker'}
+          {studio.topic ? 'click a structure' : 'click a region, then a structure inside it'}
         </Text>
       ) : null}
       <div className="px-2">

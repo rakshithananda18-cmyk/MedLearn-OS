@@ -4,21 +4,24 @@ import type { LayerKind } from '@medlearn/visuals/viewer3d';
 export interface BodyRegionInfo {
   id: BodyRegion;
   name: string;
-  /** Where the region's marker sits on the body model (BodyParts3D frame, millimetres). */
+  /** Where the region's name points on the body (BodyParts3D frame, millimetres). */
   marker: Point3;
+  /** How far the region reaches from there, in millimetres: picking it brings it this close. */
+  reach: number;
 }
 
-// Markers sit just off the body surface, measured from the model; the limbs are marked on the
-// right side, as in the topic models.
+// The points sit just off the body surface, measured from the model; the limbs are marked on the
+// right side, as in the topic models. The body file has each region's surface as a part with the
+// region's id (scripts/models/build-models.mjs).
 /** Body regions in the order of the standard books' volumes. */
 export const BODY_REGIONS: BodyRegionInfo[] = [
-  { id: 'upper-limb', name: 'Upper limb', marker: [-228, -128, 1130] },
-  { id: 'thorax', name: 'Thorax', marker: [0, -228, 1240] },
-  { id: 'abdomen', name: 'Abdomen', marker: [0, -232, 1060] },
-  { id: 'pelvis', name: 'Pelvis', marker: [0, -218, 905] },
-  { id: 'lower-limb', name: 'Lower limb', marker: [-95, -190, 600] },
-  { id: 'head-neck', name: 'Head and neck', marker: [0, -200, 1540] },
-  { id: 'back', name: 'Back', marker: [0, 42, 1210] },
+  { id: 'upper-limb', name: 'Upper limb', marker: [-228, -128, 1130], reach: 260 },
+  { id: 'thorax', name: 'Thorax', marker: [0, -228, 1240], reach: 180 },
+  { id: 'abdomen', name: 'Abdomen', marker: [0, -232, 1060], reach: 150 },
+  { id: 'pelvis', name: 'Pelvis', marker: [0, -218, 905], reach: 130 },
+  { id: 'lower-limb', name: 'Lower limb', marker: [-95, -190, 600], reach: 300 },
+  { id: 'head-neck', name: 'Head and neck', marker: [0, -200, 1540], reach: 120 },
+  { id: 'back', name: 'Back', marker: [0, 42, 1210], reach: 200 },
 ];
 
 export type BodySystemId =
@@ -72,12 +75,14 @@ export const BODY_MODEL: Model3D = {
   credit:
     'Body and its systems: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Nervous system, lymph nodes, lungs and liver: Z-Anatomy, CC BY-SA 4.0.',
   parts: [
-    {
-      id: 'skin',
-      name: 'Body surface',
-      kind: 'skin',
-      about: 'The whole body in the anatomical position. Pick a region to see its topics.',
-    },
+    // The surface, region by region: a region tints under the pointer and opens its topics when
+    // picked.
+    ...BODY_REGIONS.map((region) => ({
+      id: region.id,
+      name: region.name,
+      kind: 'skin' as const,
+      about: `The ${region.name.toLowerCase()} of the body in the anatomical position. Pick it to see its topics, then tap inside it for its structures.`,
+    })),
     {
       id: 'skeleton',
       name: 'Skeleton',

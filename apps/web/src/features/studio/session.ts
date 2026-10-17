@@ -117,7 +117,10 @@ export function pickIn(session: Session, id: string | null, context: SessionCont
   }
   if (!context.topic) {
     const region = context.regions.find((item) => item.id === id);
-    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
+    // Picked on the body, a region also brings the camera to it.
+    if (region) {
+      return { ...session, region: region.id, panel: 'topics', selected: null, focus: region.id };
+    }
     // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
     return { ...session, selected: id?.includes('/') ? id : null };
   }

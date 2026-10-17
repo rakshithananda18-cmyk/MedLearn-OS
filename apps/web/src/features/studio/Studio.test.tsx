@@ -203,11 +203,13 @@ describe('Studio on a phone', () => {
     });
     await expectNoA11yViolations(container);
 
-    // A marker on the body picks its region; a lesson-only topic links to its lesson.
+    // A region's surface on the body picks it and brings it close; a lesson-only topic links to
+    // its lesson.
     tap('thorax');
     expect(
       within(browser).getByRole('button', { name: 'Thorax', pressed: true }),
     ).toBeInTheDocument();
+    expect(viewer.props?.focus).toEqual({ point: [0, -228, 1240], radius: 180 });
     expect(within(browser).getByRole('link', { name: /Oxygen–haemoglobin curve/ })).toHaveAttribute(
       'href',
       '/learn/oxygen-haemoglobin-curve',
@@ -492,7 +494,7 @@ describe('Studio on a wide screen', () => {
     await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
     await userEvent.click(within(layers).getByRole('switch', { name: 'Skin' }));
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton', 'muscles']);
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     await expectNoA11yViolations(container);
 
     await userEvent.click(within(layers).getByRole('button', { name: 'Close layers' }));
@@ -581,7 +583,7 @@ describe('Studio on a wide screen', () => {
     expect(viewer.props?.layers).toEqual([
       expect.objectContaining({ id: 'skeleton', only: 'left-humerus' }),
     ]);
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     // Picking nothing shows the whole body again.
     tap(null);
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
@@ -724,7 +726,7 @@ describe('Studio on a wide screen', () => {
     ]);
     expect(viewer.props?.pose?.angle).toBeCloseTo((73 * Math.PI) / 180);
     // The skin cannot bend, so it steps aside.
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     await expectNoA11yViolations(container);
 
     fireEvent.change(within(sheet).getByRole('slider', { name: /Angle/ }), {
