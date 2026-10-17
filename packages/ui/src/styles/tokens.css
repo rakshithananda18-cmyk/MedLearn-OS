@@ -468,9 +468,10 @@
   height: calc(100dvh - var(--spacing-16) - env(safe-area-inset-bottom));
 }
 
-/* A topic's 3D model on its pedestal: tall enough to read, short enough to leave room below. */
+/* A topic's 3D model on its pedestal: tall enough to read, short enough to leave room below. The
+   12rem floor keeps a short phone's main study action on its first screen. */
 @utility h-hero {
-  height: clamp(15rem, 34dvh, 28rem);
+  height: clamp(12rem, 34dvh, 28rem);
 }
 
 /* Today's next step: tall enough for its model to stand beside the title. */
@@ -499,6 +500,11 @@
 /* The scrolling body of a dialog holding a long form, clear of the title and the buttons. */
 @utility max-h-dialog {
   max-height: min(60dvh, 36rem);
+}
+
+/* A column whose own control shows there is more (the studio's tools): no scrollbar beside it. */
+@utility scrollbar-none {
+  scrollbar-width: none;
 }
 
 /* A row that scrolls sideways (tags, chips), with the app's thin scrollbar (set in the base). */

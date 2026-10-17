@@ -24,7 +24,9 @@ test('onboarding sizes the plan and switches on exam mode', async ({ page }) => 
     page.getByRole('heading', { level: 1, name: 'Exam ahead, stay steady' }),
   ).toBeVisible();
   await expect(page.getByText('Exam in 12 days')).toBeVisible();
-  await expect(page.getByText('15 of 30 min')).toBeVisible();
+  // Nothing done yet; the 30 minutes chosen are the goal beside the plan.
+  await expect(page.getByText('0 of 15 min done')).toBeVisible();
+  await expect(page.getByText('30 min a day goal')).toBeVisible();
   await expectAccessible(page);
 });
 

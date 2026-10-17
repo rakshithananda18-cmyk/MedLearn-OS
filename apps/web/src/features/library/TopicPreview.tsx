@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import type { TopicSummary } from '@/content/topics';
 import { type Reading, WhereToRead } from '@/features/books/WhereToRead';
+import { lessonAction, useLessonStep } from '@/features/lesson/checkpoint';
 import { MasteryCard } from '@/features/progress/MasteryCard';
 
 /** What the library shows about a topic before the student opens it. */
@@ -59,6 +60,7 @@ export function TopicPreview({
   status: PreviewStatus;
   onClose: () => void;
 }>) {
+  const step = useLessonStep(preview.topic.slug);
   const { topic } = preview;
   const where = trail.at(-1) ?? preview.subject;
   return (
@@ -139,7 +141,7 @@ export function TopicPreview({
             )}
           >
             <Icon icon={Play} size="sm" />
-            {status === 'learnt' ? 'Go over the lesson' : 'Start lesson'}
+            {lessonAction(status === 'learnt', step)}
           </Link>
           <div className="flex min-w-0 items-center gap-2">
             <Link

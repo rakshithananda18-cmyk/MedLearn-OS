@@ -19,6 +19,7 @@ import { ContentTrust } from '@/features/content/ContentTrust';
 import { MasteryCard } from '@/features/progress/MasteryCard';
 import { BackLink } from '@/features/shell/BackLink';
 import { Screen } from '@/features/shell/Screen';
+import { LessonModeTile } from '@/features/topic/LessonModeTile';
 import { ModeTile, type ModeTileProps } from '@/features/topic/TopicParts';
 import { TopicStudy } from '@/features/topic/TopicStudy';
 
@@ -118,13 +119,21 @@ export default async function TopicPage({ params }: Props) {
         study={
           <>
             <ul aria-label="Ways to study this topic" className="grid grid-cols-2 gap-3">
-              {modes.map((mode, index) => (
-                <ModeTile
-                  key={mode.href}
-                  {...mode}
-                  wide={modes.length % 2 === 1 && index === modes.length - 1}
-                />
-              ))}
+              {modes.map((mode, index) => {
+                const wide = modes.length % 2 === 1 && index === modes.length - 1;
+                // The lesson's wording follows the student's progress on this device.
+                return mode.primary ? (
+                  <LessonModeTile
+                    key={mode.href}
+                    slug={topic.slug}
+                    steps={topic.lesson.length}
+                    minutes={topic.estimatedMinutes}
+                    wide={wide}
+                  />
+                ) : (
+                  <ModeTile key={mode.href} {...mode} wide={wide} />
+                );
+              })}
             </ul>
             {summary ? <MasteryCard topic={summary} /> : null}
           </>

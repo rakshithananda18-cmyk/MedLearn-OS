@@ -298,7 +298,13 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
           </Card>
         )}
         {first || done.length > 0 ? (
-          <PlanCard done={done} items={plan.items} planned={planned} goal={plan.dailyMinutes} />
+          <PlanCard
+            done={done}
+            items={plan.items}
+            planned={planned}
+            studied={minutesToday}
+            goal={plan.dailyMinutes}
+          />
         ) : null}
       </div>
 

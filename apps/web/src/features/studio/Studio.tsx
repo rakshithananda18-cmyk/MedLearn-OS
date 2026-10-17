@@ -15,7 +15,7 @@ import { FILM_BONES } from '@/content/xray-basics';
 import type { XrayFilm } from '@/content/xrays';
 import { useProgress } from '@/features/progress/store';
 import { SearchBox, type SearchGroup } from '@/features/search/SearchBox';
-import { useHydrated } from '@/features/shell/media';
+import { useHydrated, useShortScreen } from '@/features/shell/media';
 
 import { DrawBar, ModeSwitch, PENS, QuestionCard, Scoreboard, TourBar } from './bars';
 import { bodyQuizPool, focusOn, useBodyIndex } from './bodyIndex';
@@ -380,6 +380,7 @@ function StudioModel({
   className = 'absolute inset-0',
   insetRight = 0,
   insetBottom = 0,
+  insetTop = 0,
 }: Readonly<{
   studio: StudioState;
   regions: BodyRegionInfo[];
@@ -390,6 +391,8 @@ function StudioModel({
   insetRight?: number;
   /** How much of the view's bottom edge a sheet covers, in pixels (phones). */
   insetBottom?: number;
+  /** How much of the view's top edge the header covers, in pixels (phones). */
+  insetTop?: number;
 }>) {
   const { session, topic, model, update, settings } = studio;
   const systemReducedMotion = useReducedMotion();
@@ -472,6 +475,7 @@ function StudioModel({
         flat={settings.flat}
         insetRight={insetRight}
         insetBottom={insetBottom}
+        insetTop={insetTop}
         pan={studio.pan}
         onPick={studio.pick}
         onRegion={(region: BodyRegion) => update({ region, panel: 'topics' })}
@@ -837,9 +841,13 @@ function Question({ studio }: Readonly<{ studio: StudioState }>) {
 }
 
 /** Along the bottom of a phone: the body's regions, "Find it", or the sheet for the topic. */
-function PhoneFooter(props: Readonly<OverlayProps>) {
+function PhoneFooter({
+  onRegionTopics,
+  ...props
+}: Readonly<OverlayProps & { onRegionTopics: () => void }>) {
   const { studio, topics, regions, capable } = props;
   const { session, topic } = studio;
+  const compact = useShortScreen();
   if (session.mode === 'quiz') {
     return (
       <BottomSheet>
@@ -866,8 +874,13 @@ function PhoneFooter(props: Readonly<OverlayProps>) {
           topics={topics}
           regions={regions}
           region={session.region}
-          onRegion={(region) => studio.update({ region })}
+          // On a short screen the topics open in their panel, so the model keeps its room.
+          onRegion={(region) => {
+            studio.update({ region });
+            if (compact) onRegionTopics();
+          }}
           onTopic={studio.openTopic}
+          compact={compact}
         />
         <Credit studio={studio} capable={capable} />
       </div>
@@ -912,7 +925,30 @@ function useBottomCover(onCover: (height: number) => void) {
       const measure = () => {
         const { top, width } = node.getBoundingClientRect();
         const alongBottom = width > window.innerWidth * 0.6;
-        onCover(alongBottom ? Math.max(0, window.innerHeight - top) : 0);
+        // The studio's own bottom: on the whole body the tab bar sits below it.
+        const end = node.closest('section')?.getBoundingClientRect().bottom ?? window.innerHeight;
+        onCover(alongBottom ? Math.max(0, end - top) : 0);
+      };
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [onCover],
+  );
+}
+
+/** The height the header covers at the top of the studio, for the model to keep below it. */
+function useTopCover(onCover: (height: number) => void) {
+  return useCallback(
+    (node: HTMLElement | null) => {
+      if (!node) {
+        onCover(0);
+        return;
+      }
+      const measure = () => {
+        const start = node.closest('section')?.getBoundingClientRect().top ?? 0;
+        onCover(Math.max(0, node.getBoundingClientRect().bottom - start));
       };
       measure();
       const observer = new ResizeObserver(measure);
@@ -926,17 +962,29 @@ function useBottomCover(onCover: (height: number) => void) {
 /** Phones and tablets held upright: everything floats over the model, sheets open on demand. */
 function PhoneOverlay({
   onCover,
+  onCoverTop,
   coverBottom,
   ...props
-}: Readonly<OverlayProps & { coverBottom: number; onCover: (height: number) => void }>) {
+}: Readonly<
+  OverlayProps & {
+    coverBottom: number;
+    onCover: (height: number) => void;
+    onCoverTop: (height: number) => void;
+  }
+>) {
   const { studio, topics, tree, regions } = props;
   const measureFooter = useBottomCover(onCover);
+  const measureHeader = useTopCover(onCoverTop);
   const { session, topic } = studio;
+  // On the whole body the topics panel opens only when a short screen's region is tapped (its
+  // topics are not inline there); a topic's own panel follows the session as before.
+  const [regionTopics, setRegionTopics] = useState(false);
+  const topicsOpen = topic ? session.panel === 'topics' : regionTopics;
   const title = topic?.title ?? 'Whole body';
   const quiz = session.mode === 'quiz' ? session.quiz : null;
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-      <div className="flex flex-col gap-3 p-3">
+      <div ref={measureHeader} className="flex flex-col gap-3 p-3">
         {quiz ? (
           <>
             <h1 className="sr-only">{title}</h1>
@@ -961,19 +1009,28 @@ function PhoneOverlay({
         </div>
       )}
       <div ref={measureFooter} className="flex flex-col">
-        <PhoneFooter {...props} />
+        <PhoneFooter {...props} onRegionTopics={() => setRegionTopics(true)} />
       </div>
 
-      {topic && session.panel === 'topics' ? (
+      {topicsOpen ? (
+        // On the whole body it opens on the region chosen.
         <TopicsPanel
+          key={topic ? topic.slug : session.region}
           place="float"
           tree={tree}
           topics={topics}
           regions={regions}
-          current={topic.slug}
+          current={topic ? topic.slug : null}
+          region={session.region}
           onRegion={(region) => studio.update({ region })}
-          onTopic={studio.openTopic}
-          onClose={() => studio.update({ panel: null })}
+          onTopic={(slug) => {
+            setRegionTopics(false);
+            studio.openTopic(slug);
+          }}
+          onClose={() => {
+            setRegionTopics(false);
+            studio.update({ panel: null });
+          }}
         />
       ) : null}
       {studio.film === null ? null : (
@@ -1222,6 +1279,7 @@ export function Studio(props: Readonly<StudioProps>) {
   const overlay = { studio, topics, tree, regions, capable };
   // How much of a phone's screen the footer sheet covers, so the model keeps above it.
   const [coverBottom, setCoverBottom] = useState(0);
+  const [coverTop, setCoverTop] = useState(0);
   const stage = (insetRight = 0) => (
     <StudioModel
       studio={studio}
@@ -1230,6 +1288,7 @@ export function Studio(props: Readonly<StudioProps>) {
       labels={labelsFor(studio, topics, regions)}
       insetRight={insetRight}
       insetBottom={docked ? 0 : coverBottom}
+      insetTop={docked ? 0 : coverTop}
       // Docked, the model sits between the header row and the guided views; on phones it fills
       // the screen.
       className={
@@ -1252,7 +1311,12 @@ export function Studio(props: Readonly<StudioProps>) {
     >
       {hydrated && docked ? <DockedOverlay {...overlay} stage={stage} /> : stage()}
       {hydrated && !docked ? (
-        <PhoneOverlay {...overlay} coverBottom={coverBottom} onCover={setCoverBottom} />
+        <PhoneOverlay
+          {...overlay}
+          coverBottom={coverBottom}
+          onCover={setCoverBottom}
+          onCoverTop={setCoverTop}
+        />
       ) : null}
     </section>
   );

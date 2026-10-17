@@ -129,7 +129,7 @@ function StrengthGroup({
         onClick={onToggle}
         className="flex min-h-12 w-full items-center gap-2 text-left"
       >
-        <span className="min-w-0 flex-1 font-display text-xl text-ink">{group}</span>
+        <span className="min-w-0 flex-1 text-base font-semibold text-ink">{group}</span>
         <span className="shrink-0 text-xs text-fg-muted" suppressHydrationWarning>
           {sections.length} {sections.length === 1 ? 'section' : 'sections'}
           {weak > 0 ? ` · ${weak} weak` : ''}

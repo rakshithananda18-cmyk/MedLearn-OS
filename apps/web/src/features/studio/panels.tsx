@@ -275,12 +275,15 @@ function TopicTree({
   tree,
   topics,
   current,
+  region,
   onRegion,
   onTopic,
 }: Readonly<{
   tree: LibraryNode[];
   topics: StudioTopic[];
   current: string | null;
+  /** The region to open on when no topic is open. */
+  region?: BodyRegion;
   onRegion: (region: BodyRegion) => void;
   onTopic: (slug: string) => void;
 }>) {
@@ -289,8 +292,19 @@ function TopicTree({
   const bySlug = new Map(topics.map((topic) => [topic.slug, topic]));
   const next = topics.find((topic) => !learnt.has(topic.slug));
   const continueId = useId();
-  // Unfolded to the topic that is open, so the student sees where they are.
-  const [trail, setTrail] = useState<string[]>(() => trailTo(tree, current));
+  // Unfolded to the topic that is open, so the student sees where they are; on the whole body,
+  // to the region they chose.
+  const [trail, setTrail] = useState<string[]>(() =>
+    current === null && region ? [region] : trailTo(tree, current),
+  );
+  // Opened for a region, that region comes to the top of the list rather than below the others.
+  const regionList = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (current !== null || !region) return;
+    const index = tree.findIndex((node) => node.kind === 'branch' && node.id === region);
+    const item = regionList.current?.children[index] as HTMLElement | undefined;
+    item?.scrollIntoView?.({ block: 'start' });
+  }, [current, region, tree]);
 
   const render = (node: LibraryNode, depth: number): ReactNode => {
     if (node.kind === 'topic') {
@@ -340,7 +354,7 @@ function TopicTree({
           <TopicCard topic={next} note={noteOf(next)} current={false} row onOpen={onTopic} />
         </section>
       ) : null}
-      <ul aria-label="Regions and topics" className="flex flex-col gap-1">
+      <ul ref={regionList} aria-label="Regions and topics" className="flex flex-col gap-1">
         {tree.map((node) => render(node, 0))}
       </ul>
     </>
@@ -353,6 +367,7 @@ export function TopicsPanel({
   topics,
   regions,
   current,
+  region,
   search,
   action,
   onRegion,
@@ -365,6 +380,8 @@ export function TopicsPanel({
   topics: StudioTopic[];
   regions: BodyRegionInfo[];
   current: string | null;
+  /** The region to open on when no topic is open. */
+  region?: BodyRegion;
   /** The structure search, where the topics are docked. */
   search?: ReactNode;
   /** Folds the docked panel away. */
@@ -396,6 +413,7 @@ export function TopicsPanel({
           tree={tree}
           topics={topics}
           current={current}
+          region={region}
           onRegion={onRegion}
           onTopic={onTopic}
         />
@@ -993,12 +1011,15 @@ export function BodyBrowser({
   region,
   onRegion,
   onTopic,
+  compact = false,
 }: Readonly<{
   topics: StudioTopic[];
   regions: BodyRegionInfo[];
   region: BodyRegion;
   onRegion: (region: BodyRegion) => void;
   onTopic: (slug: string) => void;
+  /** Regions only, for a short screen: a region's topics open in their own panel. */
+  compact?: boolean;
 }>) {
   const progress = useProgress();
   const inRegion = topics.filter((topic) => topic.regions.includes(region));
@@ -1026,24 +1047,28 @@ export function BodyBrowser({
           </button>
         ))}
       </fieldset>
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-gold font-display text-3xl tracking-display">{name}</h2>
-        <span className="text-xs font-semibold text-fg-muted">
-          {learnt.length} of {inRegion.length} learnt
-        </span>
-      </div>
-      {inRegion.length === 0 ? (
-        <Text size="sm" tone="muted">
-          Topics coming soon.
-        </Text>
-      ) : (
-        <ul aria-label="Topics in this region" className="flex gap-2 overflow-x-auto pb-1">
-          {inRegion.map((topic) => (
-            <li key={topic.slug} className="w-card shrink-0">
-              <TopicCard topic={topic} note={noteOf(topic)} current={false} onOpen={onTopic} />
-            </li>
-          ))}
-        </ul>
+      {compact ? null : (
+        <>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-gold font-display text-3xl tracking-display">{name}</h2>
+            <span className="text-xs font-semibold text-fg-muted">
+              {learnt.length} of {inRegion.length} learnt
+            </span>
+          </div>
+          {inRegion.length === 0 ? (
+            <Text size="sm" tone="muted">
+              Topics coming soon.
+            </Text>
+          ) : (
+            <ul aria-label="Topics in this region" className="flex gap-2 overflow-x-auto pb-1">
+              {inRegion.map((topic) => (
+                <li key={topic.slug} className="w-card shrink-0">
+                  <TopicCard topic={topic} note={noteOf(topic)} current={false} onOpen={onTopic} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </section>
   );

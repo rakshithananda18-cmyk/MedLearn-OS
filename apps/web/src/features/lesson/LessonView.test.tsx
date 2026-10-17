@@ -15,6 +15,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 afterEach(() => {
   act(() => resetProgress());
+  localStorage.removeItem('ml-lesson-steps-v1');
   push.mockClear();
 });
 
@@ -25,6 +26,32 @@ async function goToLastStep() {
 }
 
 describe('LessonView', () => {
+  it('picks up an interrupted lesson at the step it was left, and can start over', async () => {
+    const first = render(<LessonView topic={brachialPlexus} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    const third = brachialPlexus.lesson[2]?.title ?? '';
+    expect(screen.getByRole('heading', { name: third })).toBeInTheDocument();
+    first.unmount();
+
+    // Coming back, as after a reload or leaving for Today.
+    render(<LessonView topic={brachialPlexus} />);
+    expect(screen.getByRole('heading', { name: third })).toBeInTheDocument();
+    expect(screen.getByText(/Step 3 of/)).toBeInTheDocument();
+    expect(screen.getByText('Picked up where you left off.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Start over' }));
+    expect(screen.getByRole('heading', { name: 'Five roots' })).toBeInTheDocument();
+    expect(screen.queryByText('Picked up where you left off.')).not.toBeInTheDocument();
+  });
+
+  it('forgets the step once the lesson is finished', async () => {
+    render(<LessonView topic={brachialPlexus} />);
+    await goToLastStep();
+    expect(localStorage.getItem('ml-lesson-steps-v1')).toContain('brachial-plexus');
+    await userEvent.click(screen.getByRole('button', { name: 'Finish lesson' }));
+    expect(localStorage.getItem('ml-lesson-steps-v1')).not.toContain('brachial-plexus');
+  });
+
   it('walks forwards and backwards through the steps', async () => {
     render(<LessonView topic={brachialPlexus} />);
     expect(screen.getByRole('heading', { name: 'Five roots' })).toBeInTheDocument();

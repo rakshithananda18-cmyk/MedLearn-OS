@@ -62,9 +62,10 @@ describe('TodayView', () => {
     expect(
       screen.getByText(new Intl.DateTimeFormat('en-IN', today).format(new Date())),
     ).toBeInTheDocument();
+    // The lesson action goes straight into the lesson, not to the topic page first.
     expect(screen.getByRole('link', { name: /Learn: Pectoral region and breast/ })).toHaveAttribute(
       'href',
-      '/learn/pectoral-region',
+      '/learn/pectoral-region/lesson',
     );
     expect(screen.getByRole('link', { name: 'Set up my plan' })).toHaveAttribute(
       'href',
@@ -72,14 +73,17 @@ describe('TodayView', () => {
     );
     expect(screen.getByRole('link', { name: 'Start lesson' })).toHaveAttribute(
       'href',
-      '/learn/pectoral-region',
+      '/learn/pectoral-region/lesson',
     );
+    // Nothing done yet: the plan reads empty, not as a share of the daily goal.
+    expect(screen.getByText('0 of 15 min done')).toBeInTheDocument();
+    expect(screen.getByText('20 min a day goal')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
   it('adds reviews and practice once the lesson is done, within the daily minutes', () => {
     render(<TodayView topics={PLANNABLE_TOPICS} />);
-    act(() => completeLesson('pectoral-region'));
+    act(() => completeLesson('pectoral-region', 15));
     expect(screen.getByRole('link', { name: /Review 5 cards/ })).toHaveAttribute(
       'href',
       '/revise?limit=5',
@@ -88,7 +92,8 @@ describe('TodayView', () => {
     expect(
       screen.getByRole('link', { name: /Practice: Pectoral region and breast/ }),
     ).toHaveAttribute('href', '/practice?topic=pectoral-region');
-    expect(screen.getByText('19 of 20 min')).toBeInTheDocument();
+    // The finished lesson's minutes are done; the reviews, next lesson and practice remain.
+    expect(screen.getByText('15 of 34 min done')).toBeInTheDocument();
   });
 
   it('switches to exam mode with a countdown and the diagram drill first', () => {

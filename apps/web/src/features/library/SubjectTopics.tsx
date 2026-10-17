@@ -55,15 +55,17 @@ function TopicRow({ topic, state }: Readonly<{ topic: LibraryTopic; state: Topic
   const mastery = state.mastery.get(topic.slug);
   const weak = mastery?.weakSpots ?? 0;
   const today = state.today?.get(topic.slug);
+  // The row is its own container: the title takes the whole line whenever the row is narrow,
+  // on a phone or beside an open preview on a laptop, and shares it with the badges when wide.
   const className = cx(
-    'flex min-h-12 w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md px-3 py-2 text-left text-sm transition-colors duration-150',
+    '@container flex min-h-12 w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md px-3 py-2 text-left text-sm transition-colors duration-150',
     selected
       ? 'bg-primary-subtle font-semibold text-primary-strong'
       : 'text-fg hover:bg-surface-muted',
   );
   const content = (
     <>
-      <span className="min-w-0 basis-full md:flex-1 md:basis-0">{topic.title}</span>
+      <span className="min-w-0 basis-full @md:flex-1 @md:basis-0">{topic.title}</span>
       {/* Today's plan comes first; its practice is what clears the cards to recall. */}
       {today ? (
         <span className="shrink-0 rounded-full bg-primary-subtle px-2 py-1 text-xs font-semibold text-primary-strong">
@@ -199,7 +201,8 @@ function Region({
   const done = topics.filter((topic) => state.learnt.has(topic.slug)).length;
   return (
     <section aria-labelledby={`${id}-name`} className="flex flex-col gap-2">
-      <h2 id={`${id}-name`} className="font-display text-2xl tracking-display text-ink">
+      {/* One serif display title per screen; the list's own headings stay in the reading face. */}
+      <h2 id={`${id}-name`} className="text-lg font-semibold text-ink">
         <button
           type="button"
           aria-expanded={open}
