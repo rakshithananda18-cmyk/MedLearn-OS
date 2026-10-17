@@ -19,6 +19,7 @@ the review team's recorded decision for the exact teaching content and assets.
 | Revise    | Spaced-recall cards (FSRS)                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Account   | Progress is kept on the phone, and saved to the account for adults, merged safely across devices                                                                                                                                                                                                                                                                                                                              |
 | Review    | For the review team at `/review`: every topic's status, a sheet to check it against the book, approve or ask for changes, and students' reports to resolve; students see an approval at once                                                                                                                                                                                                                                  |
+| Admin     | For admins at `/admin`: the review team with each reviewer's qualification, adding, editing and removing reviewers, a log of every change, and how far the review has got                                                                                                                                                                                                                                                     |
 
 Product and design decisions live in `docs/` (each version adds to the one before):
 
@@ -142,13 +143,25 @@ version students see. Reviewers sign in with an email on the team's list, open `
 (all four checks ticked) or ask for changes with a note. Approval reaches students straight away;
 changing a topic's `version` sends it back for another check.
 
-The list lives in the database, so adding a reviewer needs no deploy. In the Supabase SQL editor:
+Admins run the review team at `/admin` (or "Admin: review team" on their profile): add a
+reviewer with what qualifies them (degree, year, department), change a qualification, or take
+someone off the team. Every change is logged with who made it, and each review keeps the
+qualification its reviewer had when deciding. Only admins can read or change the team; the
+database enforces this, not just the page.
+
+Who is an admin is set only in the database, so no admin can lock the others out or promote
+anyone from the app. In the Supabase SQL editor:
 
 ```sql
-insert into public.content_reviewers (email) values ('name@example.com');
+insert into public.app_admins (email) values ('name@example.com');
 ```
 
-Locally, `reviewer@example.com` is a reviewer (from `supabase/seed.sql`); sign up with it.
+A reviewer can also be added there (`insert into public.content_reviewers (email, qualification)
+values ('name@example.com', 'MD Anatomy, faculty');`), which the change log records as made by
+`database`.
+
+Locally, `reviewer@example.com` is a reviewer and `admin@example.com` an admin (from
+`supabase/seed.sql`); sign up with them.
 
 An approval covers one version of a topic. When you change a topic (its text, questions, diagram,
 3D labels or model file), bump its `version` and run `pnpm content:versions`; a test fails if

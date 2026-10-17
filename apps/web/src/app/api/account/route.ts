@@ -1,4 +1,4 @@
-import { createReviewsRepository } from '@medlearn/db';
+import { createAdminRepository, createReviewsRepository } from '@medlearn/db';
 import type { AccountStatus } from '@medlearn/schemas';
 
 import { ok, withRoute } from '@/server/route';
@@ -14,6 +14,7 @@ export const GET = withRoute('GET /api/account', async () => {
     email: data.user.email || null,
     anonymous,
     ...(!anonymous && (await createReviewsRepository(db).isReviewer()) && { reviewer: true }),
+    ...(!anonymous && (await createAdminRepository(db).isAdmin()) && { admin: true }),
   };
   return ok(status);
 });

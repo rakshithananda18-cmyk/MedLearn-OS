@@ -36,6 +36,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_admins: {
+        Row: {
+          added_at: string
+          email: string
+        }
+        Insert: {
+          added_at?: string
+          email: string
+        }
+        Update: {
+          added_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       content_reports: {
         Row: {
           content_version: string
@@ -75,15 +90,21 @@ export type Database = {
       content_reviewers: {
         Row: {
           added_at: string
+          added_by: string | null
           email: string
+          qualification: string
         }
         Insert: {
           added_at?: string
+          added_by?: string | null
           email: string
+          qualification?: string
         }
         Update: {
           added_at?: string
+          added_by?: string | null
           email?: string
+          qualification?: string
         }
         Relationships: []
       }
@@ -102,6 +123,36 @@ export type Database = {
           progress?: Json
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      role_changes: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string
+          email: string
+          id: number
+          qualification: string | null
+          role: string
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by: string
+          email: string
+          id?: never
+          qualification?: string | null
+          role: string
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string
+          email?: string
+          id?: never
+          qualification?: string | null
+          role?: string
         }
         Relationships: []
       }
@@ -142,6 +193,7 @@ export type Database = {
           questions_checked: boolean
           reviewer_email: string
           reviewer_id: string | null
+          reviewer_qualification: string | null
           topic_slug: string
           visuals_checked: boolean
         }
@@ -157,6 +209,7 @@ export type Database = {
           questions_checked?: boolean
           reviewer_email?: string
           reviewer_id?: string | null
+          reviewer_qualification?: string | null
           topic_slug: string
           visuals_checked?: boolean
         }
@@ -172,6 +225,7 @@ export type Database = {
           questions_checked?: boolean
           reviewer_email?: string
           reviewer_id?: string | null
+          reviewer_qualification?: string | null
           topic_slug?: string
           visuals_checked?: boolean
         }
@@ -182,11 +236,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_admin: { Args: never; Returns: boolean }
       is_reviewer: { Args: never; Returns: boolean }
       merge_progress_deletions: {
         Args: { p_progress: Json; p_saved: Json }
         Returns: Json
       }
+      my_reviewer_qualification: { Args: never; Returns: string }
       save_learner_progress: {
         Args: {
           p_check_version?: boolean

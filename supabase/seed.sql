@@ -6,4 +6,8 @@ insert into public.subjects (slug, name, sort_order) values
   ('biochemistry', 'Biochemistry', 3);
 
 -- A reviewer for local development and the integration tests (sign up with this email).
-insert into public.content_reviewers (email) values ('reviewer@example.com');
+insert into public.content_reviewers (email, qualification)
+  values ('reviewer@example.com', 'MBBS, anatomy tutor');
+
+-- An admin for local development and the integration tests (sign up with this email).
+insert into public.app_admins (email) values ('admin@example.com');
