@@ -156,12 +156,29 @@ describe('Studio on a phone', () => {
     expect(settings).toHaveFocus();
   });
 
+  // The studio fills the window; every other box measured is the topic's sheet.
+  const measureSheet = (sheet: Partial<DOMRect>) =>
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const { innerWidth: width, innerHeight: height } = window;
+      const studio = { top: 0, left: 0, right: width, bottom: height, width, height };
+      return (this.tagName === 'SECTION' ? studio : { ...studio, ...sheet }) as DOMRect;
+    });
+
   it('keeps the model above the sheet along the bottom of the screen', async () => {
-    const rect = vi
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockReturnValue({ top: window.innerHeight - 300, width: window.innerWidth } as DOMRect);
+    const rect = measureSheet({ top: window.innerHeight - 300 });
     await renderStudio('axilla');
     expect(viewer.props?.insetBottom).toBe(300);
+    expect(viewer.props?.insetRight).toBe(0);
+    rect.mockRestore();
+  });
+
+  it('keeps the model beside the sheet when a phone held sideways puts it down the right', async () => {
+    const rect = measureSheet({ top: 80, left: window.innerWidth - 332 });
+    await renderStudio('axilla');
+    expect(viewer.props?.insetRight).toBe(332);
+    expect(viewer.props?.insetBottom).toBe(0);
     rect.mockRestore();
   });
 
@@ -247,6 +264,24 @@ describe('Studio on a phone', () => {
     expect(viewer.props?.xray).toBe(true);
     await userEvent.click(within(tools).getByRole('button', { name: 'Reset the view' }));
     expect(viewer.props?.resetToken).toBe(1);
+  });
+
+  it('on a short screen keeps one floating panel: search takes the place of the region topics', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(max-height: 40rem)',
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    await renderStudio();
+    const browser = screen.getByRole('region', { name: 'Regions and topics' });
+    await userEvent.click(within(browser).getByRole('button', { name: /^Upper limb/ }));
+    expect(screen.getByRole('dialog', { name: 'Topics' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Find a structure or topic' }));
+    expect(screen.getByRole('dialog', { name: 'Search' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Topics' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Close search' }));
+    expect(screen.queryByRole('dialog', { name: 'Topics' })).not.toBeInTheDocument();
   });
 
   it('finds a structure by name', async () => {
