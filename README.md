@@ -118,22 +118,28 @@ mesh, simplified to a budget per layer) and their part of `body-index.json`, eve
 place on the body for search, "Find it" and the camera. Z-Anatomy's derived layers are shared
 under CC BY-SA 4.0 (`apps/web/public/models/body-z-anatomy.LICENSE.txt`).
 
-### Female body (in progress)
+### Female body
 
-No open female body of BodyParts3D quality exists, so it is being built from CC BY models on
-Sketchfab. Downloading needs a free Sketchfab account (sign up at https://sketchfab.com). On each
-model page choose **Download 3D Model**, then **GLB** (or glTF), and save it into
-`models-src/female/` under the name given:
+No open female body of BodyParts3D quality exists, so the female models come from CC BY models on
+Sketchfab (downloading needs a free Sketchfab account). The female pelvis topics use
+`female-pelvis.glb`, built from Stanford Medicine EdTech's "Female Reproductive System" (CC BY
+4.0): on https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce choose **Download 3D
+Model**, then the **GLB** with 1k textures, and save it as
+`models-src/female/stanford/female_reproductive_system.glb`. Then:
 
-| Model                                                | Page                                                             | Save as                   |
-| ---------------------------------------------------- | ---------------------------------------------------------------- | ------------------------- |
-| Human Female Skeleton, GW Anthropology Laboratories  | https://sketchfab.com/3d-models/3607576e0a7f422a802663ae358b7951 | `skeleton.glb`            |
-| Female Reproductive System, Stanford Medicine EdTech | https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce | `reproductive.glb`        |
-| Bony Pelvis and Pelvic Organs from MRI, audreybyrd   | https://sketchfab.com/3d-models/ad38f2971a054b4db2cd05e3efce9c59 | `pelvis.glb`              |
-| Human Female Breast Anatomy, Anatomy by Doctor Jana  | https://sketchfab.com/3d-models/e521ddef44924d67a612d41764779505 | `breast.glb`              |
-| Female Reproductive Organs (whole), CVallance        | https://sketchfab.com/3d-models/a7638a209026490fa3c8a3f9eecafcf9 | `reproductive-organs.glb` |
+```bash
+node scripts/models/build-models.mjs models-src/bodyparts3d/isa_BP3D_4.0_obj_99 models-src/bodyparts3d/isa_element_parts.txt --only=female-pelvis
+```
 
-All five were checked as CC BY and downloadable on 1 October 2026.
+Also downloaded (17 October 2026), not built yet: "Bony Pelvis, Supply, Organs from MRI" by
+audreybyrd (https://sketchfab.com/3d-models/8c12064abe744fc7b13fe9aded2d4b02, CC BY 4.0, glTF,
+extracted into `models-src/female/mri-pelvis/`), a real woman's pelvis with the iliac arteries and
+lumbosacral plexus, for the female pelvic vessels and nerves. Still to download when needed:
+
+| Model                                               | Page                                                             | For                            |
+| --------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------ |
+| Human Female Skeleton, GW Anthropology Laboratories | https://sketchfab.com/3d-models/3607576e0a7f422a802663ae358b7951 | A whole female body            |
+| Human Female Breast Anatomy, Anatomy by Doctor Jana | https://sketchfab.com/3d-models/e521ddef44924d67a612d41764779505 | The pectoral region and breast |
 
 ## Reviewing topics
 

@@ -2,15 +2,16 @@ import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
 import {
+  FEMALE_FLOOR,
+  FEMALE_ORGANS,
   FEMALE_ORGANS_ABOVE,
   FEMALE_ORGANS_SIDE,
   FEMALE_PELVIS_CREDIT,
-  PELVIC_FLOOR,
-  PELVIS_MODEL_SRC,
-  PELVIS_SKELETON,
-  pelvisParts,
-  TRACES,
-} from './pelvis-3d';
+  FEMALE_PELVIS_MODEL_SRC,
+  FEMALE_SKELETON,
+  FEMALE_TRACES,
+  femalePelvisParts,
+} from './female-pelvis-3d';
 
 // Pelvis batch 2 (BD Volume 2). Facts in our own words; `reviewed: false` until a student checks
 // the topic against the book pages.
@@ -39,11 +40,11 @@ export const uterineSupports: Topic = {
       'Chapter 5 Pelvis and Perineum: pelvic fascia, page 475; broad ligament, pages 477 to 478',
     ),
     {
-      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      title: 'Female Reproductive System, Stanford Medicine EdTech',
       detail:
-        'Bony pelvis, pelvic floor, bladder and rectum in the 3D view; the organs drawn as outlines',
-      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
-      licence: 'CC BY 4.0 (files marked CC BY-SA 2.1 JP); Z-Anatomy CC BY-SA 4.0',
+        'Female pelvis, organs, ligaments and perineal muscles in the 3D view; vessels and the ureter drawn as lines',
+      url: 'https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce',
+      licence: 'CC BY 4.0',
     },
   ],
   keyFacts: [
@@ -212,20 +213,16 @@ export const uterineSupports: Topic = {
       },
     ],
     model3d: {
-      src: PELVIS_MODEL_SRC,
+      src: FEMALE_PELVIS_MODEL_SRC,
       credit: FEMALE_PELVIS_CREDIT,
-      parts: pelvisParts(
-        [...PELVIS_SKELETON, ...PELVIC_FLOOR, 'urinary-bladder', 'rectum', 'ureters'],
-        ['hip-bones', 'obturator-internus', 'urinary-bladder', 'rectum'],
+      parts: femalePelvisParts(
+        [...FEMALE_SKELETON, ...FEMALE_FLOOR, ...FEMALE_ORGANS, 'urinary-bladder', 'rectum'],
+        ['hip-bones', 'urinary-bladder', 'rectum'],
       ),
       traces: [
-        { id: 'uterus', ...TRACES.uterus },
-        { id: 'axis', ...TRACES.uterusSagittal },
-        { id: 'broad-ligament', ...TRACES.uterineTubes },
-        { id: 'round', ...TRACES.roundLigaments },
-        { id: 'cardinal', ...TRACES.cardinalLigaments },
-        { id: 'uterosacral', ...TRACES.uterosacralLigaments },
-        { id: 'perineal-body', ...TRACES.perinealBody },
+        { id: 'cardinal', ...FEMALE_TRACES.cardinalLigaments },
+        { id: 'uterosacral', ...FEMALE_TRACES.uterosacralLigaments },
+        { id: 'perineal-body', ...FEMALE_TRACES.perinealBody },
       ],
       stops: [FEMALE_ORGANS_ABOVE, FEMALE_ORGANS_SIDE],
     },

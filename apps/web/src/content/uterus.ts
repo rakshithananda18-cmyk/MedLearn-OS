@@ -5,11 +5,12 @@ import {
   FEMALE_ORGANS_ABOVE,
   FEMALE_ORGANS_SIDE,
   FEMALE_PELVIS_CREDIT,
-  PELVIS_MODEL_SRC,
-  PELVIS_SKELETON,
-  pelvisParts,
-  TRACES,
-} from './pelvis-3d';
+  FEMALE_PELVIS_MODEL_SRC,
+  FEMALE_SKELETON,
+  FEMALE_TRACES,
+  femalePelvisParts,
+  UTERUS_SECTION_SIDE,
+} from './female-pelvis-3d';
 
 // Pelvis batch 2 (BD Volume 2). Facts in our own words; `reviewed: false` until a student checks
 // the topic against the book pages.
@@ -38,11 +39,11 @@ export const uterus: Topic = {
       'Chapter 5 Pelvis and Perineum: uterus and cervix, pages 471 to 473',
     ),
     {
-      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      title: 'Female Reproductive System, Stanford Medicine EdTech',
       detail:
-        'Bony pelvis, bladder, rectum and ureters in the 3D view; the organs drawn as outlines',
-      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
-      licence: 'CC BY 4.0 (files marked CC BY-SA 2.1 JP); Z-Anatomy CC BY-SA 4.0',
+        'Female pelvis, organs, ligaments and perineal muscles in the 3D view; vessels and the ureter drawn as lines',
+      url: 'https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce',
+      licence: 'CC BY 4.0',
     },
   ],
   keyFacts: [
@@ -198,20 +199,27 @@ export const uterus: Topic = {
       },
     ],
     model3d: {
-      src: PELVIS_MODEL_SRC,
+      src: FEMALE_PELVIS_MODEL_SRC,
       credit: FEMALE_PELVIS_CREDIT,
-      parts: pelvisParts(
-        [...PELVIS_SKELETON, 'levator-ani', 'urinary-bladder', 'rectum', 'ureters'],
-        ['hip-bones', 'levator-ani', 'urinary-bladder', 'rectum'],
+      parts: femalePelvisParts(
+        [
+          ...FEMALE_SKELETON,
+          'uterus-section',
+          'uterus-vagina',
+          'ovaries',
+          'uterine-tubes',
+          'broad-ligaments',
+          'round-ligaments',
+          'urinary-bladder',
+          'rectum',
+        ],
+        ['hip-bones', 'uterus-vagina', 'urinary-bladder', 'rectum'],
       ),
       traces: [
-        { id: 'uterus', ...TRACES.uterus },
-        { id: 'anteflexion', ...TRACES.uterusSagittal },
-        { id: 'anteversion', ...TRACES.vagina },
-        { id: 'lateral-border', ...TRACES.uterineTubes },
-        { id: 'uterine-artery', ...TRACES.uterineArteries },
+        { id: 'uterine-artery', ...FEMALE_TRACES.uterineArteries },
+        { id: 'over-ureter', ...FEMALE_TRACES.ureters },
       ],
-      stops: [FEMALE_ORGANS_SIDE, FEMALE_ORGANS_ABOVE],
+      stops: [FEMALE_ORGANS_SIDE, UTERUS_SECTION_SIDE, FEMALE_ORGANS_ABOVE],
     },
   },
   lesson: [

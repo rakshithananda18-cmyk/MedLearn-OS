@@ -2,15 +2,15 @@ import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
 import {
+  FEMALE_FLOOR,
   FEMALE_ORGANS_SIDE,
   FEMALE_PELVIS_CREDIT,
-  PELVIC_FLOOR,
-  PELVIS_MODEL_SRC,
-  PELVIS_SKELETON,
-  pelvisParts,
-  TRACES,
+  FEMALE_PELVIS_MODEL_SRC,
+  FEMALE_SKELETON,
+  FEMALE_TRACES,
+  femalePelvisParts,
   VAGINA_OBLIQUE,
-} from './pelvis-3d';
+} from './female-pelvis-3d';
 
 // Pelvis batch 2 (BD Volume 2). Facts in our own words; `reviewed: false` until a student checks
 // the topic against the book pages.
@@ -36,11 +36,11 @@ export const vagina: Topic = {
     ),
     bookSource('grays-anatomy', 'Chapter 5 Pelvis and Perineum: vagina, pages 473 to 474'),
     {
-      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      title: 'Female Reproductive System, Stanford Medicine EdTech',
       detail:
-        'Bony pelvis, pelvic floor, bladder, rectum and ureters in the 3D view; the organs drawn as outlines',
-      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
-      licence: 'CC BY 4.0 (files marked CC BY-SA 2.1 JP); Z-Anatomy CC BY-SA 4.0',
+        'Female pelvis, organs, ligaments and perineal muscles in the 3D view; vessels and the ureter drawn as lines',
+      url: 'https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce',
+      licence: 'CC BY 4.0',
     },
   ],
   keyFacts: [
@@ -203,17 +203,35 @@ export const vagina: Topic = {
       },
     ],
     model3d: {
-      src: PELVIS_MODEL_SRC,
+      src: FEMALE_PELVIS_MODEL_SRC,
       credit: FEMALE_PELVIS_CREDIT,
-      parts: pelvisParts(
-        [...PELVIS_SKELETON, ...PELVIC_FLOOR, 'urinary-bladder', 'rectum', 'ureters'],
-        ['hip-bones', 'obturator-internus', 'levator-ani', 'urinary-bladder', 'rectum'],
+      parts: femalePelvisParts(
+        [
+          ...FEMALE_SKELETON,
+          ...FEMALE_FLOOR,
+          'uterus-vagina',
+          'urinary-bladder',
+          'rectum',
+          'labia-minora',
+          'vestibular-bulbs',
+          'greater-vestibular-glands',
+          'clitoris-crura',
+          'ischiocavernosus',
+          'superficial-transverse-perinei',
+          'deep-transverse-perinei',
+        ],
+        [
+          'hip-bones',
+          'pubococcygeus',
+          'iliococcygeus',
+          'puborectalis',
+          'urinary-bladder',
+          'rectum',
+        ],
       ),
       traces: [
-        { id: 'vagina', ...TRACES.vagina },
-        { id: 'fornices', ...TRACES.uterusSagittal },
-        { id: 'ureter', ...TRACES.uterineArteries },
-        { id: 'perineal-body', ...TRACES.perinealBody },
+        { id: 'ureter', ...FEMALE_TRACES.ureters },
+        { id: 'perineal-body', ...FEMALE_TRACES.perinealBody },
       ],
       stops: [VAGINA_OBLIQUE, FEMALE_ORGANS_SIDE],
     },

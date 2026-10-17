@@ -16,6 +16,8 @@
 //  - abdominal-organs.glb: the abdominal viscera with their peritoneal folds and gut vessels
 //  - pelvis.glb: the male pelvis and perineum, its walls, floor, organs and pudendal nerves and
 //    vessels, shared by the pelvis and perineum topics
+//  - female-pelvis.glb: the female pelvis, its organs, ligaments, floor and perineal muscles, from
+//    Stanford Medicine's model (below), shared by the female pelvis topics
 //  - body.glb: the whole body surface, for picking a region to study
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
@@ -26,15 +28,23 @@
 // Usage: node scripts/models/build-models.mjs <folder with the extracted FJ*.obj files>
 //          <isa_element_parts.txt, the index from the same download page> [--only=<model>]
 // Coordinates stay in the source frame (millimetres, Z up); the viewer turns them into its scene.
+// The female pelvis comes from "Female Reproductive System" by Stanford Medicine EdTech,
+// https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce, CC BY 4.0, downloaded
+// 17 October 2026 to models-src/female/stanford (its textures are not used).
+//
 // Model files are cached forever by URL, so a rebuilt model with new parts needs a new address
 // (the version in SHOULDER_MODEL_SRC, apps/web/src/content/shoulder-3d.ts).
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Document, NodeIO } from '@gltf-transform/core';
-import { EXTMeshoptCompression, KHRMeshQuantization } from '@gltf-transform/extensions';
+import {
+  ALL_EXTENSIONS,
+  EXTMeshoptCompression,
+  KHRMeshQuantization,
+} from '@gltf-transform/extensions';
 import { meshopt, prune, simplifyPrimitive, weld } from '@gltf-transform/functions';
-import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
+import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 
 import { fail, step } from '../lib/cli.mjs';
 import { structuresOf as zAnatomyStructures } from './z-anatomy.mjs';
@@ -69,6 +79,18 @@ const zParts = (file, rows) =>
     ...extras,
   }));
 const visceral = (rows) => zParts('VisceralSystem100.fbx', rows);
+// Stanford's female pelvis is Y-up metres; turned Z-up millimetres and moved by STANFORD_FIT, its
+// bony pelvis sits on BodyParts3D's (bounds centred to within a few millimetres), so the female
+// topics share the male pelvis's frame and camera views.
+const STANFORD = 'models-src/female/stanford/female_reproductive_system.glb';
+const STANFORD_FIT = [4, -336, -72];
+/** Parts from Stanford's model, from rows of [part id, node names, ratio]. */
+const stanfordParts = (rows) =>
+  rows.map(([id, names, ratio]) => ({
+    id,
+    gltf: { file: STANFORD, names: [names].flat(), offset: STANFORD_FIT },
+    ratio,
+  }));
 const PLEURA = { file: 'VisceralSystem100.fbx', names: ['Pleura'] };
 // Nerves of the right hip and thigh, from Z-Anatomy: BodyParts3D has almost no limb nerves. Those
 // that go on into the leg are cut below the knee, where the hip and thigh model ends.
@@ -1803,6 +1825,38 @@ export const MODELS = [
     ],
   },
   {
+    name: 'female-pelvis',
+    // The female pelvis (pelvis batch 2 onwards), all from Stanford's model: bones, bladder,
+    // rectum, uterus and vagina (whole, and a sagittal cut-away half), ovaries, tubes, broad and
+    // round ligaments, the tendinous arch, levator ani's three parts, the perineal muscles and the
+    // erectile bodies and glands of the vulva. It has no vessels or nerves.
+    maxTriangles: 120_000,
+    error: 0.003,
+    parts: stanfordParts([
+      ['hip-bones', 'Pelvis_Edit_Pelvis_M_0', 0.35],
+      ['sacrum', 'Sacrum_Edit_Sacrum_M_0', 0.4],
+      ['urinary-bladder', 'Bladder_1_Bladder_M_0', 0.15],
+      ['rectum', 'Merged_Colon_Rectum_Anus2_Large_intestine_M_0', 0.6],
+      ['uterus-vagina', 'UterusVagina_Ovaries_M_0', 1],
+      ['uterus-section', 'Uterus_CutAway_FNL_Uterus_and_vagina_M.001_0', 0.6],
+      ['ovaries', 'Ovaries_Edit_Ovaries_M_0', 1],
+      ['uterine-tubes', 'Fallopian_Edits_Ovaries_M_0', 0.3],
+      ['broad-ligaments', 'Broad_Ligament_FNL_Broad_ligament_M_0', 0.6],
+      ['round-ligaments', 'RoundLigament_Round_ligament_M_0', 0.3],
+      ['tendinous-arch', 'Tendinous_Arch_Round_ligament_M_0', 0.6],
+      ['pubococcygeus', 'Pubococcygeus_MUSCLES_0', 0.6],
+      ['iliococcygeus', 'illiococcygeus_MUSCLES_0', 0.8],
+      ['puborectalis', 'Puboanalis_MUSCLES_0', 1],
+      ['ischiocavernosus', 'Ischiocavernosus_MUSCLES_0', 1],
+      ['deep-transverse-perinei', 'Deep_Transverse_Perineal_MUSCLES_0', 1],
+      ['superficial-transverse-perinei', 'Superficial_Transverse_Perineal_MUSCLES_0', 1],
+      ['clitoris-crura', 'Crus_of_Clitoris_VestibulCrusBatholin_0', 1],
+      ['vestibular-bulbs', 'Bulb_of_Vestibule_VestibulCrusBatholin_0', 1],
+      ['greater-vestibular-glands', 'Bartholin_Glands_VestibulCrusBatholin_0', 1],
+      ['labia-minora', 'HymenalCaruncle_UrethralOrifice_Labia_minora_M_0', 1],
+    ]),
+  },
+  {
     name: 'body',
     maxTriangles: 50_000,
     // The body is seen whole, so it tolerates coarser surfaces.
@@ -1880,6 +1934,50 @@ function zAnatomyMeshes({ file, names }) {
   });
 }
 
+const gltfFiles = new Map();
+
+/**
+ * Named meshes from a glTF or GLB file, on the BodyParts3D frame: its Y-up metres turned Z-up
+ * millimetres (front towards -Y, left towards +X), then moved by `offset`.
+ */
+async function gltfMeshes({ file, names, offset }) {
+  if (!gltfFiles.has(file)) {
+    await MeshoptDecoder.ready;
+    const io = new NodeIO()
+      .registerExtensions(ALL_EXTENSIONS)
+      .registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
+    gltfFiles.set(file, await io.read(file));
+  }
+  const nodes = gltfFiles.get(file).getRoot().listNodes();
+  return names.flatMap((name) => {
+    const node = nodes.find((item) => item.getName() === name && item.getMesh());
+    if (!node) fail(`Not in ${file}: ${name}`);
+    const m = node.getWorldMatrix();
+    return node
+      .getMesh()
+      .listPrimitives()
+      .map((primitive) => {
+        const source = primitive.getAttribute('POSITION');
+        const positions = new Float32Array(source.getCount() * 3);
+        const v = [0, 0, 0];
+        for (let at = 0; at < source.getCount(); at++) {
+          source.getElement(at, v);
+          const [x, y, z] = [0, 1, 2].map(
+            (row) => m[row] * v[0] + m[4 + row] * v[1] + m[8 + row] * v[2] + m[12 + row],
+          );
+          positions.set(
+            [x * 1000 + offset[0], -z * 1000 + offset[1], y * 1000 + offset[2]],
+            at * 3,
+          );
+        }
+        const indices = primitive.getIndices()
+          ? Uint32Array.from(primitive.getIndices().getArray())
+          : Uint32Array.from({ length: source.getCount() }, (_, at) => at);
+        return { positions, indices };
+      });
+  });
+}
+
 /** Element file ids by concept name, from BodyParts3D's isa_element_parts.txt. */
 export function readConcepts(text) {
   const concepts = new Map();
@@ -1923,6 +2021,8 @@ async function build(model, sourceDir, concepts, io) {
     let meshes;
     if (part.zAnatomy) {
       meshes = zAnatomyMeshes(part.zAnatomy);
+    } else if (part.gltf) {
+      meshes = await gltfMeshes(part.gltf);
     } else {
       const files =
         part.files ?? (part.concepts ?? [part.concept]).flatMap((name) => concepts.get(name) ?? []);

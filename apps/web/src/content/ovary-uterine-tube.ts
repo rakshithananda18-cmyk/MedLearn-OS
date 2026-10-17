@@ -2,14 +2,15 @@ import type { Topic } from '@medlearn/schemas';
 
 import { bookSource } from './books';
 import {
+  FEMALE_ORGANS,
   FEMALE_ORGANS_ABOVE,
   FEMALE_PELVIS_CREDIT,
+  FEMALE_PELVIS_MODEL_SRC,
+  FEMALE_SKELETON,
+  FEMALE_TRACES,
+  femalePelvisParts,
   OVARY_WALL,
-  PELVIS_MODEL_SRC,
-  PELVIS_SKELETON,
-  pelvisParts,
-  TRACES,
-} from './pelvis-3d';
+} from './female-pelvis-3d';
 
 // Pelvis batch 2 (BD Volume 2). Facts in our own words; `reviewed: false` until a student checks
 // the topic against the book pages.
@@ -38,11 +39,11 @@ export const ovaryUterineTube: Topic = {
       'Chapter 5 Pelvis and Perineum: ovaries, page 470; uterine tubes, page 472',
     ),
     {
-      title: 'BodyParts3D (DBCLS) and Z-Anatomy',
+      title: 'Female Reproductive System, Stanford Medicine EdTech',
       detail:
-        'Bony pelvis, side wall, ureters and iliac vessels in the 3D view; the organs drawn as outlines',
-      url: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html',
-      licence: 'CC BY 4.0 (files marked CC BY-SA 2.1 JP); Z-Anatomy CC BY-SA 4.0',
+        'Female pelvis, organs, ligaments and perineal muscles in the 3D view; vessels and the ureter drawn as lines',
+      url: 'https://sketchfab.com/3d-models/c4d5e725198d4a1997c641d548bb20ce',
+      licence: 'CC BY 4.0',
     },
   ],
   keyFacts: [
@@ -211,26 +212,13 @@ export const ovaryUterineTube: Topic = {
       },
     ],
     model3d: {
-      src: PELVIS_MODEL_SRC,
+      src: FEMALE_PELVIS_MODEL_SRC,
       credit: FEMALE_PELVIS_CREDIT,
-      parts: pelvisParts(
-        [
-          ...PELVIS_SKELETON,
-          'obturator-internus',
-          'levator-ani',
-          'urinary-bladder',
-          'rectum',
-          'ureters',
-          'iliac-arteries',
-        ],
-        ['hip-bones', 'obturator-internus', 'levator-ani', 'urinary-bladder', 'rectum'],
+      parts: femalePelvisParts(
+        [...FEMALE_SKELETON, ...FEMALE_ORGANS, 'urinary-bladder', 'rectum'],
+        ['hip-bones', 'urinary-bladder', 'rectum'],
       ),
-      traces: [
-        { id: 'ovary', ...TRACES.ovaries },
-        { id: 'ampulla', ...TRACES.uterineTubes },
-        { id: 'ovarian-ligament', ...TRACES.ovarianLigaments },
-        { id: 'suspensory', ...TRACES.suspensoryLigaments },
-      ],
+      traces: [{ id: 'fossa-boundaries', ...FEMALE_TRACES.ureters }],
       stops: [OVARY_WALL, FEMALE_ORGANS_ABOVE],
     },
   },
