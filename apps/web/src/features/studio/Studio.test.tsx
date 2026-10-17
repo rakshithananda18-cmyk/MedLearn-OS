@@ -404,6 +404,16 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
+  it('unfolds the topics to a region picked on the body', async () => {
+    wideScreen();
+    await renderStudio();
+    expect(screen.getByRole('button', { name: /^Thorax/, expanded: false })).toBeInTheDocument();
+    tap('thorax');
+    expect(
+      await screen.findByRole('button', { name: /^Thorax/, expanded: true }),
+    ).toBeInTheDocument();
+  });
+
   it('docks the topics and search, the modes by the title, the guided views and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');

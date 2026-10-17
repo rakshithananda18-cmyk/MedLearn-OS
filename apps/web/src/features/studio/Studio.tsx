@@ -1209,6 +1209,7 @@ function DockedOverlay({
           topics={topics}
           regions={regions}
           current={topic?.slug ?? null}
+          region={session.region}
           search={<Search studio={studio} topics={topics} />}
           action={<Fold open onToggle={() => setLeft(false)} />}
           onRegion={(region) => studio.update({ region })}
