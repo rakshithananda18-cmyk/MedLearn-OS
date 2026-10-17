@@ -8,6 +8,11 @@ export interface BodyRegionInfo {
   marker: Point3;
   /** How far the region reaches from there, in millimetres: picking it brings it this close. */
   reach: number;
+  /**
+   * The region's detailed model (a topic model file, same frame as the body): picked on the body,
+   * the region opens into it, with every part its topics show.
+   */
+  detail?: string;
 }
 
 // The points sit just off the body surface, measured from the model; the limbs are marked on the
@@ -15,11 +20,41 @@ export interface BodyRegionInfo {
 // region's id (scripts/models/build-models.mjs).
 /** Body regions in the order of the standard books' volumes. */
 export const BODY_REGIONS: BodyRegionInfo[] = [
-  { id: 'upper-limb', name: 'Upper limb', marker: [-228, -128, 1130], reach: 260 },
-  { id: 'thorax', name: 'Thorax', marker: [0, -228, 1240], reach: 180 },
-  { id: 'abdomen', name: 'Abdomen', marker: [0, -232, 1060], reach: 150 },
-  { id: 'pelvis', name: 'Pelvis', marker: [0, -218, 905], reach: 130 },
-  { id: 'lower-limb', name: 'Lower limb', marker: [-95, -190, 600], reach: 300 },
+  {
+    id: 'upper-limb',
+    name: 'Upper limb',
+    marker: [-228, -128, 1130],
+    reach: 260,
+    detail: '/models/upper-limb.glb',
+  },
+  {
+    id: 'thorax',
+    name: 'Thorax',
+    marker: [0, -228, 1240],
+    reach: 180,
+    detail: '/models/thoracic-organs.glb',
+  },
+  {
+    id: 'abdomen',
+    name: 'Abdomen',
+    marker: [0, -232, 1060],
+    reach: 150,
+    detail: '/models/abdominal-organs.glb',
+  },
+  {
+    id: 'pelvis',
+    name: 'Pelvis',
+    marker: [0, -218, 905],
+    reach: 130,
+    detail: '/models/pelvis.glb',
+  },
+  {
+    id: 'lower-limb',
+    name: 'Lower limb',
+    marker: [-95, -190, 600],
+    reach: 300,
+    detail: '/models/lower-limb.glb',
+  },
   { id: 'head-neck', name: 'Head and neck', marker: [0, -200, 1540], reach: 120 },
   { id: 'back', name: 'Back', marker: [0, 42, 1210], reach: 200 },
 ];

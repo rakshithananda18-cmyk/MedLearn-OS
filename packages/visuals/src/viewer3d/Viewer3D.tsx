@@ -115,6 +115,16 @@ export interface Viewer3DProps {
   /** Everything see-through, to look inside. */
   xray?: boolean;
   reducedMotion: boolean;
+  /**
+   * A second model drawn in the same frame (a region's detailed model inside the body). Its parts
+   * are picked and lit by their ids with DETAIL_PREFIX in front.
+   */
+  detail?: Model3D | null;
+  /**
+   * Parts drawn only as a faint outline that taps pass through (a region's surface while it is
+   * opened into its detailed model).
+   */
+  ghostIds?: ReadonlySet<string>;
   /** Points that anchor names (the body's regions): not drawn, their region's surface takes the taps. */
   markers?: Viewer3DMarker[];
   /** How far the camera may pull back, in metres. */
@@ -169,6 +179,10 @@ const PAN_MARGIN_M = 0.05;
  */
 const FRAMED_VIEW_DEG = 25;
 const DIMMED = 0.3;
+/** How the detailed model's parts are named to the page (the studio's session uses the same). */
+const DETAIL_PREFIX = 'part:';
+/** A ghosted part: a faint outline that taps and the pointer pass through. */
+const GHOST = 0.12;
 /** A region's surface while picked or under the pointer: tinted, still see-through. */
 const SURFACE_LIT = 0.6;
 const SURFACE_HOVER = 0.5;
@@ -518,10 +532,12 @@ function Parts({
   xray,
   sectioned,
   regionsOffered,
+  ghostIds = NONE,
 }: Readonly<
   Pick<Viewer3DProps, 'model' | 'highlight' | 'onSelect' | 'hiddenKinds'> & {
     selecting: boolean;
     hiddenIds: ReadonlySet<string>;
+    ghostIds?: ReadonlySet<string>;
     xray: boolean;
     sectioned: boolean;
     /** The body's regions are on offer: its surfaces tint under the pointer and take taps. */
@@ -561,14 +577,16 @@ function Parts({
       const node = scene.getObjectByName(part.id) as Mesh | undefined;
       if (!node) continue;
       node.visible = !hiddenKinds.has(part.kind) && !hiddenIds.has(part.id);
-      const surface = surfaces.has(part.id);
-      const lit = highlight.has(part.id) || (surface && hovered === part.id);
+      const ghost = ghostIds.has(part.id);
+      const surface = surfaces.has(part.id) && !ghost;
+      const lit = !ghost && (highlight.has(part.id) || (surface && hovered === part.id));
       const plainOpacity =
         (part.opacity ?? PART_OPACITY[part.kind]) * (selecting ? DIMMED : 1) * (xray ? XRAY : 1);
       // A picked structure is drawn solid, however see-through its kind usually is; a region's
       // surface only thickens, so the skeleton and organs inside stay in view.
       let opacity = lit ? 1 : plainOpacity;
       if (surface && lit) opacity = highlight.has(part.id) ? SURFACE_LIT : SURFACE_HOVER;
+      if (ghost) opacity = GHOST;
       node.traverse((child) => {
         const mesh = child as Mesh;
         if (!mesh.isMesh) return;
@@ -597,6 +615,7 @@ function Parts({
     sectioned,
     surfaces,
     hovered,
+    ghostIds,
   ]);
 
   const select = (event: ThreeEvent<MouseEvent>) => {
@@ -609,6 +628,8 @@ function Parts({
       (hit) =>
         hit.object !== event.object && hit.object.userData.partId && drawn(hit, gl.clippingPlanes),
     );
+    // A ghost lets the tap through to whatever it outlines.
+    if (ghostIds.has(id)) return;
     const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
     if (skin && under && (!surfaces.has(id) || highlight.has(id))) return;
     event.stopPropagation();
@@ -622,8 +643,9 @@ function Parts({
         // The event visits every part along the ray, nearest first: only the nearest one shown
         // counts.
         if (event.pointerType !== 'mouse' || !drawn(event, gl.clippingPlanes)) return;
-        event.stopPropagation();
         const id = event.object.userData.partId as string | undefined;
+        if (id && ghostIds.has(id)) return;
+        event.stopPropagation();
         setHovered(id && surfaces.has(id) ? id : null);
       }}
       onPointerOut={() => setHovered(null)}
@@ -1082,6 +1104,8 @@ function distance(a: Point3, b: Point3): number {
  */
 export default function Viewer3D({
   model,
+  detail = null,
+  ghostIds = NONE,
   highlight,
   onSelect,
   stopId,
@@ -1111,7 +1135,16 @@ export default function Viewer3D({
   const selecting =
     [...model.parts.filter((part) => part.kind !== 'skin'), ...model.traces].some((item) =>
       highlight.has(item.id),
-    ) || [...highlight].some((id) => id.includes('/'));
+    ) || [...highlight].some((id) => id.includes('/') || id.startsWith(DETAIL_PREFIX));
+  const detailLit = useMemo(
+    () =>
+      new Set(
+        [...highlight]
+          .filter((id) => id.startsWith(DETAIL_PREFIX))
+          .map((id) => id.slice(DETAIL_PREFIX.length)),
+      ),
+    [highlight],
+  );
   const group = useRef<Group>(null);
   const [draft, setDraft] = useState<Point3[]>([]);
   const drawing = useRef<Point3[] | null>(null);
@@ -1177,7 +1210,24 @@ export default function Viewer3D({
             xray={xray}
             sectioned={section !== null}
             regionsOffered={markers.length > 0}
+            ghostIds={ghostIds}
           />
+          {detail ? (
+            // A region opened in place: it arrives on its own, the body staying usable meanwhile.
+            <Suspense fallback={null}>
+              <Parts
+                model={detail}
+                highlight={detailLit}
+                selecting={selecting}
+                onSelect={pen ? () => {} : (id) => onSelect(`${DETAIL_PREFIX}${id}`)}
+                hiddenKinds={hiddenKinds}
+                hiddenIds={NONE}
+                xray={xray}
+                sectioned={section !== null}
+                regionsOffered={false}
+              />
+            </Suspense>
+          ) : null}
           {layers.map((layer) => (
             // Each system arrives on its own; the body is usable while the rest load.
             <Suspense key={layer.id} fallback={null}>

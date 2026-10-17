@@ -45,6 +45,7 @@ import {
 } from './saved';
 import {
   changeModeIn,
+  DETAIL_PREFIX,
   findOnBody,
   hiddenIn,
   litIn,
@@ -226,7 +227,8 @@ function useStudio({
     },
     hide: (id: string) =>
       update({ hiddenIds: toggled(session.hiddenIds, id), selected: null, isolate: false }),
-    resetView: () => update({ reset: session.reset + 1 }),
+    // On the body, Reset also closes the region opened in place.
+    resetView: () => update({ reset: session.reset + 1, ...(topic ? {} : { focus: null }) }),
     back: () => {
       if (window.history.length > 1) router.back();
       else router.push('/today');
@@ -300,7 +302,9 @@ function labelsFor(
     // Like their markers, the region names step aside while a structure of the body is picked,
     // while playing "Find it", and beside a film.
     const busy = session.mode === 'quiz' || studio.film !== null || session.movement !== null;
-    if (session.selected?.includes('/') || busy) {
+    const structure =
+      session.selected?.includes('/') || session.selected?.startsWith(DETAIL_PREFIX);
+    if (structure || busy) {
       return [];
     }
     return regions.flatMap((region) => {
@@ -371,9 +375,33 @@ function bodyHidden(session: Session, regions: BodyRegionInfo[]): ReadonlySet<st
   return new Set(skin ? ['skeleton'] : ['skeleton', ...regions.map((region) => region.id)]);
 }
 
+/**
+ * The detailed model a region opens into when picked on the body: its file, with every part the
+ * region's topics show in it (named, coloured and described as in those topics).
+ */
+export function regionDetail(
+  region: BodyRegionInfo | undefined,
+  topics: StudioTopic[],
+): Model3D | null {
+  if (!region?.detail) return null;
+  const path = (src: string) => new URL(src, 'https://assets.medlearn.invalid').pathname;
+  const users = topics.filter(
+    (topic) =>
+      topic.regions.includes(region.id) && topic.model && path(topic.model.src) === region.detail,
+  );
+  const first = users[0]?.model;
+  if (!first) return null;
+  const parts = new Map<string, Model3D['parts'][number]>();
+  for (const topic of users) {
+    for (const part of topic.model?.parts ?? []) if (!parts.has(part.id)) parts.set(part.id, part);
+  }
+  return { ...first, parts: [...parts.values()], traces: [] };
+}
+
 /** The model, with a caption for screen readers; where it sits comes from the layout. */
 function StudioModel({
   studio,
+  topics,
   regions,
   capable,
   labels,
@@ -383,6 +411,7 @@ function StudioModel({
   insetTop = 0,
 }: Readonly<{
   studio: StudioState;
+  topics: StudioTopic[];
   regions: BodyRegionInfo[];
   capable: boolean | null;
   labels: Viewer3DLabel[];
@@ -438,6 +467,14 @@ function StudioModel({
       playing: moving.playing,
     };
   }, [moving, joint, movement, parts]);
+  // A region picked on the body opens into its detailed model, while exploring.
+  const opened =
+    topic || session.mode !== 'explore' || film || moving
+      ? undefined
+      : regions.find((item) => item.id === session.focus);
+  const detail = useMemo(() => regionDetail(opened, topics), [opened, topics]);
+  // Where it has bones of its own, the body's skeleton steps aside.
+  const detailBones = detail?.parts.some((part) => part.kind === 'bone') ?? false;
   const focus = useMemo(() => {
     if (filmBones.length > 0) return focusOn(filmBones, index ?? []);
     // Choosing a joint turns the camera to it (moving it does not).
@@ -470,7 +507,16 @@ function StudioModel({
         labels={labels}
         resetToken={session.reset}
         dpr={pixelRatio(settings.quality)}
-        layers={topic ? [] : bodyLayers(session, studio.systems)}
+        layers={
+          topic
+            ? []
+            : bodyLayers(session, studio.systems).filter(
+                (layer) => !detailBones || layer.kind !== 'bone',
+              )
+        }
+        detail={detail}
+        // Its surface stays as a faint outline, so the other side's limb keeps its shape.
+        ghosts={new Set(detail && opened ? [opened.id] : [])}
         section={session.section}
         focus={topic ? null : focus}
         focusId={quizFocus(session.mode === 'quiz' ? session.quiz : null)}
@@ -664,7 +710,20 @@ function Search({
 /** What is known about the structure picked while exploring a topic, if one is. */
 function pickedInfo({ session, topic }: StudioState, topics: StudioTopic[]) {
   const selected = session.mode === 'explore' ? session.selected : null;
-  return topic && selected ? structureInfo(topic, selected, topics) : null;
+  if (!selected) return null;
+  if (topic) return structureInfo(topic, selected, topics);
+  if (!selected.startsWith(DETAIL_PREFIX)) return null;
+  // A part of the region opened on the body: told as the region's first topic that shows it, with
+  // that topic first among those to open.
+  const id = selected.slice(DETAIL_PREFIX.length);
+  const home = topics.find(
+    (item) =>
+      item.regions.includes(session.region) && item.model?.parts.some((part) => part.id === id),
+  );
+  const info = home ? structureInfo(home, id, topics) : null;
+  return home && info
+    ? { ...info, alsoIn: [{ slug: home.slug, title: home.title }, ...info.alsoIn] }
+    : null;
 }
 
 /** The picked structure's card, while exploring a topic; nothing otherwise. */
@@ -862,6 +921,13 @@ function PhoneFooter({
     return (
       <BottomSheet>
         <BodyPartCard id={session.selected} onClose={() => studio.pick(null)} />
+      </BottomSheet>
+    );
+  }
+  if (!topic && session.selected?.startsWith(DETAIL_PREFIX)) {
+    return (
+      <BottomSheet>
+        <Info {...props} docked={false} />
       </BottomSheet>
     );
   }
@@ -1314,6 +1380,7 @@ export function Studio(props: Readonly<StudioProps>) {
   const stage = (insetRight = 0) => (
     <StudioModel
       studio={studio}
+      topics={topics}
       regions={regions}
       capable={capable}
       labels={labelsFor(studio, topics, regions)}

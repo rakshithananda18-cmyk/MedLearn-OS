@@ -36,6 +36,8 @@ const viewer = vi.hoisted(() => ({
     dpr: number | [number, number];
     stopId: string;
     layers: Viewer3DLayer[];
+    detail: Model3D | null;
+    ghostIds: ReadonlySet<string>;
     section: Viewer3DSection | null;
     focus: Viewer3DFocus | null;
     pose: Viewer3DPose | null;
@@ -404,6 +406,25 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
+  it('opens a region picked on the body into its detailed model, and tells a part picked in it', async () => {
+    wideScreen();
+    await renderStudio();
+    expect(viewer.props?.detail).toBeNull();
+    tap('thorax');
+    const detail = viewer.props?.detail;
+    expect(detail?.src).toContain('/models/thoracic-organs.glb');
+    // Its surface stays as a faint outline, and its own bones stand in for the body's skeleton.
+    expect(viewer.props?.ghostIds).toContain('thorax');
+    expect(viewer.props?.layers.map((layer) => layer.id)).not.toContain('skeleton');
+    const sternum = detail?.parts.find((part) => part.name === 'Sternum');
+    if (!sternum) throw new Error('no sternum in the thorax');
+    tap(`part:${sternum.id}`);
+    expect(await screen.findByRole('region', { name: /Sternum/ })).toBeInTheDocument();
+    // Reset brings back the whole body.
+    await userEvent.click(screen.getByRole('button', { name: 'Reset the view' }));
+    expect(viewer.props?.detail).toBeNull();
+  });
+
   it('unfolds the topics to a region picked on the body', async () => {
     wideScreen();
     await renderStudio();
