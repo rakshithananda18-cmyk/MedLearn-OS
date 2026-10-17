@@ -5,7 +5,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./viewer3d": "./src/viewer3d/Viewer3D.tsx"
+    "./viewer3d": "./src/viewer3d/Viewer3D.tsx",
+    "./atlas-sample": "./src/viewer3d/AtlasSampleViewer.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
