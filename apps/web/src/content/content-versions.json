@@ -523,6 +523,38 @@
     "version": "0.1.0",
     "digest": "6fd0cb12e2dc006e"
   },
+  "urinary-bladder": {
+    "version": "0.1.0",
+    "digest": "1cd4712b60a62aca"
+  },
+  "urethra": {
+    "version": "0.1.0",
+    "digest": "285aea768d0157e4"
+  },
+  "prostate": {
+    "version": "0.1.0",
+    "digest": "71abaee4eef66e25"
+  },
+  "ductus-deferens": {
+    "version": "0.1.0",
+    "digest": "93084ccbd31ea2ce"
+  },
+  "ovary-uterine-tube": {
+    "version": "0.1.0",
+    "digest": "5cfec74f4eff4428"
+  },
+  "uterus": {
+    "version": "0.1.0",
+    "digest": "7ec32e9b5c981c50"
+  },
+  "uterine-supports": {
+    "version": "0.1.0",
+    "digest": "1b16973682738ef6"
+  },
+  "vagina": {
+    "version": "0.1.0",
+    "digest": "d004c4e7722771fe"
+  },
   "oxygen-haemoglobin-curve": {
     "version": "0.1.0",
     "digest": "0050d23d107218ef"

@@ -174,6 +174,14 @@ describe('Studio on a phone', () => {
     rect.mockRestore();
   });
 
+  it('gives the model the whole view when the sheet is not shown', async () => {
+    const rect = measureSheet({ top: 0, left: 0, width: 0, height: 0 });
+    await renderStudio('axilla');
+    expect(viewer.props?.insetBottom).toBe(0);
+    expect(viewer.props?.insetRight).toBe(0);
+    rect.mockRestore();
+  });
+
   it('keeps the model beside the sheet when a phone held sideways puts it down the right', async () => {
     const rect = measureSheet({ top: 80, left: window.innerWidth - 332 });
     await renderStudio('axilla');

@@ -927,6 +927,12 @@ function useFooterCover(onBottom: (height: number) => void, onRight: (width: num
       }
       const measure = () => {
         const sheet = (node.firstElementChild ?? node).getBoundingClientRect();
+        // A sheet that is not shown (hidden, as for the posters) covers nothing.
+        if (sheet.width === 0 || sheet.height === 0) {
+          onBottom(0);
+          onRight(0);
+          return;
+        }
         // The studio's own box: on the whole body the tab bar sits below it.
         const studio = node.closest('section')?.getBoundingClientRect() ?? sheet;
         const downRight = sheet.left > studio.left + studio.width / 4;

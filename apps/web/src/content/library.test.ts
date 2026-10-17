@@ -73,6 +73,9 @@ describe('libraryTree', () => {
     expect(pelvis.children.map((section) => section.kind === 'branch' && section.label)).toEqual([
       'Perineum',
       'Boundaries and contents of the pelvis',
+      'Urinary bladder and urethra',
+      'Female reproductive organs',
+      'Male internal genital organs',
     ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
     const lowerLimb = tree[4];

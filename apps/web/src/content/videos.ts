@@ -643,6 +643,47 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
     video('P3BBAMWm2Eo', 'The pelvic diaphragm in 3D', ANATOMY_ZONE, 626),
     video('30m-27ZC5l0', 'Muscles of the pelvic walls', KENHUB, 222),
   ],
+  'urinary-bladder': [
+    video('tGouMldaQgU', 'The urinary bladder: supply and nerves', KENHUB, 509),
+    video('g_ffnX9k5W4', 'Bladder anatomy', 'Sam Webster', 1164),
+  ],
+  urethra: [
+    video('vkABAIc9n4E', 'The male urethra', 'Dr Mohit Sheoran', 601),
+    video('frwhyFsSRBc', 'Parts of the urethra and extravasation of urine', 'Dr Hasana', 626),
+  ],
+  prostate: [
+    video('4DmElNKDLN8', 'The prostate', 'Dr Sumit Gupta', 2580),
+    video('W8zj-ewpVXU', 'Prostate gland anatomy', 'Sam Webster', 1269),
+  ],
+  'ductus-deferens': [
+    video('39OKrzU3i1w', 'The vas deferens and accessory glands in 3D', ANATOMY_ZONE, 430),
+    video(
+      'v763U0tHXDU',
+      'Ductus deferens, seminal vesicle and ejaculatory duct',
+      'Medical Knowledge',
+      485,
+    ),
+  ],
+  'ovary-uterine-tube': [
+    video('sNxBYJgANJE', 'The ovary and uterine tubes in 3D', ANATOMY_ZONE, 348),
+    video(
+      'kCKiFl6O8ac',
+      'The ovary: fossa, features, relations and supply',
+      'Bajrang Singh MBBS',
+      2395,
+    ),
+  ],
+  uterus: [
+    video('J3oky60tXCc', 'Anatomy of the uterus in 3D', 'Geeky Medics', 671),
+    video('drMAVw3R8DU', 'Parts of the uterus', 'Dr Mohit Sheoran', 948),
+  ],
+  'uterine-supports': [
+    video('_Lt6NeRqkDM', 'The broad ligament of the uterus', 'Dr Sumit Gupta', 2210),
+    video('cE336BTR9QQ', 'Ligaments of the female pelvis', '3D Anatomy Lyon', 301),
+  ],
+  vagina: [
+    video('nXzVHaeBHxA', 'The vagina: relations, supports and supply', 'Dr Kanhu Dash', 746),
+  ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
     video('bhJarMGNFw4', 'Oxygen–haemoglobin dissociation curve', 'Ninja Nerd', 1451),
