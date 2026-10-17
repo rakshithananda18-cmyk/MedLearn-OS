@@ -22,7 +22,7 @@ afterEach(() => {
 const today = dayKey(new Date());
 
 function answer(status: number, body: unknown) {
-  const fetch = vi.fn(async () => Response.json(body, { status }));
+  const fetch = vi.fn<typeof globalThis.fetch>(async () => Response.json(body, { status }));
   vi.stubGlobal('fetch', fetch);
   return fetch;
 }
@@ -65,7 +65,7 @@ describe('PlanView', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Make a plan' }));
 
-    const sent = JSON.parse(String(fetch.mock.calls[0]?.at(1)?.body)) as Record<string, unknown>;
+    const sent = JSON.parse(String(fetch.mock.calls[0]?.[1]?.body)) as Record<string, unknown>;
     expect(sent).toEqual({
       request: 'The whole upper limb in three weeks, then the thorax',
       today,
