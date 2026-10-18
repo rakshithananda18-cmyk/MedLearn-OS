@@ -21,7 +21,6 @@ import {
   Slice,
   Target,
 } from '@medlearn/ui/icons';
-import { PathTracer } from '@medlearn/visuals';
 import type {
   Stroke,
   Viewer3DFocus,
@@ -36,6 +35,7 @@ import type { BodyRegionInfo } from '@/content/body';
 
 import { BodyOutline } from './BodyOutline';
 import type { StudioTopic } from './knowledge';
+import { PathTracer } from './lazy';
 import { GLASS } from './panels';
 import { Viewer3D } from './viewer';
 
