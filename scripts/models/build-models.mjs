@@ -1821,6 +1821,26 @@ export const MODELS = [
       },
       ...zParts('NervousSystem100.fbx', [
         ['pudendal-nerves', ['Right pudendal nerve', 'Left pudendal nerve'], 0.4],
+        // Pelvis batch 3: the nerves of the pelvic wall that Z-Anatomy has. The sacral roots, the
+        // lumbosacral trunk, the pelvic splanchnic nerves and the pelvic sympathetic trunk (Z-Anatomy's
+        // ends above the pelvis) are drawn as lines in the topics.
+        [
+          'sciatic-nerves',
+          ['Right sciatic nerve', 'Left sciatic nerve'],
+          0.4,
+          { clipZ: [700, Infinity] },
+        ],
+        [
+          'superior-gluteal-nerves',
+          ['Right superior gluteal nerve', 'Left superior gluteal nerve'],
+          0.6,
+        ],
+        [
+          'obturator-nerves',
+          ['Right obturator nerve', 'Left obturator nerve'],
+          0.4,
+          { clipZ: [740, 1010] },
+        ],
       ]).map((part) => ({ ...part, ...PELVIC_FIT })),
     ],
   },

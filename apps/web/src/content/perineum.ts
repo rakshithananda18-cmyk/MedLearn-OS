@@ -23,7 +23,7 @@ export const perineum: Topic = {
     'Where the perineum lies, its surface and deep boundaries, how a line between the ischial tuberosities divides it into the urogenital and anal triangles, the perineal body and the muscles that meet in it.',
   estimatedMinutes: 11,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

@@ -21,7 +21,7 @@ export const maleUrogenitalRegion: Topic = {
     'The layers of the male urogenital triangle: Colles’ fascia, the superficial perineal space with the root of the penis and its muscles, the perineal membrane and what pierces it, the thin deep perineal space, and where urine goes when the urethra tears.',
   estimatedMinutes: 15,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
