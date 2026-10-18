@@ -62,8 +62,9 @@ export default async function SearchPage({ searchParams }: Props) {
               <LinkCard
                 href={result.href}
                 icon={ICONS[result.kind]}
-                title={result.excerpt}
-                meta={`${result.kind} · ${result.topicTitle}`}
+                // The topic first, so a list of matches scans by topic; then what matched.
+                title={result.topicTitle}
+                meta={`${result.kind}: ${result.excerpt}`}
               />
             </li>
           ))}

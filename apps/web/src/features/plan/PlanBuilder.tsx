@@ -23,7 +23,7 @@ import {
 import { ArrowLeft, ArrowRight } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type LibraryNode, topicsUnder } from '@/content/library';
 import type { TopicSummary } from '@/content/topics';
@@ -86,6 +86,11 @@ export function PlanBuilder({
   const examDate = progress.profile?.examDate ?? null;
 
   const [step, setStep] = useState(0);
+  const stepRef = useRef<HTMLElement>(null);
+  // Each new step takes the focus to its heading, so a keyboard or screen reader starts there.
+  useEffect(() => {
+    if (step > 0) stepRef.current?.querySelector<HTMLElement>('h2')?.focus();
+  }, [step]);
   const [kind, setKind] = useState<Kind | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
   const [start, setStart] = useState(today);
@@ -167,7 +172,7 @@ export function PlanBuilder({
         </div>
       </header>
 
-      <section className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
+      <section ref={stepRef} className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
         {step === 0 ? (
           <ChoiceGroup
             legend="What do you want to plan?"
@@ -188,7 +193,9 @@ export function PlanBuilder({
         {step === 1 && kind !== 'ai' ? (
           <>
             <div className="flex flex-col gap-1">
-              <Heading level={2}>Which topics?</Heading>
+              <Heading level={2} tabIndex={-1}>
+                Which topics?
+              </Heading>
               <Text size="sm" tone="muted">
                 {goalKind === 'learn'
                   ? 'Topics you have not learnt yet. Choose a whole region or section, or single topics.'
@@ -210,7 +217,9 @@ export function PlanBuilder({
 
         {step === 2 && kind !== 'ai' ? (
           <>
-            <Heading level={2}>When?</Heading>
+            <Heading level={2} tabIndex={-1}>
+              When?
+            </Heading>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <TextField
@@ -296,7 +305,9 @@ export function PlanBuilder({
 
         {step === 3 && kind !== 'ai' ? (
           <>
-            <Heading level={2}>Check and add</Heading>
+            <Heading level={2} tabIndex={-1}>
+              Check and add
+            </Heading>
             <TextField
               label="Name"
               placeholder={named}

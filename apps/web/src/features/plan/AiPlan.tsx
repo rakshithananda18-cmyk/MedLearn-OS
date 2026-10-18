@@ -2,7 +2,16 @@
 
 import { addDays, DEFAULT_DAILY_MINUTES } from '@medlearn/core';
 import { PLAN_REQUEST_MAX, type PlanProposal } from '@medlearn/schemas';
-import { Banner, Button, Checkbox, Spinner, Text, TextArea, TextField } from '@medlearn/ui';
+import {
+  Banner,
+  Button,
+  Checkbox,
+  Heading,
+  Spinner,
+  Text,
+  TextArea,
+  TextField,
+} from '@medlearn/ui';
 import { Sparkles } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -191,6 +200,9 @@ export function AiPlan({
 
   return (
     <div className="flex flex-col gap-4">
+      <Heading level={2} tabIndex={-1}>
+        Suggest a plan
+      </Heading>
       <Text size="sm" tone="muted">
         The AI looks at your exam date and the topics you have learnt, and plans the rest region by
         region, with time at the end to revisit. You can change everything before it is added.
@@ -210,7 +222,7 @@ export function AiPlan({
         <div className="pt-3">
           <TextArea
             label="Add details in your own words"
-            hint="For example: weekends off, or the thorax first."
+            hint="For example: the thorax first. Days off are set on the plan's calendar once it is added."
             rows={2}
             maxLength={200}
             value={details}

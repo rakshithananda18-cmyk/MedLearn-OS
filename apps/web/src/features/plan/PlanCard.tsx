@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  addDays,
   goalSchedule,
   goalToday,
   type LearnerProgress,
@@ -10,7 +11,7 @@ import {
   planWeek,
   type StudyGoal,
 } from '@medlearn/core';
-import { buttonClasses, cx, Icon, IconButton, ringFill } from '@medlearn/ui';
+import { Button, buttonClasses, cx, Icon, IconButton, ringFill } from '@medlearn/ui';
 import {
   CalendarDays,
   Check,
@@ -23,6 +24,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import type { TopicSummary } from '@/content/topics';
+import { updateGoal } from '@/features/progress/store';
 
 import { dateName, dayName, KIND_NAME, minutesText, topicHref, topicMinutes } from './words';
 
@@ -106,6 +108,8 @@ export function PlanCard({
           <span className={LABEL}>
             {KIND_NAME[goal.kind]}
             {status.state === 'active' ? ` · week ${status.week} of ${status.weeks}` : ''}
+            {status.state === 'ended' ? ` · date passed, ${status.total - status.done} left` : ''}
+            {status.state === 'completed' ? ' · every topic done' : ''}
           </span>
           <h2 id={titleId} className="text-xl font-semibold text-ink">
             {goal.title}
@@ -124,7 +128,7 @@ export function PlanCard({
         </Link>
       </header>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="order-2 grid gap-3 md:grid-cols-2">
         <section aria-label="Overall progress" className={cx(PANEL, 'flex-row items-center gap-4')}>
           <div className="relative size-24 shrink-0">
             <svg viewBox="0 0 88 88" className="size-24 -rotate-90" aria-hidden="true">
@@ -155,7 +159,10 @@ export function PlanCard({
           <dl className="flex flex-1 flex-col gap-1 text-sm">
             {[
               ['Topics', `${status.done} / ${status.total}`],
-              ['Time', `${minutesText(status.minutesDone)} / ${minutesText(status.minutesTotal)}`],
+              [
+                'Estimated work',
+                `${minutesText(status.minutesDone)} / ${minutesText(status.minutesTotal)}`,
+              ],
               ['Missed days', String(status.missedDays)],
             ].map(([term, value]) => (
               <div key={term} className="flex justify-between gap-3">
@@ -198,7 +205,8 @@ export function PlanCard({
         </section>
       </div>
 
-      <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg bg-surface px-4 py-3 text-sm">
+      {/* On phones the way to carry on comes before the ring and the week. */}
+      <footer className="order-1 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg bg-surface px-4 py-3 text-sm md:order-3">
         <span className="flex items-center gap-2 text-fg-muted">
           <Icon icon={ListChecks} size="sm" />
           Topics left
@@ -206,9 +214,11 @@ export function PlanCard({
         </span>
         <span className="flex items-center gap-2 text-fg-muted" suppressHydrationWarning>
           <Icon icon={Hourglass} size="sm" />
-          {status.finishOn ? 'Finishes' : 'Finished'}
+          {status.finishOn ? 'Finishes' : status.state === 'ended' ? 'Date passed' : 'Finished'}
           <span className="font-semibold text-ink">
-            {status.finishOn ? dayName(status.finishOn) : 'every topic'}
+            {status.finishOn ? dayName(status.finishOn) : null}
+            {!status.finishOn && status.state === 'ended' ? dayName(goal.date) : null}
+            {!status.finishOn && status.state === 'completed' ? 'every topic' : null}
           </span>
         </span>
         <span className="flex-1" />
@@ -217,6 +227,14 @@ export function PlanCard({
             Continue: {topics.get(next)?.title ?? next}
             <Icon icon={ChevronRight} size="sm" />
           </Link>
+        ) : status.state === 'ended' ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => updateGoal(goal.id, { date: addDays(today, 7) })}
+          >
+            Give it another week
+          </Button>
         ) : (
           <span className="text-fg-muted" suppressHydrationWarning>
             {status.state === 'active' && coming ? `Next on ${dayName(coming)}` : ''}

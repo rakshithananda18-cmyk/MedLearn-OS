@@ -33,7 +33,7 @@ test('a student makes a plan from choices, adjusts its calendar, and Today follo
 
   // A topic opens in the library.
   await page
-    .getByRole('link', { name: /Axilla: walls/ })
+    .getByRole('link', { name: /^\d+\. Axilla: walls/ })
     .first()
     .click();
   await expect(page).toHaveURL(/\/learn\/axilla$/);

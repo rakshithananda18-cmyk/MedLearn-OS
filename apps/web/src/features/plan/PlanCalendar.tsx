@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  addDays,
   dayKey,
   daysBetween,
   goalDone,
@@ -138,12 +139,73 @@ export function PlanCalendar({
   const coming = goalSchedule(goal, today, progress.completedLessons)[0]?.date;
   const titleOf = (slug: string) => bySlug.get(slug)?.title ?? slug;
   const thisWeek = today < start ? 1 : status.week;
+  const left = status.total - status.done;
+  // A plan whose date passed with topics left is not done: it says so, and offers more time.
+  let finishes = 'Done';
+  if (status.finishOn) finishes = dateName(status.finishOn);
+  else if (status.state === 'ended') finishes = 'Date passed';
 
   const allWeeks = Array.from({ length: status.weeks }, (_, index) => index + 1);
   const weeks = allWeeks.filter((week) =>
     tab === 'now' ? week === thisWeek : tab === 'coming' ? week > thisWeek : week < thisWeek,
   );
   const isOpen = (week: number) => (tab === 'now' ? true : opened.includes(week));
+
+  const todayPanel = (className: string) => (
+    <section aria-label="Today in this plan" className={cx(GLASS, 'flex-col gap-3 p-4', className)}>
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="text-fg-muted" suppressHydrationWarning>
+          Today: {dayName(today)}
+        </span>
+        <span className={LABEL}>Week {thisWeek}</span>
+      </div>
+      <p className="text-lg text-ink">
+        <span className="font-semibold">
+          {Math.round((100 * status.done) / Math.max(1, status.total))}%
+        </span>{' '}
+        <span className="text-fg-muted">
+          · {daysDone} / {studyDaysAll.length} days studied
+        </span>
+      </p>
+      <Text size="sm">
+        {status.done} / {status.total} topics done
+      </Text>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col rounded-lg bg-surface p-3">
+          <span className="text-xs text-fg-muted">Missed days</span>
+          <span className="font-semibold text-ink">{status.missedDays}</span>
+        </div>
+        <div className="flex flex-col rounded-lg bg-surface p-3">
+          <span className="text-xs text-fg-muted">Finishes</span>
+          <span className="font-semibold text-ink" suppressHydrationWarning>
+            {finishes}
+          </span>
+        </div>
+      </div>
+      {next ? (
+        <Link href={topicHref(goal, next)} className={buttonClasses({ fullWidth: true })}>
+          Continue: {titleOf(next)}
+          <Icon icon={ChevronRight} size="sm" />
+        </Link>
+      ) : status.state === 'ended' ? (
+        <>
+          <Text size="sm" weight="semibold" className="text-warning">
+            The date has passed · {left} {left === 1 ? 'topic' : 'topics'} left
+          </Text>
+          <Button
+            variant="secondary"
+            onClick={() => updateGoal(goal.id, { date: addDays(today, 7) })}
+          >
+            Give it another week
+          </Button>
+        </>
+      ) : (
+        <Text size="sm" tone="muted" suppressHydrationWarning>
+          {coming ? `Nothing today. Next on ${dayName(coming)}.` : 'Every topic is done.'}
+        </Text>
+      )}
+    </section>
+  );
 
   const toggleOff = (date: string) => {
     const off = goal.off ?? [];
@@ -170,6 +232,9 @@ export function PlanCalendar({
         </div>
       </header>
 
+      {/* On phones the next task comes first, before the figures and the weeks. */}
+      {todayPanel('flex xl:hidden')}
+
       <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
         <section
           aria-label="Plan in figures"
@@ -178,16 +243,12 @@ export function PlanCalendar({
           <Stat icon={CalendarDays} label="Week" value={`${thisWeek} / ${status.weeks}`} />
           <Stat
             icon={Hourglass}
-            label="Time spent"
+            label="Estimated work done"
             value={minutesText(status.minutesDone)}
             of={minutesText(status.minutesTotal)}
           />
           <Stat icon={CalendarDays} label="Started on" value={dateName(start)} />
-          <Stat
-            icon={ListChecks}
-            label="Finishes"
-            value={status.finishOn ? dateName(status.finishOn) : 'Done'}
-          />
+          <Stat icon={ListChecks} label="Finishes" value={finishes} />
         </section>
 
         {picking ? (
@@ -350,6 +411,15 @@ export function PlanCalendar({
                                 <span className="text-xs text-fg-muted">
                                   {minutesText(minutesOf(slug))}
                                 </span>
+                                {done.includes(slug) || day.state === 'rest' ? null : (
+                                  <Link
+                                    href={topicHref(goal, slug)}
+                                    aria-label={`${goal.kind === 'learn' ? 'Start the lesson' : 'Practise'}: ${titleOf(slug)}`}
+                                    className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+                                  >
+                                    {goal.kind === 'learn' ? 'Start lesson' : 'Practise'}
+                                  </Link>
+                                )}
                               </li>
                             ))}
                           </ul>
@@ -365,47 +435,7 @@ export function PlanCalendar({
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
-        <section aria-label="Today in this plan" className={cx(GLASS, 'flex flex-col gap-3 p-4')}>
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-fg-muted" suppressHydrationWarning>
-              Today: {dayName(today)}
-            </span>
-            <span className={LABEL}>Week {thisWeek}</span>
-          </div>
-          <p className="text-lg text-ink">
-            <span className="font-semibold">
-              {Math.round((100 * status.done) / Math.max(1, status.total))}%
-            </span>{' '}
-            <span className="text-fg-muted">
-              · {daysDone} / {studyDaysAll.length} days studied
-            </span>
-          </p>
-          <Text size="sm">
-            {status.done} / {status.total} topics done
-          </Text>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col rounded-lg bg-surface p-3">
-              <span className="text-xs text-fg-muted">Missed days</span>
-              <span className="font-semibold text-ink">{status.missedDays}</span>
-            </div>
-            <div className="flex flex-col rounded-lg bg-surface p-3">
-              <span className="text-xs text-fg-muted">Finishes</span>
-              <span className="font-semibold text-ink" suppressHydrationWarning>
-                {status.finishOn ? dateName(status.finishOn) : 'Done'}
-              </span>
-            </div>
-          </div>
-          {next ? (
-            <Link href={topicHref(goal, next)} className={buttonClasses({ fullWidth: true })}>
-              Continue: {titleOf(next)}
-              <Icon icon={ChevronRight} size="sm" />
-            </Link>
-          ) : (
-            <Text size="sm" tone="muted" suppressHydrationWarning>
-              {coming ? `Nothing today. Next on ${dayName(coming)}.` : 'Every topic is done.'}
-            </Text>
-          )}
-        </section>
+        {todayPanel('hidden xl:flex')}
 
         <section aria-labelledby="adjust-title" className={cx(GLASS, 'flex flex-col gap-3 p-4')}>
           <h2 id="adjust-title" className="font-semibold text-ink">

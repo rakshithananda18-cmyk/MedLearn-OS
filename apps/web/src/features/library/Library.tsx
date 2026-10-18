@@ -69,7 +69,8 @@ function SubjectTabs({
             aria-pressed={on}
             onClick={() => onPick(subject.slug)}
             className={cx(
-              'flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors duration-150',
+              // A chip can narrow and wrap its name, so enlarged text never pushes the page sideways.
+              'flex min-h-12 max-w-full items-center gap-2 rounded-full px-4 text-left text-sm font-semibold transition-colors duration-150',
               on
                 ? 'bg-ink text-canvas shadow-raised'
                 : 'border border-glass-border bg-glass text-ink hover:bg-surface',
