@@ -62,6 +62,10 @@ export interface ModelViewProps {
   dpr: number | [number, number];
   /** The body's systems switched on (whole body only). */
   layers: Viewer3DLayer[];
+  /** The picked region's detailed model, opened inside the body, or null. */
+  detail: Model3D | null;
+  /** Parts shown only as a faint outline that taps pass through. */
+  ghosts: ReadonlySet<string>;
   /** A cut through the model, or null. */
   section: Viewer3DSection | null;
   /** A structure to turn the camera to, or null. */
@@ -93,6 +97,8 @@ export function ModelView(props: Readonly<ModelViewProps>) {
     return (
       <Viewer3D
         model={model}
+        detail={props.detail}
+        ghostIds={props.ghosts}
         highlight={props.lit}
         onSelect={props.onPick}
         stopId={props.stopId}

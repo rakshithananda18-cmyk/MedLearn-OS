@@ -18,7 +18,8 @@
 //    vessels, shared by the pelvis and perineum topics
 //  - female-pelvis.glb: the female pelvis, its organs, ligaments, floor and perineal muscles, from
 //    Stanford Medicine's model (below), shared by the female pelvis topics
-//  - body.glb: the whole body surface, for picking a region to study
+//  - body.glb: the whole body surface cut into its regions (each tints and is tapped to study it),
+//    and a low-detail skeleton
 //
 // Source: BodyParts3D 4.0 by the Database Center for Life Science (DBCLS),
 // https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html, file isa_BP3D_4.0_obj_99.zip.
@@ -1882,13 +1883,54 @@ export const MODELS = [
     // The body is seen whole, so it tolerates coarser surfaces.
     error: 0.02,
     parts: [
-      { id: 'skin', files: ['FJ2810'], ratio: 0.06 },
+      // The skin cut into the regions a student picks (ids as the content's body regions).
+      ...['head-neck', 'upper-limb', 'thorax', 'abdomen', 'back', 'pelvis', 'lower-limb'].map(
+        (id) => ({
+          id,
+          files: ['FJ2810'],
+          ratio: 0.06,
+          keep: (centre) => bodyRegionOf(centre) === id,
+          lockBorder: true,
+        }),
+      ),
       { id: 'skeleton', concept: 'bone organ', ratio: 0.04 },
     ],
   },
 ];
 
 const MAX_BYTES = 1.5 * 1024 * 1024;
+
+/**
+ * The region of the body surface a point lies in (BodyParts3D millimetres, the body standing with
+ * the arms at its sides), for cutting the skin into regions: the arms stand clear of the trunk
+ * from the armpit down (measured: the trunk ends 142 to 170 mm out, the arm starts 176 to 222).
+ */
+export function bodyRegionOf([x, y, z]) {
+  if (z > 1430) return 'head-neck';
+  const out = Math.abs(x);
+  if (z > 620 && z <= 1430 && out > (z > 1200 ? 178 : z > 950 ? 158 : 182)) return 'upper-limb';
+  if (z > 920 && y > -70) return 'back';
+  if (z > 1120) return 'thorax';
+  if (z > 920) return 'abdomen';
+  if (z > 760) return 'pelvis';
+  return 'lower-limb';
+}
+
+/** Only the triangles whose centre `keep` accepts. */
+export function keepTriangles({ positions, indices }, keep) {
+  const kept = [];
+  for (let at = 0; at < indices.length; at += 3) {
+    const centre = [0, 1, 2].map(
+      (axis) =>
+        (positions[indices[at] * 3 + axis] +
+          positions[indices[at + 1] * 3 + axis] +
+          positions[indices[at + 2] * 3 + axis]) /
+        3,
+    );
+    if (keep(centre)) kept.push(indices[at], indices[at + 1], indices[at + 2]);
+  }
+  return { positions, indices: Uint32Array.from(kept) };
+}
 
 /**
  * Moves points by `shift` at and below Z `below`, by less and less up to `above`, and not above it;
@@ -2053,6 +2095,7 @@ async function build(model, sourceDir, concepts, io) {
     let { positions, indices } = mergeMeshes(meshes);
     if (part.clipX) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipX, 0));
     if (part.clipZ) ({ positions, indices } = clipTriangles({ positions, indices }, part.clipZ, 2));
+    if (part.keep) ({ positions, indices } = keepTriangles({ positions, indices }, part.keep));
     if (part.shift) positions = positions.map((value, index) => value + part.shift[index % 3]);
     if (part.warp) positions = warped(positions, part.warp);
     const primitive = document
@@ -2066,7 +2109,7 @@ async function build(model, sourceDir, concepts, io) {
     const mesh = document
       .createMesh(part.id)
       .addPrimitive(primitive)
-      .setExtras({ ratio: part.ratio });
+      .setExtras({ ratio: part.ratio, lockBorder: part.lockBorder ?? false });
     scene.addChild(document.createNode(part.id).setMesh(mesh));
   }
 
@@ -2074,10 +2117,16 @@ async function build(model, sourceDir, concepts, io) {
   await document.transform(weld());
   // Only the dense parts are simplified.
   for (const mesh of document.getRoot().listMeshes()) {
-    const { ratio } = mesh.getExtras();
+    const { ratio, lockBorder } = mesh.getExtras();
     if (ratio >= 1) continue;
     for (const primitive of mesh.listPrimitives()) {
-      simplifyPrimitive(primitive, { simplifier: MeshoptSimplifier, ratio, error: model.error });
+      // Pieces cut from one surface keep their cut edges, so they still meet without gaps.
+      simplifyPrimitive(primitive, {
+        simplifier: MeshoptSimplifier,
+        ratio,
+        error: model.error,
+        lockBorder,
+      });
     }
   }
   // No normals in the file: the viewer computes smooth ones on load, which keeps it smaller.
