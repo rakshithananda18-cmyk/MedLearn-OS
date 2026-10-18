@@ -107,19 +107,28 @@ export function findOnBody(session: Session, id: string): Session {
   return { ...session, selected: id, systems, focus: id, panel: null };
 }
 
+/** A part of a region's detailed model, picked on the body (the viewer's own prefix). */
+export const DETAIL_PREFIX = 'part:';
+
 /** A tap on the model: picks a region on the body, answers "Find it", or selects a structure. */
 export function pickIn(session: Session, id: string | null, context: SessionContext): Session {
   if (session.mode === 'quiz') {
     // Taps after the round is over do nothing until the student plays again.
-    return session.quiz && id && !roundOver(session.quiz)
+    // "Name it" is answered from its card, not by tapping the model.
+    return session.quiz && id && session.quiz.kind === 'find' && !roundOver(session.quiz)
       ? { ...session, quiz: answerQuiz(session.quiz, id, context.pool) }
       : session;
   }
   if (!context.topic) {
     const region = context.regions.find((item) => item.id === id);
-    if (region) return { ...session, region: region.id, panel: 'topics', selected: null };
-    // A structure of one of the body's systems ("skeleton/left-humerus"), or nothing.
-    return { ...session, selected: id?.includes('/') ? id : null };
+    // Picked on the body, a region also brings the camera to it.
+    if (region) {
+      return { ...session, region: region.id, panel: 'topics', selected: null, focus: region.id };
+    }
+    // A structure of one of the body's systems ("skeleton/left-humerus"), a part of the region
+    // opened in place ("part:humerus"), or nothing.
+    const structure = id?.includes('/') || id?.startsWith(DETAIL_PREFIX);
+    return { ...session, selected: structure ? id : null };
   }
   return { ...session, selected: id, detail: null };
 }
@@ -165,15 +174,20 @@ function quizLit(
   topic: StudioTopic | null,
   pool: readonly string[],
 ): ReadonlySet<string> {
+  // "Name it" always shows the structure to name, the next one as soon as one is named.
+  if (quiz.kind === 'name') return new Set([quiz.targetId]);
   if (quiz.last === 'right' && quiz.picked) return new Set([quiz.picked]);
   if (quiz.misses >= REVEAL_AFTER) return new Set([quiz.targetId]);
   if (quiz.hints > 0) return new Set(kindOf(quiz.targetId, topic, pool));
   return new Set();
 }
 
-/** Where the camera turns while playing "Find it": to the structure asked for, at the last hint. */
+/**
+ * Where the camera turns while playing: to the structure asked for, at the last hint of "Find
+ * it", and always in "Name it", where it is the question.
+ */
 export const quizFocus = (quiz: QuizState | null): string | null =>
-  quiz && quiz.hints >= MAX_HINTS ? quiz.targetId : null;
+  quiz && (quiz.kind === 'name' || quiz.hints >= MAX_HINTS) ? quiz.targetId : null;
 
 /**
  * What glows: while playing "Find it", only what the game shows; else the picked region on the

@@ -31,10 +31,11 @@ test('the 3D tab opens the body; a region leads to a topic to explore and learn 
   await expect(page.getByRole('heading', { level: 1, name: 'Whole body' })).toBeAttached();
   await expectAccessible(page);
 
-  // Laptops list the topics as a tree folded to the regions; phones show cards.
-  const region = page.getByRole('button', { name: /^Upper limb\s?\d/, expanded: false });
+  // Laptops list the topics as a tree, open at the current region (the upper limb); phones show
+  // cards.
+  const region = page.getByRole('button', { name: /^Upper limb\s?\d/ });
   if (await region.isVisible()) {
-    await region.click();
+    if ((await region.getAttribute('aria-expanded')) === 'false') await region.click();
     await page.getByRole('button', { name: /^Axilla\s?\d/, expanded: false }).click();
   }
   await page.getByRole('button', { name: /Axilla: walls/ }).click();

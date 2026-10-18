@@ -1,7 +1,7 @@
 'use client';
 
 import type { CameraStop } from '@medlearn/schemas';
-import { Button, cx, Icon, IconButton, Text } from '@medlearn/ui';
+import { Button, cx, Icon, IconButton, Text, ToggleChip } from '@medlearn/ui';
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,6 +19,7 @@ import {
   milestone,
   MILESTONES,
   points,
+  type QuizKind,
   type QuizResult,
   type QuizState,
   REVEAL_AFTER,
@@ -227,13 +228,13 @@ export function QuestionCard({
     >
       <div className="flex items-center gap-2">
         <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
-          Find it on the model
+          {quiz.kind === 'name' ? 'Name it' : 'Find it on the model'}
         </span>
         <StreakFlame quiz={quiz} />
         <IconButton icon={X} label="End the game" size="sm" onClick={onEnd} />
       </div>
       <p className="text-gold font-display text-2xl tracking-display">
-        {over ? 'Round over' : name}
+        {over ? 'Round over' : quiz.kind === 'name' ? 'Which structure is marked?' : name}
       </p>
       <div className="flex items-center gap-3">
         <ol aria-hidden="true" className="flex flex-1 gap-1">
@@ -278,10 +279,22 @@ function feedback(quiz: QuizState, pickedName: string): { text: string; tone: st
   if (cheer !== null && CHEERS[cheer]) {
     return { text: CHEERS[cheer], tone: 'bg-gold text-canvas' };
   }
+  if (quiz.last === 'right' && quiz.kind === 'name') {
+    return {
+      text: `Right, the ${pickedName}${quiz.gained === 1 ? '' : ', for half a point'}. Next one.`,
+      tone: 'bg-primary-subtle text-primary-strong',
+    };
+  }
   if (quiz.last === 'right') {
     return {
       text: quiz.gained === 1 ? 'Right! Next one.' : 'Found it, for half a point. Next one.',
       tone: 'bg-primary-subtle text-primary-strong',
+    };
+  }
+  if (quiz.last === 'wrong' && quiz.kind === 'name') {
+    return {
+      text: `Not the ${pickedName}. Turn the model and look again.`,
+      tone: 'bg-surface text-ink',
     };
   }
   if (quiz.last === 'wrong') {
@@ -303,7 +316,10 @@ function feedback(quiz: QuizState, pickedName: string): { text: string; tone: st
     };
   }
   return {
-    text: 'Tap it on the model. Turn the model to look around.',
+    text:
+      quiz.kind === 'name'
+        ? 'Turn the model to see it from another side, then choose its name.'
+        : 'Tap it on the model. Turn the model to look around.',
     tone: 'bg-surface text-fg',
   };
 }
@@ -404,6 +420,8 @@ export function Scoreboard({
   onLearn,
   onAgain,
   onEnd,
+  onAnswer,
+  onKind,
 }: Readonly<{
   quiz: QuizState;
   nameOf: (id: string) => string;
@@ -412,6 +430,10 @@ export function Scoreboard({
   onLearn: (id: string) => void;
   onAgain: () => void;
   onEnd: () => void;
+  /** "Name it": a name chosen from the card. */
+  onAnswer: (id: string) => void;
+  /** Starts a new round of the other kind. */
+  onKind: (kind: QuizKind) => void;
 }>) {
   if (roundOver(quiz)) {
     return (
@@ -421,6 +443,28 @@ export function Scoreboard({
   const said = feedback(quiz, nameOf(quiz.picked ?? ''));
   return (
     <div className="pointer-events-auto flex flex-col gap-3">
+      <div role="group" aria-label="Kind of round" className="flex gap-2">
+        {(['find', 'name'] as const).map((kind) => (
+          <ToggleChip key={kind} pressed={quiz.kind === kind} onClick={() => onKind(kind)}>
+            {kind === 'find' ? 'Find' : 'Name'}
+          </ToggleChip>
+        ))}
+      </div>
+      {quiz.kind === 'name' ? (
+        <div role="group" aria-label="Choose its name" className="grid gap-2">
+          {quiz.choices.map((id) => (
+            <Button
+              key={`${quiz.asked}-${id}`}
+              variant="secondary"
+              // A name already tried for this structure cannot be chosen again.
+              disabled={quiz.last === 'wrong' && quiz.picked === id}
+              onClick={() => onAnswer(id)}
+            >
+              {nameOf(id)}
+            </Button>
+          ))}
+        </div>
+      ) : null}
       <p
         // A new key replays the find's glow or the miss's shake.
         key={`${quiz.asked}-${quiz.misses}-${quiz.hints}`}
@@ -435,19 +479,26 @@ export function Scoreboard({
         {said.text}
       </p>
       <Tallies quiz={quiz} />
-      <div className="grid grid-cols-2 gap-2">
-        <Button
-          variant="secondary"
-          iconStart={Lightbulb}
-          disabled={quiz.hints >= MAX_HINTS}
-          onClick={onHint}
-        >
-          {HINT_LABELS[quiz.hints]}
-        </Button>
+      {quiz.kind === 'name' ? (
+        // The structure is already shown: no hints, only a way past it.
         <Button onClick={onSkip}>Skip</Button>
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            iconStart={Lightbulb}
+            disabled={quiz.hints >= MAX_HINTS}
+            onClick={onHint}
+          >
+            {HINT_LABELS[quiz.hints]}
+          </Button>
+          <Button onClick={onSkip}>Skip</Button>
+        </div>
+      )}
       <Text size="xs" tone="muted">
-        Found first time: a point. With a hint, or once it glows: half.
+        {quiz.kind === 'name'
+          ? 'Named first time: a point. After a wrong name: half.'
+          : 'Found first time: a point. With a hint, or once it glows: half.'}
       </Text>
     </div>
   );

@@ -20,7 +20,6 @@ import {
   type Object3D,
   type PerspectiveCamera,
   Plane,
-  SphereGeometry,
   TOUCH,
   TubeGeometry,
   Vector3,
@@ -116,6 +115,17 @@ export interface Viewer3DProps {
   /** Everything see-through, to look inside. */
   xray?: boolean;
   reducedMotion: boolean;
+  /**
+   * A second model drawn in the same frame (a region's detailed model inside the body). Its parts
+   * are picked and lit by their ids with DETAIL_PREFIX in front.
+   */
+  detail?: Model3D | null;
+  /**
+   * Parts drawn only as a faint outline that taps pass through (a region's surface while it is
+   * opened into its detailed model).
+   */
+  ghostIds?: ReadonlySet<string>;
+  /** Points that anchor names (the body's regions): not drawn, their region's surface takes the taps. */
   markers?: Viewer3DMarker[];
   /** How far the camera may pull back, in metres. */
   maxDistance?: number;
@@ -157,7 +167,6 @@ const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
   organ: 2.2,
   artery: 1.8,
 };
-const MARKER_RADIUS_MM = 28;
 /** A press that travels further than this (in pixels) turned or moved the model: not a tap. */
 const TAP_SLOP_PX = 6;
 const dragged = (event: ThreeEvent<MouseEvent>) => event.delta > TAP_SLOP_PX;
@@ -170,6 +179,15 @@ const PAN_MARGIN_M = 0.05;
  */
 const FRAMED_VIEW_DEG = 25;
 const DIMMED = 0.3;
+/** How the detailed model's parts are named to the page (the studio's session uses the same). */
+const DETAIL_PREFIX = 'part:';
+/** A ghosted part: a faint outline that taps and the pointer pass through. */
+const GHOST = 0.12;
+/** A region's surface while picked or under the pointer: tinted, still see-through. */
+const SURFACE_LIT = 0.6;
+const SURFACE_HOVER = 0.5;
+/** How strongly a region's surface glows in the primary colour, so it reads on pale skin too. */
+const SURFACE_GLOW = 0.7;
 const XRAY = 0.3;
 const NONE: ReadonlySet<string> = new Set();
 // Drawn points sit just off the surface so the line is not hidden inside it, and closer points
@@ -234,14 +252,18 @@ function material(
   lit: boolean,
   opacity: number,
   sectioned = false,
+  glow: Color = colour,
+  glowStrength = 0.35,
 ): MeshStandardMaterial {
   return new MeshStandardMaterial({
     // A cut shows the inner faces too, so a sliced bone or organ is not an empty shell.
     side: sectioned ? DoubleSide : FrontSide,
     color: colour,
     roughness: 0.6,
-    emissive: lit ? tokenColour('--ml-gold') : new Color('black'),
-    emissiveIntensity: lit ? 0.6 : 0,
+    // A picked structure glows in its own colour, so a yellow nerve or a red muscle stays itself
+    // instead of washing out towards gold.
+    emissive: lit ? glow : new Color('black'),
+    emissiveIntensity: lit ? glowStrength : 0,
     transparent: opacity < 1,
     opacity,
     // See-through surfaces must not hide what lies behind them.
@@ -288,30 +310,6 @@ function Trace({
         />
       ))}
     </>
-  );
-}
-
-function Marker({
-  marker,
-  lit,
-  onSelect,
-}: Readonly<{ marker: Viewer3DMarker; lit: boolean; onSelect: (id: string) => void }>) {
-  const geometry = useMemo(() => new SphereGeometry(MARKER_RADIUS_MM, 24, 16), []);
-  const sphere = useMemo(() => {
-    const mesh = new Mesh(geometry, material(tokenColour('--ml-gold'), lit, 1));
-    mesh.position.set(...marker.position);
-    mesh.scale.setScalar(lit ? 1.3 : 1);
-    return mesh;
-  }, [geometry, marker.position, lit]);
-  return (
-    <primitive
-      object={sphere} // NOSONAR: a React Three Fiber prop, not a DOM attribute
-      onClick={(event: ThreeEvent<MouseEvent>) => {
-        if (dragged(event)) return;
-        event.stopPropagation();
-        onSelect(marker.id);
-      }}
-    />
   );
 }
 
@@ -533,16 +531,42 @@ function Parts({
   hiddenIds,
   xray,
   sectioned,
+  regionsOffered,
+  ghostIds = NONE,
 }: Readonly<
   Pick<Viewer3DProps, 'model' | 'highlight' | 'onSelect' | 'hiddenKinds'> & {
     selecting: boolean;
     hiddenIds: ReadonlySet<string>;
+    ghostIds?: ReadonlySet<string>;
     xray: boolean;
     sectioned: boolean;
+    /** The body's regions are on offer: its surfaces tint under the pointer and take taps. */
+    regionsOffered: boolean;
   }
 >) {
   const { scene } = useGLTF(model.src, false, true);
-  const { gl } = useThree();
+  const { gl, invalidate } = useThree();
+  // The region surface under the pointer (mouse only): it tints, so the body shows what a click
+  // would open.
+  const [hovered, setHovered] = useState<string | null>(null);
+  // Surfaces are regions to pick only while regions are offered (the body, not a topic or a
+  // round of "Find it"); otherwise taps go through them as through any see-through skin.
+  const surfaces = useMemo(
+    () =>
+      new Set(
+        regionsOffered
+          ? model.parts.filter((part) => part.kind === 'skin').map((part) => part.id)
+          : [],
+      ),
+    [model.parts, regionsOffered],
+  );
+  useEffect(() => {
+    invalidate();
+    document.body.style.cursor = hovered ? 'pointer' : '';
+    return () => {
+      document.body.style.cursor = '';
+    };
+  }, [hovered, invalidate]);
 
   useEffect(() => {
     // One model file serves several topics; each shows only the parts it lists.
@@ -553,37 +577,80 @@ function Parts({
       const node = scene.getObjectByName(part.id) as Mesh | undefined;
       if (!node) continue;
       node.visible = !hiddenKinds.has(part.kind) && !hiddenIds.has(part.id);
-      const lit = highlight.has(part.id);
-      const opacity =
-        (part.opacity ?? PART_OPACITY[part.kind]) *
-        (selecting && !lit ? DIMMED : 1) *
-        (xray && !lit ? XRAY : 1);
+      const ghost = ghostIds.has(part.id);
+      const surface = surfaces.has(part.id) && !ghost;
+      const lit = !ghost && (highlight.has(part.id) || (surface && hovered === part.id));
+      const plainOpacity =
+        (part.opacity ?? PART_OPACITY[part.kind]) * (selecting ? DIMMED : 1) * (xray ? XRAY : 1);
+      // A picked structure is drawn solid, however see-through its kind usually is; a region's
+      // surface only thickens, so the skeleton and organs inside stay in view.
+      let opacity = lit ? 1 : plainOpacity;
+      if (surface && lit) opacity = highlight.has(part.id) ? SURFACE_LIT : SURFACE_HOVER;
+      if (ghost) opacity = GHOST;
       node.traverse((child) => {
         const mesh = child as Mesh;
         if (!mesh.isMesh) return;
         if (!mesh.geometry.getAttribute('normal')) mesh.geometry.computeVertexNormals();
         const colour = tokenColour(part.colour ?? PART_COLOUR[part.kind]);
-        mesh.material = material(colour, lit, opacity, sectioned);
+        const glow = surface ? tokenColour('--color-primary') : colour;
+        mesh.material = material(
+          colour,
+          lit,
+          opacity,
+          sectioned,
+          glow,
+          surface ? SURFACE_GLOW : 0.35,
+        );
         mesh.userData.partId = part.id;
       });
     }
-  }, [scene, model.parts, highlight, selecting, hiddenKinds, hiddenIds, xray, sectioned]);
+  }, [
+    scene,
+    model.parts,
+    highlight,
+    selecting,
+    hiddenKinds,
+    hiddenIds,
+    xray,
+    sectioned,
+    surfaces,
+    hovered,
+    ghostIds,
+  ]);
 
   const select = (event: ThreeEvent<MouseEvent>) => {
     const id = event.object.userData.partId as string | undefined;
     // Hidden or cut-away parts are still in the way of the ray: let the tap through.
     if (!id || dragged(event) || !drawn(event, gl.clippingPlanes)) return;
-    // The see-through skin lets a tap through to whatever shows under it.
-    const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
+    // A region's surface takes the first tap, picking the region; once it is picked, taps go
+    // through it to whatever shows inside (the skeleton, the organs).
     const under = event.intersections.some(
       (hit) =>
         hit.object !== event.object && hit.object.userData.partId && drawn(hit, gl.clippingPlanes),
     );
-    if (skin && under) return;
+    // A ghost lets the tap through to whatever it outlines.
+    if (ghostIds.has(id)) return;
+    const skin = model.parts.find((part) => part.id === id)?.kind === 'skin';
+    if (skin && under && (!surfaces.has(id) || highlight.has(id))) return;
     event.stopPropagation();
     onSelect(id);
   };
-  return <primitive object={scene} onClick={select} />;
+  return (
+    <primitive
+      object={scene} // NOSONAR: a React Three Fiber prop, not a DOM attribute
+      onClick={select}
+      onPointerMove={(event: ThreeEvent<PointerEvent>) => {
+        // The event visits every part along the ray, nearest first: only the nearest one shown
+        // counts.
+        if (event.pointerType !== 'mouse' || !drawn(event, gl.clippingPlanes)) return;
+        const id = event.object.userData.partId as string | undefined;
+        if (id && ghostIds.has(id)) return;
+        event.stopPropagation();
+        setHovered(id && surfaces.has(id) ? id : null);
+      }}
+      onPointerOut={() => setHovered(null)}
+    />
+  );
 }
 
 /**
@@ -643,7 +710,29 @@ function SystemLayer({
  * What a label points at: a point in the model frame (the middle of a trace, a marker), or a
  * part of the model file, whose own transform is applied when it is measured.
  */
-type Anchor = { point: Point3 } | { node: Object3D } | null;
+type Anchor = { point: Point3 } | { mesh: Mesh; local: Vector3 } | null;
+
+/**
+ * The vertex of a mesh nearest the middle of its bounds: a point on the structure itself, where
+ * the middle of a curving nerve or a fanned muscle can lie in empty space beside it.
+ */
+function labelPoint(mesh: Mesh): Vector3 {
+  const position = mesh.geometry.getAttribute('position');
+  mesh.geometry.computeBoundingBox();
+  const middle = mesh.geometry.boundingBox?.getCenter(new Vector3()) ?? new Vector3();
+  const vertex = new Vector3();
+  const nearest = new Vector3();
+  let best = Infinity;
+  for (let index = 0; index < position.count; index++) {
+    vertex.fromBufferAttribute(position, index);
+    const distance = vertex.distanceToSquared(middle);
+    if (distance < best) {
+      best = distance;
+      nearest.copy(vertex);
+    }
+  }
+  return nearest;
+}
 
 function anchorOf(id: string, scene: Group, model: Model3D, markers: Viewer3DMarker[]): Anchor {
   const marker = markers.find((item) => item.id === id);
@@ -651,8 +740,11 @@ function anchorOf(id: string, scene: Group, model: Model3D, markers: Viewer3DMar
   const path = model.traces.find((item) => item.id === id)?.paths[0];
   const middle = path?.[Math.floor(path.length / 2)];
   if (middle) return { point: middle };
-  const node = scene.getObjectByName(id);
-  return node ? { node } : null;
+  let mesh: Mesh | undefined;
+  scene.getObjectByName(id)?.traverse((child) => {
+    if (!mesh && (child as Mesh).isMesh) mesh = child as Mesh;
+  });
+  return mesh ? { mesh, local: labelPoint(mesh) } : null;
 }
 
 /**
@@ -667,6 +759,7 @@ function LabelTracker({
   groupRef,
   nodesRef,
   redrawRef,
+  insetRight,
 }: Readonly<{
   model: Model3D;
   labels: Viewer3DLabel[];
@@ -674,9 +767,11 @@ function LabelTracker({
   groupRef: RefObject<Group | null>;
   nodesRef: RefObject<Map<string, HTMLElement>>;
   redrawRef: RefObject<() => void>;
+  /** The width a panel covers at the right edge: names that would run under it go left instead. */
+  insetRight: number;
 }>) {
   const { scene } = useGLTF(model.src, false, true);
-  const { camera, size, invalidate } = useThree();
+  const invalidate = useThree((state) => state.invalidate);
   // The label layer lives outside the canvas and asks for a frame once its elements exist.
   useEffect(() => {
     redrawRef.current = invalidate;
@@ -686,8 +781,9 @@ function LabelTracker({
     [labels, scene, model, markers],
   );
   const point = useMemo(() => new Vector3(), []);
-  const box = useMemo(() => new Box3(), []);
-  useFrame(() => {
+  // The frame's own camera and size: the view offset that keeps the model clear of a panel is set
+  // on it (ViewInset), and a camera captured at render would place every name without it.
+  useFrame(({ camera, size }) => {
     const group = groupRef.current;
     if (!group) return;
     const placed: Array<{ node: HTMLElement; x: number; y: number }> = [];
@@ -695,7 +791,10 @@ function LabelTracker({
       const node = nodesRef.current.get(id);
       if (!node) continue;
       if (anchor && 'point' in anchor) group.localToWorld(point.set(...anchor.point));
-      if (anchor && 'node' in anchor) box.setFromObject(anchor.node).getCenter(point);
+      if (anchor && 'mesh' in anchor) {
+        anchor.mesh.updateWorldMatrix(true, false);
+        point.copy(anchor.local).applyMatrix4(anchor.mesh.matrixWorld);
+      }
       point.project(camera);
       // Behind the camera or off the edge: hidden.
       const shown =
@@ -706,7 +805,7 @@ function LabelTracker({
       node.style.transform = `translate(${x}px, ${y}px)`;
       if (shown) placed.push({ node, x, y });
     }
-    separateLabels(placed);
+    separateLabels(placed, size.width - insetRight);
   });
   return null;
 }
@@ -718,16 +817,18 @@ const LABEL_GAP_PX = 4;
 /**
  * Names whose structures sit close together on the screen would overlap: top to bottom, each pill
  * that would cover one already placed moves down until it is clear, and its leader line turns to
- * still meet it. The dots stay on their structures.
+ * still meet it. A name that would run past `room` (under a panel, or off the view) goes on the
+ * left of its dot instead. The dots stay on their structures.
  */
-function separateLabels(labels: Array<{ node: HTMLElement; x: number; y: number }>) {
+function separateLabels(labels: Array<{ node: HTMLElement; x: number; y: number }>, room: number) {
   const taken: Array<{ left: number; right: number; top: number; bottom: number }> = [];
   for (const { node, x, y } of labels.toSorted((a, b) => a.y - b.y)) {
     const line = node.children[1] as HTMLElement | undefined;
     const pill = node.children[2] as HTMLElement | undefined;
     if (!line || !pill) continue;
     const half = pill.offsetHeight / 2;
-    const left = x + LEADER_PX;
+    const flip = x + LEADER_PX + pill.offsetWidth > room;
+    const left = flip ? x - LEADER_PX - pill.offsetWidth : x + LEADER_PX;
     const right = left + pill.offsetWidth;
     let shift = 0;
     for (const other of taken.toSorted((a, b) => a.top - b.top)) {
@@ -738,10 +839,15 @@ function separateLabels(labels: Array<{ node: HTMLElement; x: number; y: number 
       }
     }
     taken.push({ left, right, top: y + shift - half, bottom: y + shift + half });
+    const length = Math.hypot(LEADER_PX, shift);
+    const angle = Math.atan2(shift, LEADER_PX);
+    pill.style.left = flip ? `${-LEADER_PX - pill.offsetWidth}px` : '';
     pill.style.transform = shift ? `translateY(${shift}px)` : '';
-    line.style.transformOrigin = '0 50%';
-    line.style.width = shift ? `${Math.hypot(LEADER_PX, shift)}px` : '';
-    line.style.transform = shift ? `rotate(${Math.atan2(shift, LEADER_PX)}rad)` : '';
+    // On the left the line runs from the dot leftwards, turning about the dot.
+    line.style.left = flip ? `${-length}px` : '';
+    line.style.transformOrigin = flip ? '100% 50%' : '0 50%';
+    line.style.width = shift ? `${length}px` : '';
+    line.style.transform = shift ? `rotate(${flip ? -angle : angle}rad)` : '';
   }
 }
 
@@ -932,6 +1038,9 @@ function ViewInset({
     if (x === 0 && y === 0) view.clearViewOffset();
     else view.setViewOffset(size.width, size.height, x, y, size.width, size.height);
     applied.current = { x, y, width: size.width, height: size.height, zoom };
+    // The names were placed earlier in this frame, through the old projection: one more frame
+    // puts them back over their structures.
+    invalidate();
   });
   return null;
 }
@@ -995,6 +1104,8 @@ function distance(a: Point3, b: Point3): number {
  */
 export default function Viewer3D({
   model,
+  detail = null,
+  ghostIds = NONE,
   highlight,
   onSelect,
   stopId,
@@ -1019,10 +1130,21 @@ export default function Viewer3D({
   insetTop = 0,
   pan = false,
 }: Readonly<Viewer3DProps>) {
-  // Only a lit part, trace or system structure dims the rest; a lit marker leaves the model as is.
+  // Only a lit structure, trace or system structure dims the rest; a lit region of the body (a
+  // surface) leaves the model as is.
   const selecting =
-    [...model.parts, ...model.traces].some((item) => highlight.has(item.id)) ||
-    [...highlight].some((id) => id.includes('/'));
+    [...model.parts.filter((part) => part.kind !== 'skin'), ...model.traces].some((item) =>
+      highlight.has(item.id),
+    ) || [...highlight].some((id) => id.includes('/') || id.startsWith(DETAIL_PREFIX));
+  const detailLit = useMemo(
+    () =>
+      new Set(
+        [...highlight]
+          .filter((id) => id.startsWith(DETAIL_PREFIX))
+          .map((id) => id.slice(DETAIL_PREFIX.length)),
+      ),
+    [highlight],
+  );
   const group = useRef<Group>(null);
   const [draft, setDraft] = useState<Point3[]>([]);
   const drawing = useRef<Point3[] | null>(null);
@@ -1087,7 +1209,25 @@ export default function Viewer3D({
             hiddenIds={hiddenIds}
             xray={xray}
             sectioned={section !== null}
+            regionsOffered={markers.length > 0}
+            ghostIds={ghostIds}
           />
+          {detail ? (
+            // A region opened in place: it arrives on its own, the body staying usable meanwhile.
+            <Suspense fallback={null}>
+              <Parts
+                model={detail}
+                highlight={detailLit}
+                selecting={selecting}
+                onSelect={pen ? () => {} : (id) => onSelect(`${DETAIL_PREFIX}${id}`)}
+                hiddenKinds={hiddenKinds}
+                hiddenIds={NONE}
+                xray={xray}
+                sectioned={section !== null}
+                regionsOffered={false}
+              />
+            </Suspense>
+          ) : null}
           {layers.map((layer) => (
             // Each system arrives on its own; the body is usable while the rest load.
             <Suspense key={layer.id} fallback={null}>
@@ -1112,14 +1252,6 @@ export default function Viewer3D({
                 onSelect={pen ? () => {} : onSelect}
               />
             ))}
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              marker={marker}
-              lit={highlight.has(marker.id)}
-              onSelect={pen ? () => {} : onSelect}
-            />
-          ))}
           {strokes.map((stroke) => (
             <Line
               key={strokeKey(stroke)}
@@ -1141,6 +1273,7 @@ export default function Viewer3D({
           groupRef={group}
           nodesRef={labelNodes}
           redrawRef={redraw}
+          insetRight={insetRight}
         />
         <OrbitControls
           makeDefault
