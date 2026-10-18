@@ -42,6 +42,7 @@ import { useMemo, useState } from 'react';
 import type { LibraryNode } from '@/content/library';
 import type { TopicSummary } from '@/content/topics';
 import { removeGoal, updateGoal, useProgress } from '@/features/progress/store';
+import { Panes } from '@/features/shell/Panes';
 
 import { GLASS, LABEL } from './PlanCard';
 import { TopicPicker } from './TopicPicker';
@@ -215,8 +216,8 @@ export function PlanCalendar({
   };
 
   return (
-    <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
-      <header className="flex flex-col gap-1 xl:col-span-3">
+    <div className="flex flex-col gap-4">
+      <header className="flex flex-col gap-1">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-fg-muted">
           <Link href="/plan" className="hover:text-ink hover:underline">
             Plan
@@ -235,298 +236,316 @@ export function PlanCalendar({
       {/* On phones the next task comes first, before the figures and the weeks. */}
       {todayPanel('flex xl:hidden')}
 
-      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
-        <section
-          aria-label="Plan in figures"
-          className={cx(GLASS, 'grid grid-cols-2 gap-2 p-3 md:grid-cols-4')}
-        >
-          <Stat icon={CalendarDays} label="Week" value={`${thisWeek} / ${status.weeks}`} />
-          <Stat
-            icon={Hourglass}
-            label="Estimated work done"
-            value={minutesText(status.minutesDone)}
-            of={minutesText(status.minutesTotal)}
-          />
-          <Stat icon={CalendarDays} label="Started on" value={dateName(start)} />
-          <Stat icon={ListChecks} label="Finishes" value={finishes} />
-        </section>
-
-        {picking ? (
-          <section aria-labelledby="topics-title" className={cx(GLASS, 'flex flex-col gap-3 p-4')}>
-            <div className="flex items-center gap-3">
-              <Heading level={2} id="topics-title" className="flex-1">
-                Topics in this plan
-              </Heading>
-              <Button size="sm" onClick={() => setPicking(false)}>
-                Done
-              </Button>
-            </div>
-            <TopicPicker
-              tree={tree}
-              chosen={goal.topics}
-              onChange={(chosen) => {
-                if (chosen.length > 0) updateGoal(goal.id, { topics: chosen });
-              }}
-              can={(slug) =>
-                goal.kind === 'learn'
-                  ? !progress.completedLessons.includes(slug) || goal.topics.includes(slug)
-                  : goal.kind === 'revisit'
-                    ? progress.completedLessons.includes(slug)
-                    : true
-              }
-              learnt={progress.completedLessons}
-            />
-          </section>
-        ) : null}
-
-        <div role="group" aria-label="Which weeks" className="flex flex-wrap gap-2">
-          <ToggleChip pressed={tab === 'now'} onClick={() => setTab('now')}>
-            This week
-          </ToggleChip>
-          <ToggleChip pressed={tab === 'coming'} onClick={() => setTab('coming')}>
-            Coming up
-          </ToggleChip>
-          <ToggleChip pressed={tab === 'done'} onClick={() => setTab('done')}>
-            Gone by
-          </ToggleChip>
-        </div>
-
-        {weeks.length === 0 ? (
-          <Text size="sm" tone="muted">
-            {tab === 'coming' ? 'This is the last week of the plan.' : 'No weeks gone by yet.'}
-          </Text>
-        ) : null}
-
-        {weeks.map((week) => {
-          const inWeek = days.filter(
-            (day) => planWeekOf(goal, day.date) === week && day.state !== 'outside',
-          );
-          const study = inWeek.filter((day) => day.state !== 'rest');
-          const open = isOpen(week);
-          return (
+      <Panes
+        id="plan-calendar"
+        label="This plan"
+        main={
+          <>
             <section
-              key={week}
-              aria-label={`Week ${week}`}
-              className={cx(GLASS, 'flex flex-col gap-2 p-3')}
+              aria-label="Plan in figures"
+              className={cx(GLASS, 'grid grid-cols-2 gap-2 p-3 md:grid-cols-4')}
             >
-              <button
-                type="button"
-                aria-expanded={open}
-                disabled={tab === 'now'}
-                onClick={() =>
-                  setOpened(open ? opened.filter((item) => item !== week) : [...opened, week])
-                }
-                className="flex min-h-12 items-center gap-3 rounded-md px-2 text-left enabled:hover:bg-surface-muted"
+              <Stat icon={CalendarDays} label="Week" value={`${thisWeek} / ${status.weeks}`} />
+              <Stat
+                icon={Hourglass}
+                label="Estimated work done"
+                value={minutesText(status.minutesDone)}
+                of={minutesText(status.minutesTotal)}
+              />
+              <Stat icon={CalendarDays} label="Started on" value={dateName(start)} />
+              <Stat icon={ListChecks} label="Finishes" value={finishes} />
+            </section>
+
+            {picking ? (
+              <section
+                aria-labelledby="topics-title"
+                className={cx(GLASS, 'flex flex-col gap-3 p-4')}
               >
-                <span className="font-semibold text-ink">Week {week}</span>
-                <span className="flex-1 text-sm text-fg-muted">
-                  {study.filter((day) => day.state === 'done').length}/{study.length} days studied ·
-                  from {dateName(planWeekStart(goal, week))}
-                </span>
-                {tab === 'now' ? null : (
-                  <Icon
-                    icon={ChevronDown}
-                    size="sm"
-                    className={cx('transition-transform', !open && '-rotate-90')}
-                  />
-                )}
-              </button>
-              {open ? (
-                <ol className="flex flex-col gap-2">
-                  {inWeek.map((day) => {
-                    const single = goal.off?.includes(day.date) ?? false;
-                    const changeable = day.date >= today && (day.state !== 'rest' || single);
-                    const minutes = day.topics.reduce((sum, slug) => sum + minutesOf(slug), 0);
-                    return (
-                      <li
-                        key={day.date}
-                        className={cx(
-                          'flex flex-col rounded-lg bg-surface',
-                          day.state === 'today' && 'ring-2 ring-primary',
-                        )}
-                      >
-                        <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
-                          <Icon icon={CalendarDays} size="sm" className="text-fg-muted" />
-                          <span className="font-semibold text-ink">
-                            Day {daysBetween(start, day.date) + 1}
-                          </span>
-                          <span className="text-sm text-fg-muted">
-                            {dayName(day.date)}
-                            {day.topics.length > 0
-                              ? ` · ${day.topics.length} ${day.topics.length === 1 ? 'topic' : 'topics'}`
-                              : ''}
-                          </span>
-                          <span className="flex-1" />
-                          {STATE_WORD[day.state] ? (
-                            <span
-                              className={cx(
-                                'rounded-full px-2 py-1 text-xs font-semibold',
-                                STATE_TONE[day.state],
-                              )}
-                            >
-                              {STATE_WORD[day.state]}
-                            </span>
-                          ) : null}
-                          {minutes > 0 && day.state !== 'done' ? (
-                            <span className="text-xs text-fg-muted">{minutesText(minutes)}</span>
-                          ) : null}
-                          {changeable ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label={`${single ? 'Study on' : 'Take off'} ${dayName(day.date)}`}
-                              onClick={() => toggleOff(day.date)}
-                            >
-                              {single ? 'Study this day' : 'Take this day off'}
-                            </Button>
-                          ) : null}
-                        </div>
-                        {day.topics.length > 0 ? (
-                          <ul className="border-t border-border">
-                            {day.topics.map((slug, index) => (
-                              <li
-                                key={slug}
-                                className="flex min-h-12 items-center gap-3 border-b border-border px-3 last:border-b-0"
-                              >
+                <div className="flex items-center gap-3">
+                  <Heading level={2} id="topics-title" className="flex-1">
+                    Topics in this plan
+                  </Heading>
+                  <Button size="sm" onClick={() => setPicking(false)}>
+                    Done
+                  </Button>
+                </div>
+                <TopicPicker
+                  tree={tree}
+                  chosen={goal.topics}
+                  onChange={(chosen) => {
+                    if (chosen.length > 0) updateGoal(goal.id, { topics: chosen });
+                  }}
+                  can={(slug) =>
+                    goal.kind === 'learn'
+                      ? !progress.completedLessons.includes(slug) || goal.topics.includes(slug)
+                      : goal.kind === 'revisit'
+                        ? progress.completedLessons.includes(slug)
+                        : true
+                  }
+                  learnt={progress.completedLessons}
+                />
+              </section>
+            ) : null}
+
+            <div role="group" aria-label="Which weeks" className="flex flex-wrap gap-2">
+              <ToggleChip pressed={tab === 'now'} onClick={() => setTab('now')}>
+                This week
+              </ToggleChip>
+              <ToggleChip pressed={tab === 'coming'} onClick={() => setTab('coming')}>
+                Coming up
+              </ToggleChip>
+              <ToggleChip pressed={tab === 'done'} onClick={() => setTab('done')}>
+                Gone by
+              </ToggleChip>
+            </div>
+
+            {weeks.length === 0 ? (
+              <Text size="sm" tone="muted">
+                {tab === 'coming' ? 'This is the last week of the plan.' : 'No weeks gone by yet.'}
+              </Text>
+            ) : null}
+
+            {weeks.map((week) => {
+              const inWeek = days.filter(
+                (day) => planWeekOf(goal, day.date) === week && day.state !== 'outside',
+              );
+              const study = inWeek.filter((day) => day.state !== 'rest');
+              const open = isOpen(week);
+              return (
+                <section
+                  key={week}
+                  aria-label={`Week ${week}`}
+                  className={cx(GLASS, 'flex flex-col gap-2 p-3')}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    disabled={tab === 'now'}
+                    onClick={() =>
+                      setOpened(open ? opened.filter((item) => item !== week) : [...opened, week])
+                    }
+                    className="flex min-h-12 items-center gap-3 rounded-md px-2 text-left enabled:hover:bg-surface-muted"
+                  >
+                    <span className="font-semibold text-ink">Week {week}</span>
+                    <span className="flex-1 text-sm text-fg-muted">
+                      {study.filter((day) => day.state === 'done').length}/{study.length} days
+                      studied · from {dateName(planWeekStart(goal, week))}
+                    </span>
+                    {tab === 'now' ? null : (
+                      <Icon
+                        icon={ChevronDown}
+                        size="sm"
+                        className={cx('transition-transform', !open && '-rotate-90')}
+                      />
+                    )}
+                  </button>
+                  {open ? (
+                    <ol className="flex flex-col gap-2">
+                      {inWeek.map((day) => {
+                        const single = goal.off?.includes(day.date) ?? false;
+                        const changeable = day.date >= today && (day.state !== 'rest' || single);
+                        const minutes = day.topics.reduce((sum, slug) => sum + minutesOf(slug), 0);
+                        return (
+                          <li
+                            key={day.date}
+                            className={cx(
+                              'flex flex-col rounded-lg bg-surface',
+                              day.state === 'today' && 'ring-2 ring-primary',
+                            )}
+                          >
+                            <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
+                              <Icon icon={CalendarDays} size="sm" className="text-fg-muted" />
+                              <span className="font-semibold text-ink">
+                                Day {daysBetween(start, day.date) + 1}
+                              </span>
+                              <span className="text-sm text-fg-muted">
+                                {dayName(day.date)}
+                                {day.topics.length > 0
+                                  ? ` · ${day.topics.length} ${day.topics.length === 1 ? 'topic' : 'topics'}`
+                                  : ''}
+                              </span>
+                              <span className="flex-1" />
+                              {STATE_WORD[day.state] ? (
                                 <span
-                                  aria-hidden="true"
                                   className={cx(
-                                    'flex size-6 shrink-0 items-center justify-center rounded-full',
-                                    done.includes(slug)
-                                      ? 'bg-primary text-on-primary'
-                                      : 'border border-border-strong',
+                                    'rounded-full px-2 py-1 text-xs font-semibold',
+                                    STATE_TONE[day.state],
                                   )}
                                 >
-                                  {done.includes(slug) ? <Icon icon={Check} size="sm" /> : null}
+                                  {STATE_WORD[day.state]}
                                 </span>
-                                <Link
-                                  href={`/learn/${slug}`}
-                                  className="min-w-0 flex-1 text-sm text-ink hover:text-primary-strong hover:underline"
-                                >
-                                  {index + 1}. {titleOf(slug)}
-                                  {done.includes(slug) ? (
-                                    <span className="sr-only"> (done)</span>
-                                  ) : null}
-                                </Link>
+                              ) : null}
+                              {minutes > 0 && day.state !== 'done' ? (
                                 <span className="text-xs text-fg-muted">
-                                  {minutesText(minutesOf(slug))}
+                                  {minutesText(minutes)}
                                 </span>
-                                {done.includes(slug) || day.state === 'rest' ? null : (
-                                  <Link
-                                    href={topicHref(goal, slug)}
-                                    aria-label={`${goal.kind === 'learn' ? 'Start the lesson' : 'Practise'}: ${titleOf(slug)}`}
-                                    className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+                              ) : null}
+                              {changeable ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  aria-label={`${single ? 'Study on' : 'Take off'} ${dayName(day.date)}`}
+                                  onClick={() => toggleOff(day.date)}
+                                >
+                                  {single ? 'Study this day' : 'Take this day off'}
+                                </Button>
+                              ) : null}
+                            </div>
+                            {day.topics.length > 0 ? (
+                              <ul className="border-t border-border">
+                                {day.topics.map((slug, index) => (
+                                  <li
+                                    key={slug}
+                                    className="flex min-h-12 items-center gap-3 border-b border-border px-3 last:border-b-0"
                                   >
-                                    {goal.kind === 'learn' ? 'Start lesson' : 'Practise'}
-                                  </Link>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </li>
+                                    <span
+                                      aria-hidden="true"
+                                      className={cx(
+                                        'flex size-6 shrink-0 items-center justify-center rounded-full',
+                                        done.includes(slug)
+                                          ? 'bg-primary text-on-primary'
+                                          : 'border border-border-strong',
+                                      )}
+                                    >
+                                      {done.includes(slug) ? <Icon icon={Check} size="sm" /> : null}
+                                    </span>
+                                    <Link
+                                      href={`/learn/${slug}`}
+                                      className="min-w-0 flex-1 text-sm text-ink hover:text-primary-strong hover:underline"
+                                    >
+                                      {index + 1}. {titleOf(slug)}
+                                      {done.includes(slug) ? (
+                                        <span className="sr-only"> (done)</span>
+                                      ) : null}
+                                    </Link>
+                                    <span className="text-xs text-fg-muted">
+                                      {minutesText(minutesOf(slug))}
+                                    </span>
+                                    {done.includes(slug) || day.state === 'rest' ? null : (
+                                      <Link
+                                        href={topicHref(goal, slug)}
+                                        aria-label={`${goal.kind === 'learn' ? 'Start the lesson' : 'Practise'}: ${titleOf(slug)}`}
+                                        className={buttonClasses({
+                                          variant: 'secondary',
+                                          size: 'sm',
+                                        })}
+                                      >
+                                        {goal.kind === 'learn' ? 'Start lesson' : 'Practise'}
+                                      </Link>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  ) : null}
+                </section>
+              );
+            })}
+          </>
+        }
+        aside={
+          <>
+            {todayPanel('hidden xl:flex')}
+
+            <section
+              aria-labelledby="adjust-title"
+              className={cx(GLASS, 'flex flex-col gap-3 p-4')}
+            >
+              <h2 id="adjust-title" className="font-semibold text-ink">
+                Adjust the plan
+              </h2>
+              <TextField
+                label="Name"
+                maxLength={80}
+                defaultValue={goal.title}
+                onBlur={(event) => {
+                  const title = event.target.value.trim();
+                  if (title && title !== goal.title) updateGoal(goal.id, { title });
+                }}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  label="Start"
+                  type="date"
+                  min={today}
+                  disabled={start <= today}
+                  value={start}
+                  onChange={(event) => {
+                    const from = event.target.value;
+                    if (from >= today && from <= goal.date) updateGoal(goal.id, { from });
+                  }}
+                />
+                <TextField
+                  label={goal.kind === 'test' ? 'Test date' : 'Done by'}
+                  type="date"
+                  min={start > today ? start : today}
+                  value={goal.date}
+                  onChange={(event) => {
+                    const date = event.target.value;
+                    if (date >= today && date >= start) updateGoal(goal.id, { date });
+                  }}
+                />
+              </div>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="pb-2 text-sm font-medium text-fg">Study on</legend>
+                <div className="flex flex-wrap gap-2">
+                  {WEEKDAYS.map(({ day, short }) => {
+                    const on = studyDays.includes(day);
+                    return (
+                      <ToggleChip
+                        key={day}
+                        pressed={on}
+                        // At least one day a week stays.
+                        disabled={on && studyDays.length === 1}
+                        onClick={() => {
+                          const chosen = on
+                            ? studyDays.filter((item) => item !== day)
+                            : [...studyDays, day];
+                          updateGoal(goal.id, { days: chosen.length === 7 ? undefined : chosen });
+                        }}
+                      >
+                        {short}
+                      </ToggleChip>
                     );
                   })}
-                </ol>
-              ) : null}
-            </section>
-          );
-        })}
-      </div>
-
-      <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
-        {todayPanel('hidden xl:flex')}
-
-        <section aria-labelledby="adjust-title" className={cx(GLASS, 'flex flex-col gap-3 p-4')}>
-          <h2 id="adjust-title" className="font-semibold text-ink">
-            Adjust the plan
-          </h2>
-          <TextField
-            label="Name"
-            maxLength={80}
-            defaultValue={goal.title}
-            onBlur={(event) => {
-              const title = event.target.value.trim();
-              if (title && title !== goal.title) updateGoal(goal.id, { title });
-            }}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <TextField
-              label="Start"
-              type="date"
-              min={today}
-              disabled={start <= today}
-              value={start}
-              onChange={(event) => {
-                const from = event.target.value;
-                if (from >= today && from <= goal.date) updateGoal(goal.id, { from });
-              }}
-            />
-            <TextField
-              label={goal.kind === 'test' ? 'Test date' : 'Done by'}
-              type="date"
-              min={start > today ? start : today}
-              value={goal.date}
-              onChange={(event) => {
-                const date = event.target.value;
-                if (date >= today && date >= start) updateGoal(goal.id, { date });
-              }}
-            />
-          </div>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="pb-2 text-sm font-medium text-fg">Study on</legend>
-            <div className="flex flex-wrap gap-2">
-              {WEEKDAYS.map(({ day, short }) => {
-                const on = studyDays.includes(day);
-                return (
-                  <ToggleChip
-                    key={day}
-                    pressed={on}
-                    // At least one day a week stays.
-                    disabled={on && studyDays.length === 1}
-                    onClick={() => {
-                      const chosen = on
-                        ? studyDays.filter((item) => item !== day)
-                        : [...studyDays, day];
-                      updateGoal(goal.id, { days: chosen.length === 7 ? undefined : chosen });
-                    }}
-                  >
-                    {short}
-                  </ToggleChip>
-                );
-              })}
-            </div>
-          </fieldset>
-          <Button variant="secondary" onClick={() => setPicking(!picking)}>
-            {picking ? 'Close the topic list' : 'Change topics'}
-          </Button>
-          <Dialog
-            title="Remove this plan?"
-            description="Its topics stay in the library, and what you have done stays done."
-            trigger={
-              <Button variant="ghost" iconStart={Trash2}>
-                Remove this plan
+                </div>
+              </fieldset>
+              <Button variant="secondary" onClick={() => setPicking(!picking)}>
+                {picking ? 'Close the topic list' : 'Change topics'}
               </Button>
-            }
-            footer={
-              <>
-                <ModalClose asChild>
-                  <Button variant="ghost">Keep it</Button>
-                </ModalClose>
-                <Button
-                  variant="danger"
-                  onClick={() => {
-                    removeGoal(goal.id);
-                    router.push('/plan');
-                  }}
-                >
-                  Remove
-                </Button>
-              </>
-            }
-          />
-        </section>
-      </aside>
+              <Dialog
+                title="Remove this plan?"
+                description="Its topics stay in the library, and what you have done stays done."
+                trigger={
+                  <Button variant="ghost" iconStart={Trash2}>
+                    Remove this plan
+                  </Button>
+                }
+                footer={
+                  <>
+                    <ModalClose asChild>
+                      <Button variant="ghost">Keep it</Button>
+                    </ModalClose>
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        removeGoal(goal.id);
+                        router.push('/plan');
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </>
+                }
+              />
+            </section>
+          </>
+        }
+      />
     </div>
   );
 }

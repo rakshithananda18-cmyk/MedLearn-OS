@@ -5,6 +5,8 @@ import { expectAccessible } from './support';
 test('a student makes a plan from choices, adjusts its calendar, and Today follows it', async ({
   page,
 }) => {
+  // A long journey with three accessibility scans: more time than a single-page test.
+  test.slow();
   await page.goto('/plan/new');
   await page.getByText('Learn new topics').click();
   await page.getByRole('button', { name: 'Next', exact: true }).click();

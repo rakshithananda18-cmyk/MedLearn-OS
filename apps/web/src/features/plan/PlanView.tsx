@@ -14,6 +14,7 @@ import { useMemo, useState } from 'react';
 
 import type { TopicSummary } from '@/content/topics';
 import { useProgress } from '@/features/progress/store';
+import { Panes } from '@/features/shell/Panes';
 import { describe } from '@/features/today/describe';
 
 import { GLASS, PlanCard } from './PlanCard';
@@ -75,92 +76,113 @@ export function PlanView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         </Link>
       </header>
 
-      {minutes > dailyMinutes ? (
-        <Banner tone="warning" title="Today looks heavy">
-          Your plans need about {minutesText(minutes)} today, more than your {dailyMinutes} minutes
-          a day. Open a plan&apos;s calendar to take a day off or give it a later date.
-        </Banner>
-      ) : null}
+      <Panes
+        id="plan"
+        label="Today"
+        asideFirst
+        main={
+          <>
+            <div role="group" aria-label="Which plans" className="flex gap-2">
+              <ToggleChip pressed={tab === 'active'} onClick={() => setTab('active')}>
+                Active ({active.length})
+              </ToggleChip>
+              <ToggleChip pressed={tab === 'finished'} onClick={() => setTab('finished')}>
+                Finished ({finished.length})
+              </ToggleChip>
+            </div>
 
-      <section aria-labelledby="plan-today" className={cx(GLASS, 'flex flex-col p-4')}>
-        <div className="flex items-center justify-between gap-3 pb-2">
-          <h2 id="plan-today" className="font-semibold text-ink">
-            Today from your plans
-          </h2>
-          <span className="text-sm text-fg-muted">
-            {steps.length > 0 ? `About ${minutesText(minutes)}` : ''}
-          </span>
-        </div>
-        {steps.length === 0 ? (
-          <Text size="sm" tone="muted">
-            Nothing from your plans today.
-          </Text>
-        ) : (
-          <ol>
-            {steps.map((step) => {
-              const { title, meta, href, icon: Glyph } = describe(step);
-              return (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="group flex min-h-12 items-center gap-3 rounded-md border-t border-border px-2 py-2 transition-colors hover:bg-surface-muted"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-gold-ink"
-                    >
-                      <Glyph size={16} strokeWidth={2} aria-hidden="true" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="text-sm font-semibold text-pretty text-ink">{title}</span>
-                      <span className="truncate text-xs text-fg-muted">{meta}</span>
-                    </span>
-                    <Icon
-                      icon={ChevronRight}
-                      size="sm"
-                      className="shrink-0 text-fg-muted transition-transform group-hover:translate-x-1"
-                    />
+            {shown.length === 0 ? (
+              <div className={cx(GLASS, 'flex flex-col items-start gap-3 p-6')}>
+                <Text weight="semibold">
+                  {tab === 'active' ? 'No plans yet' : 'No finished plans yet'}
+                </Text>
+                <Text size="sm" tone="muted">
+                  {tab === 'active'
+                    ? 'Choose what to learn or revise and by when; Today spreads it over your days.'
+                    : 'Plans you finish, or whose date has passed, move here.'}
+                </Text>
+                {tab === 'active' ? (
+                  <Link href="/plan/new" className={buttonClasses({ variant: 'secondary' })}>
+                    <Icon icon={Plus} size="sm" />
+                    Make a plan
                   </Link>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </section>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {shown.map((goal) => (
+                  <PlanCard
+                    key={goal.id}
+                    goal={goal}
+                    progress={progress}
+                    today={today}
+                    topics={bySlug}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        }
+        aside={
+          <>
+            {minutes > dailyMinutes ? (
+              <Banner tone="warning" title="Today looks heavy">
+                Your plans need about {minutesText(minutes)} today, more than your {dailyMinutes}{' '}
+                minutes a day. Open a plan&apos;s calendar to take a day off or give it a later
+                date.
+              </Banner>
+            ) : null}
 
-      <div role="group" aria-label="Which plans" className="flex gap-2">
-        <ToggleChip pressed={tab === 'active'} onClick={() => setTab('active')}>
-          Active ({active.length})
-        </ToggleChip>
-        <ToggleChip pressed={tab === 'finished'} onClick={() => setTab('finished')}>
-          Finished ({finished.length})
-        </ToggleChip>
-      </div>
-
-      {shown.length === 0 ? (
-        <div className={cx(GLASS, 'flex flex-col items-start gap-3 p-6')}>
-          <Text weight="semibold">
-            {tab === 'active' ? 'No plans yet' : 'No finished plans yet'}
-          </Text>
-          <Text size="sm" tone="muted">
-            {tab === 'active'
-              ? 'Choose what to learn or revise and by when; Today spreads it over your days.'
-              : 'Plans you finish, or whose date has passed, move here.'}
-          </Text>
-          {tab === 'active' ? (
-            <Link href="/plan/new" className={buttonClasses({ variant: 'secondary' })}>
-              <Icon icon={Plus} size="sm" />
-              Make a plan
-            </Link>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {shown.map((goal) => (
-            <PlanCard key={goal.id} goal={goal} progress={progress} today={today} topics={bySlug} />
-          ))}
-        </div>
-      )}
+            <section aria-labelledby="plan-today" className={cx(GLASS, 'flex flex-col p-4')}>
+              <div className="flex items-center justify-between gap-3 pb-2">
+                <h2 id="plan-today" className="font-semibold text-ink">
+                  Today from your plans
+                </h2>
+                <span className="text-sm text-fg-muted">
+                  {steps.length > 0 ? `About ${minutesText(minutes)}` : ''}
+                </span>
+              </div>
+              {steps.length === 0 ? (
+                <Text size="sm" tone="muted">
+                  Nothing from your plans today.
+                </Text>
+              ) : (
+                <ol>
+                  {steps.map((step) => {
+                    const { title, meta, href, icon: Glyph } = describe(step);
+                    return (
+                      <li key={href}>
+                        <Link
+                          href={href}
+                          className="group flex min-h-12 items-center gap-3 rounded-md border-t border-border px-2 py-2 transition-colors hover:bg-surface-muted"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-gold-ink"
+                          >
+                            <Glyph size={16} strokeWidth={2} aria-hidden="true" />
+                          </span>
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="text-sm font-semibold text-pretty text-ink">
+                              {title}
+                            </span>
+                            <span className="truncate text-xs text-fg-muted">{meta}</span>
+                          </span>
+                          <Icon
+                            icon={ChevronRight}
+                            size="sm"
+                            className="shrink-0 text-fg-muted transition-transform group-hover:translate-x-1"
+                          />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </section>
+          </>
+        }
+      />
     </div>
   );
 }
