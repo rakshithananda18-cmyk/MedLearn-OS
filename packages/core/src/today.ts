@@ -32,6 +32,12 @@ export interface StudyGoal {
   date: string;
   /** The first day to work on it (YYYY-MM-DD), when it waits: a course's later parts wait for the earlier ones. */
   from?: string;
+  /** The weekdays to study it on (0 is Sunday); every day when missing. */
+  days?: number[];
+  /** Single days taken off it (YYYY-MM-DD). */
+  off?: string[];
+  /** When it was last changed (ISO time); the newer copy wins when phone and account differ. */
+  changedAt?: string;
   /** Topics already gone over for this goal (a topic to learn also counts once its lesson is done). */
   done: string[];
   /** When it was asked for (ISO time). */
@@ -193,11 +199,25 @@ export function goalDone(goal: StudyGoal, learnt: readonly string[] = []): strin
   );
 }
 
+/** Whether a goal is worked on that day: one of its weekdays, and not a day taken off. */
+export function studyDay(goal: Pick<StudyGoal, 'days' | 'off'>, day: string): boolean {
+  const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+  return (goal.days === undefined || goal.days.includes(weekday)) && !goal.off?.includes(day);
+}
+
+/** A goal's study days from one day to another, both included. */
+function studyDaysBetween(goal: Pick<StudyGoal, 'days' | 'off'>, from: string, to: string) {
+  let count = 0;
+  for (let day = from; day <= to; day = addDays(day, 1)) if (studyDay(goal, day)) count += 1;
+  return count;
+}
+
 /**
  * A goal's pace: whole days until its date, and the topics to go over today to finish in time.
  * A test is prepared on the days before it (on the day itself only when it is today); a revisit
- * or topics to learn may use the last day too. Nothing is due once the date has passed or every
- * topic is done. `learnt` is the lessons finished, which tick off a goal to learn.
+ * or topics to learn may use the last day too. Only its study days count, and nothing is due on a
+ * day off, once the date has passed, or once every topic is done. `learnt` is the lessons
+ * finished, which tick off a goal to learn.
  */
 export function goalToday(
   goal: StudyGoal,
@@ -208,8 +228,11 @@ export function goalToday(
   const done = goalDone(goal, learnt);
   const remaining = goal.topics.filter((slug) => !done.includes(slug));
   const waiting = goal.from !== undefined && today < goal.from;
-  if (daysLeft < 0 || remaining.length === 0 || waiting) return { daysLeft, topics: [] };
-  const studyDays = goal.kind === 'test' ? Math.max(1, daysLeft) : daysLeft + 1;
+  if (daysLeft < 0 || remaining.length === 0 || waiting || !studyDay(goal, today)) {
+    return { daysLeft, topics: [] };
+  }
+  const last = goal.kind === 'test' && daysLeft > 0 ? addDays(goal.date, -1) : goal.date;
+  const studyDays = Math.max(1, studyDaysBetween(goal, today, last));
   return { daysLeft, topics: remaining.slice(0, Math.ceil(remaining.length / studyDays)) };
 }
 
@@ -226,9 +249,15 @@ export function goalSchedule(
   const days: Array<{ date: string; topics: string[] }> = [];
   let done = goalDone(goal, learnt);
   const start = goal.from !== undefined && goal.from > today ? goal.from : today;
-  for (let day = start; daysBetween(day, goal.date) >= 0; day = addDays(day, 1)) {
+  // ponytail: each day recounts the study days left, so this is quadratic in the plan's length;
+  // fine for plans of a year or less.
+  for (
+    let day = start;
+    day <= goal.date && done.length < goal.topics.length;
+    day = addDays(day, 1)
+  ) {
     const { topics } = goalToday({ ...goal, done }, day);
-    if (topics.length === 0) break;
+    if (topics.length === 0) continue;
     days.push({ date: day, topics });
     done = [...done, ...topics];
   }
@@ -237,7 +266,7 @@ export function goalSchedule(
 
 /** The heaviest day of a goal in minutes, at the pace Today keeps; `minutesOf` times each topic. */
 export function goalLoad(
-  goal: Pick<StudyGoal, 'kind' | 'topics' | 'date' | 'from'>,
+  goal: Pick<StudyGoal, 'kind' | 'topics' | 'date' | 'from' | 'days' | 'off'>,
   today: string,
   minutesOf: (slug: string) => number,
 ): number {

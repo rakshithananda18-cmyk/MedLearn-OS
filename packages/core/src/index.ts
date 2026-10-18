@@ -13,6 +13,18 @@ export {
 export { AppError, isAppError, toAppError } from './errors';
 export { type TopicMastery, topicMastery } from './mastery';
 export { mergeProgress } from './merge';
+export {
+  mondayOf,
+  type PlanDay,
+  planDays,
+  type PlanDayState,
+  planStart,
+  type PlanStatus,
+  planStatus,
+  planWeek,
+  planWeekOf,
+  planWeekStart,
+} from './plans';
 export { isDue, type ReviewRating, type ReviewState, scheduleReview } from './review';
 export {
   addDays,
@@ -41,6 +53,7 @@ export {
   REVISIT_DAYS,
   REVISIT_QUESTIONS,
   revisitMinutes,
+  studyDay,
   type StudyGoal,
   type StudyProfile,
   type TodayItem,

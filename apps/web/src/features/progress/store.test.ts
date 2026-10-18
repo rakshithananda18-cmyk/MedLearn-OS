@@ -246,6 +246,17 @@ describe('storage recovery', () => {
     const revisits = { axilla: { step: 1, due: '2026-10-04' } };
     const progress = parseLocalProgress({ goals: [goal], revisits });
     expect(progress?.goals).toEqual([goal]);
+    // A plan's start day, weekdays, days off and last change come back as they were saved.
+    const shaped = {
+      ...goal,
+      kind: 'learn',
+      from: '2026-10-05',
+      days: [1, 2, 3, 4, 5],
+      off: ['2026-10-07'],
+      changedAt: '2026-10-02T08:00:00.000Z',
+    };
+    expect(parseLocalProgress({ goals: [shaped] })?.goals).toEqual([shaped]);
+    expect(parseLocalProgress({ goals: [{ ...shaped, days: [9] }] })?.goals).toEqual([]);
     expect(progress?.revisits).toEqual(revisits);
     const removed = parseLocalProgress({
       goals: [goal],

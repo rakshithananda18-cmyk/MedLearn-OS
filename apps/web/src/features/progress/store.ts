@@ -181,7 +181,7 @@ export function saveNote(topicSlug: string, text: string, now = new Date()): voi
 
 /** Plans a class test or a revisit: Today spreads its topics over the days until its date. */
 export function addGoal(
-  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date' | 'from'>,
+  goal: Pick<StudyGoal, 'kind' | 'title' | 'topics' | 'date' | 'from' | 'days'>,
   now = new Date(),
 ): StudyGoal {
   // getRandomValues also works on a phone opening a local development server over HTTP.
@@ -197,6 +197,25 @@ export function addGoal(
   };
   commit({ goals: [...read().goals, added] }, now);
   return added;
+}
+
+/** Changes a plan: its name, dates, study days, days off or topics. Today re-paces it at once. */
+export function updateGoal(
+  goalId: string,
+  // A field set to undefined is cleared (every day studied again, say).
+  change: {
+    [Key in 'title' | 'date' | 'from' | 'days' | 'off' | 'topics']?: StudyGoal[Key] | undefined;
+  },
+  now = new Date(),
+): void {
+  commit(
+    {
+      goals: read().goals.map((goal) =>
+        goal.id === goalId ? { ...goal, ...change, changedAt: now.toISOString() } : goal,
+      ),
+    },
+    now,
+  );
 }
 
 export function removeGoal(goalId: string): void {

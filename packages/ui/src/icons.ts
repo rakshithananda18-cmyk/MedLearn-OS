@@ -40,6 +40,7 @@ export {
   Layers,
   Library,
   Lightbulb,
+  ListChecks,
   LoaderCircle,
   Menu,
   Monitor,

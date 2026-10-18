@@ -52,6 +52,11 @@ const StudyGoalInput = z.object({
   date: LocalDate,
   // Missing from goals that start at once (all goals planned before courses could wait).
   from: LocalDate.optional(),
+  // Missing from goals studied every day, with no day taken off.
+  days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(),
+  off: z.array(LocalDate).max(400).optional(),
+  // Missing from goals never changed after they were made.
+  changedAt: IsoTime.optional(),
   done: z.array(ItemId).max(200),
   createdAt: IsoTime,
 });

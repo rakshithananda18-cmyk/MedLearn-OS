@@ -1,27 +1,13 @@
 'use client';
 
-import { goalLoad, goalSchedule, revisitMinutes } from '@medlearn/core';
+import { goalLoad, goalSchedule } from '@medlearn/core';
 import type { ProposedGoal } from '@medlearn/schemas';
 import { Icon, IconButton, Text, TextField } from '@medlearn/ui';
 import { Trash2, X } from '@medlearn/ui/icons';
 
 import type { TopicSummary } from '@/content/topics';
 
-export const KIND_NAME: Record<ProposedGoal['kind'], string> = {
-  learn: 'Learn',
-  test: 'Class test',
-  revisit: 'Revisit',
-};
-
-const DAY = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-/** A local date (YYYY-MM-DD) as students say it: "Fri, 23 Oct". */
-export const dayName = (day: string) => DAY.format(new Date(`${day}T12:00:00`));
-
-/** How long a topic takes in a goal: its lesson to learn it, its questions and cards to go over it. */
-export function topicMinutes(goal: Pick<ProposedGoal, 'kind'>, topic: TopicSummary | undefined) {
-  if (!topic) return 0;
-  return goal.kind === 'learn' ? topic.estimatedMinutes : revisitMinutes(topic);
-}
+import { dayName, KIND_NAME, topicMinutes } from './words';
 
 /**
  * One goal of a proposed plan, to change before it is added: its name, its date, its topics, and
