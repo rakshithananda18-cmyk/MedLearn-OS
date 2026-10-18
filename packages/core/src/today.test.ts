@@ -271,7 +271,9 @@ describe('goals: topics to learn by a date', () => {
       minutes: 15,
     });
     // The next new topic in the book is the goal's own: it is not offered a second time.
-    expect(plan.items.filter((item) => item.topicSlug === 'plexus')).toHaveLength(1);
+    expect(
+      plan.items.filter((item) => 'topicSlug' in item && item.topicSlug === 'plexus'),
+    ).toHaveLength(1);
   });
 
   it('lay a goal out day by day at the pace Today keeps, from what is left', () => {
