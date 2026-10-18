@@ -22,7 +22,7 @@ export const pelvicCavity: Topic = {
     'The walls of the lesser pelvis, its inlet and outlet and their angles, the J-shaped cavity and its axis, the pelvic floor, what lies inside, and what crosses the brim.',
   estimatedMinutes: 13,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

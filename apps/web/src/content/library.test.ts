@@ -76,6 +76,8 @@ describe('libraryTree', () => {
       'Urinary bladder and urethra',
       'Female reproductive organs',
       'Male internal genital organs',
+      'Rectum and anal canal',
+      'Walls of the pelvis',
     ]);
     // Volume 2 restarts the chapter numbers for the lower limb.
     const lowerLimb = tree[4];

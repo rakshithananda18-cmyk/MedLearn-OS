@@ -22,7 +22,7 @@ export const urinaryBladder: Topic = {
     'The bladder empty and full, its apex, base, neck and surfaces with their relations in each sex, its true and false ligaments, the trigone inside, its capacity, vessels and nerves, and how it empties.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

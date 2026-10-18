@@ -23,7 +23,7 @@ export const ischioanalFossa: Topic = {
     'The wedge of fat on each side of the anal canal: its walls and recesses, its two spaces and the lunate fascia, the pudendal canal in its side wall, what crosses it, and why abscesses here behave as they do.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
