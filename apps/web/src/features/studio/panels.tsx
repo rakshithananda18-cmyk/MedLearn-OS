@@ -297,6 +297,12 @@ function TopicTree({
   const [trail, setTrail] = useState<string[]>(() =>
     current === null && region ? [region] : trailTo(tree, current),
   );
+  // A region picked on the body later unfolds the list to it, as the label on the body does.
+  const [shownRegion, setShownRegion] = useState(region);
+  if (current === null && region !== shownRegion) {
+    setShownRegion(region);
+    setTrail(region ? [region] : []);
+  }
   // Opened for a region, that region comes to the top of the list rather than below the others.
   const regionList = useRef<HTMLUListElement>(null);
   useEffect(() => {

@@ -36,6 +36,8 @@ const viewer = vi.hoisted(() => ({
     dpr: number | [number, number];
     stopId: string;
     layers: Viewer3DLayer[];
+    detail: Model3D | null;
+    ghostIds: ReadonlySet<string>;
     section: Viewer3DSection | null;
     focus: Viewer3DFocus | null;
     pose: Viewer3DPose | null;
@@ -203,11 +205,13 @@ describe('Studio on a phone', () => {
     });
     await expectNoA11yViolations(container);
 
-    // A marker on the body picks its region; a lesson-only topic links to its lesson.
+    // A region's surface on the body picks it and brings it close; a lesson-only topic links to
+    // its lesson.
     tap('thorax');
     expect(
       within(browser).getByRole('button', { name: 'Thorax', pressed: true }),
     ).toBeInTheDocument();
+    expect(viewer.props?.focus).toEqual({ point: [0, -228, 1240], radius: 180 });
     expect(within(browser).getByRole('link', { name: /Oxygen–haemoglobin curve/ })).toHaveAttribute(
       'href',
       '/learn/oxygen-haemoglobin-curve',
@@ -359,6 +363,41 @@ describe('Studio on a phone', () => {
     expect(viewer.props?.highlight.size).toBeGreaterThan(0);
   });
 
+  it('plays "Name it": the model marks a structure and the card offers four names', async () => {
+    await renderStudio('axilla');
+    await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Name', pressed: false }));
+    expect(screen.getByText('Which structure is marked?')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hint' })).not.toBeInTheDocument();
+    // The structure to name glows, marked but not named, and the camera turns to it.
+    expect(viewer.props?.highlight).toEqual(new Set(['cords']));
+    expect(viewer.props?.labels).toEqual([{ id: 'cords', text: '?', active: true }]);
+    expect(viewer.props?.focusId).toBe('cords');
+
+    const names = within(screen.getByRole('group', { name: 'Choose its name' }));
+    expect(names.getAllByRole('button')).toHaveLength(4);
+    // A tap on the model does not answer it.
+    tap('cords');
+    expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+    const wrong = names.getAllByRole('button')[1] as HTMLElement;
+    await userEvent.click(wrong);
+    expect(
+      screen.getByText(`Not the ${wrong.textContent}. Turn the model and look again.`),
+    ).toBeInTheDocument();
+    expect(wrong).toBeDisabled();
+    await userEvent.click(names.getByRole('button', { name: 'Cords of the brachial plexus' }));
+    expect(
+      screen.getByText('Right, the Cords of the brachial plexus, for half a point. Next one.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Question 2 of 10')).toBeInTheDocument();
+    expect(viewer.props?.highlight).not.toEqual(new Set(['cords']));
+
+    // Back to finding: a new round.
+    await userEvent.click(screen.getByRole('button', { name: 'Find', pressed: false }));
+    expect(screen.getByText('Find it on the model')).toBeInTheDocument();
+    expect(screen.getByText('Question 1 of 10')).toBeInTheDocument();
+  });
+
   it('ends a round from the question card', async () => {
     await renderStudio('axilla');
     await userEvent.click(screen.getByRole('button', { name: 'Find it' }));
@@ -402,6 +441,35 @@ describe('Studio on a phone', () => {
 });
 
 describe('Studio on a wide screen', () => {
+  it('opens a region picked on the body into its detailed model, and tells a part picked in it', async () => {
+    wideScreen();
+    await renderStudio();
+    expect(viewer.props?.detail).toBeNull();
+    tap('thorax');
+    const detail = viewer.props?.detail;
+    expect(detail?.src).toContain('/models/thoracic-organs.glb');
+    // Its surface stays as a faint outline, and its own bones stand in for the body's skeleton.
+    expect(viewer.props?.ghostIds).toContain('thorax');
+    expect(viewer.props?.layers.map((layer) => layer.id)).not.toContain('skeleton');
+    const sternum = detail?.parts.find((part) => part.name === 'Sternum');
+    if (!sternum) throw new Error('no sternum in the thorax');
+    tap(`part:${sternum.id}`);
+    expect(await screen.findByRole('region', { name: /Sternum/ })).toBeInTheDocument();
+    // Reset brings back the whole body.
+    await userEvent.click(screen.getByRole('button', { name: 'Reset the view' }));
+    expect(viewer.props?.detail).toBeNull();
+  });
+
+  it('unfolds the topics to a region picked on the body', async () => {
+    wideScreen();
+    await renderStudio();
+    expect(screen.getByRole('button', { name: /^Thorax/, expanded: false })).toBeInTheDocument();
+    tap('thorax');
+    expect(
+      await screen.findByRole('button', { name: /^Thorax/, expanded: true }),
+    ).toBeInTheDocument();
+  });
+
   it('docks the topics and search, the modes by the title, the guided views and the structure', async () => {
     wideScreen();
     const { container } = await renderStudio('axilla');
@@ -492,7 +560,7 @@ describe('Studio on a wide screen', () => {
     await userEvent.click(within(layers).getByRole('switch', { name: 'Muscles' }));
     await userEvent.click(within(layers).getByRole('switch', { name: 'Skin' }));
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton', 'muscles']);
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     await expectNoA11yViolations(container);
 
     await userEvent.click(within(layers).getByRole('button', { name: 'Close layers' }));
@@ -581,7 +649,7 @@ describe('Studio on a wide screen', () => {
     expect(viewer.props?.layers).toEqual([
       expect.objectContaining({ id: 'skeleton', only: 'left-humerus' }),
     ]);
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     // Picking nothing shows the whole body again.
     tap(null);
     expect(viewer.props?.layers.map((layer) => layer.id)).toEqual(['skeleton']);
@@ -724,7 +792,7 @@ describe('Studio on a wide screen', () => {
     ]);
     expect(viewer.props?.pose?.angle).toBeCloseTo((73 * Math.PI) / 180);
     // The skin cannot bend, so it steps aside.
-    expect(viewer.props?.hiddenIds).toContain('skin');
+    expect(viewer.props?.hiddenIds).toContain('thorax');
     await expectNoA11yViolations(container);
 
     fireEvent.change(within(sheet).getByRole('slider', { name: /Angle/ }), {
