@@ -33,7 +33,7 @@ const EBRAHEIM = 'Dr Nabil Ebraheim';
 
 /**
  * Lectures for each topic, the fullest first. Chosen from teaching channels on 29 Sep 2026 (the
- * thorax and lower limb on 13 to 15 Oct 2026, the abdomen from 15 Oct 2026); each
+ * thorax and lower limb on 13 to 15 Oct 2026, the abdomen from 15 Oct 2026, the last of the pelvis on 18 Oct 2026); each
  * id was checked to allow embedding (YouTube's oEmbed answers for it) and its length read then.
  * ponytail: hand-picked; a reviewer screens new ones before they are added here.
  */
@@ -683,6 +683,35 @@ export const VIDEOS: Record<string, TopicVideo[]> = {
   ],
   vagina: [
     video('nXzVHaeBHxA', 'The vagina: relations, supports and supply', 'Dr Kanhu Dash', 746),
+  ],
+  rectum: [
+    video('uiigShhQyH4', 'The rectum and anal canal', KENHUB, 446),
+    video('xNyxbW9Np90', 'The rectum: supply, lymph and nerves', 'Emotional Medico', 373),
+  ],
+  'anal-canal': [
+    video(
+      'xD6vo3SHusk',
+      'The anal canal: features, supply and lymph',
+      'Let’s make medicine easy',
+      1011,
+    ),
+    video('vuXN2g469-8', 'The anal canal, simplified', 'Human Anatomy Education', 710),
+  ],
+  'internal-iliac-vessels': [
+    video('_kLR_Zegyok', 'Pelvic blood vessels: the internal iliac artery', DAVINCI, 1040),
+    video('4Fp2gLbwBDs', 'The internal iliac artery', ANATOMY_ZONE, 510),
+  ],
+  'sacral-plexus': [
+    video('f7Zig8eBCqY', 'The sacral plexus', 'Ninja Nerd', 1723),
+    video('DZ0IL1tHNxo', 'The sacral plexus', ANATOMY_ZONE, 654),
+  ],
+  'pelvic-diaphragm': [
+    video('nhfThLLe_m4', 'The pelvic floor muscles', 'Dr Mae Hughes', 337),
+    video('M1HoJp7sc5I', 'Levator ani and its three parts', 'Abuja Orthopedics', 169),
+  ],
+  'pelvic-joints': [
+    video('n4z8pXhVqWU', 'The sacroiliac joint', EBRAHEIM, 300),
+    video('w_wNbPdR0YM', 'The pubic symphysis and sacroiliac joint', 'Lynh Lee', 231),
   ],
   'oxygen-haemoglobin-curve': [
     video('BYGPkRFvzOc', 'The oxygen–haemoglobin dissociation curve', ARMANDO, 712),
