@@ -2,9 +2,9 @@
 
 The daily learning system for MBBS students. Phase 1 is an installable web app (Next.js + Supabase).
 
-The current private prototype (for a study group of about five) has 146 sample topics: 145 anatomy
-topics across the Upper Limb, Thorax, Lower Limb, Abdomen and Pelvis, plus the
-oxygen–haemoglobin curve. Content is prepared from the standard textbooks; approval depends on
+The current private prototype (for a study group of about five) has 154 sample topics: 145 anatomy
+topics across the Upper Limb, Thorax, Lower Limb, Abdomen and Pelvis, and 9 physiology topics
+(general physiology and the oxygen–haemoglobin curve). Content is prepared from the standard textbooks; approval depends on
 the review team's recorded decision for the exact teaching content and assets.
 
 ## What is in the app

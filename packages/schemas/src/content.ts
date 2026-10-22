@@ -216,8 +216,11 @@ export const Topic = z
   .object({
     slug: Id,
     subjectSlug: Id,
-    /** Body regions the topic belongs to, in the book's order (the pectoral region is both). */
-    regions: z.array(BodyRegion).min(1),
+    /**
+     * Body regions the topic belongs to, in the book's order (the pectoral region is both); none
+     * for topics with no place on the body, such as the cell or body fluids.
+     */
+    regions: z.array(BodyRegion),
     title: z.string(),
     summary: z.string(),
     estimatedMinutes: z.number().int().positive(),

@@ -68,9 +68,9 @@ describe('Topic', () => {
     expect(Topic.safeParse(broken).success).toBe(false);
   });
 
-  it('tags every topic with a body region from the fixed list', () => {
+  it('tags topics with body regions from the fixed list, or none', () => {
     expect(Topic.safeParse({ ...base, regions: ['elbow'] }).success).toBe(false);
-    expect(Topic.safeParse({ ...base, regions: [] }).success).toBe(false);
+    expect(Topic.safeParse({ ...base, regions: [] }).success).toBe(true);
   });
 
   it('checks that 3D traces are nodes of the 2D diagram', () => {
