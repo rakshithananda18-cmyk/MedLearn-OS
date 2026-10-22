@@ -21,6 +21,7 @@ import { DrawBar, ModeSwitch, PENS, QuestionCard, Scoreboard, TourBar } from './
 import { bodyQuizPool, focusOn, useBodyIndex } from './bodyIndex';
 import { BodyPartCard } from './BodyPanels';
 import { structureInfo, structuresOf, type StudioTopic } from './knowledge';
+import { XrayViewer } from './lazy';
 import {
   BodyBrowser,
   GLASS,
@@ -77,7 +78,6 @@ import {
   ViewTools,
 } from './stage';
 import { pixelRatio, useCan3D, useDocked, useReducedMotion } from './viewer';
-import { XrayViewer } from './XrayViewer';
 
 // A topic's layers, from the surface in.
 const PART_LAYERS: Array<{ kind: PartKind; name: string }> = [

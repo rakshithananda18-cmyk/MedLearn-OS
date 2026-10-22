@@ -62,6 +62,11 @@ vi.mock('@medlearn/visuals', async (importOriginal) => ({
   ...(await importOriginal<typeof Visuals>()),
   supports3D: () => capability.supported,
 }));
+// The flat diagram and the X-ray films load on request in the app; here they render at once.
+vi.mock('./lazy', async () => ({
+  PathTracer: (await import('@medlearn/visuals')).PathTracer,
+  XrayViewer: (await import('./XrayViewer')).XrayViewer,
+}));
 
 const STROKE: Stroke = {
   colour: '--color-pen-ink',

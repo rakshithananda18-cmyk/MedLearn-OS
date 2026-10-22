@@ -10,6 +10,7 @@ import {
   EMPTY_PROGRESS,
   finishedRevisit,
   firstRevisit,
+  goalSchedule,
   goalToday,
   type LearnerProgress,
   nextRevisit,
@@ -246,6 +247,51 @@ describe('goals: class tests and revisits', () => {
       topicSlug: 'plexus',
       minutes: 3,
     });
+  });
+});
+
+describe('goals: topics to learn by a date', () => {
+  const learn: StudyGoal = {
+    id: 'g2',
+    kind: 'learn',
+    title: 'Upper limb',
+    topics: ['plexus', 'axilla'],
+    date: '2026-09-27',
+    done: [],
+    createdAt: NOW.toISOString(),
+  };
+
+  it('count a finished lesson as done, and come into Today as lessons, never twice', () => {
+    expect(goalToday(learn, TODAY, ['plexus']).topics).toEqual(['axilla']);
+    const plan = buildTodayPlan(topics, after({ goals: [learn] }), NOW);
+    expect(plan.items[0]).toMatchObject({
+      kind: 'goal',
+      goalKind: 'learn',
+      topicSlug: 'plexus',
+      minutes: 15,
+    });
+    // The next new topic in the book is the goal's own: it is not offered a second time.
+    expect(
+      plan.items.filter((item) => 'topicSlug' in item && item.topicSlug === 'plexus'),
+    ).toHaveLength(1);
+  });
+
+  it('lay a goal out day by day at the pace Today keeps, from what is left', () => {
+    const goal = { ...learn, topics: ['a', 'b', 'c', 'd', 'e'], date: addDays(TODAY, 2) };
+    expect(goalSchedule(goal, TODAY)).toEqual([
+      { date: TODAY, topics: ['a', 'b'] },
+      { date: addDays(TODAY, 1), topics: ['c', 'd'] },
+      { date: addDays(TODAY, 2), topics: ['e'] },
+    ]);
+    expect(goalSchedule(goal, TODAY, ['a', 'b', 'c'])).toEqual([
+      { date: TODAY, topics: ['d'] },
+      { date: addDays(TODAY, 1), topics: ['e'] },
+    ]);
+    // A test is ready the day before.
+    expect(goalSchedule({ ...goal, kind: 'test' }, TODAY).map((day) => day.date)).toEqual([
+      TODAY,
+      addDays(TODAY, 1),
+    ]);
   });
 });
 

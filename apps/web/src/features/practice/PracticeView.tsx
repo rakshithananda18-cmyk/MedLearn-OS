@@ -12,6 +12,7 @@ import { Chevron } from '@/features/library/SubjectTopics';
 import { completeRevisit, markGoalTopic, removeGoal, useProgress } from '@/features/progress/store';
 import { FoldBody } from '@/features/shell/FoldBody';
 import { useHydrated } from '@/features/shell/media';
+import { Panes } from '@/features/shell/Panes';
 
 import { GoalPlanner } from './GoalPlanner';
 import { LoadedPracticeSession } from './LoadedPracticeSession';
@@ -267,7 +268,10 @@ function Goals({
   onRevise: (goal: StudyGoal, slug: string) => void;
 }>) {
   const today = dayKey(new Date());
-  const upcoming = goals.filter((goal) => goalToday(goal, today).daysLeft >= 0);
+  // Tests and revisits are practised here; topics to learn are lessons, on Today and the Plan page.
+  const upcoming = goals.filter(
+    (goal) => goal.kind !== 'learn' && goalToday(goal, today).daysLeft >= 0,
+  );
   return (
     <section
       aria-labelledby="goals-title"
@@ -454,82 +458,88 @@ export function PracticeView({
   const due = dueCardIds(topics, progress, now).length;
 
   return (
-    <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
-      <div className="flex min-w-0 flex-col gap-4 xl:col-span-2">
-        <header className="flex flex-col gap-1">
-          <Eyebrow>Practice</Eyebrow>
-          <Display size="lg">
-            Test <em>yourself</em>
-          </Display>
-          <Text tone="muted" suppressHydrationWarning>
-            {accuracy === null
-              ? 'Start anywhere: every answer shapes your weak spots and your recall cards.'
-              : `${answered} questions answered · ${accuracy}% right · ${missed} to put right`}
-          </Text>
-        </header>
-        <div className="grid gap-3 md:grid-cols-2">
-          <Mode
-            icon={Shuffle}
-            title="Quick mix"
-            detail={`10 questions from ${learnt ? 'the lessons you have done' : 'every topic'}`}
-            primary
-            onStart={() => run({ title: 'Quick mix', ids: session('mix'), seconds: null })}
-          />
-          <Mode
-            icon={Target}
-            title="Weak spots"
-            detail={
-              missed > 0
-                ? `${missed} missed to put right, then your least sure topics`
-                : 'Your least sure topics first'
+    <Panes
+      id="practice"
+      label="Plans"
+      main={
+        <>
+          <header className="flex flex-col gap-1">
+            <Eyebrow>Practice</Eyebrow>
+            <Display size="lg">
+              Test <em>yourself</em>
+            </Display>
+            <Text tone="muted" suppressHydrationWarning>
+              {accuracy === null
+                ? 'Start anywhere: every answer shapes your weak spots and your recall cards.'
+                : `${answered} questions answered · ${accuracy}% right · ${missed} to put right`}
+            </Text>
+          </header>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Mode
+              icon={Shuffle}
+              title="Quick mix"
+              detail={`10 questions from ${learnt ? 'the lessons you have done' : 'every topic'}`}
+              primary
+              onStart={() => run({ title: 'Quick mix', ids: session('mix'), seconds: null })}
+            />
+            <Mode
+              icon={Target}
+              title="Weak spots"
+              detail={
+                missed > 0
+                  ? `${missed} missed to put right, then your least sure topics`
+                  : 'Your least sure topics first'
+              }
+              onStart={() => run({ title: 'Weak spots', ids: session('weak'), seconds: null })}
+            />
+            <Mode
+              icon={Timer}
+              title="Timed test"
+              detail="20 questions, a minute each, like a paper"
+              onStart={() => {
+                const ids = session('timed');
+                run({ title: 'Timed test', ids, seconds: ids.length * SECONDS_PER_TIMED_QUESTION });
+              }}
+            />
+            <Mode
+              icon={RotateCcw}
+              title="Recall cards"
+              detail={due > 0 ? `${due} due now` : 'None due; they come back when needed'}
+              href="/revise"
+            />
+          </div>
+          <Strengths
+            sections={sections}
+            onPractise={(section) =>
+              run({ title: section.label, ids: session('topics', section.slugs), seconds: null })
             }
-            onStart={() => run({ title: 'Weak spots', ids: session('weak'), seconds: null })}
           />
-          <Mode
-            icon={Timer}
-            title="Timed test"
-            detail="20 questions, a minute each, like a paper"
-            onStart={() => {
-              const ids = session('timed');
-              run({ title: 'Timed test', ids, seconds: ids.length * SECONDS_PER_TIMED_QUESTION });
-            }}
+        </>
+      }
+      aside={
+        <>
+          <Goals
+            goals={progress.goals}
+            sections={sections}
+            titles={titles}
+            onRevise={(goal, slug) =>
+              run({
+                title: titles[slug] ?? slug,
+                ids: session('topics', [slug]),
+                seconds: null,
+                goal: { id: goal.id, topic: slug },
+              })
+            }
           />
-          <Mode
-            icon={RotateCcw}
-            title="Recall cards"
-            detail={due > 0 ? `${due} due now` : 'None due; they come back when needed'}
-            href="/revise"
-          />
-        </div>
-        <Strengths
-          sections={sections}
-          onPractise={(section) =>
-            run({ title: section.label, ids: session('topics', section.slugs), seconds: null })
-          }
-        />
-      </div>
-      <aside aria-label="Plans" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-8">
-        <Goals
-          goals={progress.goals}
-          sections={sections}
-          titles={titles}
-          onRevise={(goal, slug) =>
-            run({
-              title: titles[slug] ?? slug,
-              ids: session('topics', [slug]),
-              seconds: null,
-              goal: { id: goal.id, topic: slug },
-            })
-          }
-        />
-        <section className="flex items-start gap-3 rounded-xl border border-glass-border bg-glass p-4 shadow-glass">
-          <Icon icon={Dumbbell} className="shrink-0 text-gold-ink" />
-          <Text size="sm" tone="muted">
-            Every miss becomes a recall card, and due cards lead Today&apos;s plan until you know
-            them.
-          </Text>
-        </section>
-      </aside>
-    </div>
+          <section className="flex items-start gap-3 rounded-xl border border-glass-border bg-glass p-4 shadow-glass">
+            <Icon icon={Dumbbell} className="shrink-0 text-gold-ink" />
+            <Text size="sm" tone="muted">
+              Every miss becomes a recall card, and due cards lead Today&apos;s plan until you know
+              them.
+            </Text>
+          </section>
+        </>
+      }
+    />
   );
 }

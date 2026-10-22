@@ -119,13 +119,21 @@ function isGoal(value: unknown): value is StudyGoal {
   return (
     isObject(value) &&
     isId(value.id) &&
-    (value.kind === 'test' || value.kind === 'revisit') &&
+    (value.kind === 'test' || value.kind === 'revisit' || value.kind === 'learn') &&
     typeof value.title === 'string' &&
     value.title.length >= 1 &&
     value.title.length <= 80 &&
     isIdList(value.topics, 200) &&
     value.topics.length >= 1 &&
     isDate(value.date) &&
+    (value.from === undefined || isDate(value.from)) &&
+    (value.days === undefined ||
+      (Array.isArray(value.days) &&
+        value.days.length >= 1 &&
+        value.days.every((day) => Number.isInteger(day) && day >= 0 && day <= 6))) &&
+    (value.off === undefined ||
+      (Array.isArray(value.off) && value.off.length <= 400 && value.off.every(isDate))) &&
+    (value.changedAt === undefined || isIsoTime(value.changedAt)) &&
     isIdList(value.done, 200) &&
     isIsoTime(value.createdAt)
   );
@@ -260,8 +268,12 @@ export function parseLocalProgress(value: unknown): LearnerProgress | null {
         title: goal.title,
         topics: [...goal.topics],
         date: goal.date,
+        ...(goal.from === undefined ? {} : { from: goal.from }),
+        ...(goal.days === undefined ? {} : { days: [...goal.days] }),
+        ...(goal.off === undefined ? {} : { off: [...goal.off] }),
         done: [...goal.done],
         createdAt: goal.createdAt,
+        ...(goal.changedAt === undefined ? {} : { changedAt: goal.changedAt }),
       })),
     removedGoals: [...removedGoals],
     revisits: Object.fromEntries(

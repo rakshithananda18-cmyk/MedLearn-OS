@@ -7,6 +7,7 @@ import {
   dayKey,
   dayOf,
   type ExamPhase,
+  goalDone,
   goalToday,
   lastDays,
   type LearnerProgress,
@@ -29,6 +30,7 @@ import Link from 'next/link';
 import type { TopicSummary } from '@/content/topics';
 import { acceptCatchUp, useProgress } from '@/features/progress/store';
 import { LiveSearch } from '@/features/search/LiveSearch';
+import { Panes } from '@/features/shell/Panes';
 
 import { DAY_TIP, greeting, partOfDay } from './greeting';
 import { GoalsCard, PlanCard, StreakCard, StreakPill, TimeRing, UpNext, WeakSpots } from './parts';
@@ -188,7 +190,7 @@ function weakSpots(progress: LearnerProgress, topics: TopicSummary[]) {
     .slice(0, 3);
 }
 
-/** The planned tests and revisits still ahead, soonest first. */
+/** The planned tests, revisits and topics to learn still ahead, soonest first. */
 function upcomingGoals(progress: LearnerProgress, now: Date) {
   const today = dayKey(now);
   return progress.goals
@@ -197,7 +199,7 @@ function upcomingGoals(progress: LearnerProgress, now: Date) {
       title: goal.title,
       kind: goal.kind,
       daysLeft: goalToday(goal, today).daysLeft,
-      done: goal.done.length,
+      done: goalDone(goal, progress.completedLessons).length,
       total: goal.topics.length,
     }))
     .filter((goal) => goal.daysLeft >= 0)
@@ -230,8 +232,8 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   else if (goalMet) tip = 'Anything more today is a bonus; a little recall keeps it.';
 
   return (
-    <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
-      <header className="flex flex-wrap items-end justify-between gap-3 xl:col-span-3">
+    <div className="flex flex-col gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           {/* The server renders in its own time zone; the browser's date wins. */}
           <Eyebrow suppressHydrationWarning>{longDate(now)}</Eyebrow>
@@ -253,70 +255,74 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         </div>
       </header>
 
-      <div className="stagger flex min-w-0 flex-col gap-4 xl:col-span-2">
-        {progress.profile ? null : (
-          <Prompt
-            id="setup-title"
-            icon={GraduationCap}
-            title="Make this plan yours"
-            text="Tell us your age, year, next exam and daily time. Four quick questions."
-            href="/welcome"
-            action="Set up my plan"
-          />
-        )}
-        {plan.mode === 'catch-up' ? (
-          <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
-        ) : null}
-        {progress.profile && !progress.profile.books ? (
-          <Prompt
-            id="books-title"
-            icon={Library}
-            title="Which books do you follow?"
-            text="Pick them once. Every topic then shows where to read it in your books."
-            href="/books"
-            action="Choose my books"
-          />
-        ) : null}
-        {first ? (
-          <UpNext
-            item={first}
-            poster={firstTopic?.poster ?? null}
-            summary={firstTopic?.summary ?? null}
-          />
-        ) : (
-          <Card tone="glass">
-            <EmptyState
-              icon={CircleCheck}
-              title="All done for today"
-              description="New reviews appear here when it is time to recall them."
-              action={
-                <Link href="/subjects" className={buttonClasses({ variant: 'secondary' })}>
-                  Browse the library
-                </Link>
-              }
-            />
-          </Card>
-        )}
-        {first || done.length > 0 ? (
-          <PlanCard
-            done={done}
-            items={plan.items}
-            planned={planned}
-            studied={minutesToday}
-            goal={plan.dailyMinutes}
-          />
-        ) : null}
-      </div>
-
-      <aside
-        aria-label="Your progress"
-        className="stagger flex min-w-0 flex-col gap-4 xl:sticky xl:top-8"
-      >
-        <StreakCard streak={streak} best={bestStreak(progress.activity)} week={week} />
-        <TimeRing minutes={minutesToday} goal={plan.dailyMinutes} />
-        <GoalsCard goals={upcomingGoals(progress, now)} />
-        <WeakSpots spots={weakSpots(progress, topics)} />
-      </aside>
+      <Panes
+        id="today"
+        label="Your progress"
+        main={
+          <div className="stagger flex min-w-0 flex-col gap-4">
+            {progress.profile ? null : (
+              <Prompt
+                id="setup-title"
+                icon={GraduationCap}
+                title="Make this plan yours"
+                text="Tell us your age, year, next exam and daily time. Four quick questions."
+                href="/welcome"
+                action="Set up my plan"
+              />
+            )}
+            {plan.mode === 'catch-up' ? (
+              <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
+            ) : null}
+            {progress.profile && !progress.profile.books ? (
+              <Prompt
+                id="books-title"
+                icon={Library}
+                title="Which books do you follow?"
+                text="Pick them once. Every topic then shows where to read it in your books."
+                href="/books"
+                action="Choose my books"
+              />
+            ) : null}
+            {first ? (
+              <UpNext
+                item={first}
+                poster={firstTopic?.poster ?? null}
+                summary={firstTopic?.summary ?? null}
+              />
+            ) : (
+              <Card tone="glass">
+                <EmptyState
+                  icon={CircleCheck}
+                  title="All done for today"
+                  description="New reviews appear here when it is time to recall them."
+                  action={
+                    <Link href="/subjects" className={buttonClasses({ variant: 'secondary' })}>
+                      Browse the library
+                    </Link>
+                  }
+                />
+              </Card>
+            )}
+            {first || done.length > 0 ? (
+              <PlanCard
+                done={done}
+                items={plan.items}
+                planned={planned}
+                studied={minutesToday}
+                goal={plan.dailyMinutes}
+              />
+            ) : null}
+          </div>
+        }
+        aside={
+          <div className="stagger flex min-w-0 flex-col gap-4">
+            <StreakCard streak={streak} best={bestStreak(progress.activity)} week={week} />
+            <TimeRing minutes={minutesToday} goal={plan.dailyMinutes} />
+            <GoalsCard goals={upcomingGoals(progress, now)} />
+            <WeakSpots spots={weakSpots(progress, topics)} />
+          </div>
+        }
+      />
     </div>
   );
 }

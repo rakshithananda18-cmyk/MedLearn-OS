@@ -56,10 +56,13 @@ export function mergeProgress(
     union(local.completedRevisits, account.completedRevisits),
     legacyFinished,
   );
+  // The copy changed last keeps its dates, days and topics.
+  const changed = (goal: StudyGoal) => Date.parse(goal.changedAt ?? goal.createdAt);
   const goals = new Map<string, StudyGoal>(local.goals.map((goal) => [goal.id, goal]));
   for (const goal of account.goals) {
     const mine = goals.get(goal.id);
-    goals.set(goal.id, mine ? { ...goal, done: union(goal.done, mine.done) } : goal);
+    const newer = mine && changed(mine) > changed(goal) ? mine : goal;
+    goals.set(goal.id, mine ? { ...newer, done: union(goal.done, mine.done) } : goal);
   }
   const notes = { ...local.notes };
   for (const [slug, note] of Object.entries(account.notes)) {

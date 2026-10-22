@@ -1,17 +1,18 @@
 'use client';
 
 import { cx, Icon, type IconGlyph } from '@medlearn/ui';
-import { BookOpen, Box, ClipboardCheck, House } from '@medlearn/ui/icons';
+import { BookOpen, Box, CalendarDays, ClipboardCheck, House } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Avatar } from '@/features/profile/Avatar';
 import { useProgress } from '@/features/progress/store';
 
-// ponytail: four destinations; recall is reached from Today (its tile and its plan), progress
+// ponytail: five destinations; recall is reached from Today (its tile and its plan), progress
 // lives in the library, and the profile is the student's own mark at the top of the rail.
 const ITEMS: Array<{ href: string; label: string; icon: IconGlyph; also?: string[] }> = [
   { href: '/today', label: 'Today', icon: House, also: ['/revise'] },
+  { href: '/plan', label: 'Plan', icon: CalendarDays },
   {
     href: '/subjects',
     label: 'Library',
