@@ -34,6 +34,7 @@ export const BOOKS: Book[] = [
     title: 'Guyton and Hall Textbook of Medical Physiology',
     shortTitle: 'Guyton and Hall',
     authors: 'John E. Hall',
+    edition: '14th',
   },
   {
     id: 'ak-jain',

@@ -35,7 +35,7 @@ describe('bundled content', () => {
 
   it('offers the exam diagram drill only for topics with a diagram to build', () => {
     const drills = TOPICS.map(hasDrill);
-    expect(drills).toEqual([true, false, ...Array.from({ length: 143 }, () => true), false]);
+    expect(drills).toEqual([true, false, ...Array.from({ length: 151 }, () => true), false]);
     expect(PLANNABLE_TOPICS.map((topic) => topic.drillMinutes)).toEqual(
       drills.map((drill) => (drill ? DRILL_MINUTES : null)),
     );
@@ -50,11 +50,12 @@ describe('bundled content', () => {
     expect(PLANNABLE_TOPICS.filter((topic) => topic.poster).length).toBeGreaterThan(0);
   });
 
-  it('gives every anatomy topic a 3D view', () => {
+  it('gives every anatomy topic a 3D view and a place on the body', () => {
     const anatomy = TOPICS.filter((topic) => topic.subjectSlug === 'anatomy');
     expect(anatomy.length).toBeGreaterThan(0);
     for (const topic of anatomy) {
       expect(topic.visual.kind === 'path' && topic.visual.model3d, topic.slug).toBeTruthy();
+      expect(topic.regions.length, topic.slug).toBeGreaterThan(0);
     }
   });
 

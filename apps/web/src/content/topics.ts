@@ -12,6 +12,7 @@ import { analCanal } from './anal-canal';
 import { ankleTibiofibularJoints } from './ankle-tibiofibular-joints';
 import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
+import { apoptosis } from './apoptosis';
 import { appendix } from './appendix';
 import { armBackRadial } from './arm-back-radial';
 import { armFront } from './arm-front';
@@ -21,11 +22,14 @@ import { axillaryLymphNodes } from './axillary-lymph-nodes';
 import { axillaryVessels } from './axillary-vessels';
 import { backMuscles } from './back-muscles';
 import { biliaryApparatus } from './biliary-apparatus';
+import { bodyFluidCompartments } from './body-fluid-compartments';
 import { bonyPelvis } from './bony-pelvis';
 import { brachialPlexus } from './brachial-plexus';
 import { bronchopulmonarySegments } from './bronchopulmonary-segments';
 import { calfMuscles } from './calf-muscles';
 import { carpalTunnel } from './carpal-tunnel';
+import { cellOrganelles } from './cell-organelles';
+import { cellSignalling } from './cell-signalling';
 import { coeliacTrunk } from './coeliac-trunk';
 import { coronaryCirculation } from './coronary-circulation';
 import { cubitalFossa } from './cubital-fossa';
@@ -52,6 +56,7 @@ import { heartChambers } from './heart-chambers';
 import { heartExternalFeatures } from './heart-external-features';
 import { heartValvesConduction } from './heart-valves-conduction';
 import { hipJoint } from './hip-joint';
+import { homeostasis } from './homeostasis';
 import { inferiorVenaCava } from './inferior-vena-cava';
 import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
@@ -83,9 +88,11 @@ import { lungRootBronchialTree } from './lung-root-bronchial-tree';
 import { lungs } from './lungs';
 import { maleUrogenitalRegion } from './male-urogenital-region';
 import { mediastinum } from './mediastinum';
+import { membraneTransport } from './membrane-transport';
 import { mesentericVessels } from './mesenteric-vessels';
 import { nerveInjuries } from './nerve-injuries';
 import { oesophagus } from './oesophagus';
+import { osmosisTonicity } from './osmosis-tonicity';
 import { ovaryUterineTube } from './ovary-uterine-tube';
 import { oxygenCurve } from './oxygen-curve';
 import { palmSpaces } from './palm-spaces';
@@ -101,6 +108,7 @@ import { perineum } from './perineum';
 import { peritonealFolds } from './peritoneal-folds';
 import { peritonealSpaces } from './peritoneal-spaces';
 import { peritoneum } from './peritoneum';
+import { phBuffers } from './ph-buffers';
 import { plantarVesselsNerves } from './plantar-vessels-nerves';
 import { pleura } from './pleura';
 import { poplitealFossa } from './popliteal-fossa';
@@ -302,6 +310,15 @@ export const TOPICS: Topic[] = [
   sacralPlexus,
   pelvicDiaphragm,
   pelvicJoints,
+  // Physiology, in NMC first-year order.
+  cellOrganelles,
+  homeostasis,
+  cellSignalling,
+  apoptosis,
+  membraneTransport,
+  osmosisTonicity,
+  bodyFluidCompartments,
+  phBuffers,
   oxygenCurve,
 ];
 
