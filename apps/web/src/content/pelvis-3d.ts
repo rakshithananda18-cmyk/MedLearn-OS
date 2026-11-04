@@ -5,11 +5,11 @@ import type { CameraStop, ModelPart, ModelTrace, Point3 } from '@medlearn/schema
 // (positive), Z up.
 
 // Model files are cached forever by URL (public/sw.js): bump the version when the model changes.
-export const PELVIS_MODEL_SRC = '/models/pelvis.glb?v=1';
+export const PELVIS_MODEL_SRC = '/models/pelvis.glb?v=2';
 
 /** Credit for the model, shown wherever it is. */
 export const PELVIS_MODEL_CREDIT =
-  'Bones, pelvic floor, sphincter, organs and vessels: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Pelvic ligaments, pubic symphysis, ductus deferens and pudendal nerves: Z-Anatomy, CC BY-SA 4.0. The body is male, and the penis is cut short below its root. Neither set has the superficial perineal muscles, the perineal membrane, the perineal body or the coccyx: these are drawn as lines.';
+  'Bones, pelvic floor, sphincter, organs and vessels: BodyParts3D, © The Database Center for Life Science, CC BY 4.0 (files marked CC BY-SA 2.1 JP). Pelvic ligaments, pubic symphysis, ductus deferens and the pudendal, sciatic, superior gluteal and obturator nerves: Z-Anatomy, CC BY-SA 4.0. The body is male, and the penis is cut short below its root. Neither set has the superficial perineal muscles, the perineal membrane, the perineal body, the coccyx, the sacral roots or the pelvic autonomic nerves: these are drawn as lines.';
 
 /**
  * Every mesh in the model file (built by scripts/models/build-models.mjs), by part id, with what a
@@ -181,6 +181,24 @@ const PARTS = {
     about:
       'From the sacral plexus out below piriformis, across the sacrospinous ligament beside the ischial spine, in through the lesser sciatic foramen to the pudendal canal; the nerve of the perineum.',
   },
+  'sciatic-nerves': {
+    name: 'Sciatic nerves (L4 to S3)',
+    kind: 'nerve',
+    about:
+      'The largest branch of the sacral plexus: formed on the front of piriformis, it leaves the pelvis through the greater sciatic foramen below piriformis for the back of the thigh.',
+  },
+  'superior-gluteal-nerves': {
+    name: 'Superior gluteal nerves (L4, L5, S1)',
+    kind: 'nerve',
+    about:
+      'From the back of the sacral plexus out through the greater sciatic foramen above piriformis, with the superior gluteal vessels, to gluteus medius, minimus and tensor fasciae latae.',
+  },
+  'obturator-nerves': {
+    name: 'Obturator nerves (L2 to L4)',
+    kind: 'nerve',
+    about:
+      'From the lumbar plexus, down medial to psoas and along the side wall of the pelvis above the obturator vessels, out through the obturator canal to the adductors of the thigh.',
+  },
 } satisfies Record<string, Omit<ModelPart, 'id'>>;
 
 export type PelvisPartId = keyof typeof PARTS;
@@ -326,6 +344,102 @@ export const TRACES = {
       [-45, -38, 796],
     ]),
   },
+  /** The lumbosacral trunk (L4, L5): down over the sacral ala, in front of the sacroiliac joint,
+   * to join S1. */
+  lumbosacralTrunk: {
+    kind: 'nerve',
+    paths: both([
+      [-36, -72, 960],
+      [-38, -62, 935],
+      [-35, -52, 915],
+    ]),
+  },
+  /** The ventral rami of S1 to S4, each from its anterior sacral foramen out over piriformis to
+   * the plexus that becomes the sciatic nerve. */
+  sacralRami: {
+    kind: 'nerve',
+    paths: [
+      ...both([
+        [-22, -62, 886],
+        [-34, -50, 874],
+        [-40, -40, 860],
+      ]),
+      ...both([
+        [-22, -32, 868],
+        [-34, -36, 860],
+        [-44, -35, 852],
+      ]),
+      ...both([
+        [-20, -23, 852],
+        [-34, -28, 848],
+        [-48, -32, 844],
+      ]),
+      ...both([
+        [-18, -21, 836],
+        [-30, -24, 834],
+        [-44, -29, 836],
+      ]),
+    ],
+  },
+  /** The pelvic splanchnic nerves from S2, S3 and S4 forwards to the inferior hypogastric plexus
+   * beside the rectum. */
+  pelvicSplanchnic: {
+    kind: 'nerve',
+    paths: [
+      ...both([
+        [-24, -30, 866],
+        [-24, -40, 852],
+        [-22, -45, 840],
+      ]),
+      ...both([
+        [-22, -23, 851],
+        [-23, -36, 845],
+        [-22, -45, 840],
+      ]),
+      ...both([
+        [-20, -21, 835],
+        [-22, -34, 836],
+        [-22, -45, 840],
+      ]),
+    ],
+  },
+  /** The hypogastric nerves: from the superior hypogastric plexus in front of L5 and the
+   * promontory down beside the rectum to the inferior hypogastric plexus. */
+  hypogastricNerves: {
+    kind: 'nerve',
+    paths: both([
+      [0, -102, 940],
+      [-12, -90, 905],
+      [-20, -68, 875],
+      [-22, -45, 840],
+    ]),
+  },
+  /** The inferior hypogastric plexus, a sheet of nerves on each side of the rectum. */
+  inferiorHypogastric: {
+    kind: 'nerve',
+    paths: both([
+      [-22, -50, 850],
+      [-24, -42, 836],
+      [-22, -52, 822],
+      [-24, -60, 832],
+      [-22, -50, 850],
+    ]),
+  },
+  /** The pelvic sympathetic trunks, down the front of the sacrum medial to the anterior foramina
+   * with their sacral ganglia, joining in front of the coccyx at the ganglion impar. */
+  sympatheticTrunk: {
+    kind: 'nerve',
+    paths: both([
+      [-17, -82, 912],
+      [-14, -76, 893],
+      [-14, -52, 876],
+      [-13, -27, 860],
+      [-12, -22, 842],
+      [-10, -20, 825],
+      [-7, -16, 805],
+      [0, -16, 772],
+    ]),
+  },
 } satisfies Record<string, Omit<ModelTrace, 'id'>>;
 
 /** The perineum from below, the thighs apart. */
@@ -416,4 +530,54 @@ export const PROSTATE_SIDE: CameraStop = {
     'Below the neck of the bladder and on the levator ani, behind the lower pubic symphysis and in front of the rectum; the urethra runs down through it, then through the perineal membrane into the bulb.',
   target: [0, -82, 782],
   position: [300, -220, 700],
+};
+
+/** The right side wall of the pelvis from the left, the left hip bone see-through. */
+export const PELVIC_WALL_MEDIAL: CameraStop = {
+  id: 'pelvic-wall-medial',
+  title: 'The side wall from within',
+  description:
+    'The internal iliac artery dividing at the greater sciatic notch: its branches run on obturator internus and piriformis, with the sacral plexus behind them on piriformis and the obturator nerve along the wall above the obturator vessels.',
+  target: [-40, -55, 860],
+  position: [430, -170, 910],
+};
+
+/** The front of the sacrum and the sacral plexus, from in front and above. */
+export const SACRAL_PLEXUS_FRONT: CameraStop = {
+  id: 'sacral-plexus-front',
+  title: 'The sacral plexus',
+  description:
+    'The lumbosacral trunk comes down over the ala to join S1; the ventral rami of S1 to S4 leave the anterior sacral foramina and converge on piriformis into the sciatic nerve, with the sympathetic trunks medial to the foramina.',
+  target: [0, -45, 865],
+  position: [0, -560, 1010],
+};
+
+/** The rectum and anal canal from the left, the pelvis see-through. */
+export const RECTUM_SIDE: CameraStop = {
+  id: 'rectum-side',
+  title: 'The rectum from the left',
+  description:
+    'The rectum follows the hollow of the sacrum and coccyx down to the anorectal junction, where it bends back sharply (the perineal flexure) through the levator ani into the anal canal.',
+  target: [0, -40, 815],
+  position: [430, -70, 830],
+};
+
+/** The pelvic floor from above, looking down into the pelvis. */
+export const PELVIC_FLOOR_ABOVE: CameraStop = {
+  id: 'pelvic-floor-above',
+  title: 'The floor from above',
+  description:
+    'The levator ani and coccygeus slope down from the side walls to the midline like a gutter: from the back of the pubis, the tendinous arch on obturator internus and the ischial spine, to the perineal body, the anococcygeal ligament and the coccyx.',
+  target: [0, -55, 800],
+  position: [0, -300, 1260],
+};
+
+/** The sacroiliac joints and their ligaments from behind. */
+export const SACROILIAC_BEHIND: CameraStop = {
+  id: 'sacroiliac-behind',
+  title: 'The joints from behind',
+  description:
+    'The sacrum wedged between the hip bones at the sacroiliac joints; below them the sacrotuberous ligaments run to the ischial tuberosities and the sacrospinous ligaments to the ischial spines, closing the sciatic notches into foramina.',
+  target: [0, 0, 870],
+  position: [0, 650, 960],
 };

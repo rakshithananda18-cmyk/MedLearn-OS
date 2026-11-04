@@ -21,7 +21,7 @@ export const prostate: Topic = {
     'Where the prostate lies, its apex, base and surfaces and what each touches, its lobes and zones, its two capsules with the venous plexus between them, what runs through it, its supply, and enlargement and cancer.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

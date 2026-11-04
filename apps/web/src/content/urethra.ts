@@ -21,7 +21,7 @@ export const urethra: Topic = {
     'The male urethra’s preprostatic, prostatic, membranous and spongy parts with what opens into each, its narrow and wide places and curves, the two sphincter mechanisms, the short female urethra, and urethral injuries.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

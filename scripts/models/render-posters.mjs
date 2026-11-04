@@ -160,6 +160,12 @@ export const POSTERS = [
   { name: 'uterus', path: '/studio?topic=uterus' },
   { name: 'uterine-supports', path: '/studio?topic=uterine-supports' },
   { name: 'vagina', path: '/studio?topic=vagina' },
+  { name: 'rectum', path: '/studio?topic=rectum' },
+  { name: 'anal-canal', path: '/studio?topic=anal-canal' },
+  { name: 'internal-iliac-vessels', path: '/studio?topic=internal-iliac-vessels' },
+  { name: 'sacral-plexus', path: '/studio?topic=sacral-plexus' },
+  { name: 'pelvic-diaphragm', path: '/studio?topic=pelvic-diaphragm' },
+  { name: 'pelvic-joints', path: '/studio?topic=pelvic-joints' },
 ];
 
 // Only the model: no app chrome, no studio controls or labels, and no backgrounds.

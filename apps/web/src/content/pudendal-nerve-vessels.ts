@@ -21,7 +21,7 @@ export const pudendalNerveVessels: Topic = {
     'The pudendal canal, and how the pudendal nerve and internal pudendal artery leave the pelvis, hook round the ischial spine into the perineum, branch there, and are blocked for childbirth.',
   estimatedMinutes: 12,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',

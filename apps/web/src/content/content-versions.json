@@ -500,44 +500,44 @@
     "digest": "53aa0aaead5f1890"
   },
   "perineum": {
-    "version": "0.1.0",
-    "digest": "c23ea6d556d1572e"
+    "version": "0.1.1",
+    "digest": "3d7ea111e6047de1"
   },
   "ischioanal-fossa": {
-    "version": "0.1.0",
-    "digest": "76af9092435504c4"
+    "version": "0.1.1",
+    "digest": "0cd667d75a43ef2f"
   },
   "male-urogenital-region": {
-    "version": "0.1.0",
-    "digest": "9bc923142a157ec6"
+    "version": "0.1.1",
+    "digest": "7731dbbcf1b5386d"
   },
   "female-perineum": {
     "version": "0.1.1",
     "digest": "c6a97205e4f0eb54"
   },
   "pudendal-nerve-vessels": {
-    "version": "0.1.0",
-    "digest": "f64917cb19fc344c"
+    "version": "0.1.1",
+    "digest": "f8d09316e0a09891"
   },
   "pelvic-cavity": {
-    "version": "0.1.0",
-    "digest": "6fd0cb12e2dc006e"
+    "version": "0.1.1",
+    "digest": "2dcf858dca4f5a34"
   },
   "urinary-bladder": {
-    "version": "0.1.0",
-    "digest": "1cd4712b60a62aca"
+    "version": "0.1.1",
+    "digest": "1e7acf41ffa2fc6c"
   },
   "urethra": {
-    "version": "0.1.0",
-    "digest": "285aea768d0157e4"
+    "version": "0.1.1",
+    "digest": "cea00835d8a1b051"
   },
   "prostate": {
-    "version": "0.1.0",
-    "digest": "71abaee4eef66e25"
+    "version": "0.1.1",
+    "digest": "e440e10fcaa7720a"
   },
   "ductus-deferens": {
-    "version": "0.1.0",
-    "digest": "93084ccbd31ea2ce"
+    "version": "0.1.1",
+    "digest": "f210867f59168fef"
   },
   "ovary-uterine-tube": {
     "version": "0.1.0",
@@ -554,6 +554,30 @@
   "vagina": {
     "version": "0.1.0",
     "digest": "d031818201af4dc2"
+  },
+  "rectum": {
+    "version": "0.1.0",
+    "digest": "33438c6f069e8148"
+  },
+  "anal-canal": {
+    "version": "0.1.0",
+    "digest": "afaec94daeabb729"
+  },
+  "internal-iliac-vessels": {
+    "version": "0.1.0",
+    "digest": "5c32eb0fa4367c60"
+  },
+  "sacral-plexus": {
+    "version": "0.1.0",
+    "digest": "ffce1d99416eaaaf"
+  },
+  "pelvic-diaphragm": {
+    "version": "0.1.0",
+    "digest": "2458ce51b38b24b3"
+  },
+  "pelvic-joints": {
+    "version": "0.1.0",
+    "digest": "07546f57435a08e2"
   },
   "oxygen-haemoglobin-curve": {
     "version": "0.1.0",

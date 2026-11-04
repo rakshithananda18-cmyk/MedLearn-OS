@@ -8,6 +8,7 @@ import { abdominalAutonomicNerves } from './abdominal-autonomic-nerves';
 import { abdominalRegions } from './abdominal-regions';
 import { abdominalWallMuscles } from './abdominal-wall-muscles';
 import { abdominalWallSuperficial } from './abdominal-wall-superficial';
+import { analCanal } from './anal-canal';
 import { ankleTibiofibularJoints } from './ankle-tibiofibular-joints';
 import { anteriorTibialDorsalisPedis } from './anterior-tibial-dorsalis-pedis';
 import { aorta } from './aorta';
@@ -54,6 +55,7 @@ import { hipJoint } from './hip-joint';
 import { inferiorVenaCava } from './inferior-vena-cava';
 import { inguinalCanal } from './inguinal-canal';
 import { intercostalSpaces } from './intercostal-spaces';
+import { internalIliacVessels } from './internal-iliac-vessels';
 import { internalThoracicAzygos } from './internal-thoracic-azygos';
 import { intervertebralDisc } from './intervertebral-disc';
 import { ischioanalFossa } from './ischioanal-fossa';
@@ -91,6 +93,8 @@ import { palmVesselsNerves } from './palm-vessels-nerves';
 import { pancreas } from './pancreas';
 import { pectoralRegion } from './pectoral-region';
 import { pelvicCavity } from './pelvic-cavity';
+import { pelvicDiaphragm } from './pelvic-diaphragm';
+import { pelvicJoints } from './pelvic-joints';
 import { penis } from './penis';
 import { pericardium } from './pericardium';
 import { perineum } from './perineum';
@@ -107,8 +111,10 @@ import { posteriorTibialTibialNerve } from './posterior-tibial-tibial-nerve';
 import { prostate } from './prostate';
 import { pudendalNerveVessels } from './pudendal-nerve-vessels';
 import { radioulnarJoints } from './radioulnar-joints';
+import { rectum } from './rectum';
 import { rectusSheath } from './rectus-sheath';
 import { ribs } from './ribs';
+import { sacralPlexus } from './sacral-plexus';
 import { scapularSpaces } from './scapular-spaces';
 import { sciaticNerveThigh } from './sciatic-nerve-thigh';
 import { scrotumTestis } from './scrotum-testis';
@@ -290,6 +296,12 @@ export const TOPICS: Topic[] = [
   uterus,
   uterineSupports,
   vagina,
+  rectum,
+  analCanal,
+  internalIliacVessels,
+  sacralPlexus,
+  pelvicDiaphragm,
+  pelvicJoints,
   oxygenCurve,
 ];
 

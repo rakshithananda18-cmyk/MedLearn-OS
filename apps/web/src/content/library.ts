@@ -90,6 +90,8 @@ const BD_SECTIONS: Record<string, Record<number, string>> = {
     30: 'Urinary bladder and urethra',
     31: 'Female reproductive organs',
     32: 'Male internal genital organs',
+    33: 'Rectum and anal canal',
+    34: 'Walls of the pelvis',
   },
 };
 

@@ -21,7 +21,7 @@ export const ductusDeferens: Topic = {
     'The ductus deferens from the epididymis through the scrotum, inguinal canal and pelvis to the base of the prostate, the seminal vesicles behind the bladder, the ejaculatory ducts they form, and vasectomy.',
   estimatedMinutes: 10,
   reviewed: false,
-  version: '0.1.0',
+  version: '0.1.1',
   sources: [
     {
       title: 'Written by the MedLearn OS content team',
