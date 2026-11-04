@@ -314,10 +314,10 @@
   --ml-focus: #0e7c86;
   --ml-scrim: rgb(15 23 32 / 0.5);
   /* Calm Sky: display text, thin rings and the sky backdrop. Gold ink on the sky is about 5:1. */
-  --ml-gold: #b8923a;
+  --ml-gold: #826020;
   --ml-gold-ink: #7a5a14;
   --ml-gold-ink-light: #a47c2c;
-  --ml-glass: rgb(255 255 255 / 0.74);
+  --ml-glass: rgb(255 255 255 / 0.92);
   --ml-glass-border: rgb(255 255 255 / 0.9);
   --ml-sky-top: #cfe2ee;
   --ml-sky-mid: #edf3f5;
@@ -362,7 +362,7 @@
   --ml-gold: #d9b56a;
   --ml-gold-ink: #e2c784;
   --ml-gold-ink-light: #f6e3b4;
-  --ml-glass: rgb(255 255 255 / 0.05);
+  --ml-glass: rgb(30 36 41 / 0.94);
   --ml-glass-border: rgb(255 255 255 / 0.1);
   --ml-sky-top: #15171c;
   --ml-sky-mid: #0e1013;
@@ -476,11 +476,13 @@
 
 /* Room for the phone tab bar and the home indicator. */
 @utility pb-tabbar {
-  padding-bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom));
+  padding-bottom: var(--app-nav-height, calc(var(--spacing-16) + env(safe-area-inset-bottom)));
 }
 
 @utility bottom-tabbar {
-  bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom) + var(--spacing-3));
+  bottom: calc(
+    var(--app-nav-height, calc(var(--spacing-16) + env(safe-area-inset-bottom))) + var(--spacing-3)
+  );
 }
 
 @utility pb-safe {
@@ -493,7 +495,9 @@
 
 /* The 3D studio fills the screen above the phone tab bar (and all of it beside the side rail). */
 @utility h-studio {
-  height: calc(100dvh - var(--spacing-16) - env(safe-area-inset-bottom));
+  height: calc(
+    100dvh - var(--app-nav-height, calc(var(--spacing-16) + env(safe-area-inset-bottom)))
+  );
 }
 
 /* A topic's 3D model on its pedestal: tall enough to read, short enough to leave room below. The
@@ -573,12 +577,12 @@
 }
 /*
  * Lessons and drills on wide screens: the header across the top, the diagram's stage on the
- * left, the step on the right with its controls under it.
+ * left with its controls directly below, and the explanation on the right.
  */
 @utility grid-study {
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas: 'head head' 'stage panel' 'stage bar';
+  grid-template-areas: 'head head' 'stage panel' 'bar panel';
 }
 
 @utility area-stage {

@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useProgress } from '@/features/progress/store';
@@ -15,11 +16,13 @@ const hasSession = () => document.cookie.includes('-auth-token');
  * phone that has a session but no local progress. Renders nothing.
  */
 export function ProgressSync() {
+  const pathname = usePathname();
   const progress = useProgress();
   const adult = progress.profile?.adult === true;
   const fresh = progress.updatedAt === null;
 
   useEffect(() => {
+    if (pathname === '/facilitator') return undefined;
     if (adult) return startProgressSync();
     if (fresh && hasSession()) {
       const controller = new AbortController();
@@ -33,6 +36,6 @@ export function ProgressSync() {
       return () => controller.abort();
     }
     return undefined;
-  }, [adult, fresh]);
+  }, [adult, fresh, pathname]);
   return null;
 }

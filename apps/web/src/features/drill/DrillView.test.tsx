@@ -55,9 +55,13 @@ describe('DrillView', () => {
         await userEvent.click(screen.getByRole('button', { name: labelOf(id) }));
       }
       const next = drill[index + 1];
-      if (next) await userEvent.click(screen.getByRole('button', { name: `Next: ${next.title}` }));
+      if (next) {
+        await userEvent.click(screen.getByRole('button', { name: `Next: ${next.title}` }));
+        expect(screen.getByRole('heading', { name: next.title })).toHaveFocus();
+      }
     }
     expect(screen.getByRole('heading', { name: 'Diagram built' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Diagram built' })).toHaveFocus();
     expect(screen.getByText(/Every label right first time/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
     expect(JSON.parse(localStorage.getItem('ml-progress-v1') ?? '{}').completedDrills).toEqual([

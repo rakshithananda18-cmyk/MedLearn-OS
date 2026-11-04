@@ -8,7 +8,7 @@ function Part({ title, children }: Readonly<{ title: string; children: ReactNode
   return (
     <section
       aria-label={title}
-      className="flex flex-col gap-2 rounded-xl border border-glass-border bg-glass p-4 shadow-glass"
+      className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 break-words"
     >
       <h2 className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">{title}</h2>
       {children}

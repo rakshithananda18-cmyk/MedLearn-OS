@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { DeckCard, TopicSummary } from '@/content/topics';
 import { ContentTrust } from '@/features/content/ContentTrust';
 import { rateCard, useProgress } from '@/features/progress/store';
-import { TaskColumns } from '@/features/shell/Screen';
 import { StudyLoadState } from '@/features/study/StudyLoadState';
 import { useStudyContent } from '@/features/study/useStudyContent';
 
@@ -54,7 +53,7 @@ function ReviseIntro({
     <>
       <div className="flex flex-col gap-3">
         <Eyebrow>Revise{topic ? ` · ${topic.title}` : ''}</Eyebrow>
-        <Display size="lg">
+        <Display size="md">
           Recall, <em>then check</em>
         </Display>
         <Text tone="muted">{reviewStatus(remainingCount, limit)}</Text>
@@ -154,22 +153,19 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
   const backLabel = topic ? `Back to ${topic.title}` : 'Back to Today';
 
   return (
-    <TaskColumns
-      intro={
-        <ReviseIntro
-          topic={topic}
-          showing={showing}
-          remainingCount={remaining.length}
-          limit={limit}
-          backHref={backHref}
-          backLabel={backLabel}
-        />
-      }
-    >
+    <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-4">
+      <ReviseIntro
+        topic={topic}
+        showing={showing}
+        remainingCount={remaining.length}
+        limit={limit}
+        backHref={backHref}
+        backLabel={backLabel}
+      />
       {content.loading || content.error ? (
         <StudyLoadState error={content.error} onRetry={content.retry} />
       ) : showing ? (
-        <Card tone="glass" className="flex flex-col gap-3">
+        <Card className="flex min-w-0 flex-col gap-3">
           {showing.fromMistake ? <Eyebrow>From a question you missed</Eyebrow> : null}
           <RecallCard
             key={showing.id}
@@ -195,6 +191,6 @@ export function ReviseView({ topics, cards, topic, limit }: Readonly<ReviseViewP
           backLabel={backLabel}
         />
       )}
-    </TaskColumns>
+    </div>
   );
 }

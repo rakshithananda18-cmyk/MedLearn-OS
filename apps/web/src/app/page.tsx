@@ -1,5 +1,4 @@
-import { Card, Display, Eyebrow, Pill, SkyBackdrop, Text, ThemeToggle } from '@medlearn/ui';
-import { Clock, PenLine, RotateCcw } from '@medlearn/ui/icons';
+import { Card, Display, Eyebrow, SkyBackdrop, Text, ThemeToggle } from '@medlearn/ui';
 import { DissociationCurve } from '@medlearn/visuals';
 import Link from 'next/link';
 
@@ -14,8 +13,8 @@ export default function HomePage() {
       <SkyBackdrop />
       <main className="mx-auto flex min-h-dvh max-w-6xl flex-col px-4 py-8 md:px-8">
         <p className="font-display text-2xl tracking-display text-gold">MedLearn OS</p>
-        <div className="grid flex-1 items-center gap-12 py-12 lg:grid-cols-2">
-          <div className="flex animate-rise flex-col items-start gap-6">
+        <div className="grid flex-1 items-center gap-8 py-8 md:py-12 lg:grid-cols-2">
+          <div className="flex animate-rise flex-col items-start gap-4">
             <Eyebrow>For first-year MBBS</Eyebrow>
             <Display>
               Learn medicine, <em>visually</em>
@@ -24,16 +23,15 @@ export default function HomePage() {
               One calm plan a day: visual lessons, practice questions and spaced recall, sized to
               the time you have.
             </Text>
-            <div className="flex flex-wrap gap-2">
-              <Pill icon={Clock}>15-minute lessons</Pill>
-              <Pill icon={RotateCcw}>Spaced recall</Pill>
-              <Pill icon={PenLine}>Exam diagrams</Pill>
-            </div>
             <StartLink />
+            <Text size="sm" tone="muted">
+              Current teaching preview centres on first-year anatomy. Each topic shows its review
+              status and sources.
+            </Text>
           </div>
           <div className="flex flex-col items-center gap-4">
-            <div className="w-full max-w-md animate-float">
-              <Card tone="glass">
+            <div className="w-full max-w-md">
+              <Card>
                 <DissociationCurve
                   conditions={PREVIEW}
                   title="Preview: the oxygen–haemoglobin curve shifting right in exercising muscle"

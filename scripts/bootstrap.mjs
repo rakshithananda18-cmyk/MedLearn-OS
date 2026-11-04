@@ -1,17 +1,9 @@
 // One-time (and repeatable) local setup: checks prerequisites, starts the local
 // Supabase stack, writes env files from it, rebuilds the database with seed data, and
 // installs the browser used by end-to-end tests. Re-running resets local data only.
-import { capture, fail, isPortFree, requireNode, run, step, waitFor } from './lib/cli.mjs';
+import { isPortFree, requireNode, run, step, waitFor } from './lib/cli.mjs';
 import { ensureDocker } from './lib/docker.mjs';
-import { upsertEnvFile } from './lib/env-file.mjs';
-
-const WEB_ENV = 'apps/web/.env.local';
-const TEST_ENV = '.env.test.local';
-
-function readSupabaseStatus() {
-  const output = capture('pnpm', ['exec', 'supabase', 'status', '-o', 'json']);
-  return JSON.parse(output.slice(output.indexOf('{')));
-}
+import { configureLocalEnv } from './lib/local-env.mjs';
 
 step('Checking prerequisites');
 requireNode(24);
@@ -33,15 +25,8 @@ if (run('pnpm', ['db:start'], { allowFailure: true }) !== 0) {
 }
 
 step('Writing environment files');
-const status = readSupabaseStatus();
-const anonKey = status.PUBLISHABLE_KEY ?? status.ANON_KEY;
-if (!status.API_URL || !anonKey) {
-  fail('Could not read API_URL and the public key from `supabase status`.');
-}
-const values = { SUPABASE_URL: status.API_URL, SUPABASE_ANON_KEY: anonKey };
-upsertEnvFile(WEB_ENV, values);
-upsertEnvFile(TEST_ENV, { ...values, LOG_LEVEL: 'warn' });
-console.log(`  ${WEB_ENV}\n  ${TEST_ENV}`);
+configureLocalEnv();
+console.log('  apps/web/.env.local\n  .env.test.local');
 
 step('Rebuilding the local database from migrations and seed data');
 run('pnpm', ['exec', 'supabase', 'db', 'reset']);

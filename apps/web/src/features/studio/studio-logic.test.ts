@@ -5,6 +5,7 @@ import { studioTopics } from '@/content/studio';
 import { structureInfo, structuresOf } from './knowledge';
 import {
   answerQuiz,
+  choicesFor,
   hintQuiz,
   MAX_HINTS,
   milestone,
@@ -99,6 +100,34 @@ describe('Find it', () => {
     const wrong = answerQuiz(start, 'c', pool, first);
     expect(wrong).toMatchObject({ targetId: start.targetId, streak: 0, best: 5, picked: 'c' });
     expect(skipQuiz(wrong, pool, first)).toMatchObject({ score: 1, streak: 0, last: null });
+  });
+});
+
+describe('Name it', () => {
+  const pool = ['a', 'b', 'c', 'd', 'e'];
+  const first = () => 0;
+
+  it('offers the right name among three others, each once', () => {
+    const offered = choicesFor('c', pool, Math.random);
+    expect(offered).toHaveLength(4);
+    expect(offered).toContain('c');
+    expect(new Set(offered).size).toBe(4);
+    // A short pool offers what it has.
+    expect(choicesFor('a', ['a', 'b'], first).sort()).toEqual(['a', 'b']);
+  });
+
+  it('asks with names offered, scores half after one wrong name, and offers new names after', () => {
+    const start = startQuiz(pool, 0, first, 'name');
+    expect(start).toMatchObject({ kind: 'name', targetId: 'a' });
+    expect(start.choices).toContain('a');
+    const wrong = answerQuiz(start, 'b', pool, first);
+    expect(wrong).toMatchObject({ last: 'wrong', picked: 'b', targetId: 'a' });
+    const right = answerQuiz(wrong, 'a', pool, first);
+    expect(right).toMatchObject({ kind: 'name', score: 0.5, targetId: 'b' });
+    expect(right.choices).toContain('b');
+    expect(skipQuiz(right, pool, first).choices).toContain(skipQuiz(right, pool, first).targetId);
+    // "Find it" offers no names.
+    expect(startQuiz(pool, 0, first).choices).toEqual([]);
   });
 });
 

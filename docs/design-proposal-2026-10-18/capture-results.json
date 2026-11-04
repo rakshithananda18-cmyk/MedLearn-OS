@@ -1,0 +1,1932 @@
+{
+  "screens": [
+    {
+      "page": "today",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 567.03125,
+          "bottom": 613.03125
+        },
+        {
+          "text": "Adjust daily goal",
+          "top": 467.8125,
+          "bottom": 511.8125
+        },
+        {
+          "text": "Start recall",
+          "top": 737.578125,
+          "bottom": 784.671875
+        },
+        {
+          "text": "Practise",
+          "top": 820.765625,
+          "bottom": 867.859375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "plans",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 307.71875,
+          "bottom": 353.71875
+        },
+        {
+          "text": "New plan",
+          "top": 410.21875,
+          "bottom": 457.3125
+        },
+        {
+          "text": "Open calendar",
+          "top": 660.390625,
+          "bottom": 707.484375
+        },
+        {
+          "text": "View plan",
+          "top": 660.390625,
+          "bottom": 707.484375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "calendar",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 386.53125,
+          "bottom": 432.53125
+        },
+        {
+          "text": "Topic overview",
+          "top": 387.53125,
+          "bottom": 431.53125
+        },
+        {
+          "text": "Previous",
+          "top": 479.53125,
+          "bottom": 526.625
+        },
+        {
+          "text": "Next",
+          "top": 479.53125,
+          "bottom": 526.625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "builder",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to topics",
+          "top": 658.3125,
+          "bottom": 702.3125
+        },
+        {
+          "text": "Review plan",
+          "top": 657.3125,
+          "bottom": 703.3125
+        },
+        {
+          "text": "Cancel draft",
+          "top": 548.90625,
+          "bottom": 592.90625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "ai",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Revise draft",
+          "top": 641.71875,
+          "bottom": 688.8125
+        },
+        {
+          "text": "Edit",
+          "top": 407.625,
+          "bottom": 451.625
+        },
+        {
+          "text": "Edit",
+          "top": 492.8125,
+          "bottom": 536.8125
+        },
+        {
+          "text": "Edit",
+          "top": 578,
+          "bottom": 622
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "library",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "top": 238.46875,
+          "bottom": 285.5625
+        },
+        {
+          "text": "Close preview",
+          "top": 393.390625,
+          "bottom": 437.390625
+        },
+        {
+          "text": "Continue lesson",
+          "top": 616.875,
+          "bottom": 662.875
+        },
+        {
+          "text": "Open topic overview",
+          "top": 884.875,
+          "bottom": 928.875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "search",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Search",
+          "top": 255.015625,
+          "bottom": 301.015625
+        },
+        {
+          "text": "View topic",
+          "top": 450.1875,
+          "bottom": 497.28125
+        },
+        {
+          "text": "Locate structure",
+          "top": 747.71875,
+          "bottom": 794.8125
+        },
+        {
+          "text": "Read in lesson",
+          "top": 1091.328125,
+          "bottom": 1135.328125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "topic",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 395.921875,
+          "bottom": 441.921875
+        },
+        {
+          "text": "Start again",
+          "top": 396.921875,
+          "bottom": 440.921875
+        },
+        {
+          "text": "Explore in 3D",
+          "top": 875.46875,
+          "bottom": 922.5625
+        },
+        {
+          "text": "Draw the pathway",
+          "top": 877.015625,
+          "bottom": 921.015625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "lesson",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Back",
+          "top": 810.234375,
+          "bottom": 854.234375
+        },
+        {
+          "text": "Next: divisions",
+          "top": 809.234375,
+          "bottom": 855.234375
+        },
+        {
+          "text": "Inspect in Studio",
+          "top": 832.90625,
+          "bottom": 876.90625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "studio",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Reset view",
+          "top": 811.640625,
+          "bottom": 855.640625
+        },
+        {
+          "text": "More tools",
+          "top": 871.640625,
+          "bottom": 915.640625
+        },
+        {
+          "text": "Next: joint line",
+          "top": 811.109375,
+          "bottom": 857.109375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "drawing",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Upper",
+          "top": 591.234375,
+          "bottom": 638.328125
+        },
+        {
+          "text": "Lower",
+          "top": 591.234375,
+          "bottom": 638.328125
+        },
+        {
+          "text": "Middle",
+          "top": 591.234375,
+          "bottom": 638.328125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "practice",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Check answer",
+          "top": 612.6875,
+          "bottom": 658.6875
+        },
+        {
+          "text": "Leave practice",
+          "top": 613.6875,
+          "bottom": 657.6875
+        },
+        {
+          "text": "Review lesson",
+          "top": 773.28125,
+          "bottom": 817.28125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "recall",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Reveal answer",
+          "top": 337.6875,
+          "bottom": 383.6875
+        },
+        {
+          "text": "Open lesson",
+          "top": 526.6875,
+          "bottom": 570.6875
+        },
+        {
+          "text": "End this session",
+          "top": 504.6875,
+          "bottom": 548.6875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "knee-sample",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "top": 102,
+          "bottom": 146
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "landing",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Set up my plan",
+          "top": 352,
+          "bottom": 398
+        },
+        {
+          "text": "Continue to Today",
+          "top": 353,
+          "bottom": 397
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "welcome",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Skip for now",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Back",
+          "top": 701.09375,
+          "bottom": 748.1875
+        },
+        {
+          "text": "Continue",
+          "top": 701.640625,
+          "bottom": 747.640625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "books",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to this topic",
+          "top": 788.390625,
+          "bottom": 834.390625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "profile",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "top": 413.09375,
+          "bottom": 460.1875
+        },
+        {
+          "text": "View Today",
+          "top": 856.671875,
+          "bottom": 902.671875
+        },
+        {
+          "text": "Manage account",
+          "top": 405.890625,
+          "bottom": 452.984375
+        },
+        {
+          "text": "Choose your books",
+          "top": 562.28125,
+          "bottom": 606.28125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "account",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Forgot password?",
+          "top": 577.890625,
+          "bottom": 621.890625
+        },
+        {
+          "text": "Sign in",
+          "top": 637.890625,
+          "bottom": 683.890625
+        },
+        {
+          "text": "Create an account",
+          "top": 699.890625,
+          "bottom": 743.890625
+        },
+        {
+          "text": "Continue on this device",
+          "top": 699.890625,
+          "bottom": 743.890625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "offline",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Go to Today",
+          "top": 505.734375,
+          "bottom": 551.734375
+        },
+        {
+          "text": "Try this page again",
+          "top": 505.1875,
+          "bottom": 552.28125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "review",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Record review decision",
+          "top": 564.421875,
+          "bottom": 610.421875
+        },
+        {
+          "text": "Request changes",
+          "top": 563.875,
+          "bottom": 610.96875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "admin",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Manage selected reviewer",
+          "top": 329,
+          "bottom": 376.09375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "facilitator",
+      "device": "laptop",
+      "width": 1440,
+      "clientWidth": 1440,
+      "documentWidth": 1440,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Apply scenario",
+          "top": 658.015625,
+          "bottom": 704.015625
+        },
+        {
+          "text": "Open Today",
+          "top": 657.46875,
+          "bottom": 704.5625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "today",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 558.4375,
+          "bottom": 604.4375
+        },
+        {
+          "text": "Adjust daily goal",
+          "top": 888.40625,
+          "bottom": 932.40625
+        },
+        {
+          "text": "Start recall",
+          "top": 1037.953125,
+          "bottom": 1085.046875
+        },
+        {
+          "text": "Practise",
+          "top": 1121.140625,
+          "bottom": 1168.234375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "plans",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 300.328125,
+          "bottom": 346.328125
+        },
+        {
+          "text": "New plan",
+          "top": 400.828125,
+          "bottom": 447.921875
+        },
+        {
+          "text": "Open calendar",
+          "top": 651,
+          "bottom": 698.09375
+        },
+        {
+          "text": "View plan",
+          "top": 651,
+          "bottom": 698.09375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "calendar",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 379.140625,
+          "bottom": 425.140625
+        },
+        {
+          "text": "Topic overview",
+          "top": 380.140625,
+          "bottom": 424.140625
+        },
+        {
+          "text": "Previous",
+          "top": 470.140625,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Next",
+          "top": 470.140625,
+          "bottom": 517.234375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "builder",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to topics",
+          "top": 650.921875,
+          "bottom": 694.921875
+        },
+        {
+          "text": "Review plan",
+          "top": 649.921875,
+          "bottom": 695.921875
+        },
+        {
+          "text": "Cancel draft",
+          "top": 976.59375,
+          "bottom": 1020.59375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "ai",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Revise draft",
+          "top": 636.328125,
+          "bottom": 683.421875
+        },
+        {
+          "text": "Edit",
+          "top": 927.203125,
+          "bottom": 971.203125
+        },
+        {
+          "text": "Edit",
+          "top": 1012.390625,
+          "bottom": 1056.390625
+        },
+        {
+          "text": "Edit",
+          "top": 1097.578125,
+          "bottom": 1141.578125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "library",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "top": 233.078125,
+          "bottom": 280.171875
+        },
+        {
+          "text": "Close preview",
+          "top": 386,
+          "bottom": 430
+        },
+        {
+          "text": "Continue lesson",
+          "top": 609.484375,
+          "bottom": 655.484375
+        },
+        {
+          "text": "Open topic overview",
+          "top": 847.484375,
+          "bottom": 891.484375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "search",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Search",
+          "top": 249.625,
+          "bottom": 295.625
+        },
+        {
+          "text": "View topic",
+          "top": 444.796875,
+          "bottom": 491.890625
+        },
+        {
+          "text": "Locate structure",
+          "top": 742.328125,
+          "bottom": 789.421875
+        },
+        {
+          "text": "Read in lesson",
+          "top": 1085.9375,
+          "bottom": 1129.9375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "topic",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 388.53125,
+          "bottom": 434.53125
+        },
+        {
+          "text": "Start again",
+          "top": 389.53125,
+          "bottom": 433.53125
+        },
+        {
+          "text": "Explore in 3D",
+          "top": 864.078125,
+          "bottom": 911.171875
+        },
+        {
+          "text": "Draw the pathway",
+          "top": 865.625,
+          "bottom": 909.625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "lesson",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Back",
+          "top": 784.84375,
+          "bottom": 828.84375
+        },
+        {
+          "text": "Next: divisions",
+          "top": 783.84375,
+          "bottom": 829.84375
+        },
+        {
+          "text": "Inspect in Studio",
+          "top": 1371.109375,
+          "bottom": 1415.109375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "studio",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Reset view",
+          "top": 786.25,
+          "bottom": 830.25
+        },
+        {
+          "text": "More tools",
+          "top": 846.25,
+          "bottom": 890.25
+        },
+        {
+          "text": "Next: joint line",
+          "top": 1439.515625,
+          "bottom": 1485.515625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "drawing",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Upper",
+          "top": 585.84375,
+          "bottom": 632.9375
+        },
+        {
+          "text": "Lower",
+          "top": 585.84375,
+          "bottom": 632.9375
+        },
+        {
+          "text": "Middle",
+          "top": 585.84375,
+          "bottom": 632.9375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "practice",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Check answer",
+          "top": 610.6875,
+          "bottom": 656.6875
+        },
+        {
+          "text": "Leave practice",
+          "top": 611.6875,
+          "bottom": 655.6875
+        },
+        {
+          "text": "Review lesson",
+          "top": 769.28125,
+          "bottom": 813.28125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "recall",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Reveal answer",
+          "top": 335.6875,
+          "bottom": 381.6875
+        },
+        {
+          "text": "Open lesson",
+          "top": 522.6875,
+          "bottom": 566.6875
+        },
+        {
+          "text": "End this session",
+          "top": 500.6875,
+          "bottom": 544.6875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "knee-sample",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "top": 102,
+          "bottom": 146
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "landing",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Set up my plan",
+          "top": 337.21875,
+          "bottom": 383.21875
+        },
+        {
+          "text": "Continue to Today",
+          "top": 338.21875,
+          "bottom": 382.21875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "welcome",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Skip for now",
+          "top": 102,
+          "bottom": 146
+        },
+        {
+          "text": "Back",
+          "top": 688.3125,
+          "bottom": 735.40625
+        },
+        {
+          "text": "Continue",
+          "top": 688.859375,
+          "bottom": 734.859375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "books",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to this topic",
+          "top": 775.609375,
+          "bottom": 821.609375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "profile",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "top": 400.3125,
+          "bottom": 447.40625
+        },
+        {
+          "text": "View Today",
+          "top": 863.6875,
+          "bottom": 909.6875
+        },
+        {
+          "text": "Manage account",
+          "top": 449.109375,
+          "bottom": 496.203125
+        },
+        {
+          "text": "Choose your books",
+          "top": 601.5,
+          "bottom": 645.5
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "account",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Forgot password?",
+          "top": 565.109375,
+          "bottom": 609.109375
+        },
+        {
+          "text": "Sign in",
+          "top": 625.109375,
+          "bottom": 671.109375
+        },
+        {
+          "text": "Create an account",
+          "top": 687.109375,
+          "bottom": 731.109375
+        },
+        {
+          "text": "Continue on this device",
+          "top": 687.109375,
+          "bottom": 731.109375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "offline",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Go to Today",
+          "top": 476.953125,
+          "bottom": 522.953125
+        },
+        {
+          "text": "Try this page again",
+          "top": 476.40625,
+          "bottom": 523.5
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "review",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Record review decision",
+          "top": 551.640625,
+          "bottom": 597.640625
+        },
+        {
+          "text": "Request changes",
+          "top": 551.09375,
+          "bottom": 598.1875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "admin",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Manage selected reviewer",
+          "top": 316.21875,
+          "bottom": 363.3125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "facilitator",
+      "device": "tablet",
+      "width": 820,
+      "clientWidth": 820,
+      "documentWidth": 820,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Apply scenario",
+          "top": 645.234375,
+          "bottom": 691.234375
+        },
+        {
+          "text": "Open Today",
+          "top": 644.6875,
+          "bottom": 691.78125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "today",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 524.5625,
+          "bottom": 572.5625
+        },
+        {
+          "text": "Adjust daily goal",
+          "top": 890.328125,
+          "bottom": 938.328125
+        },
+        {
+          "text": "Start recall",
+          "top": 1093.3125,
+          "bottom": 1141.3125
+        },
+        {
+          "text": "Practise",
+          "top": 1208.78125,
+          "bottom": 1256.78125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "plans",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 376.390625,
+          "bottom": 424.390625
+        },
+        {
+          "text": "New plan",
+          "top": 527.390625,
+          "bottom": 575.390625
+        },
+        {
+          "text": "Open calendar",
+          "top": 775.46875,
+          "bottom": 823.46875
+        },
+        {
+          "text": "View plan",
+          "top": 1040.546875,
+          "bottom": 1088.546875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "calendar",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 385.703125,
+          "bottom": 433.703125
+        },
+        {
+          "text": "Topic overview",
+          "top": 385.703125,
+          "bottom": 433.703125
+        },
+        {
+          "text": "Previous",
+          "top": 514.703125,
+          "bottom": 562.703125
+        },
+        {
+          "text": "Next",
+          "top": 514.703125,
+          "bottom": 562.703125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "builder",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to topics",
+          "top": 837.65625,
+          "bottom": 885.65625
+        },
+        {
+          "text": "Review plan",
+          "top": 837.65625,
+          "bottom": 885.65625
+        },
+        {
+          "text": "Cancel draft",
+          "top": 1179.125,
+          "bottom": 1227.125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "ai",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Revise draft",
+          "top": 822.875,
+          "bottom": 870.875
+        },
+        {
+          "text": "Edit",
+          "top": 1103.65625,
+          "bottom": 1151.65625
+        },
+        {
+          "text": "Edit",
+          "top": 1184.84375,
+          "bottom": 1232.84375
+        },
+        {
+          "text": "Edit",
+          "top": 1266.03125,
+          "bottom": 1314.03125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "library",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "top": 305.203125,
+          "bottom": 353.203125
+        },
+        {
+          "text": "Close preview",
+          "top": 518.203125,
+          "bottom": 566.203125
+        },
+        {
+          "text": "Continue lesson",
+          "top": 765.484375,
+          "bottom": 813.484375
+        },
+        {
+          "text": "Open topic overview",
+          "top": 1005.484375,
+          "bottom": 1053.484375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "search",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Search",
+          "top": 258,
+          "bottom": 306
+        },
+        {
+          "text": "View topic",
+          "top": 517,
+          "bottom": 565
+        },
+        {
+          "text": "Locate structure",
+          "top": 941.34375,
+          "bottom": 989.34375
+        },
+        {
+          "text": "Read in lesson",
+          "top": 1372.09375,
+          "bottom": 1420.09375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "topic",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "top": 395.09375,
+          "bottom": 443.09375
+        },
+        {
+          "text": "Start again",
+          "top": 395.09375,
+          "bottom": 443.09375
+        },
+        {
+          "text": "Explore in 3D",
+          "top": 852.640625,
+          "bottom": 900.640625
+        },
+        {
+          "text": "Draw the pathway",
+          "top": 852.640625,
+          "bottom": 900.640625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "lesson",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Back",
+          "top": 657.40625,
+          "bottom": 705.40625
+        },
+        {
+          "text": "Next: divisions",
+          "top": 657.40625,
+          "bottom": 705.40625
+        },
+        {
+          "text": "Inspect in Studio",
+          "top": 1326.953125,
+          "bottom": 1374.953125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "studio",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Reset view",
+          "top": 667.8125,
+          "bottom": 715.8125
+        },
+        {
+          "text": "More tools",
+          "top": 731.8125,
+          "bottom": 779.8125
+        },
+        {
+          "text": "Next: joint line",
+          "top": 1545.6875,
+          "bottom": 1593.6875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "drawing",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Upper",
+          "top": 569.015625,
+          "bottom": 617.015625
+        },
+        {
+          "text": "Lower",
+          "top": 569.015625,
+          "bottom": 617.015625
+        },
+        {
+          "text": "Middle",
+          "top": 569.015625,
+          "bottom": 617.015625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "practice",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Check answer",
+          "top": 645.9375,
+          "bottom": 693.9375
+        },
+        {
+          "text": "Leave practice",
+          "top": 645.9375,
+          "bottom": 693.9375
+        },
+        {
+          "text": "Review lesson",
+          "top": 854.921875,
+          "bottom": 902.921875
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "recall",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Reveal answer",
+          "top": 377.5625,
+          "bottom": 425.5625
+        },
+        {
+          "text": "Open lesson",
+          "top": 582.5625,
+          "bottom": 630.5625
+        },
+        {
+          "text": "End this session",
+          "top": 534.8125,
+          "bottom": 582.8125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "knee-sample",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "top": 80,
+          "bottom": 128
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "landing",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Set up my plan",
+          "top": 344.9375,
+          "bottom": 392.9375
+        },
+        {
+          "text": "Continue to Today",
+          "top": 404.9375,
+          "bottom": 452.9375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "welcome",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Skip for now",
+          "top": 90,
+          "bottom": 138
+        },
+        {
+          "text": "Back",
+          "top": 687.53125,
+          "bottom": 735.53125
+        },
+        {
+          "text": "Continue",
+          "top": 687.53125,
+          "bottom": 735.53125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "books",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Back to this topic",
+          "top": 795.75,
+          "bottom": 843.75
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "profile",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "top": 377.75,
+          "bottom": 425.75
+        },
+        {
+          "text": "View Today",
+          "top": 847.625,
+          "bottom": 895.625
+        },
+        {
+          "text": "Manage account",
+          "top": 1107.015625,
+          "bottom": 1155.015625
+        },
+        {
+          "text": "Choose your books",
+          "top": 1256.3125,
+          "bottom": 1304.3125
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "account",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Forgot password?",
+          "top": 566.890625,
+          "bottom": 614.890625
+        },
+        {
+          "text": "Sign in",
+          "top": 630.890625,
+          "bottom": 678.890625
+        },
+        {
+          "text": "Create an account",
+          "top": 694.890625,
+          "bottom": 742.890625
+        },
+        {
+          "text": "Continue on this device",
+          "top": 694.890625,
+          "bottom": 742.890625
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "offline",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Go to Today",
+          "top": 498.09375,
+          "bottom": 546.09375
+        },
+        {
+          "text": "Try this page again",
+          "top": 498.09375,
+          "bottom": 546.09375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "review",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Record review decision",
+          "top": 563.484375,
+          "bottom": 611.484375
+        },
+        {
+          "text": "Request changes",
+          "top": 623.484375,
+          "bottom": 671.484375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "admin",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Manage selected reviewer",
+          "top": 339.359375,
+          "bottom": 387.359375
+        }
+      ],
+      "overflow": []
+    },
+    {
+      "page": "facilitator",
+      "device": "phone",
+      "width": 390,
+      "clientWidth": 390,
+      "documentWidth": 390,
+      "headingCount": 1,
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Apply scenario",
+          "top": 660.828125,
+          "bottom": 708.828125
+        },
+        {
+          "text": "Open Today",
+          "top": 660.828125,
+          "bottom": 708.828125
+        }
+      ],
+      "overflow": []
+    }
+  ],
+  "errors": [],
+  "revealWorks": true,
+  "navigationWorks": true,
+  "devicePickerWorks": true,
+  "themeWorks": true
+}

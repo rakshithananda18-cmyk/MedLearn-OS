@@ -22,10 +22,18 @@ export async function getSessionDb(): Promise<DbClient> {
   });
 }
 
+/** Distinguish a missing session from a service failure before declaring a device signed out. */
+export async function getSessionUser(db: DbClient) {
+  const { data, error } = await db.auth.getUser();
+  if (error && error.name !== 'AuthSessionMissingError') {
+    throw new AppError('UNAVAILABLE', 'Could not verify the account session', { cause: error });
+  }
+  return data.user;
+}
+
 /** The signed-in learner's id, or null for a visitor without a session. */
 export async function getUserId(db: DbClient): Promise<string | null> {
-  const { data } = await db.auth.getUser();
-  return data.user?.id ?? null;
+  return (await getSessionUser(db))?.id ?? null;
 }
 
 export async function requireUserId(db: DbClient): Promise<string> {

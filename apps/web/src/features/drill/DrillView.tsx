@@ -14,7 +14,7 @@ import {
   startDrill,
 } from '@medlearn/visuals';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { completeDrill } from '@/features/progress/store';
 import { FlowLayout, FlowProgress, STEP_LABEL, StepList } from '@/features/shell/Flow';
@@ -45,15 +45,25 @@ export function DrillView({
   const router = useRouter();
   const [state, setState] = useState(() => startDrill(steps));
   const [wrong, setWrong] = useState<string | null>(null);
+  const headingId = `${useId()}-layer`;
+  const moved = useRef(false);
+  const drillDone = isDrillDone(steps, state);
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    const heading = document.getElementById(headingId);
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: 'nearest' });
+  }, [state.stepIndex, drillDone, headingId]);
   const step = steps[state.stepIndex];
   if (!step) return null;
   const stepDone = isStepDone(steps, state);
-  const drillDone = isDrillDone(steps, state);
   const next = steps[state.stepIndex + 1];
   const layersDone = state.stepIndex + (stepDone ? 1 : 0);
 
   const choose = (label: string) => {
     const result = placeLabel(diagram, steps, state, label);
+    if (isDrillDone(steps, result.state)) moved.current = true;
     setState(result.state);
     setWrong(result.correct ? null : label);
   };
@@ -92,7 +102,9 @@ export function DrillView({
           {drillDone ? (
             <div className="flex animate-rise flex-col items-start gap-4">
               <Medallion icon={PenLine} size="lg" />
-              <Heading level={2}>Diagram built</Heading>
+              <Heading level={2} id={headingId} tabIndex={-1}>
+                Diagram built
+              </Heading>
               <Text>
                 {state.mistakes === 0
                   ? 'Every label right first time.'
@@ -102,7 +114,9 @@ export function DrillView({
             </div>
           ) : (
             <div key={step.id} className="flex animate-rise flex-col gap-2">
-              <Heading level={2}>{step.title}</Heading>
+              <Heading level={2} id={headingId} tabIndex={-1}>
+                {step.title}
+              </Heading>
               <Text tone="muted">{step.hint}</Text>
               <Text size="sm" weight="semibold">
                 Tap the label for the highlighted blank.
@@ -143,6 +157,7 @@ export function DrillView({
                   <Button
                     iconEnd={ArrowRight}
                     onClick={() => {
+                      moved.current = true;
                       setState(nextStep(steps, state));
                       setWrong(null);
                     }}

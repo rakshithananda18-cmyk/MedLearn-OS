@@ -1,17 +1,19 @@
 'use client';
 
 import { cx, Icon, type IconGlyph } from '@medlearn/ui';
-import { BookOpen, Box, ClipboardCheck, House } from '@medlearn/ui/icons';
+import { BookOpen, Box, CalendarDays, ClipboardCheck, House } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 import { Avatar } from '@/features/profile/Avatar';
 import { useProgress } from '@/features/progress/store';
 
-// ponytail: four destinations; recall is reached from Today (its tile and its plan), progress
+// ponytail: five destinations; recall is reached from Today (its tile and its plan), progress
 // lives in the library, and the profile is the student's own mark at the top of the rail.
 const ITEMS: Array<{ href: string; label: string; icon: IconGlyph; also?: string[] }> = [
   { href: '/today', label: 'Today', icon: House, also: ['/revise'] },
+  { href: '/plan', label: 'Plan', icon: CalendarDays },
   {
     href: '/subjects',
     label: 'Library',
@@ -27,7 +29,7 @@ const within = (pathname: string, href: string) =>
 
 const PROFILE = '/profile';
 const TAB =
-  'flex min-h-16 flex-col items-center justify-center gap-1 text-xs transition-colors duration-150 md:rounded-lg md:py-2 short:min-h-12 short:py-1';
+  'flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 text-xs transition-colors duration-150 md:rounded-lg md:py-2 short:min-h-12 short:py-1';
 const tabState = (active: boolean) =>
   active ? 'font-semibold text-primary-strong md:bg-primary-subtle' : 'text-fg-muted hover:text-fg';
 
@@ -37,14 +39,40 @@ const tabState = (active: boolean) =>
  * centred down its height. Every section looks the same, the current one in a tinted pill.
  */
 export function AppNav() {
+  const nav = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const name = useProgress().profile?.name;
   const onProfile = within(pathname, PROFILE) || within(pathname, '/account');
+
+  useEffect(() => {
+    const element = nav.current;
+    if (!element) return;
+    const update = () => {
+      if (window.matchMedia('(min-width: 37.5rem)').matches) {
+        document.documentElement.style.removeProperty('--app-nav-height');
+      } else {
+        document.documentElement.style.setProperty(
+          '--app-nav-height',
+          `${element.getBoundingClientRect().height}px`,
+        );
+      }
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    window.addEventListener('resize', update);
+    update();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+      document.documentElement.style.removeProperty('--app-nav-height');
+    };
+  }, []);
 
   // Nearly solid on phones, so its labels stay readable over whatever scrolls behind it; from
   // tablet width a rounded glass panel floating beside the page, like the cards.
   return (
     <nav
+      ref={nav}
       aria-label="Main"
       // Named so route transitions leave the navigation still.
       style={{ viewTransitionName: 'app-nav' }}
@@ -66,27 +94,27 @@ export function AppNav() {
         {ITEMS.map(({ href, label, icon, also = [] }) => {
           const active = [href, ...also].some((path) => within(pathname, path));
           return (
-            <li key={href} className="flex-1 md:flex-none">
+            <li key={href} className="min-w-0 flex-1 md:flex-none">
               <Link
                 href={href}
                 aria-current={active ? 'page' : undefined}
                 className={cx(TAB, tabState(active))}
               >
                 <Icon icon={icon} />
-                {label}
+                <span className="w-full wrap-anywhere text-center">{label}</span>
               </Link>
             </li>
           );
         })}
         {/* Phones have no rail top: the profile is the last tab. */}
-        <li className="flex-1 md:hidden">
+        <li className="min-w-0 flex-1 md:hidden">
           <Link
             href={PROFILE}
             aria-current={onProfile ? 'page' : undefined}
             className={cx(TAB, tabState(onProfile))}
           >
             <Avatar name={name} size="sm" />
-            Profile
+            <span className="w-full wrap-anywhere text-center">Profile</span>
           </Link>
         </li>
       </ul>

@@ -46,7 +46,7 @@ export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
       <header className="flex flex-col gap-1">
         <Eyebrow>Review</Eyebrow>
         <Display size="md">Check the topics</Display>
-        <Text tone="muted">
+        <Text tone="muted" className="max-w-prose">
           {approved} of {topics.length} approved. Open a topic, check it against the book, then
           approve it or say what needs changing. Students see an approval at once.
         </Text>
@@ -58,12 +58,17 @@ export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
           </ToggleChip>
         ))}
       </fieldset>
-      {shown.length === 0 ? <Text tone="muted">Nothing here.</Text> : null}
+      <p role="status" className="text-sm text-fg-muted">
+        {shown.length} {shown.length === 1 ? 'topic' : 'topics'} shown · {FILTERS[filter].label}
+      </p>
+      {shown.length === 0 ? (
+        <Text tone="muted">No topics match this filter. Choose another queue above.</Text>
+      ) : null}
       {chapters.map((chapter) => (
         <section
           key={chapter}
           aria-label={chapter}
-          className="flex flex-col rounded-xl border border-glass-border bg-glass p-2 shadow-glass"
+          className="flex min-w-0 flex-col rounded-xl border border-border bg-surface p-3"
         >
           <h2 className="px-2 pt-1 text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
             {chapter}
@@ -76,10 +81,10 @@ export function ReviewBoard({ topics }: Readonly<{ topics: BoardTopic[] }>) {
                   <Link
                     href={`/review/${topic.slug}`}
                     className={cx(
-                      'flex min-h-12 items-center gap-3 rounded-lg px-2 py-2 transition-colors duration-150 hover:bg-surface',
+                      'flex min-h-12 flex-wrap items-center gap-3 rounded-lg px-2 py-3 transition-colors duration-150 hover:bg-surface-muted',
                     )}
                   >
-                    <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="flex min-w-0 basis-2/3 flex-1 flex-col">
                       <span className="text-sm font-semibold text-ink">{topic.title}</span>
                       <span className="text-xs text-fg-muted">
                         Version {topic.version}

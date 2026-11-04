@@ -7,12 +7,23 @@ export const MAX_HINTS = 2;
 /** Streaks worth a cheer. */
 export const MILESTONES = [3, 5, 10];
 
+/**
+ * "Find it" names a structure for the student to tap on the model; "Name it" marks one on the model
+ * for the student to name from a short list (recognition from another view, without labels).
+ */
+export type QuizKind = 'find' | 'name';
+/** Names offered in "Name it": the right one among three others. */
+export const NAME_CHOICES = 4;
+
 /** How each question of the round went: found first time, found with help, or skipped. */
 export type QuizResult = { id: string; how: 'clean' | 'helped' | 'skipped' };
 
 /** "Find it": the studio names a structure and the student taps it on the model. */
 export interface QuizState {
+  kind: QuizKind;
   targetId: string;
+  /** "Name it": the names offered for the marked structure, in their order on the card. */
+  choices: string[];
   /** Points: one for each structure found first time, half for one found with help. */
   score: number;
   asked: number;
@@ -38,9 +49,33 @@ export function nextTarget(pool: string[], previous: string | null, random = Mat
   return choices[Math.floor(random() * choices.length)] ?? '';
 }
 
-export function startQuiz(pool: string[], best: number, random = Math.random): QuizState {
+/** The names offered for a structure: it and up to three others from the pool, shuffled. */
+export function choicesFor(targetId: string, pool: string[], random = Math.random): string[] {
+  const others = pool.filter((id) => id !== targetId);
+  for (let at = others.length - 1; at > 0; at--) {
+    const swap = Math.floor(random() * (at + 1));
+    [others[at], others[swap]] = [others[swap] ?? '', others[at] ?? ''];
+  }
+  const offered = others.slice(0, NAME_CHOICES - 1);
+  offered.splice(Math.floor(random() * (offered.length + 1)), 0, targetId);
+  return offered;
+}
+
+/** The next question: its structure, and for "Name it" the names offered. */
+function ask(kind: QuizKind, pool: string[], previous: string | null, random: () => number) {
+  const targetId = nextTarget(pool, previous, random);
+  return { targetId, choices: kind === 'name' ? choicesFor(targetId, pool, random) : [] };
+}
+
+export function startQuiz(
+  pool: string[],
+  best: number,
+  random = Math.random,
+  kind: QuizKind = 'find',
+): QuizState {
   return {
-    targetId: nextTarget(pool, null, random),
+    kind,
+    ...ask(kind, pool, null, random),
     score: 0,
     asked: 0,
     streak: 0,
@@ -67,11 +102,13 @@ export function answerQuiz(
   if (pickedId !== state.targetId) {
     return { ...state, streak: 0, last: 'wrong', picked: pickedId, misses: state.misses + 1 };
   }
-  const helped = state.hints > 0 || state.misses >= REVEAL_AFTER;
+  // With four names to choose from, one wrong name is already a clue.
+  const helped = state.hints > 0 || state.misses >= (state.kind === 'name' ? 1 : REVEAL_AFTER);
   const gained = helped ? 0.5 : 1;
   const streak = helped ? 0 : state.streak + 1;
   return {
-    targetId: nextTarget(pool, state.targetId, random),
+    kind: state.kind,
+    ...ask(state.kind, pool, state.targetId, random),
     score: state.score + gained,
     asked: state.asked + 1,
     streak,
@@ -97,7 +134,7 @@ export const roundOver = (state: QuizState): boolean => state.asked >= ROUND;
 export function skipQuiz(state: QuizState, pool: string[], random = Math.random): QuizState {
   return {
     ...state,
-    targetId: nextTarget(pool, state.targetId, random),
+    ...ask(state.kind, pool, state.targetId, random),
     asked: state.asked + 1,
     streak: 0,
     last: null,

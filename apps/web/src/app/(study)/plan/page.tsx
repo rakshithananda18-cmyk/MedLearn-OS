@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Plan | MedLearn OS' };
 
 export default function PlanPage() {
   return (
-    <Screen>
+    <Screen width="wide">
       <PlanView topics={PLANNABLE_TOPICS} />
     </Screen>
   );

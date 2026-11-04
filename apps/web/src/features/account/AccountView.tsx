@@ -29,7 +29,7 @@ import { useAccount } from './useAccount';
 
 function ThemeCard() {
   return (
-    <Card tone="glass" as="section" aria-labelledby="theme-title" className="flex flex-col gap-3">
+    <Card as="section" aria-labelledby="theme-title" className="flex flex-col gap-3">
       <h2 id="theme-title" className="font-semibold text-ink">
         Theme
       </h2>
@@ -90,12 +90,15 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
           Your <em>account</em>
         </Display>
       </div>
-      <Card tone="glass" className="flex gap-4">
+      <Card className="flex min-w-0 flex-wrap gap-4">
         <Medallion icon={User} />
-        <div className="flex flex-1 flex-col gap-2">
-          <Text weight="semibold">Signed in as {email}</Text>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Text weight="semibold" className="break-words">
+            Signed in as {email}
+          </Text>
           <Text size="sm" tone="muted">
-            Your progress is saved to this account. Sign in on any phone to carry on.
+            Your account keeps your study progress across devices. Changes made offline are kept on
+            this device until they can sync.
           </Text>
           <Notice>{notice}</Notice>
           {error ? (
@@ -121,7 +124,7 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
 
 function ModeSwitch({ mode, onChange }: Readonly<{ mode: Mode; onChange: (mode: Mode) => void }>) {
   return (
-    <fieldset className="flex gap-2">
+    <fieldset className="flex flex-wrap gap-2">
       <legend className="sr-only">Account</legend>
       {(['create', 'sign-in'] as const).map((value) => (
         <ToggleChip key={value} pressed={mode === value} onClick={() => onChange(value)}>
@@ -183,10 +186,10 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
 
   if (state.signedIn) {
     return (
-      <>
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
         <SignedIn email={state.account?.email ?? ''} notice={notice} />
         <ThemeCard />
-      </>
+      </div>
     );
   }
 
@@ -210,7 +213,7 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
   }
 
   return (
-    <>
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
       <div className="flex flex-col gap-3">
         <Eyebrow>Account</Eyebrow>
         <Display>
@@ -219,12 +222,15 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
         <Text tone="muted">
           {inviteOnly
             ? 'MedLearn OS is private for now. Sign in, or create your account with the email the team added.'
-            : 'An account keeps your progress if you change or lose your phone. Google and phone sign-in are coming later.'}
+            : 'Your progress is currently saved on this device. An account lets you carry it across devices.'}
         </Text>
       </div>
       <ModeSwitch mode={mode} onChange={setMode} />
       {form}
+      <Link href="/today" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+        Continue studying on this device
+      </Link>
       <ThemeCard />
-    </>
+    </div>
   );
 }

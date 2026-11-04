@@ -105,7 +105,7 @@ function ConfirmEmail({ email, onConfirmed }: Readonly<ConfirmEmailProps>) {
   };
 
   return (
-    <Card tone="glass">
+    <Card>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <Text>
           We sent a 6-digit code to <strong>{email}</strong>. Enter it to finish. It works for an
@@ -166,7 +166,7 @@ export function AccountForm({ mode, onCreated, onForgot }: Readonly<AccountFormP
   if (confirming) return <ConfirmEmail email={email} onConfirmed={finish} />;
 
   return (
-    <Card tone="glass">
+    <Card>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label="Email"
@@ -235,7 +235,7 @@ export function ResetPassword({ initialEmail }: Readonly<{ initialEmail: string 
 
   if (!codeSent) {
     return (
-      <Card tone="glass">
+      <Card>
         <form onSubmit={sendCode} className="flex flex-col gap-4">
           <Text>Enter your account’s email and we will send you a 6-digit code.</Text>
           <TextField
@@ -258,7 +258,7 @@ export function ResetPassword({ initialEmail }: Readonly<{ initialEmail: string 
   }
 
   return (
-    <Card tone="glass">
+    <Card>
       <form onSubmit={setNewPassword} className="flex flex-col gap-4">
         <Notice>{`If an account uses ${email}, a 6-digit code is on its way.`}</Notice>
         <CodeField value={code} onChange={setCode} />

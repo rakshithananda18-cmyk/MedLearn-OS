@@ -39,7 +39,7 @@ export default async function AdminPage() {
     else progress.notReviewed += 1;
   }
   return (
-    <Screen>
+    <Screen width="wide">
       <AdminView reviewers={reviewers} changes={changes} progress={progress} />
     </Screen>
   );

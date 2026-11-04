@@ -133,6 +133,7 @@ export function KneeAtlasSample({
   const dark = preference === 'dark' || (preference === 'system' && systemDark);
   const [step, setStep] = useState(0);
   const [view, setView] = useState('knee-front');
+  const [customView, setCustomView] = useState(false);
   const [selected, setSelected] = useState<string | null>('patella');
   const [bones, setBones] = useState(true);
   const [names, setNames] = useState(true);
@@ -213,6 +214,7 @@ export function KneeAtlasSample({
     if (!next) return;
     setStep(index);
     setView(next.view);
+    setCustomView(false);
     setSelected(next.selected);
     setBones(index < 2);
     setNames(index < 2);
@@ -231,14 +233,80 @@ export function KneeAtlasSample({
     if (quiz) return;
     if (id && sampleModel.parts.some((part) => part.id === id)) setSelected(id);
   };
+  const recognition =
+    quiz && !diagramMode ? (
+      <div className={styles.check}>
+        <h3>Choose one answer</h3>
+        <div className={styles.answers}>
+          {['anterior-cruciate-ligament', 'posterior-cruciate-ligament'].map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-disabled={answer !== null}
+              onClick={() => {
+                if (answer === null) setAnswer(id);
+              }}
+              className={cx(answer === id && styles.answerPicked)}
+            >
+              {NAMES[id]}
+            </button>
+          ))}
+        </div>
+        {answer !== null ? (
+          <div role="status" className={styles.feedback}>
+            <strong>{answer === current.selected ? 'Correct.' : 'Look once more.'}</strong> The
+            marked structure is the anterior cruciate ligament.
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setAnswer(null);
+                setSelected(current.selected);
+                setNames(false);
+                setView(view === 'knee-back' ? 'knee-front' : 'knee-back');
+                setCustomView(false);
+              }}
+            >
+              Try from another view
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    ) : null;
   const diagramView = (
     <div className={styles.diagram}>
-      <PathTracer
-        diagram={diagram}
-        title="Knee relationship diagram"
-        selectedId={diagramSelected}
-        onSelect={setDiagramSelected}
-      />
+      <div className={styles.diagramGraphic}>
+        <PathTracer
+          diagram={diagram}
+          title="Knee relationship diagram"
+          selectedId={diagramSelected}
+          onSelect={setDiagramSelected}
+        />
+      </div>
+      <div className={styles.diagramList} role="group" aria-label="Knee schematic structures">
+        {diagram.nodes.map((node) => (
+          <button
+            key={node.id}
+            type="button"
+            aria-pressed={diagramSelected === node.id}
+            onClick={() => setDiagramSelected(node.id)}
+          >
+            {node.name}
+          </button>
+        ))}
+        <p>
+          Connected boxes:{' '}
+          {diagram.edges
+            .filter((edge) => edge.from === diagramSelected || edge.to === diagramSelected)
+            .map(
+              (edge) =>
+                diagram.nodes.find(
+                  (node) => node.id === (edge.from === diagramSelected ? edge.to : edge.from),
+                )?.name,
+            )
+            .filter(Boolean)
+            .join(', ') || 'Select a structure.'}
+        </p>
+      </div>
     </div>
   );
   const fallback = (
@@ -249,7 +317,7 @@ export function KneeAtlasSample({
   );
 
   return (
-    <main className={cx('bg-sky', styles.sample)}>
+    <main className={cx('bg-sky', styles.sample)} data-step={step}>
       <div className={styles.container}>
         <header className={styles.header}>
           <Link href="/studio?topic=knee-joint" className={styles.back}>
@@ -310,7 +378,13 @@ export function KneeAtlasSample({
                   ? 'Which cruciate ligament is marked?'
                   : current.title}
             </p>
-            <div className={styles.stage} aria-describedby="sample-model-help">
+            <div
+              className={styles.stage}
+              aria-describedby="sample-model-help"
+              onPointerMoveCapture={(event) => {
+                if (event.buttons > 0) setCustomView(true);
+              }}
+            >
               {flat || capable === false ? (
                 diagramView
               ) : capable === null ? (
@@ -343,6 +417,7 @@ export function KneeAtlasSample({
                 </ModelBoundary>
               )}
             </div>
+            {recognition}
             <div className={styles.viewbar}>
               <div role="group" aria-label="Anatomical view" className={styles.viewChoices}>
                 {VIEWS.map((item) => (
@@ -350,8 +425,11 @@ export function KneeAtlasSample({
                     key={item.id}
                     type="button"
                     disabled={flat || capable === false}
-                    aria-pressed={view === item.id}
-                    onClick={() => setView(item.id)}
+                    aria-pressed={!customView && view === item.id}
+                    onClick={() => {
+                      setView(item.id);
+                      setCustomView(false);
+                    }}
                   >
                     {item.label}
                   </button>
@@ -361,7 +439,10 @@ export function KneeAtlasSample({
                 type="button"
                 className={styles.reset}
                 disabled={flat || capable === false}
-                onClick={() => setReset((value) => value + 1)}
+                onClick={() => {
+                  setReset((value) => value + 1);
+                  setCustomView(false);
+                }}
               >
                 <RotateCcw size={16} aria-hidden="true" /> Reset view
               </button>
@@ -407,43 +488,7 @@ export function KneeAtlasSample({
               </button>
             </div>
 
-            {quiz && !diagramMode ? (
-              <div className={styles.check}>
-                <h3>Which cruciate ligament is marked?</h3>
-                <div className={styles.answers}>
-                  {['anterior-cruciate-ligament', 'posterior-cruciate-ligament'].map((id) => (
-                    <button
-                      key={id}
-                      type="button"
-                      aria-disabled={answer !== null}
-                      onClick={() => {
-                        if (answer === null) setAnswer(id);
-                      }}
-                      className={cx(answer === id && styles.answerPicked)}
-                    >
-                      {NAMES[id]}
-                    </button>
-                  ))}
-                </div>
-                {answer !== null ? (
-                  <div role="status" className={styles.feedback}>
-                    <strong>{answer === current.selected ? 'Correct.' : 'Look once more.'}</strong>{' '}
-                    The marked structure is the anterior cruciate ligament.
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setAnswer(null);
-                        setSelected(current.selected);
-                        setNames(false);
-                        setView(view === 'knee-back' ? 'knee-front' : 'knee-back');
-                      }}
-                    >
-                      Try from another view
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            ) : !quiz && !diagramMode ? (
+            {!quiz && !diagramMode ? (
               <div className={styles.structures}>
                 <h3>Explore a structure</h3>
                 <div

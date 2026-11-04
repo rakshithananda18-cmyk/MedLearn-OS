@@ -67,16 +67,16 @@ function ReviewerRow({ reviewer }: Readonly<{ reviewer: ReviewerRecord }>) {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col">
           <span className="font-semibold break-all text-ink">{reviewer.email}</span>
-          <span className="text-sm text-fg-muted">
+          <span className="text-sm text-fg-muted break-words">
             {reviewer.qualification || 'No qualification recorded'}
           </span>
-          <span className="text-xs text-fg-muted">
+          <span className="text-xs text-fg-muted break-words">
             Added {when(reviewer.addedAt)}
             {reviewer.addedBy ? ` by ${reviewer.addedBy}` : ''}
           </span>
         </div>
         {editing || removing ? null : (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -107,7 +107,7 @@ function ReviewerRow({ reviewer }: Readonly<{ reviewer: ReviewerRecord }>) {
             maxLength={200}
             onChange={(event) => setQualification(event.target.value)}
           />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" size="sm" iconStart={Check} loading={busy}>
               Save
             </Button>
@@ -235,8 +235,8 @@ export function AdminView({
     ['Not reviewed', progress.notReviewed],
   ];
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
+    <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+      <header className="flex flex-col gap-1 xl:col-span-3">
         <Eyebrow>Admin</Eyebrow>
         <Display size="md">Run the review team</Display>
         <Text tone="muted">
@@ -245,7 +245,11 @@ export function AdminView({
         </Text>
       </header>
 
-      <Card tone="glass" as="section" aria-labelledby="progress-title" className="rounded-xl">
+      <Card
+        as="section"
+        aria-labelledby="progress-title"
+        className="min-w-0 rounded-xl xl:col-span-3"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="progress-title" className="font-semibold text-ink">
             Review progress · {total} topics
@@ -267,13 +271,13 @@ export function AdminView({
         </ul>
       </Card>
 
-      <Card tone="glass" as="section" aria-labelledby="team-title" className="rounded-xl">
+      <Card as="section" aria-labelledby="team-title" className="min-w-0 rounded-xl xl:col-span-2">
         <h2 id="team-title" className="font-semibold text-ink">
           Review team · {reviewers.length}
         </h2>
         {reviewers.length === 0 ? (
           <Text size="sm" tone="muted" className="py-2">
-            Nobody yet. Add the first reviewer below.
+            Nobody yet. Use Add a reviewer to start the team.
           </Text>
         ) : (
           <ul className="flex flex-col">
@@ -287,14 +291,14 @@ export function AdminView({
         )}
       </Card>
 
-      <Card tone="glass" as="section" aria-labelledby="add-title" className="rounded-xl">
+      <Card as="section" aria-labelledby="add-title" className="min-w-0 self-start rounded-xl">
         <h2 id="add-title" className="mb-3 font-semibold text-ink">
           Add a reviewer
         </h2>
         <AddReviewer />
       </Card>
 
-      <Card tone="glass" as="section" aria-labelledby="log-title" className="rounded-xl">
+      <Card as="section" aria-labelledby="log-title" className="min-w-0 rounded-xl xl:col-span-3">
         <h2 id="log-title" className="font-semibold text-ink">
           Changes to the team
         </h2>
@@ -305,7 +309,10 @@ export function AdminView({
         ) : (
           <ol className="flex flex-col">
             {changes.map((change) => (
-              <li key={change.id} className="border-t border-border py-2 text-sm first:border-t-0">
+              <li
+                key={change.id}
+                className="border-t border-border py-2 text-sm break-words first:border-t-0"
+              >
                 <span className="font-semibold text-ink">{ACTION[change.action]}</span>{' '}
                 <span className="break-all">{change.email}</span>
                 {change.qualification ? ` (${change.qualification})` : ''}

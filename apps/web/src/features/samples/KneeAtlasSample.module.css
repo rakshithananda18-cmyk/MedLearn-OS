@@ -292,6 +292,16 @@
   font-weight: 600;
   margin-bottom: 10px;
 }
+.check {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-border);
+}
+.diagramGraphic {
+  height: 100%;
+}
+.diagramList {
+  display: none;
+}
 .structureList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -489,7 +499,7 @@
     display: none;
   }
   .intro h1 {
-    font-size: 44px;
+    font-size: 36px;
   }
   .steps {
     gap: 6px;
@@ -505,8 +515,8 @@
     height: 22px;
   }
   .stage {
-    height: 340px;
-    min-height: 340px;
+    height: 280px;
+    min-height: 280px;
   }
   .stageHeading {
     padding-inline: 16px;
@@ -523,6 +533,49 @@
   }
   .reading {
     padding: 20px;
+  }
+  .sample[data-step='2'] .stage {
+    height: 230px;
+    min-height: 230px;
+  }
+  .sample[data-step='2'] .intro {
+    display: none;
+  }
+  .sample[data-step='2'] .steps {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+  .check {
+    padding-inline: 16px;
+  }
+  .diagram {
+    padding: 12px 16px;
+    overflow-y: auto;
+  }
+  .diagramGraphic {
+    display: none;
+  }
+  .diagramList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: auto;
+  }
+  .diagramList button {
+    min-height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 14px;
+  }
+  .diagramList button[aria-pressed='true'] {
+    color: var(--color-primary-strong);
+    background: var(--color-primary-subtle);
+  }
+  .diagramList p {
+    font-size: 13px;
+    line-height: 1.6;
   }
   .reading h2 {
     font-size: 32px;
