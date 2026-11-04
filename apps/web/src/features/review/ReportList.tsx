@@ -40,7 +40,7 @@ export function ReportList({ reports }: Readonly<{ reports: ReportRecord[] }>) {
   return (
     <section
       aria-label="Student reports"
-      className="flex flex-col gap-2 rounded-xl border border-glass-border bg-glass p-4 shadow-glass"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-surface p-4 break-words"
     >
       <h2 className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
         Student reports

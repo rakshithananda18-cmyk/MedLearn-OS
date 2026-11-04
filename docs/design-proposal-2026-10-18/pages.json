@@ -1,0 +1,140 @@
+[
+  {
+    "id": "today",
+    "title": "Today",
+    "goal": "A returning student knows what to do next, why it is here and when they can stop.",
+    "section": "Plan your study"
+  },
+  {
+    "id": "plans",
+    "title": "Plans",
+    "goal": "A student sees which plan needs attention and reaches the actual scheduled activity.",
+    "section": "Plan your study"
+  },
+  {
+    "id": "calendar",
+    "title": "Plan calendar",
+    "goal": "The calendar makes a realistic promise and offers recovery when that promise no longer fits.",
+    "section": "Plan your study"
+  },
+  {
+    "id": "builder",
+    "title": "New plan",
+    "goal": "A student sets a realistic schedule without losing their place or earlier choices in the existing four-step wizard.",
+    "section": "Plan your study"
+  },
+  {
+    "id": "ai",
+    "title": "AI plan proposal",
+    "goal": "AI offers an inspectable draft whose saved schedule matches the student’s actual preferences.",
+    "section": "Plan your study"
+  },
+  {
+    "id": "library",
+    "title": "Library",
+    "goal": "A student can scan familiar topic names, preview one and start the appropriate study activity.",
+    "section": "Find your next topic"
+  },
+  {
+    "id": "search",
+    "title": "Search",
+    "goal": "Results identify the thing being found before asking the student to read its explanation.",
+    "section": "Find your next topic"
+  },
+  {
+    "id": "topic",
+    "title": "Topic overview",
+    "goal": "Know the next useful study action before choosing extra resources.",
+    "section": "Study"
+  },
+  {
+    "id": "lesson",
+    "title": "Lesson",
+    "goal": "Compare a small explanation with its visual, then continue without losing your place.",
+    "section": "Study"
+  },
+  {
+    "id": "studio",
+    "title": "3D Studio",
+    "goal": "Use the model to answer one observation, with orientation and controls always clear.",
+    "section": "Study"
+  },
+  {
+    "id": "drawing",
+    "title": "Exam diagram trainer",
+    "goal": "Build the existing diagram by placing labels one layer at a time, then draw it on paper from memory.",
+    "section": "Study"
+  },
+  {
+    "id": "practice",
+    "title": "Practice question",
+    "goal": "Read one question, commit to an answer, then inspect feedback without losing context.",
+    "section": "Study"
+  },
+  {
+    "id": "recall",
+    "title": "Recall",
+    "goal": "Keep the recall prompt, reveal action and honest self-rating together on the smallest screen.",
+    "section": "Study"
+  },
+  {
+    "id": "knee-sample",
+    "title": "Knee recognition sample",
+    "goal": "Compare the marked structure and both possible answers in the same compact study view.",
+    "section": "Study"
+  },
+  {
+    "id": "landing",
+    "title": "Welcome to MedLearn",
+    "goal": "Understand the study loop and enter the app without a long promotional scroll.",
+    "section": "Getting started"
+  },
+  {
+    "id": "welcome",
+    "title": "Set up your plan",
+    "goal": "Make four understandable choices and reach a useful first study task.",
+    "section": "Getting started"
+  },
+  {
+    "id": "books",
+    "title": "Your books",
+    "goal": "Choose familiar books once, then get relevant reading references in each topic.",
+    "section": "Your preferences"
+  },
+  {
+    "id": "profile",
+    "title": "Your profile",
+    "goal": "Adjust study preferences without navigating through a second dashboard.",
+    "section": "Your preferences"
+  },
+  {
+    "id": "account",
+    "title": "Your account",
+    "goal": "Understand saving, permissions and sign-in without promotional distractions.",
+    "section": "Your preferences"
+  },
+  {
+    "id": "offline",
+    "title": "Offline recovery",
+    "goal": "Explain what can still be used and offer one safe next step.",
+    "section": "Recovery"
+  },
+  {
+    "id": "review",
+    "title": "Content review",
+    "goal": "Help reviewers find a topic, understand the pending change and record an explicit decision.",
+    "section": "Staff utilities"
+  },
+  {
+    "id": "admin",
+    "title": "Review administration",
+    "goal": "Manage review-team access and trace decisions with a compact utility layout.",
+    "section": "Staff utilities"
+  },
+  {
+    "id": "facilitator",
+    "title": "Facilitator setup",
+    "goal": "Set up a usability scenario with a clear preview of the data it replaces on this device.",
+    "section": "Evaluation utilities"
+  }
+]

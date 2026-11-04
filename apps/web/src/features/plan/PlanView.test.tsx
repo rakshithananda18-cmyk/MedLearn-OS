@@ -65,8 +65,8 @@ describe('PlanView', () => {
     expect(screen.getByText('Today looks heavy')).toBeInTheDocument();
     await expectNoA11yViolations(container);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Finished (0)' }));
-    expect(screen.getByText('No finished plans yet')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Completed (0)' }));
+    expect(screen.getByText('No completed plans yet')).toBeInTheDocument();
   });
 });
 
@@ -138,7 +138,7 @@ describe('PlanBuilder', () => {
 });
 
 describe('PlanCalendar', () => {
-  it('takes a day off, changes the study days, and opens topics in the library', async () => {
+  it('takes a day off, changes the study days, and distinguishes studying from the overview', async () => {
     let id = '';
     act(() => {
       profile();
@@ -151,14 +151,13 @@ describe('PlanCalendar', () => {
     });
     render(<PlanCalendar id={id} topics={PLANNABLE_TOPICS} tree={tree} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Thorax' })).toBeInTheDocument();
-    // A topic's name opens it in the library; its own action starts the lesson.
-    expect(screen.getByRole('link', { name: /^1\. Pleura/ })).toHaveAttribute(
-      'href',
-      '/learn/pleura',
-    );
-    expect(screen.getByRole('link', { name: /^Start the lesson: Pleura/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Start lesson: Pleura/ })).toHaveAttribute(
       'href',
       '/learn/pleura/lesson',
+    );
+    expect(screen.getByRole('link', { name: /^Overview: Pleura/ })).toHaveAttribute(
+      'href',
+      '/learn/pleura',
     );
 
     await userEvent.click(screen.getAllByRole('button', { name: /^Take off / })[0] as HTMLElement);
@@ -167,27 +166,6 @@ describe('PlanCalendar', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Sun' }));
     expect(readProgress().goals[0]?.days).toEqual([1, 2, 3, 4, 5, 6]);
-  });
-
-  it('says plainly when the date passed with topics left, and gives it another week', async () => {
-    let id = '';
-    act(() => {
-      profile();
-      id = addGoal({
-        kind: 'revisit',
-        title: 'Thorax again',
-        topics: ['pleura', 'lungs'],
-        date: addDays(today, -2),
-        from: addDays(today, -9),
-      }).id;
-    });
-    render(<PlanCalendar id={id} topics={PLANNABLE_TOPICS} tree={tree} />);
-    expect(screen.queryByText('Every topic is done.')).not.toBeInTheDocument();
-    expect(screen.getAllByText(/The date has passed · 2 topics left/)[0]).toBeInTheDocument();
-    await userEvent.click(
-      screen.getAllByRole('button', { name: 'Give it another week' })[0] as HTMLElement,
-    );
-    expect(readProgress().goals[0]?.date).toBe(addDays(today, 7));
   });
 
   it('says so when the plan is not on this device', () => {

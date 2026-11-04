@@ -23,7 +23,7 @@ import {
 import { ArrowLeft, ArrowRight } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { type LibraryNode, topicsUnder } from '@/content/library';
 import type { TopicSummary } from '@/content/topics';
@@ -60,6 +60,7 @@ const KINDS: Array<{ value: Kind; label: string; description: string }> = [
 ];
 
 const STEPS = ['What', 'Topics', 'When', 'Check'] as const;
+const STEP_TITLES = ['Choose your plan', 'Which topics?', 'When?', 'Check and add'] as const;
 
 /** The finish dates offered as one tap, in days from the start. */
 const SPANS = [
@@ -86,17 +87,25 @@ export function PlanBuilder({
   const examDate = progress.profile?.examDate ?? null;
 
   const [step, setStep] = useState(0);
-  const stepRef = useRef<HTMLElement>(null);
-  // Each new step takes the focus to its heading, so a keyboard or screen reader starts there.
-  useEffect(() => {
-    if (step > 0) stepRef.current?.querySelector<HTMLElement>('h2')?.focus();
-  }, [step]);
   const [kind, setKind] = useState<Kind | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
   const [start, setStart] = useState(today);
   const [finish, setFinish] = useState('');
   const [days, setDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [title, setTitle] = useState('');
+  const headingId = useId();
+  const moved = useRef(false);
+  const go = (next: number) => {
+    moved.current = true;
+    setStep(next);
+  };
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    const heading = document.getElementById(headingId);
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: 'nearest' });
+  }, [step, headingId]);
 
   const goalKind: StudyGoal['kind'] = kind === 'ai' || kind === null ? 'learn' : kind;
   const can = (slug: string) =>
@@ -105,6 +114,7 @@ export function PlanBuilder({
       : goalKind === 'revisit'
         ? learnt.includes(slug)
         : true;
+  const eligibleCount = topics.filter((topic) => can(topic.slug)).length;
   const draft = {
     kind: goalKind,
     topics: chosen,
@@ -151,7 +161,7 @@ export function PlanBuilder({
   const weeks = [...new Set(schedule.map((day) => mondayOf(day.date)))];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-2">
         <Link
           href="/plan"
@@ -167,12 +177,16 @@ export function PlanBuilder({
             current={kind === 'ai' ? Math.min(step, 1) : step}
           />
           <span className="text-sm text-fg-muted">
+            Step {step + 1} of {kind === 'ai' ? 2 : STEPS.length} ·{' '}
             {kind === 'ai' && step > 0 ? 'Suggest' : STEPS[step]}
           </span>
         </div>
       </header>
 
-      <section ref={stepRef} className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
+      <section className={cx(GLASS, 'flex flex-col gap-4 p-4 md:p-6')}>
+        <Heading level={2} id={headingId} tabIndex={-1}>
+          {kind === 'ai' && step > 0 ? 'Suggest a plan' : STEP_TITLES[step]}
+        </Heading>
         {step === 0 ? (
           <ChoiceGroup
             legend="What do you want to plan?"
@@ -187,15 +201,20 @@ export function PlanBuilder({
         ) : null}
 
         {step > 0 && kind === 'ai' ? (
-          <AiPlan topics={bySlug} today={today} onAdded={() => router.push('/plan')} />
+          <AiPlan
+            topics={bySlug}
+            today={today}
+            onAdded={() => router.push('/plan')}
+            onManual={() => {
+              setKind(null);
+              go(0);
+            }}
+          />
         ) : null}
 
         {step === 1 && kind !== 'ai' ? (
           <>
             <div className="flex flex-col gap-1">
-              <Heading level={2} tabIndex={-1}>
-                Which topics?
-              </Heading>
               <Text size="sm" tone="muted">
                 {goalKind === 'learn'
                   ? 'Topics you have not learnt yet. Choose a whole region or section, or single topics.'
@@ -205,21 +224,26 @@ export function PlanBuilder({
                 {chosen.length} chosen.
               </Text>
             </div>
-            <TopicPicker
-              tree={tree}
-              chosen={chosen}
-              onChange={setChosen}
-              can={can}
-              learnt={learnt}
-            />
+            {eligibleCount === 0 ? (
+              <Text role="status">
+                {goalKind === 'revisit'
+                  ? 'Finish a lesson first to plan its revisit, or go back and choose a class test.'
+                  : 'You have completed the available lessons. Go back and choose a revisit or class test.'}
+              </Text>
+            ) : (
+              <TopicPicker
+                tree={tree}
+                chosen={chosen}
+                onChange={setChosen}
+                can={can}
+                learnt={learnt}
+              />
+            )}
           </>
         ) : null}
 
         {step === 2 && kind !== 'ai' ? (
           <>
-            <Heading level={2} tabIndex={-1}>
-              When?
-            </Heading>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <TextField
@@ -300,14 +324,20 @@ export function PlanBuilder({
                 {load > dailyMinutes ? ' Give it a later date, more days, or fewer topics.' : ''}
               </Text>
             ) : null}
+            {finish && !ready[2] ? (
+              <Text role="status" size="sm" tone="muted">
+                {finish < start
+                  ? 'Choose a finish date on or after the start.'
+                  : days.length === 0
+                    ? 'Choose at least one study weekday.'
+                    : 'There are no selected study days in this date range. Add a day or choose a later finish.'}
+              </Text>
+            ) : null}
           </>
         ) : null}
 
         {step === 3 && kind !== 'ai' ? (
           <>
-            <Heading level={2} tabIndex={-1}>
-              Check and add
-            </Heading>
             <TextField
               label="Name"
               placeholder={named}
@@ -320,40 +350,45 @@ export function PlanBuilder({
               {dayName(start)} to {dayName(finish)}, about {minutesText(load)} on the busiest day.
               Today re-paces it if you miss a day.
             </Text>
-            <ol className="flex flex-col gap-3">
-              {weeks.map((monday) => (
-                <li key={monday} className="rounded-lg bg-surface p-3">
-                  <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
-                    Week of {dateName(monday)}
-                  </span>
-                  <ul className="mt-2 flex flex-col gap-1 text-sm">
-                    {schedule
-                      .filter((day) => mondayOf(day.date) === monday)
-                      .map((day) => (
-                        <li key={day.date} className="flex gap-3">
-                          <span className="w-24 shrink-0 text-fg-muted">{dayName(day.date)}</span>
-                          <span className="text-fg">
-                            {day.topics.map((slug) => bySlug.get(slug)?.title ?? slug).join(', ')}
-                          </span>
-                        </li>
-                      ))}
-                  </ul>
-                </li>
-              ))}
-            </ol>
+            <details>
+              <summary className="min-h-12 cursor-pointer py-3 text-sm font-semibold text-primary-strong">
+                Day-by-day schedule · {schedule.length} study days
+              </summary>
+              <ol className="flex flex-col gap-3">
+                {weeks.map((monday) => (
+                  <li key={monday} className="rounded-lg bg-surface p-3">
+                    <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
+                      Week of {dateName(monday)}
+                    </span>
+                    <ul className="mt-2 flex flex-col gap-1 text-sm">
+                      {schedule
+                        .filter((day) => mondayOf(day.date) === monday)
+                        .map((day) => (
+                          <li key={day.date} className="flex flex-wrap gap-x-3 gap-y-1">
+                            <span className="w-24 shrink-0 text-fg-muted">{dayName(day.date)}</span>
+                            <span className="min-w-0 flex-1 text-fg">
+                              {day.topics.map((slug) => bySlug.get(slug)?.title ?? slug).join(', ')}
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+            </details>
           </>
         ) : null}
       </section>
 
       <div className="flex flex-wrap gap-2">
         {step > 0 ? (
-          <Button variant="ghost" iconStart={ArrowLeft} onClick={() => setStep(step - 1)}>
+          <Button variant="ghost" iconStart={ArrowLeft} onClick={() => go(step - 1)}>
             Back
           </Button>
         ) : null}
         <span className="flex-1" />
         {kind === 'ai' && step > 0 ? null : step < STEPS.length - 1 ? (
-          <Button iconEnd={ArrowRight} disabled={!ready[step]} onClick={() => setStep(step + 1)}>
+          <Button iconEnd={ArrowRight} disabled={!ready[step]} onClick={() => go(step + 1)}>
             Next
           </Button>
         ) : (

@@ -27,6 +27,9 @@ describe('OnboardingView', () => {
 
     await userEvent.click(screen.getByRole('radio', { name: /18 or older/ }));
     await next();
+    expect(
+      screen.getByRole('heading', { name: 'Which year are you in?' }).parentElement,
+    ).toHaveFocus();
     await userEvent.click(screen.getByRole('radio', { name: /First year/ }));
     await next();
     fireEvent.change(screen.getByLabelText('Exam date'), { target: { value: '2026-12-01' } });
@@ -51,6 +54,9 @@ describe('OnboardingView', () => {
     expect(screen.getByText(/first-year topics only/)).toBeInTheDocument();
     await next();
     await userEvent.click(screen.getByRole('button', { name: 'Previous question' }));
+    expect(
+      screen.getByRole('heading', { name: 'Which year are you in?' }).parentElement,
+    ).toHaveFocus();
     expect(screen.getByRole('radio', { name: /Second year/ })).toBeChecked();
     await next();
     await userEvent.click(screen.getByRole('button', { name: 'Not sure yet' }));

@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { beginFixtureMode, isFixtureMode } from '@/features/facilitator/mode';
 import { readProgress, resetProgress, saveNote, saveProfile } from '@/features/progress/store';
 
 import { AccountCard } from './AccountCard';
@@ -43,6 +44,27 @@ afterEach(() => {
 });
 
 describe('AccountView', () => {
+  it('requires discarding a local test session before showing account forms', async () => {
+    act(() => {
+      adult();
+      beginFixtureMode();
+    });
+    const fetchMock = server({ '/api/account': [{ body: { data: null } }] });
+    render(<AccountView />);
+    expect(
+      screen.getByRole('heading', { name: 'End test setup before using an account' }),
+    ).toBeVisible();
+    expect(screen.queryByLabelText(/^Email/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'End and discard test progress' }));
+    expect(isFixtureMode()).toBe(false);
+    expect(readProgress().profile).toBeNull();
+    expect(
+      fetchMock.mock.calls.some(
+        ([path]) => path === '/api/account/sign-in' || path === '/api/account/sign-up',
+      ),
+    ).toBe(false);
+  });
+
   it('lets an adult create an account with the emailed code, then shows it', async () => {
     act(adult);
     const fetchMock = server({
@@ -236,6 +258,17 @@ describe('AccountView', () => {
     expect(localStorage.getItem('ml-find-it-best-v1')).toBe('{"axilla":4}');
     expect(fetchMock.mock.calls.some(([path]) => path === '/api/account/sign-out')).toBe(false);
     expect(push).not.toHaveBeenCalled();
+  });
+});
+
+describe('account verification recovery', () => {
+  it('keeps account changes unavailable after a failed check, then retries', async () => {
+    server({ '/api/account': [{ status: 503 }, { body: signedIn }] });
+    render(<AccountView />);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn.t check your account/);
+    expect(screen.queryByLabelText(/^Email/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('Signed in as asha@example.com')).toBeInTheDocument();
   });
 });
 

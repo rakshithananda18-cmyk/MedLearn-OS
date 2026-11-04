@@ -93,7 +93,7 @@ export function StepList({
 /**
  * A flow's layout. Phones and upright tablets stack the header, the step, the visual and the
  * controls. Tablets held sideways and laptops fill the window: the visual on a glass stage on
- * the left, the step in a glass panel on the right, the controls under it.
+ * the left, the step in a quiet panel on the right, and controls directly under the visual.
  */
 export function FlowLayout({
   label,
@@ -123,7 +123,7 @@ export function FlowLayout({
       <section
         aria-label={label}
         tabIndex={0} // NOSONAR: a scrolling pane must take focus so the keyboard can scroll it
-        className={cx('area-panel flex flex-col gap-4 xl:overflow-y-auto xl:p-6', GLASS)}
+        className={cx('area-panel flex min-w-0 flex-col gap-4 xl:overflow-y-auto xl:p-6', GLASS)}
       >
         {panel}
       </section>
@@ -131,7 +131,7 @@ export function FlowLayout({
         aria-label={stageLabel}
         tabIndex={0} // NOSONAR: a scrolling pane must take focus so the keyboard can scroll it
         className={cx(
-          'area-stage flex flex-col gap-4 xl:min-h-0 xl:overflow-y-auto',
+          'area-stage flex min-w-0 flex-col gap-4 xl:min-h-0 xl:overflow-y-auto',
           framed && cx(GLASS, 'xl:p-4'),
         )}
       >

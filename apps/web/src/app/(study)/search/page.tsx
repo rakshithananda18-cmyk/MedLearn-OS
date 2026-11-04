@@ -13,6 +13,7 @@ import type { Metadata } from 'next';
 import { type SearchKind, searchTopics } from '@/content/search';
 import { PLANNABLE_TOPICS } from '@/content/topics';
 import { LiveSearch } from '@/features/search/LiveSearch';
+import { SearchExcerpt } from '@/features/search/SearchExcerpt';
 import { LinkCard } from '@/features/shell/LinkCard';
 import { Screen } from '@/features/shell/Screen';
 
@@ -62,9 +63,15 @@ export default async function SearchPage({ searchParams }: Props) {
               <LinkCard
                 href={result.href}
                 icon={ICONS[result.kind]}
-                // The topic first, so a list of matches scans by topic; then what matched.
-                title={result.topicTitle}
-                meta={`${result.kind}: ${result.excerpt}`}
+                title={result.kind === 'Structure' ? result.excerpt : result.topicTitle}
+                meta={
+                  result.kind === 'Structure' ? `Structure · ${result.topicTitle}` : result.kind
+                }
+                description={
+                  result.kind === 'Structure' ? undefined : (
+                    <SearchExcerpt text={result.excerpt} query={query} />
+                  )
+                }
               />
             </li>
           ))}

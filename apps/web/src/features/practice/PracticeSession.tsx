@@ -23,11 +23,13 @@ function Results({
   results,
   onAgain,
   onDone,
+  returnTo,
 }: Readonly<{
   title: string;
   results: SessionResults;
   onAgain: (questions: PracticeQuestion[]) => void;
   onDone: () => void;
+  returnTo?: { href: string; label: string };
 }>) {
   const score = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -44,13 +46,13 @@ function Results({
       total: inTopic.length,
     };
   });
-  let verdict = 'Keep going: every miss is now a recall card.';
-  if (percent >= 80) verdict = 'Strong work. These are sticking.';
+  let verdict = 'Review the unanswered and missed questions, then try them again.';
+  if (percent >= 80) verdict = 'Strong result in this session. Revisit later to check recall.';
   else if (percent >= 60) verdict = 'Getting there. Go over the misses once more.';
   return (
     <section
       aria-labelledby="results-title"
-      className="flex animate-rise flex-col gap-4 rounded-xl border border-glass-border bg-glass p-6 shadow-glass"
+      className="flex min-w-0 animate-rise flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-glass md:p-6"
     >
       <Eyebrow>{title} · done</Eyebrow>
       <div className="flex items-baseline gap-3">
@@ -93,13 +95,18 @@ function Results({
             Try the {missed.length} missed again
           </Button>
         ) : null}
-        <Link href="/revise" className={buttonClasses({ variant: 'secondary' })}>
-          Recall cards
-        </Link>
+        {returnTo ? (
+          <Link href={returnTo.href} className={buttonClasses({ variant: 'secondary' })}>
+            {returnTo.label}
+          </Link>
+        ) : null}
         <Button variant="ghost" onClick={onDone}>
           Back to practice
         </Button>
       </div>
+      <Link href="/revise" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+        Optional: open recall cards
+      </Link>
     </section>
   );
 }
@@ -115,6 +122,7 @@ export function PracticeSession({
   seconds = null,
   onFinish,
   onExit,
+  returnTo,
 }: Readonly<{
   title: string;
   questions: PracticeQuestion[];
@@ -123,6 +131,7 @@ export function PracticeSession({
   /** Called once, when the last question is answered or time runs out. */
   onFinish?: (results: SessionResults) => void;
   onExit: () => void;
+  returnTo?: { href: string; label: string };
 }>) {
   const [questions, setQuestions] = useState(first);
   const [index, setIndex] = useState(0);
@@ -179,6 +188,7 @@ export function PracticeSession({
           setFinished(false);
         }}
         onDone={onExit}
+        returnTo={returnTo}
       />
     );
   }
@@ -186,7 +196,7 @@ export function PracticeSession({
   const last = index === questions.length - 1;
   return (
     <section aria-label={title} className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <IconButton icon={X} label="End the session" variant="secondary" onClick={onExit} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-center justify-between gap-3 text-sm">
@@ -223,7 +233,7 @@ export function PracticeSession({
         )}
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-glass-border bg-glass p-6 shadow-glass">
+      <div className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-glass md:p-6">
         <Eyebrow>{showing.topic.title}</Eyebrow>
         <ContentTrust topic={showing.topic} />
         <QuestionCard

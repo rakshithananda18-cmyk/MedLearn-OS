@@ -23,6 +23,7 @@ import {
   waitFor,
 } from './lib/cli.mjs';
 import { ensureDocker } from './lib/docker.mjs';
+import { configureLocalEnv } from './lib/local-env.mjs';
 
 const PORT = 3000;
 const APP_URL = `http://localhost:${PORT}`;
@@ -45,6 +46,9 @@ if (databaseWasRunning) {
   step('Starting the local database');
   run('pnpm', ['db:start']);
 }
+
+step('Refreshing the local database connection (existing data is kept)');
+configureLocalEnv();
 
 if (PRODUCTION) {
   step('Building the production app (about a minute)');

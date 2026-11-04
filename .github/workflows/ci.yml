@@ -46,6 +46,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm bootstrap
       - run: pnpm test:db
+      - run: pnpm test:integration
       - run: pnpm test:coverage
 
   # One machine per screen size, side by side, so the slowest job sets the wait rather than the sum.

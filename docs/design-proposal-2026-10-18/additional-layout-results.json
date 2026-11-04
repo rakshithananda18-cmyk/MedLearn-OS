@@ -1,0 +1,1857 @@
+{
+  "date": "2026-10-18",
+  "base": "http://localhost:3106",
+  "screens": [
+    {
+      "page": "today",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "x": 39,
+          "y": 729.59375,
+          "right": 210.375,
+          "bottom": 777.59375,
+          "width": 171.375,
+          "height": 48
+        },
+        {
+          "text": "Adjust daily goal",
+          "x": 33,
+          "y": 1095.359375,
+          "right": 287,
+          "bottom": 1143.359375,
+          "width": 254,
+          "height": 48
+        },
+        {
+          "text": "Start recall",
+          "x": 173.890625,
+          "y": 1321.4375,
+          "right": 286,
+          "bottom": 1369.4375,
+          "width": 112.109375,
+          "height": 48
+        },
+        {
+          "text": "Practise",
+          "x": 193.625,
+          "y": 1483.09375,
+          "right": 286,
+          "bottom": 1531.09375,
+          "width": 92.375,
+          "height": 48
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Practise",
+          "r": {
+            "x": 193.625,
+            "y": 786.09375,
+            "right": 286,
+            "bottom": 834.09375,
+            "width": 92.375,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "library",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "x": 18,
+          "y": 346.234375,
+          "right": 166.953125,
+          "bottom": 394.234375,
+          "width": 148.953125,
+          "height": 48
+        },
+        {
+          "text": "Anatomy",
+          "x": 18,
+          "y": 414.234375,
+          "right": 119.75,
+          "bottom": 458.234375,
+          "width": 101.75,
+          "height": 44
+        },
+        {
+          "text": "Physiology · coming later",
+          "x": 131.75,
+          "y": 414.234375,
+          "right": 299.109375,
+          "bottom": 458.234375,
+          "width": 167.359375,
+          "height": 44
+        },
+        {
+          "text": "Biochemistry · coming later",
+          "x": 18,
+          "y": 470.234375,
+          "right": 198.171875,
+          "bottom": 514.234375,
+          "width": 180.171875,
+          "height": 44
+        },
+        {
+          "text": "Close preview",
+          "x": 163.109375,
+          "y": 559.234375,
+          "right": 281,
+          "bottom": 607.234375,
+          "width": 117.890625,
+          "height": 48
+        },
+        {
+          "text": "Continue lesson",
+          "x": 39,
+          "y": 806.515625,
+          "right": 281,
+          "bottom": 854.515625,
+          "width": 242,
+          "height": 48
+        },
+        {
+          "text": "Open topic overview",
+          "x": 39,
+          "y": 1046.515625,
+          "right": 281,
+          "bottom": 1094.515625,
+          "width": 242,
+          "height": 48
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Continue lesson",
+          "r": {
+            "x": 39,
+            "y": 795.515625,
+            "right": 281,
+            "bottom": 843.515625,
+            "width": 242,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "builder",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "M",
+          "x": 39,
+          "y": 747.953125,
+          "right": 75.890625,
+          "bottom": 791.953125,
+          "width": 36.890625,
+          "height": 44
+        },
+        {
+          "text": "T",
+          "x": 87.890625,
+          "y": 747.953125,
+          "right": 120.578125,
+          "bottom": 791.953125,
+          "width": 32.6875,
+          "height": 44
+        },
+        {
+          "text": "W",
+          "x": 132.578125,
+          "y": 747.953125,
+          "right": 169.75,
+          "bottom": 791.953125,
+          "width": 37.171875,
+          "height": 44
+        },
+        {
+          "text": "T",
+          "x": 181.75,
+          "y": 747.953125,
+          "right": 214.4375,
+          "bottom": 791.953125,
+          "width": 32.6875,
+          "height": 44
+        },
+        {
+          "text": "F",
+          "x": 226.4375,
+          "y": 747.953125,
+          "right": 258.671875,
+          "bottom": 791.953125,
+          "width": 32.234375,
+          "height": 44
+        },
+        {
+          "text": "S",
+          "x": 39,
+          "y": 803.953125,
+          "right": 71.59375,
+          "bottom": 847.953125,
+          "width": 32.59375,
+          "height": 44
+        },
+        {
+          "text": "S",
+          "x": 83.59375,
+          "y": 803.953125,
+          "right": 116.1875,
+          "bottom": 847.953125,
+          "width": 32.59375,
+          "height": 44
+        },
+        {
+          "text": "Back to topics",
+          "x": 39,
+          "y": 923.546875,
+          "right": 158.265625,
+          "bottom": 971.546875,
+          "width": 119.265625,
+          "height": 48
+        },
+        {
+          "text": "Review plan",
+          "x": 39,
+          "y": 985.546875,
+          "right": 182.5625,
+          "bottom": 1033.546875,
+          "width": 143.5625,
+          "height": 48
+        },
+        {
+          "text": "Cancel draft",
+          "x": 33,
+          "y": 1346.8125,
+          "right": 287,
+          "bottom": 1394.8125,
+          "width": 254,
+          "height": 48
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "S",
+          "r": {
+            "x": 39,
+            "y": 799.953125,
+            "right": 71.59375,
+            "bottom": 843.953125,
+            "width": 32.59375,
+            "height": 44
+          },
+          "top": "",
+          "obscured": true
+        },
+        {
+          "text": "S",
+          "r": {
+            "x": 83.59375,
+            "y": 799.953125,
+            "right": 116.1875,
+            "bottom": 843.953125,
+            "width": 32.59375,
+            "height": 44
+          },
+          "top": "",
+          "obscured": true
+        },
+        {
+          "text": "Cancel draft",
+          "r": {
+            "x": 33,
+            "y": 795.8125,
+            "right": 287,
+            "bottom": 843.8125,
+            "width": 254,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "lesson",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "x": 18,
+          "y": 90,
+          "right": 118.453125,
+          "bottom": 138,
+          "width": 100.453125,
+          "height": 48
+        },
+        {
+          "text": "Back",
+          "x": 33,
+          "y": 684.40625,
+          "right": 65.6875,
+          "bottom": 732.40625,
+          "width": 32.6875,
+          "height": 48
+        },
+        {
+          "text": "Next: divisions",
+          "x": 77.6875,
+          "y": 684.40625,
+          "right": 213.421875,
+          "bottom": 732.40625,
+          "width": 135.734375,
+          "height": 48
+        },
+        {
+          "text": "Inspect in Studio",
+          "x": 39,
+          "y": 1380.34375,
+          "right": 281,
+          "bottom": 1428.34375,
+          "width": 242,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "knee-sample",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "x": 266.609375,
+          "y": 80,
+          "right": 302,
+          "bottom": 128,
+          "width": 35.390625,
+          "height": 48
+        },
+        {
+          "text": "Anterior cruciate ligament",
+          "x": 18,
+          "y": 534.6875,
+          "right": 302,
+          "bottom": 585.78125,
+          "width": 284,
+          "height": 51.09375
+        },
+        {
+          "text": "Posterior cruciate ligament",
+          "x": 18,
+          "y": 595.78125,
+          "right": 302,
+          "bottom": 646.875,
+          "width": 284,
+          "height": 51.09375
+        },
+        {
+          "text": "Front",
+          "x": 18,
+          "y": 662.875,
+          "right": 73.953125,
+          "bottom": 706.875,
+          "width": 55.953125,
+          "height": 44
+        },
+        {
+          "text": "Medial",
+          "x": 85.953125,
+          "y": 662.875,
+          "right": 149.921875,
+          "bottom": 706.875,
+          "width": 63.96875,
+          "height": 44
+        },
+        {
+          "text": "Back",
+          "x": 161.921875,
+          "y": 662.875,
+          "right": 214.625,
+          "bottom": 706.875,
+          "width": 52.703125,
+          "height": 44
+        },
+        {
+          "text": "Reset view",
+          "x": 18,
+          "y": 718.875,
+          "right": 103.359375,
+          "bottom": 762.875,
+          "width": 85.359375,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "practice",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "x": 18,
+          "y": 90,
+          "right": 87.203125,
+          "bottom": 138,
+          "width": 69.203125,
+          "height": 48
+        },
+        {
+          "text": "A. Popliteus",
+          "x": 39,
+          "y": 377.5625,
+          "right": 281,
+          "bottom": 428.65625,
+          "width": 242,
+          "height": 51.09375
+        },
+        {
+          "text": "B. Vastus medialis",
+          "x": 39,
+          "y": 444.65625,
+          "right": 281,
+          "bottom": 495.75,
+          "width": 242,
+          "height": 51.09375
+        },
+        {
+          "text": "C. Biceps femoris",
+          "x": 39,
+          "y": 511.75,
+          "right": 281,
+          "bottom": 562.84375,
+          "width": 242,
+          "height": 51.09375
+        },
+        {
+          "text": "D. Sartorius",
+          "x": 39,
+          "y": 578.84375,
+          "right": 281,
+          "bottom": 629.9375,
+          "width": 242,
+          "height": 51.09375
+        },
+        {
+          "text": "Check answer",
+          "x": 39,
+          "y": 645.9375,
+          "right": 169.875,
+          "bottom": 693.9375,
+          "width": 130.875,
+          "height": 48
+        },
+        {
+          "text": "Leave practice",
+          "x": 181.875,
+          "y": 645.9375,
+          "right": 280.03125,
+          "bottom": 693.9375,
+          "width": 98.15625,
+          "height": 48
+        },
+        {
+          "text": "Review lesson",
+          "x": 33,
+          "y": 901.109375,
+          "right": 128.234375,
+          "bottom": 949.109375,
+          "width": 95.234375,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "recall",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "x": 18,
+          "y": 90,
+          "right": 121.25,
+          "bottom": 138,
+          "width": 103.25,
+          "height": 48
+        },
+        {
+          "text": "Reveal answer",
+          "x": 39,
+          "y": 377.5625,
+          "right": 281,
+          "bottom": 425.5625,
+          "width": 242,
+          "height": 48
+        },
+        {
+          "text": "Open lesson",
+          "x": 33,
+          "y": 608.8125,
+          "right": 117.078125,
+          "bottom": 656.8125,
+          "width": 84.078125,
+          "height": 48
+        },
+        {
+          "text": "End this session",
+          "x": 18,
+          "y": 534.8125,
+          "right": 126.703125,
+          "bottom": 582.8125,
+          "width": 108.703125,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "profile",
+      "scenario": "narrow320",
+      "viewport": 320,
+      "documentWidth": 320,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "x": 157.703125,
+          "y": 377.75,
+          "right": 269.84375,
+          "bottom": 425.75,
+          "width": 112.140625,
+          "height": 48
+        },
+        {
+          "text": "View Today",
+          "x": 39,
+          "y": 847.625,
+          "right": 281,
+          "bottom": 895.625,
+          "width": 242,
+          "height": 48
+        },
+        {
+          "text": "Manage account",
+          "x": 39,
+          "y": 1133.265625,
+          "right": 281,
+          "bottom": 1181.265625,
+          "width": 242,
+          "height": 48
+        },
+        {
+          "text": "Choose your books",
+          "x": 39,
+          "y": 1282.5625,
+          "right": 281,
+          "bottom": 1330.5625,
+          "width": 242,
+          "height": 48
+        },
+        {
+          "text": "Light",
+          "x": 118.328125,
+          "y": 1346.5625,
+          "right": 172.84375,
+          "bottom": 1390.5625,
+          "width": 54.515625,
+          "height": 44
+        },
+        {
+          "text": "Night",
+          "x": 184.84375,
+          "y": 1346.5625,
+          "right": 242.203125,
+          "bottom": 1390.5625,
+          "width": 57.359375,
+          "height": 44
+        },
+        {
+          "text": "System",
+          "x": 39,
+          "y": 1402.5625,
+          "right": 105.78125,
+          "bottom": 1446.5625,
+          "width": 66.78125,
+          "height": 44
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Choose your books",
+          "r": {
+            "x": 39,
+            "y": 795.5625,
+            "right": 281,
+            "bottom": 843.5625,
+            "width": 242,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "today",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "x": 153,
+          "y": 561.640625,
+          "right": 324.375,
+          "bottom": 607.640625,
+          "width": 171.375,
+          "height": 46
+        },
+        {
+          "text": "Adjust daily goal",
+          "x": 624.359375,
+          "y": 462.421875,
+          "right": 982,
+          "bottom": 506.421875,
+          "width": 357.640625,
+          "height": 44
+        },
+        {
+          "text": "Start recall",
+          "x": 871.890625,
+          "y": 732.1875,
+          "right": 984,
+          "bottom": 779.28125,
+          "width": 112.109375,
+          "height": 47.09375
+        },
+        {
+          "text": "Practise",
+          "x": 891.625,
+          "y": 815.375,
+          "right": 984,
+          "bottom": 862.46875,
+          "width": 92.375,
+          "height": 47.09375
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "library",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "x": 851.046875,
+          "y": 233.078125,
+          "right": 1000,
+          "bottom": 280.171875,
+          "width": 148.953125,
+          "height": 47.09375
+        },
+        {
+          "text": "Anatomy",
+          "x": 116,
+          "y": 303,
+          "right": 217.75,
+          "bottom": 339,
+          "width": 101.75,
+          "height": 36
+        },
+        {
+          "text": "Physiology · coming later",
+          "x": 229.75,
+          "y": 303,
+          "right": 397.109375,
+          "bottom": 339,
+          "width": 167.359375,
+          "height": 36
+        },
+        {
+          "text": "Biochemistry · coming later",
+          "x": 409.109375,
+          "y": 303,
+          "right": 589.28125,
+          "bottom": 339,
+          "width": 180.171875,
+          "height": 36
+        },
+        {
+          "text": "Close preview",
+          "x": 865.8125,
+          "y": 386,
+          "right": 977,
+          "bottom": 430,
+          "width": 111.1875,
+          "height": 44
+        },
+        {
+          "text": "Continue lesson",
+          "x": 629.359375,
+          "y": 629.28125,
+          "right": 977,
+          "bottom": 675.28125,
+          "width": 347.640625,
+          "height": 46
+        },
+        {
+          "text": "Open topic overview",
+          "x": 629.359375,
+          "y": 897.28125,
+          "right": 977,
+          "bottom": 941.28125,
+          "width": 347.640625,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "builder",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "M",
+          "x": 139,
+          "y": 558.125,
+          "right": 175.890625,
+          "bottom": 594.125,
+          "width": 36.890625,
+          "height": 36
+        },
+        {
+          "text": "T",
+          "x": 187.890625,
+          "y": 558.125,
+          "right": 220.578125,
+          "bottom": 594.125,
+          "width": 32.6875,
+          "height": 36
+        },
+        {
+          "text": "W",
+          "x": 232.578125,
+          "y": 558.125,
+          "right": 269.75,
+          "bottom": 594.125,
+          "width": 37.171875,
+          "height": 36
+        },
+        {
+          "text": "T",
+          "x": 281.75,
+          "y": 558.125,
+          "right": 314.4375,
+          "bottom": 594.125,
+          "width": 32.6875,
+          "height": 36
+        },
+        {
+          "text": "F",
+          "x": 326.4375,
+          "y": 558.125,
+          "right": 358.671875,
+          "bottom": 594.125,
+          "width": 32.234375,
+          "height": 36
+        },
+        {
+          "text": "S",
+          "x": 370.671875,
+          "y": 558.125,
+          "right": 403.265625,
+          "bottom": 594.125,
+          "width": 32.59375,
+          "height": 36
+        },
+        {
+          "text": "S",
+          "x": 415.265625,
+          "y": 558.125,
+          "right": 447.859375,
+          "bottom": 594.125,
+          "width": 32.59375,
+          "height": 36
+        },
+        {
+          "text": "Back to topics",
+          "x": 139,
+          "y": 650.921875,
+          "right": 251.453125,
+          "bottom": 694.921875,
+          "width": 112.453125,
+          "height": 44
+        },
+        {
+          "text": "Review plan",
+          "x": 421.796875,
+          "y": 649.921875,
+          "right": 565.359375,
+          "bottom": 695.921875,
+          "width": 143.5625,
+          "height": 46
+        },
+        {
+          "text": "Cancel draft",
+          "x": 624.359375,
+          "y": 543.515625,
+          "right": 982,
+          "bottom": 587.515625,
+          "width": 357.640625,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "lesson",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "x": 116,
+          "y": 102,
+          "right": 209.28125,
+          "bottom": 146,
+          "width": 93.28125,
+          "height": 44
+        },
+        {
+          "text": "Back",
+          "x": 134,
+          "y": 804.84375,
+          "right": 164.34375,
+          "bottom": 848.84375,
+          "width": 30.34375,
+          "height": 44
+        },
+        {
+          "text": "Next: divisions",
+          "x": 176.34375,
+          "y": 803.84375,
+          "right": 312.078125,
+          "bottom": 849.84375,
+          "width": 135.734375,
+          "height": 46
+        },
+        {
+          "text": "Inspect in Studio",
+          "x": 629.359375,
+          "y": 851.90625,
+          "right": 977,
+          "bottom": 895.90625,
+          "width": 347.640625,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "knee-sample",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "x": 895.140625,
+          "y": 102,
+          "right": 928,
+          "bottom": 146,
+          "width": 32.859375,
+          "height": 44
+        },
+        {
+          "text": "Anterior cruciate ligament",
+          "x": 188,
+          "y": 585.234375,
+          "right": 928,
+          "bottom": 637.984375,
+          "width": 740,
+          "height": 52.75
+        },
+        {
+          "text": "Posterior cruciate ligament",
+          "x": 188,
+          "y": 647.984375,
+          "right": 928,
+          "bottom": 700.734375,
+          "width": 740,
+          "height": 52.75
+        },
+        {
+          "text": "Front",
+          "x": 188,
+          "y": 716.734375,
+          "right": 243.953125,
+          "bottom": 752.734375,
+          "width": 55.953125,
+          "height": 36
+        },
+        {
+          "text": "Medial",
+          "x": 255.953125,
+          "y": 716.734375,
+          "right": 319.921875,
+          "bottom": 752.734375,
+          "width": 63.96875,
+          "height": 36
+        },
+        {
+          "text": "Back",
+          "x": 331.921875,
+          "y": 716.734375,
+          "right": 384.625,
+          "bottom": 752.734375,
+          "width": 52.703125,
+          "height": 36
+        },
+        {
+          "text": "Reset view",
+          "x": 396.625,
+          "y": 716.734375,
+          "right": 481.984375,
+          "bottom": 752.734375,
+          "width": 85.359375,
+          "height": 36
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "practice",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "x": 188,
+          "y": 102,
+          "right": 252.25,
+          "bottom": 146,
+          "width": 64.25,
+          "height": 44
+        },
+        {
+          "text": "A. Popliteus",
+          "x": 211,
+          "y": 335.6875,
+          "right": 905,
+          "bottom": 388.4375,
+          "width": 694,
+          "height": 52.75
+        },
+        {
+          "text": "B. Vastus medialis",
+          "x": 211,
+          "y": 404.4375,
+          "right": 905,
+          "bottom": 457.1875,
+          "width": 694,
+          "height": 52.75
+        },
+        {
+          "text": "C. Biceps femoris",
+          "x": 211,
+          "y": 473.1875,
+          "right": 905,
+          "bottom": 525.9375,
+          "width": 694,
+          "height": 52.75
+        },
+        {
+          "text": "D. Sartorius",
+          "x": 211,
+          "y": 541.9375,
+          "right": 905,
+          "bottom": 594.6875,
+          "width": 694,
+          "height": 52.75
+        },
+        {
+          "text": "Check answer",
+          "x": 211,
+          "y": 610.6875,
+          "right": 341.875,
+          "bottom": 656.6875,
+          "width": 130.875,
+          "height": 46
+        },
+        {
+          "text": "Leave practice",
+          "x": 353.875,
+          "y": 611.6875,
+          "right": 445.03125,
+          "bottom": 655.6875,
+          "width": 91.15625,
+          "height": 44
+        },
+        {
+          "text": "Review lesson",
+          "x": 475.046875,
+          "y": 769.28125,
+          "right": 563.484375,
+          "bottom": 813.28125,
+          "width": 88.4375,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "recall",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "x": 188,
+          "y": 102,
+          "right": 283.875,
+          "bottom": 146,
+          "width": 95.875,
+          "height": 44
+        },
+        {
+          "text": "Reveal answer",
+          "x": 211,
+          "y": 335.6875,
+          "right": 905,
+          "bottom": 381.6875,
+          "width": 694,
+          "height": 46
+        },
+        {
+          "text": "Open lesson",
+          "x": 206,
+          "y": 522.6875,
+          "right": 284.078125,
+          "bottom": 566.6875,
+          "width": 78.078125,
+          "height": 44
+        },
+        {
+          "text": "End this session",
+          "x": 188,
+          "y": 500.6875,
+          "right": 288.9375,
+          "bottom": 544.6875,
+          "width": 100.9375,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "profile",
+      "scenario": "landscape1024",
+      "viewport": 1024,
+      "documentWidth": 1024,
+      "rootFont": "16px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "x": 257.703125,
+          "y": 400.3125,
+          "right": 369.84375,
+          "bottom": 447.40625,
+          "width": 112.140625,
+          "height": 47.09375
+        },
+        {
+          "text": "View Today",
+          "x": 139,
+          "y": 843.890625,
+          "right": 526,
+          "bottom": 889.890625,
+          "width": 387,
+          "height": 46
+        },
+        {
+          "text": "Manage account",
+          "x": 590,
+          "y": 421.109375,
+          "right": 977,
+          "bottom": 468.203125,
+          "width": 387,
+          "height": 47.09375
+        },
+        {
+          "text": "Choose your books",
+          "x": 590,
+          "y": 573.5,
+          "right": 977,
+          "bottom": 617.5,
+          "width": 387,
+          "height": 44
+        },
+        {
+          "text": "Light",
+          "x": 669.328125,
+          "y": 633.5,
+          "right": 723.84375,
+          "bottom": 669.5,
+          "width": 54.515625,
+          "height": 36
+        },
+        {
+          "text": "Night",
+          "x": 735.84375,
+          "y": 633.5,
+          "right": 793.203125,
+          "bottom": 669.5,
+          "width": 57.359375,
+          "height": 36
+        },
+        {
+          "text": "System",
+          "x": 805.203125,
+          "y": 633.5,
+          "right": 871.984375,
+          "bottom": 669.5,
+          "width": 66.78125,
+          "height": 36
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "today",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Continue lesson",
+          "x": 39,
+          "y": 524.5625,
+          "right": 210.375,
+          "bottom": 572.5625,
+          "width": 171.375,
+          "height": 48
+        },
+        {
+          "text": "Adjust daily goal",
+          "x": 33,
+          "y": 890.328125,
+          "right": 357,
+          "bottom": 938.328125,
+          "width": 324,
+          "height": 48
+        },
+        {
+          "text": "Start recall",
+          "x": 243.890625,
+          "y": 1093.3125,
+          "right": 356,
+          "bottom": 1141.3125,
+          "width": 112.109375,
+          "height": 48
+        },
+        {
+          "text": "Practise",
+          "x": 263.625,
+          "y": 1208.78125,
+          "right": 356,
+          "bottom": 1256.78125,
+          "width": 92.375,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "library",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Open body atlas",
+          "x": 18,
+          "y": 305.203125,
+          "right": 166.953125,
+          "bottom": 353.203125,
+          "width": 148.953125,
+          "height": 48
+        },
+        {
+          "text": "Anatomy",
+          "x": 18,
+          "y": 373.203125,
+          "right": 119.75,
+          "bottom": 417.203125,
+          "width": 101.75,
+          "height": 44
+        },
+        {
+          "text": "Physiology · coming later",
+          "x": 131.75,
+          "y": 373.203125,
+          "right": 299.109375,
+          "bottom": 417.203125,
+          "width": 167.359375,
+          "height": 44
+        },
+        {
+          "text": "Biochemistry · coming later",
+          "x": 18,
+          "y": 429.203125,
+          "right": 198.171875,
+          "bottom": 473.203125,
+          "width": 180.171875,
+          "height": 44
+        },
+        {
+          "text": "Close preview",
+          "x": 233.109375,
+          "y": 518.203125,
+          "right": 351,
+          "bottom": 566.203125,
+          "width": 117.890625,
+          "height": 48
+        },
+        {
+          "text": "Continue lesson",
+          "x": 39,
+          "y": 765.484375,
+          "right": 351,
+          "bottom": 813.484375,
+          "width": 312,
+          "height": 48
+        },
+        {
+          "text": "Open topic overview",
+          "x": 39,
+          "y": 1005.484375,
+          "right": 351,
+          "bottom": 1053.484375,
+          "width": 312,
+          "height": 48
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Continue lesson",
+          "r": {
+            "x": 39,
+            "y": 765.484375,
+            "right": 351,
+            "bottom": 813.484375,
+            "width": 312,
+            "height": 48
+          },
+          "top": {},
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "builder",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "M",
+          "x": 39,
+          "y": 718.0625,
+          "right": 75.890625,
+          "bottom": 762.0625,
+          "width": 36.890625,
+          "height": 44
+        },
+        {
+          "text": "T",
+          "x": 87.890625,
+          "y": 718.0625,
+          "right": 120.578125,
+          "bottom": 762.0625,
+          "width": 32.6875,
+          "height": 44
+        },
+        {
+          "text": "W",
+          "x": 132.578125,
+          "y": 718.0625,
+          "right": 169.75,
+          "bottom": 762.0625,
+          "width": 37.171875,
+          "height": 44
+        },
+        {
+          "text": "T",
+          "x": 181.75,
+          "y": 718.0625,
+          "right": 214.4375,
+          "bottom": 762.0625,
+          "width": 32.6875,
+          "height": 44
+        },
+        {
+          "text": "F",
+          "x": 226.4375,
+          "y": 718.0625,
+          "right": 258.671875,
+          "bottom": 762.0625,
+          "width": 32.234375,
+          "height": 44
+        },
+        {
+          "text": "S",
+          "x": 270.671875,
+          "y": 718.0625,
+          "right": 303.265625,
+          "bottom": 762.0625,
+          "width": 32.59375,
+          "height": 44
+        },
+        {
+          "text": "S",
+          "x": 315.265625,
+          "y": 718.0625,
+          "right": 347.859375,
+          "bottom": 762.0625,
+          "width": 32.59375,
+          "height": 44
+        },
+        {
+          "text": "Back to topics",
+          "x": 39,
+          "y": 837.65625,
+          "right": 158.265625,
+          "bottom": 885.65625,
+          "width": 119.265625,
+          "height": 48
+        },
+        {
+          "text": "Review plan",
+          "x": 207.4375,
+          "y": 837.65625,
+          "right": 351,
+          "bottom": 885.65625,
+          "width": 143.5625,
+          "height": 48
+        },
+        {
+          "text": "Cancel draft",
+          "x": 33,
+          "y": 1179.125,
+          "right": 357,
+          "bottom": 1227.125,
+          "width": 324,
+          "height": 48
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Back to topics",
+          "r": {
+            "x": 39,
+            "y": 795.65625,
+            "right": 158.265625,
+            "bottom": 843.65625,
+            "width": 119.265625,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        },
+        {
+          "text": "Review plan",
+          "r": {
+            "x": 207.4375,
+            "y": 795.65625,
+            "right": 351,
+            "bottom": 843.65625,
+            "width": 143.5625,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    },
+    {
+      "page": "lesson",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic overview",
+          "x": 18,
+          "y": 90,
+          "right": 118.453125,
+          "bottom": 138,
+          "width": 100.453125,
+          "height": 48
+        },
+        {
+          "text": "Back",
+          "x": 33,
+          "y": 657.40625,
+          "right": 65.6875,
+          "bottom": 705.40625,
+          "width": 32.6875,
+          "height": 48
+        },
+        {
+          "text": "Next: divisions",
+          "x": 77.6875,
+          "y": 657.40625,
+          "right": 213.421875,
+          "bottom": 705.40625,
+          "width": 135.734375,
+          "height": 48
+        },
+        {
+          "text": "Inspect in Studio",
+          "x": 39,
+          "y": 1326.953125,
+          "right": 351,
+          "bottom": 1374.953125,
+          "width": 312,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "knee-sample",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Topic",
+          "x": 336.609375,
+          "y": 80,
+          "right": 372,
+          "bottom": 128,
+          "width": 35.390625,
+          "height": 48
+        },
+        {
+          "text": "Anterior cruciate ligament",
+          "x": 18,
+          "y": 514.890625,
+          "right": 372,
+          "bottom": 565.984375,
+          "width": 354,
+          "height": 51.09375
+        },
+        {
+          "text": "Posterior cruciate ligament",
+          "x": 18,
+          "y": 575.984375,
+          "right": 372,
+          "bottom": 627.078125,
+          "width": 354,
+          "height": 51.09375
+        },
+        {
+          "text": "Front",
+          "x": 18,
+          "y": 643.078125,
+          "right": 73.953125,
+          "bottom": 687.078125,
+          "width": 55.953125,
+          "height": 44
+        },
+        {
+          "text": "Medial",
+          "x": 85.953125,
+          "y": 643.078125,
+          "right": 149.921875,
+          "bottom": 687.078125,
+          "width": 63.96875,
+          "height": 44
+        },
+        {
+          "text": "Back",
+          "x": 161.921875,
+          "y": 643.078125,
+          "right": 214.625,
+          "bottom": 687.078125,
+          "width": 52.703125,
+          "height": 44
+        },
+        {
+          "text": "Reset view",
+          "x": 226.625,
+          "y": 643.078125,
+          "right": 311.984375,
+          "bottom": 687.078125,
+          "width": 85.359375,
+          "height": 44
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "practice",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Knee joint",
+          "x": 18,
+          "y": 90,
+          "right": 87.203125,
+          "bottom": 138,
+          "width": 69.203125,
+          "height": 48
+        },
+        {
+          "text": "A. Popliteus",
+          "x": 39,
+          "y": 377.5625,
+          "right": 351,
+          "bottom": 428.65625,
+          "width": 312,
+          "height": 51.09375
+        },
+        {
+          "text": "B. Vastus medialis",
+          "x": 39,
+          "y": 444.65625,
+          "right": 351,
+          "bottom": 495.75,
+          "width": 312,
+          "height": 51.09375
+        },
+        {
+          "text": "C. Biceps femoris",
+          "x": 39,
+          "y": 511.75,
+          "right": 351,
+          "bottom": 562.84375,
+          "width": 312,
+          "height": 51.09375
+        },
+        {
+          "text": "D. Sartorius",
+          "x": 39,
+          "y": 578.84375,
+          "right": 351,
+          "bottom": 629.9375,
+          "width": 312,
+          "height": 51.09375
+        },
+        {
+          "text": "Check answer",
+          "x": 39,
+          "y": 645.9375,
+          "right": 169.875,
+          "bottom": 693.9375,
+          "width": 130.875,
+          "height": 48
+        },
+        {
+          "text": "Leave practice",
+          "x": 181.875,
+          "y": 645.9375,
+          "right": 280.03125,
+          "bottom": 693.9375,
+          "width": 98.15625,
+          "height": 48
+        },
+        {
+          "text": "Review lesson",
+          "x": 33,
+          "y": 854.921875,
+          "right": 128.234375,
+          "bottom": 902.921875,
+          "width": 95.234375,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "recall",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Brachial plexus",
+          "x": 18,
+          "y": 90,
+          "right": 121.25,
+          "bottom": 138,
+          "width": 103.25,
+          "height": 48
+        },
+        {
+          "text": "Reveal answer",
+          "x": 39,
+          "y": 377.5625,
+          "right": 351,
+          "bottom": 425.5625,
+          "width": 312,
+          "height": 48
+        },
+        {
+          "text": "Open lesson",
+          "x": 33,
+          "y": 582.5625,
+          "right": 117.078125,
+          "bottom": 630.5625,
+          "width": 84.078125,
+          "height": 48
+        },
+        {
+          "text": "End this session",
+          "x": 18,
+          "y": 534.8125,
+          "right": 126.703125,
+          "bottom": 582.8125,
+          "width": 108.703125,
+          "height": 48
+        }
+      ],
+      "obstruction": []
+    },
+    {
+      "page": "profile",
+      "scenario": "root200",
+      "viewport": 390,
+      "documentWidth": 390,
+      "rootFont": "32px",
+      "productFont": "16px",
+      "overflow": [],
+      "textOverflow": [],
+      "brokenImages": [],
+      "actions": [
+        {
+          "text": "Save name",
+          "x": 157.703125,
+          "y": 377.75,
+          "right": 269.84375,
+          "bottom": 425.75,
+          "width": 112.140625,
+          "height": 48
+        },
+        {
+          "text": "View Today",
+          "x": 39,
+          "y": 847.625,
+          "right": 351,
+          "bottom": 895.625,
+          "width": 312,
+          "height": 48
+        },
+        {
+          "text": "Manage account",
+          "x": 39,
+          "y": 1107.015625,
+          "right": 351,
+          "bottom": 1155.015625,
+          "width": 312,
+          "height": 48
+        },
+        {
+          "text": "Choose your books",
+          "x": 39,
+          "y": 1256.3125,
+          "right": 351,
+          "bottom": 1304.3125,
+          "width": 312,
+          "height": 48
+        },
+        {
+          "text": "Light",
+          "x": 118.328125,
+          "y": 1320.3125,
+          "right": 172.84375,
+          "bottom": 1364.3125,
+          "width": 54.515625,
+          "height": 44
+        },
+        {
+          "text": "Night",
+          "x": 184.84375,
+          "y": 1320.3125,
+          "right": 242.203125,
+          "bottom": 1364.3125,
+          "width": 57.359375,
+          "height": 44
+        },
+        {
+          "text": "System",
+          "x": 254.203125,
+          "y": 1320.3125,
+          "right": 320.984375,
+          "bottom": 1364.3125,
+          "width": 66.78125,
+          "height": 44
+        }
+      ],
+      "obstruction": [
+        {
+          "text": "Choose your books",
+          "r": {
+            "x": 39,
+            "y": 796.3125,
+            "right": 351,
+            "bottom": 844.3125,
+            "width": 312,
+            "height": 48
+          },
+          "top": "",
+          "obscured": true
+        }
+      ]
+    }
+  ],
+  "pageErrors": []
+}

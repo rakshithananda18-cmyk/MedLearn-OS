@@ -158,6 +158,8 @@ export interface Viewer3DProps {
   insetTop?: number;
   /** One finger or the left button moves the model instead of turning it (the right turns it). */
   pan?: boolean;
+  /** Optional notification after the model mounts; the atlas sample settles its initial view. */
+  onReady?: () => void;
 }
 
 const TRACE_RADIUS_MM: Record<ModelTrace['kind'], number> = {
@@ -1093,6 +1095,19 @@ function surfacePoint(event: ThreeEvent<PointerEvent>, group: Group): Point3 {
   ];
 }
 
+function ModelReady({
+  groupRef,
+  onReady,
+}: Readonly<{ groupRef: RefObject<Group | null>; onReady: () => void }>) {
+  const notified = useRef(false);
+  useFrame(() => {
+    if (notified.current || !groupRef.current?.children.length) return;
+    notified.current = true;
+    requestAnimationFrame(onReady);
+  });
+  return null;
+}
+
 function distance(a: Point3, b: Point3): number {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
@@ -1129,6 +1144,7 @@ export default function Viewer3D({
   insetBottom = 0,
   insetTop = 0,
   pan = false,
+  onReady,
 }: Readonly<Viewer3DProps>) {
   // Only a lit structure, trace or system structure dims the rest; a lit region of the body (a
   // surface) leaves the model as is.
@@ -1266,6 +1282,7 @@ export default function Viewer3D({
         </group>
         <Section section={section} groupRef={group} />
         <Movement pose={pose} groupRef={group} />
+        {onReady ? <ModelReady groupRef={group} onReady={onReady} /> : null}
         <LabelTracker
           model={model}
           labels={labels}

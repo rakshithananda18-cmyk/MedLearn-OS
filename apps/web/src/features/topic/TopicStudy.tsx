@@ -320,12 +320,17 @@ export function TopicStudy({
   }
 
   const column = (
-    <div className="flex min-w-0 flex-col gap-4">
-      {poster ? null : back}
+    <div className="order-1 flex min-w-0 flex-col gap-4 xl:order-2">
+      {back}
       {intro}
       {/* The ways to study come before the optional lectures and tour, so the main action is on
           a phone's first screen. */}
       {study}
+      {poster ? (
+        <div className="xl:hidden">
+          <TopicHero slug={slug} poster={poster} back={null} />
+        </div>
+      ) : null}
       {videos.length > 0 || poster ? (
         <Lectures
           idPrefix={idPrefix}
@@ -340,10 +345,10 @@ export function TopicStudy({
   if (!poster) return <div className="mx-auto w-full max-w-3xl">{column}</div>;
   return (
     <div className="grid gap-4 xl:grid-topic xl:items-start">
-      <div className="xl:sticky xl:top-8">
-        <TopicHero slug={slug} poster={poster} back={back} />
-      </div>
       {column}
+      <div className="order-2 hidden xl:sticky xl:top-8 xl:order-1 xl:block">
+        <TopicHero slug={slug} poster={poster} back={null} />
+      </div>
     </div>
   );
 }

@@ -71,7 +71,7 @@ export function ReviewForm({
   return (
     <section
       aria-label="Your review"
-      className="flex flex-col gap-3 rounded-xl border border-gold bg-glass p-4 shadow-glass"
+      className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4"
     >
       <h2 className="font-semibold text-ink">Your review of version {version}</h2>
       <Text size="sm" tone="muted">

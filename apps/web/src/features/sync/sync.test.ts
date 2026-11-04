@@ -3,6 +3,7 @@ import { EMPTY_PROGRESS, type LearnerProgress } from '@medlearn/core';
 import type { SavedProgress } from '@medlearn/schemas';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { beginFixtureMode, endFixtureMode } from '@/features/facilitator/mode';
 import {
   completeLesson,
   completeRevisit,
@@ -91,6 +92,7 @@ describe('progress sync', () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     fetchMock.mockClear();
+    endFixtureMode();
     resetProgress();
     vi.useRealTimers();
   });
@@ -508,6 +510,46 @@ describe('progress sync', () => {
     expect(readProgress().completedLessons.sort()).toEqual(['brachial-plexus', 'offline-lesson']);
     expect(readProgress().notes['my-note']?.text).toBe('Remember this');
     expect(readProgress().profile?.adult).toBe(true);
+  });
+
+  it('never starts, flushes, restores or adopts cloud progress during a local test session', async () => {
+    expect(beginFixtureMode()).toBe(true);
+    replaceProgress(copy({ completedLessons: ['fixture-lesson'] }));
+    stop = startProgressSync();
+    await flushProgressSync();
+    await restoreProgress();
+    await expect(adoptAccountProgress()).rejects.toThrow('End the local test session');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(readProgress().completedLessons).toEqual(['fixture-lesson']);
+  });
+
+  it('does not upload fixtures when test mode starts while a session request is pending', async () => {
+    const pending = deferred<Response>();
+    fetchMock.mockReturnValueOnce(pending.promise);
+    stop = startProgressSync();
+    expect(fetchMock).toHaveBeenCalledWith('/api/session', expect.anything());
+    beginFixtureMode();
+    replaceProgress(copy({ completedLessons: ['fixture-lesson'] }));
+    pending.resolve(Response.json({ data: { started: true } }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(puts()).toHaveLength(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels a pending server merge when another tab starts a test session', async () => {
+    const pending = deferred<Response>();
+    fetchMock.mockImplementation((url, init) =>
+      url === '/api/progress' && init?.method !== 'PUT' ? pending.promise : defaultFetch(url, init),
+    );
+    stop = startProgressSync();
+    await vi.advanceTimersByTimeAsync(0);
+    localStorage.setItem('ml-fixture-mode-v1', 'local-test-session');
+    window.dispatchEvent(new StorageEvent('storage', { key: 'ml-fixture-mode-v1' }));
+    replaceProgress(copy({ completedLessons: ['fixture-lesson'] }));
+    pending.resolve(Response.json({ data: saved }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(puts()).toHaveLength(0);
+    expect(readProgress().completedLessons).toEqual(['fixture-lesson']);
   });
 
   it('restores a lost device copy, and leaves visitors without a session alone', async () => {

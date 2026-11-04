@@ -66,11 +66,48 @@ export function TopicPreview({
   return (
     <article
       aria-labelledby="preview-title"
-      className="flex flex-col rounded-xl border border-glass-border bg-glass p-4 shadow-glass"
+      className="flex min-w-0 max-w-full flex-col rounded-xl border border-glass-border bg-surface p-4 shadow-glass"
     >
       {/* A new key per topic replays the rise, so each pick arrives rather than swaps. */}
       <div key={topic.slug} className="flex animate-rise flex-col gap-4">
-        <div className="relative flex h-preview items-end justify-center rounded-lg bg-gloss">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>
+            {where} · {topic.estimatedMinutes} min
+          </Eyebrow>
+          <h2 id="preview-title" className="break-words font-semibold text-2xl text-ink">
+            {topic.title}
+          </h2>
+          <Text size="sm" tone="muted">
+            {topic.summary}
+          </Text>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Link
+            href={`/learn/${topic.slug}/lesson`}
+            className={cx(
+              buttonClasses({ fullWidth: true }),
+              'h-auto min-h-12 px-3 py-3 text-center',
+            )}
+          >
+            <Icon icon={Play} size="sm" />
+            {lessonAction(status === 'learnt', step)}
+          </Link>
+          <div className="flex min-w-0 items-center gap-2">
+            <Link
+              href={`/learn/${topic.slug}`}
+              className={cx(
+                buttonClasses({ variant: 'secondary', fullWidth: true }),
+                'h-auto min-h-12 min-w-0 px-3 py-3 text-center',
+              )}
+            >
+              Open topic
+            </Link>
+            <WhereToRead readings={preview.readings} />
+          </div>
+        </div>
+
+        <div className="relative flex h-preview min-w-0 items-end justify-center rounded-lg bg-gloss">
           <span
             aria-hidden="true"
             className="pedestal absolute bottom-3 left-1/2 h-8 w-1/2 -translate-x-1/2"
@@ -114,48 +151,11 @@ export function TopicPreview({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <Eyebrow>
-            {where} · {topic.estimatedMinutes} min
-          </Eyebrow>
-          <h2 id="preview-title" className="text-gold font-display text-3xl tracking-display">
-            {topic.title}
-          </h2>
-          <Text size="sm" tone="muted">
-            {topic.summary}
-          </Text>
-        </div>
-
         <ul aria-label="In this topic" className="flex flex-wrap gap-2">
           <Tally icon={Play} value={preview.lessonSteps} label="lesson steps" />
           <Tally icon={ClipboardCheck} value={topic.questionIds.length} label="questions" />
           <Tally icon={RotateCcw} value={topic.cardIds.length} label="recall cards" />
         </ul>
-
-        <div className="flex flex-col gap-2">
-          <Link
-            href={`/learn/${topic.slug}/lesson`}
-            className={cx(
-              buttonClasses({ fullWidth: true }),
-              'h-auto min-h-12 px-3 py-3 text-center',
-            )}
-          >
-            <Icon icon={Play} size="sm" />
-            {lessonAction(status === 'learnt', step)}
-          </Link>
-          <div className="flex min-w-0 items-center gap-2">
-            <Link
-              href={`/learn/${topic.slug}`}
-              className={cx(
-                buttonClasses({ variant: 'secondary', fullWidth: true }),
-                'h-auto min-h-12 min-w-0 px-3 py-3 text-center',
-              )}
-            >
-              Open topic
-            </Link>
-            <WhereToRead readings={preview.readings} />
-          </div>
-        </div>
 
         <MasteryCard topic={topic} />
 

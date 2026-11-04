@@ -209,7 +209,7 @@ function upcomingGoals(progress: LearnerProgress, now: Date) {
 /**
  * The Today screen, built for focus: the next step and the day's plan fill the main column; the
  * streak, the minutes, planned tests and weak spots sit to the side on wide screens and follow
- * below on phones. Prompts to set up (the plan, the books) or to ease back in come first.
+ * below on phones. The next useful task comes before optional setup prompts.
  */
 export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
   const progress = useProgress();
@@ -260,29 +260,6 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
         label="Your progress"
         main={
           <div className="stagger flex min-w-0 flex-col gap-4">
-            {progress.profile ? null : (
-              <Prompt
-                id="setup-title"
-                icon={GraduationCap}
-                title="Make this plan yours"
-                text="Tell us your age, year, next exam and daily time. Four quick questions."
-                href="/welcome"
-                action="Set up my plan"
-              />
-            )}
-            {plan.mode === 'catch-up' ? (
-              <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
-            ) : null}
-            {progress.profile && !progress.profile.books ? (
-              <Prompt
-                id="books-title"
-                icon={Library}
-                title="Which books do you follow?"
-                text="Pick them once. Every topic then shows where to read it in your books."
-                href="/books"
-                action="Choose my books"
-              />
-            ) : null}
             {first ? (
               <UpNext
                 item={first}
@@ -310,6 +287,29 @@ export function TodayView({ topics }: Readonly<{ topics: TopicSummary[] }>) {
                 planned={planned}
                 studied={minutesToday}
                 goal={plan.dailyMinutes}
+              />
+            ) : null}
+            {progress.profile ? null : (
+              <Prompt
+                id="setup-title"
+                icon={GraduationCap}
+                title="Make this plan yours"
+                text="Tell us your age, year, next exam and daily time. Four quick questions."
+                href="/welcome"
+                action="Set up my plan"
+              />
+            )}
+            {plan.mode === 'catch-up' ? (
+              <CatchUpCard plan={plan} accepted={progress.catchUpAcceptedOn === dayKey(now)} />
+            ) : null}
+            {progress.profile && !progress.profile.books ? (
+              <Prompt
+                id="books-title"
+                icon={Library}
+                title="Which books do you follow?"
+                text="Pick them once. Every topic then shows where to read it in your books."
+                href="/books"
+                action="Choose my books"
               />
             ) : null}
           </div>

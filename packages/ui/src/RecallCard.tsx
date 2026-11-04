@@ -58,8 +58,10 @@ export function RecallCard({ front, back, onRate }: RecallCardProps) {
                   onRate(value);
                 }}
                 aria-label={`${label}: ${hint}`}
+                className="h-auto min-h-12 flex-col gap-1 whitespace-normal py-3"
               >
-                {label}
+                <span>{label}</span>
+                <span className="text-xs font-normal">{hint}</span>
               </Button>
             ))}
           </div>

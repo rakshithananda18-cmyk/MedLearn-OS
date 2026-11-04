@@ -92,14 +92,14 @@ export function TopicPicker({
                 onClick={() =>
                   setOpened(open ? opened.filter((id) => id !== group.id) : [...opened, group.id])
                 }
-                className="flex min-h-12 flex-1 items-center gap-2 rounded-md px-2 text-left hover:bg-surface-muted"
+                className="flex min-h-12 min-w-0 flex-1 flex-wrap items-center gap-2 rounded-md px-2 text-left hover:bg-surface-muted"
               >
                 <Icon
                   icon={ChevronDown}
                   size="sm"
                   className={cx('transition-transform', !open && '-rotate-90')}
                 />
-                <span className="flex-1 font-semibold text-ink">{group.label}</span>
+                <span className="min-w-0 flex-1 font-semibold text-ink">{group.label}</span>
                 <span className="text-xs text-fg-muted">
                   {picked} of {slugs.length}
                 </span>
@@ -123,14 +123,14 @@ export function TopicPicker({
                       const on = chosen.includes(topic.slug);
                       const locked = !can(topic.slug);
                       return (
-                        <li key={topic.slug}>
+                        <li key={topic.slug} className="max-w-full">
                           <button
                             type="button"
                             aria-pressed={on}
                             disabled={locked}
                             onClick={() => set([topic.slug], !on)}
                             className={cx(
-                              'flex min-h-8 items-center gap-1 rounded-full px-3 py-1 text-sm',
+                              'flex min-h-12 max-w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm',
                               on
                                 ? 'bg-ink font-semibold text-canvas'
                                 : 'border border-border-strong text-ink hover:bg-surface-muted',
@@ -140,7 +140,7 @@ export function TopicPicker({
                             {learnt.includes(topic.slug) ? (
                               <Icon icon={Check} size="sm" label="learnt" />
                             ) : null}
-                            {topic.title}
+                            <span className="min-w-0 break-words">{topic.title}</span>
                           </button>
                         </li>
                       );

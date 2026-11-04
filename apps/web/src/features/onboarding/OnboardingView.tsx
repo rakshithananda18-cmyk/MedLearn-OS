@@ -15,7 +15,7 @@ import {
 } from '@medlearn/ui';
 import { ArrowRight, Check, ChevronLeft } from '@medlearn/ui/icons';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { saveProfile } from '@/features/progress/store';
 
@@ -23,7 +23,7 @@ const AGES: ChoiceOption<'adult' | 'minor'>[] = [
   {
     value: 'adult',
     label: '18 or older',
-    description: 'Your progress is also saved to the server',
+    description: 'You can create an account to save progress across devices',
   },
   { value: 'minor', label: 'Under 18', description: 'Your progress stays on this phone for now' },
 ];
@@ -82,7 +82,7 @@ const STEPS: Step[] = [
   },
 ];
 
-/** Three quick questions that size the daily plan. Answers stay on this device until M4. */
+/** Four setup questions; account saving is a separate, explicit choice. */
 export function OnboardingView() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -90,7 +90,20 @@ export function OnboardingView() {
   const [year, setYear] = useState<`${MbbsYear}` | null>(null);
   const [examDate, setExamDate] = useState('');
   const [minutes, setMinutes] = useState<string | null>(String(DEFAULT_DAILY_MINUTES));
+  const heading = useRef<HTMLDivElement>(null);
+  const moved = useRef(false);
   const today = dayKey(new Date());
+
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    heading.current?.focus({ preventScroll: true });
+    heading.current?.scrollIntoView({ block: 'nearest' });
+  }, [step]);
+  const goTo = (next: number) => {
+    moved.current = true;
+    setStep(next);
+  };
 
   const finish = (exam: string | null) => {
     saveProfile({
@@ -108,14 +121,14 @@ export function OnboardingView() {
   const current = STEPS[step] ?? STEPS[0];
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-8 px-4 pt-8 pb-6 md:pt-16">
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-6 px-4 pt-6 pb-6 md:pt-12">
       <div className="flex h-12 items-center justify-between">
         {step > 0 ? (
           <IconButton
             icon={ChevronLeft}
             label="Previous question"
             variant="ghost"
-            onClick={() => setStep(step - 1)}
+            onClick={() => goTo(step - 1)}
           />
         ) : (
           <span />
@@ -126,9 +139,9 @@ export function OnboardingView() {
         </Button>
       </div>
 
-      <div key={step} className="flex animate-rise flex-col gap-4">
+      <div key={step} ref={heading} tabIndex={-1} className="flex animate-rise flex-col gap-3">
         <Eyebrow>Set up your plan</Eyebrow>
-        <Display>{current?.title}</Display>
+        <Display size="lg">{current?.title}</Display>
         <Text tone="muted">{current?.help}</Text>
       </div>
 
@@ -160,7 +173,7 @@ export function OnboardingView() {
                 size="sm"
                 onClick={() => {
                   setExamDate('');
-                  setStep(3);
+                  goTo(3);
                 }}
               >
                 Not sure yet
@@ -184,6 +197,11 @@ export function OnboardingView() {
         ) : null}
       </div>
 
+      <Text size="sm" tone="muted">
+        Skip keeps your current choices, leaves the exam date empty and uses safe defaults for
+        unanswered questions. Account saving is a separate choice.
+      </Text>
+
       <ActionBar placement="edge">
         <Text size="sm" tone="muted" className="pl-2">
           Step {step + 1} of {STEPS.length}
@@ -193,7 +211,7 @@ export function OnboardingView() {
             Create my plan
           </Button>
         ) : (
-          <Button iconEnd={ArrowRight} disabled={!canContinue} onClick={() => setStep(step + 1)}>
+          <Button iconEnd={ArrowRight} disabled={!canContinue} onClick={() => goTo(step + 1)}>
             Continue
           </Button>
         )}

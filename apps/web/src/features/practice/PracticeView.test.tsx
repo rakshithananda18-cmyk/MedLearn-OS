@@ -102,6 +102,10 @@ describe('PracticeView', () => {
     }
     expect(screen.getByRole('heading', { name: `${total}/${total}` })).toBeInTheDocument();
     expect(readProgress().goals[0]?.done).toEqual(['axilla']);
+    expect(screen.getByRole('link', { name: 'Back to plan' })).toHaveAttribute(
+      'href',
+      `/plan/${goal.id}`,
+    );
   });
 
   it('plans a class test, which then shows with its countdown', async () => {
@@ -143,5 +147,8 @@ describe('PracticeView', () => {
       step: 1,
       due: addDays(dayKey(new Date()), 7),
     });
+    expect(
+      screen.getByRole('link', { name: 'Back to Axilla: walls and contents' }),
+    ).toHaveAttribute('href', '/learn/axilla');
   });
 });

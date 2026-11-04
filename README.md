@@ -56,6 +56,8 @@ pnpm start
 
 `pnpm start` is the everyday command: it starts Docker Desktop if needed, the local database and the
 web app, then opens the browser. Ctrl+C stops the web app and the database it started (data is kept).
+It refreshes the local API and test-mailbox connection settings from the running stack, so older
+port settings cannot silently leave sign-in or email confirmation disconnected.
 
 `pnpm bootstrap` (once, or to reset local data) starts local Supabase, writes `apps/web/.env.local` and
 `.env.test.local`, rebuilds the database from migrations and seed data, and installs the Playwright

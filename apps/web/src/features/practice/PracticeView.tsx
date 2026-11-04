@@ -33,6 +33,7 @@ interface Running {
   goal?: { id: string; topic: string };
   /** A spaced revisit of this topic: its score sets the next one. */
   revisit?: string;
+  returnTo?: { href: string; label: string };
 }
 
 const STRENGTH: Record<Strength, { label: string; tone: string; bar: string }> = {
@@ -362,12 +363,16 @@ function fromPlan(
   const slug = start?.revisit ?? start?.topic;
   const title = slug ? titles[slug] : undefined;
   if (!start || !slug || !title) return null;
+  const returnTo = start.goal
+    ? { href: `/plan/${start.goal}`, label: 'Back to plan' }
+    : { href: `/learn/${slug}`, label: `Back to ${title}` };
   if (start.revisit) {
     return {
       title: `Revisit: ${title}`,
       ids: all.slice(0, REVISIT_QUESTIONS),
       seconds: null,
       revisit: slug,
+      returnTo,
     };
   }
   const open = all.filter((id) => !correct.includes(id));
@@ -375,6 +380,7 @@ function fromPlan(
     title,
     ids: start.goal || open.length === 0 ? all : open,
     seconds: null,
+    returnTo,
     ...(start.goal ? { goal: { id: start.goal, topic: slug } } : {}),
   };
 }
@@ -437,6 +443,10 @@ export function PracticeView({
           ids={running.ids}
           initial={questions}
           seconds={running.seconds}
+          returnTo={
+            running.returnTo ??
+            (running.goal ? { href: `/plan/${running.goal.id}`, label: 'Back to plan' } : undefined)
+          }
           onFinish={(results) => {
             if (running.goal) markGoalTopic(running.goal.id, running.goal.topic);
             if (running.revisit) {

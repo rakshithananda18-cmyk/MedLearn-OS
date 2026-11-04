@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MedLearn OS · page design proposals</title>
+  <link rel="stylesheet" href="proposal.css">
+</head>
+<body>
+  <header class="review-bar" id="review-bar">
+    <div><strong>MedLearn OS</strong><span>Design proposal · illustrative data</span></div>
+    <label>Page <select id="page-picker" aria-label="Proposed page"></select></label>
+    <div class="device-picker" role="group" aria-label="Preview device">
+      <button data-device="laptop" aria-pressed="true">Laptop</button><button data-device="tablet" aria-pressed="false">Tablet</button><button data-device="phone" aria-pressed="false">Phone</button>
+    </div>
+    <button id="theme-toggle" aria-pressed="false">Night preview</button>
+    <button id="notes-toggle" aria-expanded="true">Design notes</button>
+  </header>
+  <div class="review-layout">
+    <div class="preview-wrap">
+      <div class="preview-label" id="preview-label">Laptop · proposed design</div>
+      <div class="product" id="product" data-device="laptop" data-theme="light">
+        <nav class="product-nav" id="product-nav" aria-label="Study navigation"></nav>
+        <div class="product-content">
+          <header class="product-header">
+            <button class="brand" data-page="today">MedLearn <em>OS</em></button>
+            <div class="product-header-actions"><button class="header-search" data-page="search" aria-label="Search"><span data-icon="Search"></span><span>Search your library</span></button><button class="avatar" data-page="profile" aria-label="Your profile">S</button></div>
+          </header>
+          <main id="app" aria-live="polite"></main>
+          <footer class="product-footer">Proposed interface · illustrative study data · anatomy awaits educator review</footer>
+        </div>
+      </div>
+    </div>
+    <aside class="review-notes" id="review-notes"><p class="note-kicker">Page design brief</p><h2 id="note-title"></h2><p id="note-goal"></p><h3>What changes</h3><ol id="note-changes"></ol><h3>How we check it</h3><p id="note-acceptance"></p><p class="review-disclaimer">These are rendered design mockups, not screenshots of completed app changes. Anatomy images are existing project assets; controls demonstrate layout and selected local interactions.</p><a href="PAGE_BY_PAGE.md">Read the full page-by-page proposal</a></aside>
+  </div>
+  <script src="icons.js"></script>
+  <script src="planning-pages.js"></script>
+  <script src="study-pages.js"></script>
+  <script src="utility-pages.js"></script>
+  <script src="proposal.js"></script>
+</body>
+</html>

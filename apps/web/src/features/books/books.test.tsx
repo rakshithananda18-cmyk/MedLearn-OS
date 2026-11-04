@@ -22,6 +22,9 @@ describe('BookChooser', () => {
     act(plan);
     const { container } = render(<BookChooser shelves={shelves} />);
     await userEvent.click(screen.getByRole('checkbox', { name: /Guyton and Hall/ }));
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Physiology book choices saved on this device.',
+    );
     await userEvent.click(screen.getByRole('checkbox', { name: /BD Chaurasia/ }));
     expect(readProgress().profile?.books).toEqual(['guyton-hall', 'bd-chaurasia']);
 

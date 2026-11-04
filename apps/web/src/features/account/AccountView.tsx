@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { endFixtureMode, useFixtureMode } from '@/features/facilitator/mode';
 import { clearLessonSteps } from '@/features/lesson/checkpoint';
 import { resetProgress, useProgress } from '@/features/progress/store';
 import { clearStudioData } from '@/features/studio/saved';
@@ -29,7 +30,7 @@ import { useAccount } from './useAccount';
 
 function ThemeCard() {
   return (
-    <Card tone="glass" as="section" aria-labelledby="theme-title" className="flex flex-col gap-3">
+    <Card as="section" aria-labelledby="theme-title" className="flex flex-col gap-3">
       <h2 id="theme-title" className="font-semibold text-ink">
         Theme
       </h2>
@@ -90,12 +91,15 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
           Your <em>account</em>
         </Display>
       </div>
-      <Card tone="glass" className="flex gap-4">
+      <Card className="flex min-w-0 flex-wrap gap-4">
         <Medallion icon={User} />
-        <div className="flex flex-1 flex-col gap-2">
-          <Text weight="semibold">Signed in as {email}</Text>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Text weight="semibold" className="break-words">
+            Signed in as {email}
+          </Text>
           <Text size="sm" tone="muted">
-            Your progress is saved to this account. Sign in on any phone to carry on.
+            Your account keeps your study progress across devices. Changes made offline are kept on
+            this device until they can sync.
           </Text>
           <Notice>{notice}</Notice>
           {error ? (
@@ -121,7 +125,7 @@ function SignedIn({ email, notice }: Readonly<{ email: string; notice: string | 
 
 function ModeSwitch({ mode, onChange }: Readonly<{ mode: Mode; onChange: (mode: Mode) => void }>) {
   return (
-    <fieldset className="flex gap-2">
+    <fieldset className="flex flex-wrap gap-2">
       <legend className="sr-only">Account</legend>
       {(['create', 'sign-in'] as const).map((value) => (
         <ToggleChip key={value} pressed={mode === value} onClick={() => onChange(value)}>
@@ -165,12 +169,35 @@ interface AccountViewProps {
  * accounts until parental consent exists; signing in keeps everything learned on either side.
  */
 export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) {
+  const fixtureMode = useFixtureMode();
+  const [endError, setEndError] = useState(false);
   const progress = useProgress();
   const { state, refresh } = useAccount();
   // Invited people mostly come back to sign in; the setup questions follow the first sign-in.
   const [mode, setMode] = useState<Mode>(inviteOnly ? 'sign-in' : 'create');
   const [resetEmail, setResetEmail] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
+
+  if (fixtureMode) {
+    return (
+      <Card className="mx-auto flex w-full max-w-xl flex-col items-start gap-3">
+        <Eyebrow>Local test session</Eyebrow>
+        <Display size="md">End test setup before using an account</Display>
+        <Text>
+          Discard this device&apos;s test progress before signing in or creating an account. Test
+          progress is never added to an account.
+        </Text>
+        {endError ? (
+          <Text role="alert">
+            Could not clear all test data. Test mode stays on; check browser storage and try again.
+          </Text>
+        ) : null}
+        <Button variant="secondary" onClick={() => setEndError(!endFixtureMode())}>
+          End and discard test progress
+        </Button>
+      </Card>
+    );
+  }
 
   if (state.status === 'loading') {
     return (
@@ -181,12 +208,27 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
     );
   }
 
+  if (!state.verified) {
+    return (
+      <Card className="mx-auto flex w-full max-w-xl flex-col items-start gap-3">
+        <Display size="md">Check your account</Display>
+        <Text role="alert">
+          We couldn&apos;t check your account. Try again before making account changes.
+        </Text>
+        <Button onClick={refresh}>Try again</Button>
+        <Link href="/today" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+          Continue studying on this device
+        </Link>
+      </Card>
+    );
+  }
+
   if (state.signedIn) {
     return (
-      <>
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
         <SignedIn email={state.account?.email ?? ''} notice={notice} />
         <ThemeCard />
-      </>
+      </div>
     );
   }
 
@@ -210,7 +252,7 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
   }
 
   return (
-    <>
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
       <div className="flex flex-col gap-3">
         <Eyebrow>Account</Eyebrow>
         <Display>
@@ -219,12 +261,15 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
         <Text tone="muted">
           {inviteOnly
             ? 'MedLearn OS is private for now. Sign in, or create your account with the email the team added.'
-            : 'An account keeps your progress if you change or lose your phone. Google and phone sign-in are coming later.'}
+            : 'Your progress is currently saved on this device. An account lets you carry it across devices.'}
         </Text>
       </div>
       <ModeSwitch mode={mode} onChange={setMode} />
       {form}
+      <Link href="/today" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+        Continue studying on this device
+      </Link>
       <ThemeCard />
-    </>
+    </div>
   );
 }

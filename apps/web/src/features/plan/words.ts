@@ -1,4 +1,4 @@
-import { revisitMinutes, type StudyGoal } from '@medlearn/core';
+import { type PlanStatus, revisitMinutes, type StudyGoal } from '@medlearn/core';
 
 import type { TopicSummary } from '@/content/topics';
 
@@ -49,4 +49,11 @@ export function topicHref(goal: Pick<StudyGoal, 'kind' | 'id'>, slug: string): s
   return goal.kind === 'learn'
     ? `/learn/${slug}/lesson`
     : `/practice?goal=${goal.id}&topic=${slug}`;
+}
+
+/** An absent future schedule can mean completion, an expired deadline, or no available days. */
+export function finishLabel(status: PlanStatus): string {
+  if (status.state === 'completed') return 'Complete';
+  if (status.state === 'ended') return 'Deadline passed';
+  return status.finishOn ? dateName(status.finishOn) : 'Choose study days';
 }

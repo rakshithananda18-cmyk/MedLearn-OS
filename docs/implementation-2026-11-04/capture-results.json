@@ -1,0 +1,120 @@
+{
+  "date": "2026-11-04",
+  "base": "http://localhost:3100",
+  "kind": "Actual production-build screenshots",
+  "fixture": "Isolated device-only under-18 example profile; no account or backend records changed.",
+  "captures": [
+    {
+      "id": "today-laptop",
+      "title": "Today \u00c2\u00b7 laptop",
+      "route": "/today",
+      "width": 1440,
+      "height": 1024,
+      "image": "images/today-laptop.png",
+      "viewportWidth": 1440,
+      "documentWidth": 1440,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": []
+    },
+    {
+      "id": "today-phone",
+      "title": "Today \u00c2\u00b7 phone",
+      "route": "/today",
+      "width": 390,
+      "height": 844,
+      "image": "images/today-phone.png",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": []
+    },
+    {
+      "id": "library-tablet",
+      "title": "Library \u00c2\u00b7 tablet",
+      "route": "/subjects",
+      "width": 820,
+      "height": 1180,
+      "image": "images/library-tablet.png",
+      "viewportWidth": 820,
+      "documentWidth": 820,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": []
+    },
+    {
+      "id": "library-phone",
+      "title": "Library topic preview \u00c2\u00b7 phone",
+      "route": "/subjects?topic=knee-joint",
+      "width": 390,
+      "height": 844,
+      "image": "images/library-phone.png",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": []
+    },
+    {
+      "id": "recall-phone",
+      "title": "Recall after reveal \u00c2\u00b7 phone",
+      "route": "/revise?topic=brachial-plexus",
+      "width": 390,
+      "height": 844,
+      "image": "images/recall-phone.png",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": [
+        {
+          "text": "AgainForgot",
+          "top": 413,
+          "bottom": 487
+        },
+        {
+          "text": "HardStruggled",
+          "top": 413,
+          "bottom": 487
+        },
+        {
+          "text": "GoodRecalled",
+          "top": 495,
+          "bottom": 569
+        },
+        {
+          "text": "EasyInstant",
+          "top": 495,
+          "bottom": 569
+        }
+      ]
+    },
+    {
+      "id": "knee-sample-phone",
+      "title": "Knee recognition sample \u00c2\u00b7 phone",
+      "route": "/samples/knee-atlas",
+      "width": 390,
+      "height": 844,
+      "image": "images/knee-sample-phone.png",
+      "viewportWidth": 390,
+      "documentWidth": 390,
+      "brokenImages": [],
+      "horizontalOverflow": false,
+      "controls": [
+        {
+          "text": "Anterior cruciate ligament",
+          "top": 315.5,
+          "bottom": 365.5
+        },
+        {
+          "text": "Posterior cruciate ligament",
+          "top": 373.5,
+          "bottom": 423.5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "limits": "Screenshots use the shared local test database. Content-review states may reflect automated-test fixtures and are not evidence of anatomy educator approval. No physical-device, accessibility-conformance or medical-accuracy claim is made."
+}

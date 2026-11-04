@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  addDays,
   goalSchedule,
   goalToday,
   type LearnerProgress,
@@ -11,7 +10,7 @@ import {
   planWeek,
   type StudyGoal,
 } from '@medlearn/core';
-import { Button, buttonClasses, cx, Icon, IconButton, ringFill } from '@medlearn/ui';
+import { buttonClasses, cx, Icon, IconButton, ringFill } from '@medlearn/ui';
 import {
   CalendarDays,
   Check,
@@ -24,9 +23,9 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import type { TopicSummary } from '@/content/topics';
-import { updateGoal } from '@/features/progress/store';
 
-import { dateName, dayName, KIND_NAME, minutesText, topicHref, topicMinutes } from './words';
+import { PlanNextStep } from './PlanNextStep';
+import { dateName, dayName, finishLabel, KIND_NAME, minutesText, topicMinutes } from './words';
 
 export const GLASS = 'rounded-xl border border-glass-border bg-glass shadow-glass';
 export const LABEL = 'text-xs font-semibold uppercase tracking-eyebrow text-gold-ink';
@@ -91,7 +90,9 @@ export function PlanCard({
 }>) {
   const [offset, setOffset] = useState(0);
   const status = planStatus(goal, progress, today, (slug) => topicMinutes(goal, topics.get(slug)));
-  const week = planWeek(goal, progress, today, offset);
+  const currentWeek = Math.min(status.weeks, Math.max(1, status.week));
+  const shownWeek = Math.min(status.weeks, Math.max(1, currentWeek + offset));
+  const week = planWeek(goal, progress, today, shownWeek - status.week);
   const next = goalToday(goal, today, progress.completedLessons).topics[0];
   // On a day off, the next day with topics.
   const coming = goalSchedule(goal, today, progress.completedLessons)[0]?.date;
@@ -102,16 +103,14 @@ export function PlanCard({
   const started = planStart(goal);
 
   return (
-    <article aria-labelledby={titleId} className={cx(GLASS, 'flex flex-col gap-4 p-4')}>
+    <article aria-labelledby={titleId} className={cx(GLASS, 'flex min-w-0 flex-col gap-4 p-4')}>
       <header className="flex flex-wrap items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className={LABEL}>
             {KIND_NAME[goal.kind]}
             {status.state === 'active' ? ` · week ${status.week} of ${status.weeks}` : ''}
-            {status.state === 'ended' ? ` · date passed, ${status.total - status.done} left` : ''}
-            {status.state === 'completed' ? ' · every topic done' : ''}
           </span>
-          <h2 id={titleId} className="text-xl font-semibold text-ink">
+          <h2 id={titleId} className="text-xl font-semibold text-ink break-words">
             {goal.title}
           </h2>
           <span className="text-xs text-fg-muted" suppressHydrationWarning>
@@ -128,8 +127,20 @@ export function PlanCard({
         </Link>
       </header>
 
-      <div className="order-2 grid gap-3 md:grid-cols-2">
-        <section aria-label="Overall progress" className={cx(PANEL, 'flex-row items-center gap-4')}>
+      <PlanNextStep
+        goal={goal}
+        status={status}
+        next={next}
+        coming={coming}
+        titleOf={(slug) => topics.get(slug)?.title ?? slug}
+        adjustHref={`/plan/${goal.id}#adjust-plan`}
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <section
+          aria-label="Overall progress"
+          className={cx(PANEL, 'flex-wrap items-center gap-4')}
+        >
           <div className="relative size-24 shrink-0">
             <svg viewBox="0 0 88 88" className="size-24 -rotate-90" aria-hidden="true">
               <circle
@@ -156,16 +167,16 @@ export function PlanCard({
               <span className="text-xs text-fg-muted">done</span>
             </span>
           </div>
-          <dl className="flex flex-1 flex-col gap-1 text-sm">
+          <dl className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
             {[
               ['Topics', `${status.done} / ${status.total}`],
               [
-                'Estimated work',
+                'Estimated work completed',
                 `${minutesText(status.minutesDone)} / ${minutesText(status.minutesTotal)}`,
               ],
               ['Missed days', String(status.missedDays)],
             ].map(([term, value]) => (
-              <div key={term} className="flex justify-between gap-3">
+              <div key={term} className="grid grid-cols-2 gap-3">
                 <dt className="text-fg-muted">{term}</dt>
                 <dd className="text-right font-semibold text-ink">{value}</dd>
               </div>
@@ -176,7 +187,7 @@ export function PlanCard({
         <section aria-label="Week by day" className={PANEL}>
           <div className="flex items-center gap-2">
             <span className="flex-1 text-sm font-semibold text-ink" suppressHydrationWarning>
-              Week {status.week + offset}
+              Week {shownWeek}
               <span className="font-normal text-fg-muted">
                 {' · '}
                 {dateName(week[0]?.date ?? today)} to {dateName(week.at(-1)?.date ?? today)}
@@ -186,14 +197,14 @@ export function PlanCard({
               icon={ChevronLeft}
               label="Earlier week"
               size="sm"
-              disabled={status.week + offset <= 1}
+              disabled={shownWeek <= 1}
               onClick={() => setOffset(offset - 1)}
             />
             <IconButton
               icon={ChevronRight}
               label="Later week"
               size="sm"
-              disabled={status.week + offset >= status.weeks}
+              disabled={shownWeek >= status.weeks}
               onClick={() => setOffset(offset + 1)}
             />
           </div>
@@ -205,8 +216,7 @@ export function PlanCard({
         </section>
       </div>
 
-      {/* On phones the way to carry on comes before the ring and the week. */}
-      <footer className="order-1 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg bg-surface px-4 py-3 text-sm md:order-3">
+      <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg bg-surface px-4 py-3 text-sm">
         <span className="flex items-center gap-2 text-fg-muted">
           <Icon icon={ListChecks} size="sm" />
           Topics left
@@ -214,32 +224,9 @@ export function PlanCard({
         </span>
         <span className="flex items-center gap-2 text-fg-muted" suppressHydrationWarning>
           <Icon icon={Hourglass} size="sm" />
-          {status.finishOn ? 'Finishes' : status.state === 'ended' ? 'Date passed' : 'Finished'}
-          <span className="font-semibold text-ink">
-            {status.finishOn ? dayName(status.finishOn) : null}
-            {!status.finishOn && status.state === 'ended' ? dayName(goal.date) : null}
-            {!status.finishOn && status.state === 'completed' ? 'every topic' : null}
-          </span>
+          Plan outcome
+          <span className="font-semibold text-ink">{finishLabel(status)}</span>
         </span>
-        <span className="flex-1" />
-        {next ? (
-          <Link href={topicHref(goal, next)} className={buttonClasses({ size: 'sm' })}>
-            Continue: {topics.get(next)?.title ?? next}
-            <Icon icon={ChevronRight} size="sm" />
-          </Link>
-        ) : status.state === 'ended' ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => updateGoal(goal.id, { date: addDays(today, 7) })}
-          >
-            Give it another week
-          </Button>
-        ) : (
-          <span className="text-fg-muted" suppressHydrationWarning>
-            {status.state === 'active' && coming ? `Next on ${dayName(coming)}` : ''}
-          </span>
-        )}
       </footer>
     </article>
   );

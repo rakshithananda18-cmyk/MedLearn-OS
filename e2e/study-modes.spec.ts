@@ -35,7 +35,8 @@ test('a student back after missed days gets a capped catch-up plan', async ({ pa
   // The facilitator screen sets up the state for usability task 5.
   await page.goto('/facilitator');
   await expectAccessible(page);
-  await page.getByRole('button', { name: 'Apply: Back after missed days' }).click();
+  await page.getByRole('button', { name: 'Preview: Back after missed days' }).click();
+  await page.getByRole('button', { name: 'Replace device progress' }).click();
   await expect(page.getByRole('status')).toHaveText(/Back after missed days is set/);
   await page.goto('/today');
 
@@ -48,6 +49,16 @@ test('a student back after missed days gets a capped catch-up plan', async ({ pa
   await expect(
     page.getByRole('list', { name: "Today's plan" }).getByRole('link').first(),
   ).toHaveText(/Review 4 cards/);
+  // A usability fixture must be discarded before it can enter an account.
+  await page.goto('/account');
+  await expect(
+    page.getByRole('heading', { name: 'End test setup before using an account' }),
+  ).toBeVisible();
+  await expect(page.getByLabel(/^Email/)).toHaveCount(0);
+  await page.getByRole('button', { name: 'End and discard test progress' }).click();
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('ml-fixture-mode-v1')))
+    .toBeNull();
 });
 
 test('the diagram trainer builds the brachial plexus layer by layer', async ({ page }) => {

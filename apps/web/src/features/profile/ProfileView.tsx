@@ -22,7 +22,6 @@ import { useAccount } from '@/features/account/useAccount';
 import { MINUTES, YEARS } from '@/features/onboarding/OnboardingView';
 import { saveProfile, useProgress } from '@/features/progress/store';
 import { useHydrated } from '@/features/shell/media';
-import { Panes } from '@/features/shell/Panes';
 
 import { Avatar } from './Avatar';
 
@@ -47,18 +46,24 @@ function countdown(examDate: string | null, today: string): string {
 function Section({
   title,
   action,
+  notice,
   children,
-}: Readonly<{ title: string; action?: ReactNode; children: ReactNode }>) {
+}: Readonly<{ title: string; action?: ReactNode; notice?: string; children: ReactNode }>) {
   const id = useId();
   return (
-    <Card tone="glass" as="section" aria-labelledby={id} className="flex flex-col gap-4">
-      <div className="flex min-h-8 items-center justify-between gap-3">
+    <Card as="section" aria-labelledby={id} className="flex min-w-0 flex-col gap-4">
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
         <h2 id={id} className="font-semibold text-ink">
           {title}
         </h2>
         {action}
       </div>
       {children}
+      {notice ? (
+        <p role="status" className="text-sm text-fg-muted">
+          {notice}
+        </p>
+      ) : null}
     </Card>
   );
 }
@@ -218,7 +223,7 @@ export function ProfileView({
     return (
       <div className="flex flex-col gap-6">
         <header className="flex items-center gap-4">
-          <Avatar name={undefined} size="lg" />
+          <Avatar name={undefined} />
           <Display size="md">
             Your <em>profile</em>
           </Display>
@@ -246,7 +251,7 @@ export function ProfileView({
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center gap-4">
-        <Avatar name={profile.name} size="lg" />
+        <Avatar name={profile.name} />
         <div className="flex flex-col gap-1">
           <Eyebrow>{year} · MBBS</Eyebrow>
           <Display size="md">
@@ -260,112 +265,104 @@ export function ProfileView({
               </>
             )}
           </Display>
-          <p aria-live="polite" className="text-sm text-fg-muted empty:hidden">
-            {said}
-          </p>
         </div>
       </header>
 
-      <Panes
-        id="profile"
-        label="Progress and account"
-        main={
-          <>
-            <Section title="About you">
-              <NameForm
-                name={profile.name}
-                onSave={(name) => {
-                  const next: StudyProfile = { ...profile };
-                  if (name) next.name = name;
-                  else delete next.name;
-                  saveProfile(next);
-                  setSaid(name ? 'Name saved.' : 'Name removed.');
-                }}
-              />
-            </Section>
-
-            <Section title="Your study plan">
-              <fieldset className="flex flex-col gap-2">
-                <legend className="mb-2 text-sm font-medium text-fg">Year</legend>
-                <div className="flex flex-wrap gap-2">
-                  {YEARS.map((item) => (
-                    <ToggleChip
-                      key={item.value}
-                      pressed={profile.year === Number(item.value)}
-                      onClick={() => change({ year: Number(item.value) as MbbsYear }, 'Year')}
-                    >
-                      {item.label}
-                    </ToggleChip>
-                  ))}
-                </div>
-              </fieldset>
-              <TextField
-                type="date"
-                label="Exam date"
-                hint={countdown(profile.examDate, today)}
-                value={profile.examDate ?? ''}
-                onChange={(event) => change({ examDate: event.target.value || null }, 'Exam date')}
-              />
-              <fieldset className="flex flex-col gap-2">
-                <legend className="mb-2 text-sm font-medium text-fg">Time each day</legend>
-                <div className="flex flex-wrap gap-2">
-                  {MINUTES.map((item) => (
-                    <ToggleChip
-                      key={item.value}
-                      pressed={profile.dailyMinutes === Number(item.value)}
-                      onClick={() => change({ dailyMinutes: Number(item.value) }, 'Time each day')}
-                    >
-                      {item.label}
-                    </ToggleChip>
-                  ))}
-                </div>
-              </fieldset>
-              <Text size="sm" tone="muted">
-                Today’s plan follows these straight away.
-              </Text>
-            </Section>
-
-            <Section
-              title="Your books"
-              action={
-                <Link href="/books" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                  {chosen.length > 0 ? 'Change' : 'Choose'}
-                </Link>
-              }
-            >
-              {chosen.length > 0 ? (
-                <ul className="flex flex-wrap gap-2">
-                  {chosen.map((title) => (
-                    <li
-                      key={title}
-                      className="rounded-full border border-glass-border bg-surface/60 px-3 py-1 text-sm font-semibold text-ink"
-                    >
-                      {title}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Text size="sm" tone="muted">
-                  Pick the books you read, and lessons point to their pages.
-                </Text>
-              )}
-            </Section>
-          </>
-        }
-        aside={
-          <>
-            <AtAGlance topics={topics} today={today} />
-
-            <AccountSection adult={profile.adult} />
-
-            <Section title="Look">
-              <div>
-                <ThemeToggle />
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <div className="flex flex-col gap-4">
+          <Section title="Your study plan" notice={said.startsWith('Name') ? undefined : said}>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-sm font-medium text-fg">Year</legend>
+              <div className="flex flex-wrap gap-2">
+                {YEARS.map((item) => (
+                  <ToggleChip
+                    key={item.value}
+                    pressed={profile.year === Number(item.value)}
+                    onClick={() => change({ year: Number(item.value) as MbbsYear }, 'Year')}
+                  >
+                    {item.label}
+                  </ToggleChip>
+                ))}
               </div>
-            </Section>
-          </>
-        }
-      />
+            </fieldset>
+            <TextField
+              type="date"
+              label="Exam date"
+              hint={countdown(profile.examDate, today)}
+              value={profile.examDate ?? ''}
+              onChange={(event) => change({ examDate: event.target.value || null }, 'Exam date')}
+            />
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-sm font-medium text-fg">Time each day</legend>
+              <div className="flex flex-wrap gap-2">
+                {MINUTES.map((item) => (
+                  <ToggleChip
+                    key={item.value}
+                    pressed={profile.dailyMinutes === Number(item.value)}
+                    onClick={() => change({ dailyMinutes: Number(item.value) }, 'Time each day')}
+                  >
+                    {item.label}
+                  </ToggleChip>
+                ))}
+              </div>
+            </fieldset>
+            <Text size="sm" tone="muted">
+              Today’s plan follows these straight away.
+            </Text>
+          </Section>
+
+          <Section title="About you" notice={said.startsWith('Name') ? said : undefined}>
+            <NameForm
+              name={profile.name}
+              onSave={(name) => {
+                const next: StudyProfile = { ...profile };
+                if (name) next.name = name;
+                else delete next.name;
+                saveProfile(next);
+                setSaid(name ? 'Name saved.' : 'Name removed.');
+              }}
+            />
+          </Section>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <AtAGlance topics={topics} today={today} />
+
+          <Section
+            title="Your books"
+            action={
+              <Link href="/books" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
+                {chosen.length > 0 ? 'Change' : 'Choose'}
+              </Link>
+            }
+          >
+            {chosen.length > 0 ? (
+              <ul className="flex flex-wrap gap-2">
+                {chosen.map((title) => (
+                  <li
+                    key={title}
+                    className="rounded-full border border-glass-border bg-surface/60 px-3 py-1 text-sm font-semibold text-ink"
+                  >
+                    {title}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Text size="sm" tone="muted">
+                Pick the books you read, and lessons point to their pages.
+              </Text>
+            )}
+          </Section>
+
+          <AccountSection adult={profile.adult} />
+
+          <Section title="Look">
+            <div>
+              <ThemeToggle />
+            </div>
+          </Section>
+        </div>
+      </div>
     </div>
   );
 }

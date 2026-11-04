@@ -6,6 +6,7 @@ import {
 } from '@medlearn/core';
 import type { SavedProgress } from '@medlearn/schemas';
 
+import { isFixtureMode, subscribeFixtureMode } from '@/features/facilitator/mode';
 import {
   progressGeneration,
   readProgress,
@@ -129,8 +130,9 @@ function applyMergedCopy(local: LearnerProgress, merged: LearnerProgress): void 
  */
 async function synchronize(signal: AbortSignal, current: () => boolean): Promise<string | null> {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+    if (!current() || isFixtureMode()) return null;
     const saved = await loadServerCopy(signal);
-    if (!current()) return null;
+    if (!current() || isFixtureMode()) return null;
     const local = readProgress();
     if (local.profile?.adult !== true) return null;
     const merged = mergedCopy(local, saved);
@@ -166,6 +168,7 @@ export function pauseProgressSync(): () => void {
 
 /** Saves every pending local change before sign-out removes this device's copy. */
 export async function flushProgressSync(): Promise<void> {
+  if (isFixtureMode()) return;
   if (activeSync) return activeSync.flush();
   if (readProgress().profile?.adult !== true) return;
   const generation = progressGeneration();
@@ -182,12 +185,13 @@ export async function flushProgressSync(): Promise<void> {
 
 /** Joins device progress with the account after sign-in, preserving both learning histories. */
 export async function adoptAccountProgress(now = new Date()): Promise<boolean> {
+  if (isFixtureMode()) throw new Error('End the local test session before signing in.');
   const resume = pauseProgressSync();
   const generation = progressGeneration();
   const currentLifecycle = lifecycle;
   try {
     const saved = await loadServerCopy();
-    if (generation !== progressGeneration() || currentLifecycle !== lifecycle) {
+    if (isFixtureMode() || generation !== progressGeneration() || currentLifecycle !== lifecycle) {
       throw new Error('The account changed. Try again.');
     }
     const local = readProgress();
@@ -203,11 +207,13 @@ export async function adoptAccountProgress(now = new Date()): Promise<boolean> {
 
 /** Restores a lost device copy only while the original account and request are still active. */
 export async function restoreProgress(signal?: AbortSignal): Promise<void> {
+  if (isFixtureMode()) return;
   const generation = progressGeneration();
   const currentLifecycle = lifecycle;
   const saved = await loadServerCopy(signal, true);
   if (
     !saved ||
+    isFixtureMode() ||
     signal?.aborted ||
     generation !== progressGeneration() ||
     currentLifecycle !== lifecycle
@@ -221,6 +227,7 @@ export async function restoreProgress(signal?: AbortSignal): Promise<void> {
 /** Serializes saves and cancels pending work when the effect ends or the account changes. */
 export function startProgressSync(): () => void {
   activeSync?.stop();
+  if (isFixtureMode()) return () => undefined;
   const generation = progressGeneration();
   let stopped = false;
   let controller = new AbortController();
@@ -229,7 +236,8 @@ export function startProgressSync(): () => void {
   let running: Promise<void> | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const available = () => !stopped && pauseDepth === 0 && generation === progressGeneration();
+  const available = () =>
+    !stopped && !isFixtureMode() && pauseDepth === 0 && generation === progressGeneration();
   const unsaved = () =>
     readProgress().profile?.adult === true && readProgress().updatedAt !== lastSynced;
 
@@ -296,6 +304,7 @@ export function startProgressSync(): () => void {
       controller.abort();
       clearTimeout(timer);
       unsubscribe();
+      unsubscribeFixture();
       globalThis.removeEventListener('online', onOnline);
       if (activeSync === session) activeSync = undefined;
     },
@@ -304,6 +313,9 @@ export function startProgressSync(): () => void {
   const unsubscribe = subscribeToProgress(() => {
     // Changes during a request are saved by its completion handler, never in parallel.
     if (!running) schedule();
+  });
+  const unsubscribeFixture = subscribeFixtureMode(() => {
+    if (isFixtureMode()) session.stop();
   });
   const onOnline = () => {
     if (available()) void run().then(scheduleIfChanged).catch(report);

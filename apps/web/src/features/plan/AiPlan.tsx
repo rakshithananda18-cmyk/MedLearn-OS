@@ -1,17 +1,8 @@
 'use client';
 
-import { addDays, DEFAULT_DAILY_MINUTES } from '@medlearn/core';
+import { addDays, DEFAULT_DAILY_MINUTES, goalSchedule } from '@medlearn/core';
 import { PLAN_REQUEST_MAX, type PlanProposal } from '@medlearn/schemas';
-import {
-  Banner,
-  Button,
-  Checkbox,
-  Heading,
-  Spinner,
-  Text,
-  TextArea,
-  TextField,
-} from '@medlearn/ui';
+import { Banner, Button, Checkbox, Spinner, Text, TextArea, TextField } from '@medlearn/ui';
 import { Sparkles } from '@medlearn/ui/icons';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -20,9 +11,9 @@ import type { TopicSummary } from '@/content/topics';
 import { addGoal, saveProfile, useProgress } from '@/features/progress/store';
 
 import { GoalDraft } from './GoalDraft';
-import { dayName, KIND_NAME } from './words';
+import { dayName, KIND_NAME, minutesText, topicMinutes } from './words';
 
-type Failure = { title: string; message: string; byHand: boolean };
+type Failure = { title: string; message: string; signIn?: boolean };
 type Phase =
   | { kind: 'asking' }
   | { kind: 'thinking' }
@@ -40,16 +31,14 @@ async function failureOf(response: Response): Promise<Failure> {
   if (code === 'UNAVAILABLE') {
     return {
       title: 'The AI planner is not available right now',
-      message:
-        'Choose the topics and dates yourself instead: go back and pick another kind of plan.',
-      byHand: true,
+      message: 'You can still choose your own topics and dates. Your study progress is saved.',
     };
   }
   if (code === 'UNAUTHORIZED') {
     return {
       title: 'Sign in to plan with AI',
       message: 'Plans are made for your account, so sign in first.',
-      byHand: false,
+      signIn: true,
     };
   }
   return {
@@ -58,7 +47,6 @@ async function failureOf(response: Response): Promise<Failure> {
       code === 'RATE_LIMITED' || code === 'VALIDATION_FAILED'
         ? (body?.error?.message ?? 'Try again.')
         : 'Something went wrong. Check your connection and try again.',
-    byHand: code === 'RATE_LIMITED',
   };
 }
 
@@ -76,7 +64,13 @@ export function AiPlan({
   topics,
   today,
   onAdded,
-}: Readonly<{ topics: Map<string, TopicSummary>; today: string; onAdded: () => void }>) {
+  onManual,
+}: Readonly<{
+  topics: Map<string, TopicSummary>;
+  today: string;
+  onAdded: () => void;
+  onManual: () => void;
+}>) {
   const progress = useProgress();
   const [examDate, setExamDate] = useState(progress.profile?.examDate ?? '');
   const [details, setDetails] = useState('');
@@ -102,15 +96,16 @@ export function AiPlan({
         setPhase({ kind: 'failed', failure: await failureOf(response) });
         return;
       }
-      const { data } = (await response.json()) as { data: PlanProposal };
-      setPhase({ kind: 'proposed', plan: data, minutes: true, exam: true });
+      const body = (await response.json()) as { data: unknown };
+      const { PlanProposal } = await import('@medlearn/schemas');
+      const plan = PlanProposal.parse(body.data);
+      setPhase({ kind: 'proposed', plan, minutes: true, exam: true });
     } catch {
       setPhase({
         kind: 'failed',
         failure: {
           title: 'No plan this time',
           message: 'Check your connection and try again.',
-          byHand: false,
         },
       });
     }
@@ -142,9 +137,49 @@ export function AiPlan({
 
   if (phase.kind === 'proposed') {
     const { plan } = phase;
+    const proposedExam = plan.examDate ?? examDate;
+    const acceptedMinutes =
+      progress.profile && phase.minutes && plan.dailyMinutes ? plan.dailyMinutes : dailyMinutes;
+    // Inspect the combined work before saving, including plans the student already has.
+    const loadByDay = new Map<string, number>();
+    const drafts = plan.goals.map((goal, index) => ({
+      ...goal,
+      from: goal.from ?? undefined,
+      id: `draft-${index}`,
+      done: [],
+      createdAt: `${today}T12:00:00.000Z`,
+    }));
+    for (const goal of [...progress.goals, ...drafts]) {
+      for (const day of goalSchedule(goal, today, progress.completedLessons)) {
+        const minutes = day.topics.reduce(
+          (sum, slug) => sum + topicMinutes(goal, topics.get(slug)),
+          0,
+        );
+        loadByDay.set(day.date, (loadByDay.get(day.date) ?? 0) + minutes);
+      }
+    }
+    const busiest = Math.max(0, ...loadByDay.values());
     return (
-      <section aria-label="Suggested plan" className="flex flex-col gap-4">
+      <section aria-label="Suggested plan" className="flex min-w-0 flex-col gap-4">
+        <Text weight="semibold">Review your draft · not saved yet</Text>
         <Text weight="semibold">{plan.reply}</Text>
+        <Text size="sm" tone="muted">
+          These drafts use every day. After adding them, choose study weekdays or days off in each
+          plan&apos;s calendar.
+        </Text>
+        {plan.goals.length === 0 ? (
+          <Text>No plans to add. Change the request or choose your own topics.</Text>
+        ) : (
+          <Text size="sm" tone="muted">
+            Including your saved plans, about {minutesText(busiest)} on the busiest day, against
+            your {acceptedMinutes} minutes a day.
+          </Text>
+        )}
+        {busiest > acceptedMinutes ? (
+          <Banner tone="warning" title="Some days look heavy">
+            Give the plans later dates or leave out topics before adding them.
+          </Banner>
+        ) : null}
         <ul className="flex flex-col gap-3">
           {plan.goals.map((goal, index) => (
             <GoalDraft
@@ -153,7 +188,7 @@ export function AiPlan({
               goal={goal}
               today={today}
               topics={topics}
-              dailyMinutes={dailyMinutes}
+              dailyMinutes={acceptedMinutes}
               onChange={(next) =>
                 setPhase({
                   ...phase,
@@ -172,16 +207,16 @@ export function AiPlan({
             />
           ))}
         </ul>
-        {plan.dailyMinutes && progress.profile ? (
+        {plan.dailyMinutes && plan.dailyMinutes !== dailyMinutes && progress.profile ? (
           <Checkbox
             label={`Change my daily study time to ${plan.dailyMinutes} minutes`}
             checked={phase.minutes}
             onCheckedChange={(minutes) => setPhase({ ...phase, minutes })}
           />
         ) : null}
-        {progress.profile && examDate !== progress.profile.examDate ? (
+        {progress.profile && proposedExam !== progress.profile.examDate ? (
           <Checkbox
-            label={`Set my exam date to ${dayName(plan.examDate ?? examDate)}`}
+            label={`Set my exam date to ${dayName(proposedExam)}`}
             checked={phase.exam}
             onCheckedChange={(exam) => setPhase({ ...phase, exam })}
           />
@@ -193,6 +228,9 @@ export function AiPlan({
           <Button variant="ghost" onClick={() => setPhase({ kind: 'asking' })}>
             Ask again
           </Button>
+          <Button variant="ghost" onClick={onManual}>
+            Choose topics myself
+          </Button>
         </div>
       </section>
     );
@@ -200,12 +238,9 @@ export function AiPlan({
 
   return (
     <div className="flex flex-col gap-4">
-      <Heading level={2} tabIndex={-1}>
-        Suggest a plan
-      </Heading>
       <Text size="sm" tone="muted">
         The AI looks at your exam date and the topics you have learnt, and plans the rest region by
-        region, with time at the end to revisit. You can change everything before it is added.
+        region, with time at the end to revisit. Review the dates and topics before adding it.
       </Text>
       <TextField
         label="Exam date"
@@ -222,7 +257,7 @@ export function AiPlan({
         <div className="pt-3">
           <TextArea
             label="Add details in your own words"
-            hint="For example: the thorax first. Days off are set on the plan's calendar once it is added."
+            hint="For example: the thorax first, or only the upper limb. Choose study weekdays in the calendar after adding the plan."
             rows={2}
             maxLength={200}
             value={details}
@@ -247,13 +282,23 @@ export function AiPlan({
         </div>
       ) : null}
       {phase.kind === 'failed' ? (
-        <Banner tone="warning" title={phase.failure.title}>
-          {phase.failure.message}
-        </Banner>
+        <div className="flex flex-col items-start gap-3">
+          <Banner tone="warning" title={phase.failure.title}>
+            {phase.failure.message}
+          </Banner>
+          {phase.failure.signIn ? (
+            <Link href="/account" className={LINK}>
+              Go to sign in
+            </Link>
+          ) : null}
+          <Button variant="secondary" onClick={onManual}>
+            Choose topics myself
+          </Button>
+        </div>
       ) : null}
       <Text size="xs" tone="muted">
-        Your exam date and a short summary of your study (topics done, daily minutes) go to Groq,
-        which runs the AI. Your name and email are not sent.{' '}
+        Your exam date, the details you enter and a short summary of your study (topics done, daily
+        minutes) go to Groq, which runs the AI. Your name and email are not sent.{' '}
         <Link
           href="https://groq.com/privacy-policy"
           target="_blank"

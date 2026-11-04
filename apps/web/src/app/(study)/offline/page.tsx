@@ -15,16 +15,16 @@ export default function OfflinePage() {
     <Screen>
       <div className="flex flex-col gap-3">
         <Eyebrow>Offline</Eyebrow>
-        <Display>
+        <Display size="lg">
           This page needs a <em>connection</em>
         </Display>
         <Text tone="muted">
-          It has not been opened on this phone yet. Pages you have opened before still work, and
-          your progress is kept on this phone.
+          This page has not been opened on this device yet. Previously opened pages may still be
+          available. Your locally saved study progress remains on this device.
         </Text>
       </div>
       <div>
-        <Link href="/today" className={buttonClasses({ variant: 'secondary' })}>
+        <Link href="/today" className={buttonClasses()}>
           Go to Today
         </Link>
       </div>

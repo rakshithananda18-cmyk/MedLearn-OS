@@ -34,7 +34,7 @@ export function GoalDraft({
   const days = goalSchedule({ ...paced, id: '', done: [], createdAt: '' }, today);
   const change = (next: Partial<ProposedGoal>) => onChange({ ...goal, ...next });
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
+    <li className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-surface p-4">
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-xs font-semibold uppercase tracking-eyebrow text-gold-ink">
@@ -46,7 +46,12 @@ export function GoalDraft({
             on the busiest day
           </Text>
         </div>
-        <IconButton icon={Trash2} label={`Leave out ${goal.title}`} size="sm" onClick={onDrop} />
+        <IconButton
+          icon={Trash2}
+          label={`Leave out ${goal.title}`}
+          className="min-h-12 min-w-12 shrink-0"
+          onClick={onDrop}
+        />
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <TextField
@@ -76,15 +81,15 @@ export function GoalDraft({
         {goal.topics.map((slug) => (
           <li
             key={slug}
-            className="flex min-h-8 items-center gap-1 rounded-full border border-border-strong py-1 pr-1 pl-3 text-sm text-ink"
+            className="flex min-h-12 max-w-full items-center gap-1 rounded-lg border border-border-strong py-1 pr-1 pl-3 text-sm text-ink"
           >
-            {titleOf(slug)}
+            <span className="min-w-0 break-words">{titleOf(slug)}</span>
             <button
               type="button"
               aria-label={`Leave out ${titleOf(slug)}`}
               disabled={goal.topics.length === 1}
               onClick={() => change({ topics: goal.topics.filter((item) => item !== slug) })}
-              className="flex size-6 items-center justify-center rounded-full text-fg-muted hover:bg-surface-muted hover:text-fg disabled:opacity-40"
+              className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-muted hover:text-fg disabled:opacity-40"
             >
               <Icon icon={X} size="sm" />
             </button>
@@ -97,9 +102,9 @@ export function GoalDraft({
         </summary>
         <ol className="mt-2 flex flex-col gap-1">
           {days.map((day) => (
-            <li key={day.date} className="flex gap-3">
+            <li key={day.date} className="flex flex-wrap gap-x-3 gap-y-1">
               <span className="w-24 shrink-0 text-fg-muted">{dayName(day.date)}</span>
-              <span className="text-fg">{day.topics.map(titleOf).join(', ')}</span>
+              <span className="min-w-0 flex-1 text-fg">{day.topics.map(titleOf).join(', ')}</span>
             </li>
           ))}
         </ol>

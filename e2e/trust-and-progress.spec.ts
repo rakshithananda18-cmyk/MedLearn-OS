@@ -3,6 +3,13 @@ import { expect, test } from '@playwright/test';
 import { expectAccessible, seedProgress } from './support';
 
 test('a student reports an issue from the topic hub', async ({ page }) => {
+  // Exercise reporting independently of decisions created by the backend integration suite.
+  await page.route('**/api/reviews', async (route) => {
+    await route.fulfill({
+      status: 503,
+      json: { error: { code: 'UNAVAILABLE', message: 'Review status unavailable' } },
+    });
+  });
   await page.goto('/learn/brachial-plexus');
   await page.getByRole('button', { name: 'Sources and report' }).click();
   const drawer = page.getByRole('dialog', { name: 'Sources' });
