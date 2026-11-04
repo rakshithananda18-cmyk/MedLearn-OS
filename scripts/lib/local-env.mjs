@@ -11,6 +11,11 @@ export function configureLocalEnv() {
   }
   const values = { SUPABASE_URL: status.API_URL, SUPABASE_ANON_KEY: key };
   upsertEnvFile('apps/web/.env.local', values);
-  upsertEnvFile('.env.test.local', { ...values, LOG_LEVEL: 'warn' });
+  const mailUrl = status.MAILPIT_URL ?? status.INBUCKET_URL;
+  upsertEnvFile('.env.test.local', {
+    ...values,
+    LOG_LEVEL: 'warn',
+    ...(mailUrl ? { MAILPIT_URL: mailUrl } : {}),
+  });
   return { url: status.API_URL };
 }

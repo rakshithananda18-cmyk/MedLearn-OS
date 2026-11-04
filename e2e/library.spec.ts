@@ -2,6 +2,36 @@ import { expect, test } from '@playwright/test';
 
 import { expectAccessible } from './support';
 
+test('subject names reflow on a narrow phone with enlarged text', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ml-progress-v1',
+      JSON.stringify({
+        profile: {
+          year: 1,
+          dailyMinutes: 20,
+          examDate: null,
+          adult: true,
+          books: ['bd-chaurasia'],
+        },
+        completedLessons: ['brachial-plexus'],
+      }),
+    );
+  });
+  await page.goto('/subjects');
+  await expect(page.getByRole('heading', { name: 'Your library' })).toBeVisible();
+  await page.locator('html').evaluate((element) => {
+    element.style.fontSize = '200%';
+  });
+  const subject = page.getByRole('button', { name: /Biochemistry/ });
+  await expect(subject).toBeVisible();
+  expect(await subject.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+    true,
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
 test('the library previews a topic, and the topic page leads back to that preview', async ({
   page,
 }) => {

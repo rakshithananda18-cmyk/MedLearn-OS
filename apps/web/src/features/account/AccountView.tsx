@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { endFixtureMode, useFixtureMode } from '@/features/facilitator/mode';
 import { clearLessonSteps } from '@/features/lesson/checkpoint';
 import { resetProgress, useProgress } from '@/features/progress/store';
 import { clearStudioData } from '@/features/studio/saved';
@@ -168,6 +169,8 @@ interface AccountViewProps {
  * accounts until parental consent exists; signing in keeps everything learned on either side.
  */
 export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) {
+  const fixtureMode = useFixtureMode();
+  const [endError, setEndError] = useState(false);
   const progress = useProgress();
   const { state, refresh } = useAccount();
   // Invited people mostly come back to sign in; the setup questions follow the first sign-in.
@@ -175,12 +178,48 @@ export function AccountView({ inviteOnly = false }: Readonly<AccountViewProps>) 
   const [resetEmail, setResetEmail] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
 
+  if (fixtureMode) {
+    return (
+      <Card className="mx-auto flex w-full max-w-xl flex-col items-start gap-3">
+        <Eyebrow>Local test session</Eyebrow>
+        <Display size="md">End test setup before using an account</Display>
+        <Text>
+          Discard this device&apos;s test progress before signing in or creating an account. Test
+          progress is never added to an account.
+        </Text>
+        {endError ? (
+          <Text role="alert">
+            Could not clear all test data. Test mode stays on; check browser storage and try again.
+          </Text>
+        ) : null}
+        <Button variant="secondary" onClick={() => setEndError(!endFixtureMode())}>
+          End and discard test progress
+        </Button>
+      </Card>
+    );
+  }
+
   if (state.status === 'loading') {
     return (
       <div className="flex flex-col gap-3" aria-busy="true">
         <Skeleton className="h-12 w-2/3" />
         <Skeleton className="h-24 w-full" />
       </div>
+    );
+  }
+
+  if (!state.verified) {
+    return (
+      <Card className="mx-auto flex w-full max-w-xl flex-col items-start gap-3">
+        <Display size="md">Check your account</Display>
+        <Text role="alert">
+          We couldn&apos;t check your account. Try again before making account changes.
+        </Text>
+        <Button onClick={refresh}>Try again</Button>
+        <Link href="/today" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+          Continue studying on this device
+        </Link>
+      </Card>
     );
   }
 

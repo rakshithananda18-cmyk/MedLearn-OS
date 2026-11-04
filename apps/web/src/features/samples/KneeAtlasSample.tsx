@@ -447,10 +447,12 @@ export function KneeAtlasSample({
                 <RotateCcw size={16} aria-hidden="true" /> Reset view
               </button>
             </div>
-            <p id="sample-model-help" className={styles.modelHelp}>
+            <p id="sample-model-help" aria-live="polite" className={styles.modelHelp}>
               {flat || capable === false
                 ? 'A relationship diagram; positions are schematic.'
-                : 'Drag to turn · Pinch or scroll to zoom · Choose a view with the buttons'}
+                : customView
+                  ? 'Custom angle · Reset view returns to the last preset'
+                  : `${VIEWS.find((item) => item.id === view)?.label ?? 'Preset'} preset · Drag to turn · Pinch or scroll to zoom`}
             </p>
           </section>
 

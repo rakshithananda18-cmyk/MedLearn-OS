@@ -70,15 +70,17 @@ function SubjectTabs({
             onClick={() => onPick(subject.slug)}
             className={cx(
               // A chip can narrow and wrap its name, so enlarged text never pushes the page sideways.
-              'flex min-h-12 max-w-full items-center gap-2 rounded-full px-4 text-left text-sm font-semibold transition-colors duration-150',
+              'flex min-h-12 min-w-0 max-w-full items-center gap-2 rounded-full px-4 py-2 text-left text-sm font-semibold transition-colors duration-150',
               on
                 ? 'bg-ink text-canvas shadow-raised'
                 : 'border border-glass-border bg-glass text-ink hover:bg-surface',
             )}
           >
             <Icon icon={SUBJECT_ICON[subject.slug] ?? BookOpen} size="sm" />
-            {subject.name}
-            <span className={cx('text-xs font-normal', on ? 'text-canvas' : 'text-fg-muted')}>
+            <span className="min-w-0 flex-1 break-words">{subject.name}</span>
+            <span
+              className={cx('shrink-0 text-xs font-normal', on ? 'text-canvas' : 'text-fg-muted')}
+            >
               {count > 0 ? count : 'Soon'}
             </span>
           </button>

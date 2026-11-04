@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: { alias: { '@': webSrc } },
   test: {
+    // Windows named-pipe worker startup can stall under concurrent browser/build work.
+    pool: process.platform === 'win32' ? 'threads' : 'forks',
     projects: [
       {
         extends: true,
@@ -41,6 +43,9 @@ export default defineConfig({
         test: {
           name: 'integration',
           environment: 'node',
+          // Auth scenarios make several database and password-hashing round trips.
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
           include: ['packages/*/src/**/*.int.test.ts', 'apps/web/src/**/*.int.test.ts'],
           setupFiles: ['packages/test-utils/src/setup-integration.ts'],
           fileParallelism: false,
